@@ -2,58 +2,60 @@
   "tools": [
     {
       "name": "mtg-json-splitter",
-      "description": "매직 더 개더링 JSON 카드 데이터를 150MB 단위로 분할 저장하는 툴입니다.",
+      "description": "매직 더 개더링 JSON 카드 데이터를 150MB 단위로 분할 저장하는 툴입니다. Pyodide를 활용하여 브라우저에서도 실행됩니다.",
       "path": "tools/mtg-json-splitter/",
-      "parent": "MTG",
-      "tags": [
-        "json",
-        "split",
-        "mtg"
-      ],
       "inputs": [
         {
           "type": "file",
-          "label": "입력 파일",
           "accept": ".json,.txt",
-          "id": "inputFile"
+          "label": "카드 데이터 파일"
         },
         {
           "type": "number",
           "label": "분할 용량 (MB)",
-          "default": 150,
-          "id": "maxMb"
+          "default": 150
         },
         {
           "type": "text",
-          "label": "출력 폴더",
-          "default": "output",
-          "id": "outputDir"
+          "label": "출력 파일 이름",
+          "default": "output"
         },
         {
           "type": "text",
-          "label": "파일명 prefix",
-          "default": "output",
-          "id": "outputName"
+          "label": "출력 폴더 경로",
+          "default": "output"
         }
-      ]
+      ],
+      "tags": [
+        "json",
+        "mtg",
+        "split"
+      ],
+      "parent": "MTG"
     },
     {
       "name": "csv-cleaner",
-      "description": "CSV의 빈 줄을 제거하고 열 수를 정리하는 간단한 정리 툴입니다.",
+      "description": "빈 줄 제거, 열 수 불일치 확인 등의 기능을 가진 CSV 정리 툴입니다. Python CLI와 JS 버전 둘 다 제공 가능합니다.",
       "path": "tools/csv-cleaner/",
-      "parent": "CSV",
+      "inputs": [],
       "tags": [
         "csv",
         "clean"
       ],
-      "inputs": [
-        {
-          "type": "file",
-          "label": "CSV 파일",
-          "accept": ".csv",
-          "id": "csvFile"
-        }
-      ]
+      "parent": "일반"
+    },
+    {
+      "name": "gui-card-manager",
+      "description": "PyWin32 기반 GUI 카드 관리 툴입니다. 다운로드 후 실행하여 사용하세요.",
+      "path": "tools/gui-card-manager/",
+      "download": "gui-card-manager.7z",
+      "inputs": [],
+      "tags": [
+        "gui",
+        "mtg",
+        "win32"
+      ],
+      "parent": "MTG"
     }
   ]
 }
