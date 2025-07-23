@@ -11,44 +11,70 @@
 			display: flex;
 			min-height: 100vh;
 		}
+
 		#sidebar {
 			width: 250px;
 			background: #f3f3f3;
 			border-right: 1px solid #ccc;
 			overflow-y: auto;
 			transition: transform 0.3s ease;
+			flex-shrink: 0;
 		}
+
 		#content {
 			flex: 1;
 			padding: 20px;
+			transition: all 0.3s ease;
 		}
+
 		.tool-link {
 			display: block;
 			padding: 10px;
 			cursor: pointer;
 			border-bottom: 1px solid #ddd;
 		}
+
 		.tool-link:hover {
 			background: #eee;
 		}
+
 		#toggleBtn {
 			position: fixed;
+			top: 10px;
 			left: 250px;
-			top: 50%;
-			transform: translateY(-50%);
 			z-index: 999;
 			background: #ccc;
 			border: none;
 			cursor: pointer;
 			padding: 5px;
+			transition: left 0.3s ease;
 		}
+
+		/* ✅ 사이드바 숨김 */
 		.sidebar-hidden #sidebar {
-			transform: translateX(-100%);
+			display: none;
 		}
+
+		.sidebar-hidden #content {
+			width: 100%;
+		}
+
 		.sidebar-hidden #toggleBtn {
 			left: 0;
 		}
+
+		form label {
+			display: block;
+			margin-top: 1em;
+		}
+
+		form input {
+			width: 100%;
+			padding: 4px;
+			margin-top: 4px;
+		}
 	</style>
+
 </head>
 <body>
 	<div id="sidebar"></div>
@@ -59,7 +85,7 @@
 
 	<script>
 		function version() {
-			return "1.0.0";
+		return "1.0.0";
 		}
 		function printVersion() {
 			console.log("도구 모음 버전: " + version());
@@ -69,9 +95,43 @@
 		const toolIndexUrl = "tool_index.json";
 		const sidebar = document.getElementById("sidebar");
 		const content = document.getElementById("content");
+
 		document.getElementById("toggleBtn").addEventListener("click", () => {
 			document.body.classList.toggle("sidebar-hidden");
 		});
+
+		function renderTool(tool) {
+			if (tool.type === "html") {
+				const htmlPath = `${tool.path}${tool.name}.html`;
+				content.innerHTML = `<iframe src="${htmlPath}" style="width: 100%; height: 90vh; border: none;"></iframe>`;
+				return;
+			}
+
+			let html = `<h2>${tool.name}</h2><p>${tool.description}</p>`;
+
+			if (tool.inputs && Array.isArray(tool.inputs)) {
+				html += `<form id="toolForm">`;
+				tool.inputs.forEach(input => {
+					html += `
+						<label>${input.label}
+							<input type="${input.type}" 
+								id="${input.id}" 
+								${input.accept ? `accept="${input.accept}"` : ""}
+								${input.default ? `value="${input.default}"` : ""}
+							/>
+						</label>
+					`;
+				});
+				html += `</form>`;
+			}
+
+			if (tool.path && tool.name && tool.download) {
+				const zipPath = `${tool.path}${tool.name}.zip`;
+				html += `<p><a href="${zipPath}" download>📦 다운로드 (.zip)</a></p>`;
+			}
+
+			content.innerHTML = html;
+		}
 
 		fetch(toolIndexUrl)
 			.then(res => res.json())
@@ -80,13 +140,7 @@
 					const item = document.createElement("div");
 					item.className = "tool-link";
 					item.textContent = tool.name;
-					item.onclick = () => {
-						content.innerHTML = `
-							<h2>${tool.name}</h2>
-							<p>${tool.description}</p>
-							<a href="${tool.path}${tool.name}.7z" download>📦 다운로드</a>
-						`;
-					};
+					item.onclick = () => renderTool(tool);
 					sidebar.appendChild(item);
 				});
 			});

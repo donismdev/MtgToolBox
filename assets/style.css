@@ -1,14 +1,45 @@
+body {
+	font-family: sans-serif;
+	margin: 0;
+	display: flex;
+	min-height: 100vh;
+}
 
-body { margin: 0; font-family: sans-serif; }
-.container { display: flex; }
-.sidebar {
-	width: 250px; background: #f0f0f0; padding: 1rem; height: 100vh; overflow-y: auto;
+#sidebar {
+	width: 250px;
+	background: #f3f3f3;
+	border-right: 1px solid #ccc;
+	overflow-y: auto;
 	transition: transform 0.3s ease;
 }
-.sidebar.hidden { transform: translateX(-100%); }
-.main { flex-grow: 1; padding: 2rem; }
-.tool { cursor: pointer; padding: 0.5rem 0; }
-.tool:hover { text-decoration: underline; }
-h3 { margin: 0.5rem 0 0.2rem; }
-#toggleSidebar { position: fixed; top: 10px; left: 10px; z-index: 10; }
-input[type="text"] { width: 100%; padding: 4px; margin-bottom: 1rem; }
+
+#content {
+	flex: 1;
+	padding: 20px;
+	transition: margin-left 0.3s ease;
+}
+
+/* ✅ 사이드바 숨김 시 전체화면 확장 */
+.sidebar-hidden #sidebar {
+	transform: translateX(-100%);
+}
+
+.sidebar-hidden #content {
+	margin-left: 0;
+}
+
+#toggleBtn {
+	position: fixed;
+	top: 10px;
+	left: 250px;
+	z-index: 999;
+	background: #ccc;
+	border: none;
+	cursor: pointer;
+	padding: 5px;
+	transition: left 0.3s ease;
+}
+
+.sidebar-hidden #toggleBtn {
+	left: 0;
+}
