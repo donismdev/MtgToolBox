@@ -1,0 +1,59 @@
+{
+  "tools": [
+    {
+      "name": "mtg-json-splitter",
+      "description": "매직 더 개더링 JSON 카드 데이터를 150MB 단위로 분할 저장하는 툴입니다.",
+      "path": "tools/mtg-json-splitter/",
+      "parent": "MTG",
+      "tags": [
+        "json",
+        "split",
+        "mtg"
+      ],
+      "inputs": [
+        {
+          "type": "file",
+          "label": "입력 파일",
+          "accept": ".json,.txt",
+          "id": "inputFile"
+        },
+        {
+          "type": "number",
+          "label": "분할 용량 (MB)",
+          "default": 150,
+          "id": "maxMb"
+        },
+        {
+          "type": "text",
+          "label": "출력 폴더",
+          "default": "output",
+          "id": "outputDir"
+        },
+        {
+          "type": "text",
+          "label": "파일명 prefix",
+          "default": "output",
+          "id": "outputName"
+        }
+      ]
+    },
+    {
+      "name": "csv-cleaner",
+      "description": "CSV의 빈 줄을 제거하고 열 수를 정리하는 간단한 정리 툴입니다.",
+      "path": "tools/csv-cleaner/",
+      "parent": "CSV",
+      "tags": [
+        "csv",
+        "clean"
+      ],
+      "inputs": [
+        {
+          "type": "file",
+          "label": "CSV 파일",
+          "accept": ".csv",
+          "id": "csvFile"
+        }
+      ]
+    }
+  ]
+}

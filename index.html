@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>도구 모음</title>
+	<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+	<button id="toggleSidebar"><-></button>
+	<div class="container">
+		<div class="sidebar" id="sidebar">
+			<input type="text" id="tagSearch" placeholder="태그로 검색..." />
+			<div id="toolList"></div>
+		</div>
+		<div class="main">
+			<h1>🧰 도구 상세</h1>
+			<div id="toolDetail">왼쪽에서 도구를 선택하세요.</div>
+		</div>
+	</div>
+
+	<script>
+
+		function version()
+		{
+			return "1.0.0";
+		}
+
+		function printVersion()
+		{
+			console.log("도구 모음 버전: " + version());
+		}
+
+		let tools = [];
+		const sidebar = document.getElementById("sidebar");
+		const toggleBtn = document.getElementById("toggleSidebar");
+
+		toggleBtn.onclick = () => sidebar.classList.toggle("hidden");
+
+		function renderInputs(inputs) {
+			return inputs.map(input => {
+				if (input.type === 'file') {
+					return `<label>${input.label}: <input type="file" id="${input.id}" accept="${input.accept}" /></label><br>`;
+				} else if (input.type === 'number') {
+					return `<label>${input.label}: <input type="number" id="${input.id}" value="${input.default}" /></label><br>`;
+				} else {
+					return `<label>${input.label}: <input type="text" id="${input.id}" value="${input.default || ''}" /></label><br>`;
+				}
+			}).join("");
+		}
+
+		function showToolDetail(tool) {
+			const detail = document.getElementById("toolDetail");
+			detail.innerHTML = `
+				<h2>${tool.name}</h2>
+				<p>${tool.description}</p>
+				<form id="toolForm">${renderInputs(tool.inputs)}</form>
+				<button onclick="alert('실행은 나중에 구현!')">실행</button>
+			`;
+		}
+
+		function groupByParent(tools) {
+			const map = {};
+			tools.forEach(tool => {
+				if (!map[tool.parent]) map[tool.parent] = [];
+				map[tool.parent].push(tool);
+			});
+			return map;
+		}
+
+		function renderToolList(filterTag = "") {
+			const container = document.getElementById("toolList");
+			container.innerHTML = "";
+			const grouped = groupByParent(tools);
+
+			for (const parent in grouped) {
+				const group = grouped[parent].filter(tool => 
+					filterTag === "" || tool.tags.includes(filterTag)
+				);
+				if (group.length === 0) continue;
+
+				const h3 = document.createElement("h3");
+				h3.textContent = parent;
+				container.appendChild(h3);
+
+				group.forEach(tool => {
+					const div = document.createElement("div");
+					div.className = "tool";
+					div.textContent = tool.name;
+					div.onclick = () => showToolDetail(tool);
+					container.appendChild(div);
+				});
+			}
+		}
+
+		document.getElementById("tagSearch").addEventListener("input", e => {
+			renderToolList(e.target.value.trim().toLowerCase());
+		});
+
+		async function loadTools() {
+			const res = await fetch("tool_index.json");
+			const data = await res.json();
+			tools = data.tools;
+			renderToolList();
+		}
+
+		loadTools();
+	</script>
+</body>
+</html>
