@@ -6,6 +6,7 @@
 			"description": "매직 더 개더링 JSON 카드 데이터를 150MB 단위로 분할 저장하는 툴입니다. Pyodide를 활용하여 브라우저에서도 실행됩니다.",
 			"path": "tools/mtg-json-splitter/",
 			"tags": ["json", "split", "mtg"],
+			"enable": true,
 			"inputs": [
 				{ "label": "파일 선택", "type": "file", "accept": ".json,.txt", "id": "fileInput" },
 				{ "label": "분할 용량 (MB)", "type": "number", "id": "sizeInput", "default": 150 },
@@ -19,6 +20,7 @@
 			"description": "빈 줄 제거, 열 수 불일치 확인 등의 기능을 가진 CSV 정리 툴입니다.",
 			"path": "tools/csv-cleaner/",
 			"tags": ["csv", "clean"],
+			"enable": true,
 			"inputs": [
 				{ "label": "CSV 파일 선택", "type": "file", "accept": ".csv", "id": "csvFile" },
 				{ "label": "헤더 유무", "type": "checkbox", "id": "hasHeader", "default": true },
@@ -31,13 +33,24 @@
 			"description": "윈도우 GUI 기반 카드 관리 도구입니다. Python GUI 툴킷으로 작성되어 다운로드 후 실행 가능합니다.",
 			"path": "tools/gui-card-manager/",
 			"tags": ["gui", "mtg", "desktop"],
+			"enable": true,
 			"download": "gui-card-manager.zip"
 		},
 		{
 			"name": "cardkingdom-order-sorter",
 			"description": "CardKingdom 주문 내역을 시각적으로 정리하는 도구입니다.",
 			"path": "tools/cardkingdom-order-sorter/",
-			"type": "html"
+			"type": "html",
+			"enable": false
+		},
+		{
+			"name": "swiss-tool",
+			"parent": "Tournament",
+			"description": "스위스 라운드 방식의 토너먼트를 지원하는 도구입니다. Bo1/Bo3/Bo5, 결과 기록, 승률 및 ELO 계산 기능이 포함되어 있습니다.",
+			"path": "tools/swiss-tool/",
+			"tags": ["tournament", "swiss", "elo", "round"],
+			"type": "html",
+			"enable": true
 		}
 	]
 }

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>스위스 라운드 매칭 도우미 v6.2</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+	<style>
+		.hidden { display: none; }
+	</style>
+</head>
+<body class="p-4">
+	<div id="setupView">
+		<h2>게임 설정</h2>
+		<div class="mb-3">
+			<label class="form-label">게임 형식</label>
+			<select id="matchFormat" class="form-select">
+				<option value="1">Bo1</option>
+				<option value="2" selected>Bo3</option>
+				<option value="3">Bo5</option>
+			</select>
+		</div>
+		<div class="mb-3">
+			<label class="form-label">최대 라운드 수</label>
+			<input type="number" id="maxRounds" class="form-control" value="3" min="1" />
+		</div>
+		<div class="mb-3">
+			<label class="form-label">참가자 명단 (줄마다 한 명)</label>
+			<textarea id="playersInput" class="form-control" rows="5"></textarea>
+		</div>
+		<button class="btn btn-primary" id="startBtn">게임 시작</button>
+	</div>
+
+	<div id="gameView" class="hidden">
+		<h2>라운드 <span id="roundNum">1</span> / <span id="totalRounds"></span></h2>
+		<div id="pairings"></div>
+		<div class="mt-4">
+			<button class="btn btn-secondary" id="backBtn">뒤로가기</button>
+			<button class="btn btn-success me-2" id="nextRoundBtn">다음 라운드</button>
+			<button class="btn btn-warning" id="viewResultBtn" disabled>결과 보기</button>
+		</div>
+	</div>
+
+	<div id="resultView" class="hidden">
+		<h2>최종 결과</h2>
+		<div id="resultSummary" class="mb-4">결과 출력 예정</div>
+		<div>
+			<button class="btn btn-primary me-2" id="replayBtn">동일 설정으로 다시 하기</button>
+			<button class="btn btn-secondary" id="resetBtn">처음부터 다시</button>
+		</div>
+	</div>
+
+	<script>
+		const setupView = document.getElementById("setupView");
+		const gameView = document.getElementById("gameView");
+		const resultView = document.getElementById("resultView");
+		const roundNum = document.getElementById("roundNum");
+		const totalRounds = document.getElementById("totalRounds");
+		const pairingsDiv = document.getElementById("pairings");
+		const nextRoundBtn = document.getElementById("nextRoundBtn");
+		const viewResultBtn = document.getElementById("viewResultBtn");
+		const resultSummary = document.getElementById("resultSummary");
+
+		let players = [];
+		let matchFormat = 2;
+		let maxRounds = 3;
+		let currentRound = 1;
+		let allPairings = [];
+		let matchResults = [];
+		let matchHistory = new Map();
+
+		function hasPlayed(p1, p2) {
+			return (matchHistory.get(p1)?.includes(p2) || false);
+		}
+		function addMatchHistory(p1, p2) {
+			if (!matchHistory.has(p1)) matchHistory.set(p1, []);
+			if (!matchHistory.has(p2)) matchHistory.set(p2, []);
+			matchHistory.get(p1).push(p2);
+			matchHistory.get(p2).push(p1);
+		}
+
+		function generatePairings() {
+			const shuffled = [...players].sort(() => Math.random() - 0.5);
+			const matches = [];
+			const used = new Set();
+			for (let i = 0; i < shuffled.length; i++) {
+				if (used.has(i)) continue;
+				let opponentIdx = -1;
+				for (let j = i + 1; j < shuffled.length; j++) {
+					if (used.has(j)) continue;
+					if (!hasPlayed(shuffled[i], shuffled[j])) {
+						opponentIdx = j;
+						break;
+					}
+				}
+				if (opponentIdx === -1) {
+					for (let j = i + 1; j < shuffled.length; j++) {
+						if (!used.has(j)) {
+							opponentIdx = j;
+							break;
+						}
+					}
+				}
+				if (opponentIdx !== -1) {
+					matches.push([shuffled[i], shuffled[opponentIdx]]);
+					used.add(i);
+					used.add(opponentIdx);
+					addMatchHistory(shuffled[i], shuffled[opponentIdx]);
+				} else {
+					matches.push([shuffled[i], null]);
+					used.add(i);
+				}
+			}
+			return matches;
+		}
+
+		function renderPairings(pairs, roundIndex) {
+			pairingsDiv.innerHTML = "";
+			pairs.forEach(([p1, p2], idx) => {
+				const div = document.createElement("div");
+				div.className = "mb-3";
+				if (!p2) {
+					div.innerHTML = `<strong>${p1}</strong>는 부전승입니다.`;
+					pairingsDiv.appendChild(div);
+					return;
+				}
+				let radios = "";
+				for (let i = 0; i <= matchFormat; i++) {
+					const checked = matchResults[roundIndex]?.[idx]?.[0] === i ? "checked" : "";
+					radios += `<label class='me-2'><input type='radio' name='match${idx}' value='${i}' ${checked}> ${i}</label>`;
+				}
+				radios += "<span class='mx-2'>vs</span>";
+				for (let i = 0; i <= matchFormat; i++) {
+					const checked = matchResults[roundIndex]?.[idx]?.[1] === i ? "checked" : "";
+					radios += `<label class='me-2'><input type='radio' name='match${idx}_b' value='${i}' ${checked}> ${i}</label>`;
+				}
+				div.innerHTML = `<strong>${p1}</strong> ${radios} <strong>${p2}</strong>`;
+				pairingsDiv.appendChild(div);
+			});
+			nextRoundBtn.disabled = currentRound >= maxRounds;
+			viewResultBtn.disabled = currentRound < maxRounds;
+		}
+
+		document.getElementById("startBtn").onclick = () => {
+			players = document.getElementById("playersInput").value.trim().split("\n").filter(x => x);
+			if (players.length < 4) return alert("최소 4명 이상 필요");
+			matchFormat = parseInt(document.getElementById("matchFormat").value);
+			maxRounds = parseInt(document.getElementById("maxRounds").value);
+			currentRound = 1;
+			allPairings = [];
+			matchResults = [];
+			matchHistory = new Map();
+
+			totalRounds.textContent = maxRounds;
+			roundNum.textContent = currentRound;
+			setupView.classList.add("hidden");
+			resultView.classList.add("hidden");
+			gameView.classList.remove("hidden");
+
+			const pairings = generatePairings();
+			allPairings.push(pairings);
+			matchResults.push([]);
+			renderPairings(pairings, currentRound - 1);
+		};
+
+		document.getElementById("backBtn").onclick = () => {
+			if (resultView.classList.contains("hidden") === false) {
+				resultView.classList.add("hidden");
+				gameView.classList.remove("hidden");
+			} else if (currentRound === 1) {
+				setupView.classList.remove("hidden");
+				gameView.classList.add("hidden");
+			} else {
+				currentRound--;
+				roundNum.textContent = currentRound;
+				renderPairings(allPairings[currentRound - 1], currentRound - 1);
+			}
+		};
+
+		document.getElementById("nextRoundBtn").onclick = () => {
+			const currentResults = [];
+			const pairs = allPairings[currentRound - 1];
+			for (let i = 0; i < pairs.length; i++) {
+				const [p1, p2] = pairs[i];
+				if (!p2) {
+					currentResults.push([matchFormat, 0]);
+					continue;
+				}
+				const a = document.querySelector(`input[name='match${i}']:checked`);
+				const b = document.querySelector(`input[name='match${i}_b']:checked`);
+				if (!a || !b) return alert("모든 경기 결과를 입력해주세요.");
+				currentResults.push([parseInt(a.value), parseInt(b.value)]);
+			}
+			matchResults[currentRound - 1] = currentResults;
+
+			currentRound++;
+			roundNum.textContent = currentRound;
+			const pairings = generatePairings();
+			allPairings.push(pairings);
+			matchResults.push([]);
+			renderPairings(pairings, currentRound - 1);
+		};
+
+		document.getElementById("viewResultBtn").onclick = () => {
+			const currentResults = [];
+			const pairs = allPairings[currentRound - 1];
+			for (let i = 0; i < pairs.length; i++) {
+				const [p1, p2] = pairs[i];
+				if (!p2) {
+					currentResults.push([matchFormat, 0]);
+					continue;
+				}
+				const a = document.querySelector(`input[name='match${i}']:checked`);
+				const b = document.querySelector(`input[name='match${i}_b']:checked`);
+				if (!a || !b) return alert("모든 경기 결과를 입력해주세요.");
+				currentResults.push([parseInt(a.value), parseInt(b.value)]);
+			}
+			matchResults[currentRound - 1] = currentResults;
+
+			gameView.classList.add("hidden");
+			resultView.classList.remove("hidden");
+			renderFinalResults();
+		};
+
+		function calculateElo(current, opponent, score, k = 32) {
+			const expected = 1 / (1 + Math.pow(10, (opponent - current) / 400));
+			return current + k * (score - expected);
+		}
+
+		function renderFinalResults() {
+			const scores = new Map();
+			players.forEach(name => {
+				scores.set(name, {
+					name,
+					played: 0,
+					win: 0,
+					lose: 0,
+					draw: 0,
+					elo: 1000,
+				});
+			});
+			for (let round = 0; round < allPairings.length; round++) {
+				const pairs = allPairings[round];
+				const results = matchResults[round];
+				for (let i = 0; i < pairs.length; i++) {
+					const [p1, p2] = pairs[i];
+					const [s1, s2] = results[i];
+					const rec1 = scores.get(p1);
+					if (!p2) {
+						rec1.played += 1;
+						rec1.win += 1;
+						rec1.elo += 8;
+						continue;
+					}
+					const rec2 = scores.get(p2);
+					rec1.played += 1;
+					rec2.played += 1;
+					if (s1 > s2) {
+						rec1.win += 1;
+						rec2.lose += 1;
+						rec1.elo = calculateElo(rec1.elo, rec2.elo, 1);
+						rec2.elo = calculateElo(rec2.elo, rec1.elo, 0);
+					} else if (s2 > s1) {
+						rec2.win += 1;
+						rec1.lose += 1;
+						rec1.elo = calculateElo(rec1.elo, rec2.elo, 0);
+						rec2.elo = calculateElo(rec2.elo, rec1.elo, 1);
+					} else {
+						rec1.draw += 1;
+						rec2.draw += 1;
+						rec1.elo = calculateElo(rec1.elo, rec2.elo, 0.5);
+						rec2.elo = calculateElo(rec2.elo, rec1.elo, 0.5);
+					}
+				}
+			}
+			const resultArray = [...scores.values()].sort((a, b) => b.elo - a.elo);
+			let html = `
+				<table class="table table-bordered table-striped">
+					<thead>
+						<tr>
+							<th>순위</th><th>이름</th><th>경기수</th><th>승</th><th>패</th><th>무</th><th>승률(%)</th><th>ELO</th>
+						</tr>
+					</thead><tbody>
+			`;
+			resultArray.forEach((entry, idx) => {
+				const winRate = entry.played > 0 ? ((entry.win + 0.5 * entry.draw) / entry.played * 100).toFixed(1) : "0.0";
+				html += `<tr><td>${idx + 1}</td><td>${entry.name}</td><td>${entry.played}</td><td>${entry.win}</td><td>${entry.lose}</td><td>${entry.draw}</td><td>${winRate}</td><td>${Math.round(entry.elo)}</td></tr>`;
+			});
+			html += "</tbody></table>";
+			resultSummary.innerHTML = html;
+		}
+
+		document.getElementById("resetBtn").onclick = () => {
+			setupView.classList.remove("hidden");
+			gameView.classList.add("hidden");
+			resultView.classList.add("hidden");
+		};
+
+		document.getElementById("replayBtn").onclick = () => {
+			currentRound = 1;
+			allPairings = [];
+			matchResults = [];
+			matchHistory = new Map();
+			totalRounds.textContent = maxRounds;
+			roundNum.textContent = currentRound;
+			resultView.classList.add("hidden");
+			gameView.classList.remove("hidden");
+
+			const pairings = generatePairings();
+			allPairings.push(pairings);
+			matchResults.push([]);
+			renderPairings(pairings, currentRound - 1);
+		};
+	</script>
+</body>
+</html>
