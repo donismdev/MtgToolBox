@@ -73,23 +73,28 @@ const abilityDetails = document.getElementById("abilityDetails");
 const selectedAbility = document.getElementById("selectedAbility");
 const abilityText = document.getElementById("abilityText");
 
-let abilities = {
-			...data.abilities,
-			...data.evergreen,
-			...data.arena,
-			...data.special
-		};
+let abilities = {};
 window.mtgData = {};
 
 fetch('abilities/ability_data.json')
 	.then(res => res.json())
 	.then(data => {
 		window.mtgData = data;
+
 		abilities = {
 			...data.abilities,
 			...data.evergreen,
 			...data.arena
 		};
+
+		// ✅ special은 일관된 객체 형태로 병합
+		Object.entries(data.special).forEach(([name, text]) => {
+			abilities[name] = {
+				text: text,
+				type: "special"
+			};
+		});
+
 		renderAbilityList();
 	});
 
@@ -122,7 +127,11 @@ function showAbility(name) {
 	selectedAbility.innerText = name;
 
 	let label = "";
-	if (mtgData.evergreen && mtgData.evergreen[name]) {
+	let textHtml = `<p>${formatText(info.text)}</p>`;
+
+	if (info.type === "special") {
+		label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
+	} else if (mtgData.evergreen && mtgData.evergreen[name]) {
 		label = `<span class='badge bg-success ms-2'>Evergreen</span>`;
 	} else if (mtgData.arena && mtgData.arena[name]) {
 		label = `<span class='badge bg-warning text-dark ms-2'>Arena-only</span>`;
@@ -132,13 +141,13 @@ function showAbility(name) {
 		label = `<span class='badge bg-primary ms-2'>Keyword Action</span>`;
 	} else if (info.type === "keywordAbility") {
 		label = `<span class='badge bg-secondary ms-2'>Keyword Ability</span>`;
-	} else if (mtgData.special && mtgData.special[name]) {
-		label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
 	}
 
-	abilityText.innerHTML = formatText(`<p>${info.text}</p>` + label +
-		(info.image ? `<br><img src="${info.image}" style="max-width: 200px; margin-top: 1rem;" />` : "")
-	);
+	if (info.image) {
+		textHtml += `<br><img src="${info.image}" style="max-width: 200px; margin-top: 1rem;" />`;
+	}
+
+	abilityText.innerHTML = textHtml + label;
 	abilityList.style.display = "none";
 	abilityDetails.style.display = "block";
 }
@@ -151,10 +160,12 @@ function resetView() {
 
 function filterAbilities() {
 	const query = abilityInput.value.toLowerCase();
-	if (abilities[query]) {
-		showAbility(query);
+	const matchedKey = Object.keys(abilities).find(key => key.toLowerCase() === query);
+	if (matchedKey) {
+		showAbility(matchedKey);
 	}
 }
 </script>
+
 </body>
 </html>
