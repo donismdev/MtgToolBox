@@ -41,14 +41,13 @@
 			"description": "CardKingdom 주문 내역을 시각적으로 정리하는 도구입니다.",
 			"path": "tools/cardkingdom-order-sorter/",
 			"type": "html",
-			"enable": false
+			"enable": true
 		},
 		{
 			"name": "swiss-tool",
 			"parent": "Tournament",
 			"description": "스위스 라운드 방식의 토너먼트를 지원하는 도구입니다. Bo1/Bo3/Bo5, 결과 기록, 승률 및 ELO 계산 기능이 포함되어 있습니다.",
 			"path": "tools/swiss-tool/",
-			"tags": ["tournament", "swiss", "elo", "round"],
 			"type": "html",
 			"enable": true
 		}
