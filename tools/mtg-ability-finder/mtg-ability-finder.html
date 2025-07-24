@@ -14,11 +14,15 @@
 		#searchSection {
 			max-width: 800px;
 			margin: 0 auto;
+			position: relative;
 		}
 		#abilityInput {
 			font-size: 1.5rem;
 			padding: 1rem;
 			height: 4rem;
+			position: relative;
+			z-index: 4;
+			margin-bottom: 0.2rem;
 		}
 		#abilityList {
 			margin-top: 2rem;
@@ -48,14 +52,18 @@
 			text-align: center;
 		}
 		#resetBtn {
-			margin-top: 1.5rem;
+			margin-top: 0.5rem;
+		}
+		#customSuggestions {
+			margin-top: 0.2rem;
+			z-index: 3;
 		}
 	</style>
 </head>
 <body>
 	<div id="searchSection">
-		<input type="text" id="abilityInput" class="form-control mb-3" placeholder="Enter MTG ability keyword (e.g., trample, flash)" oninput="filterAbilities()" list="abilitySuggestions" />
-		<datalist id="abilitySuggestions"></datalist>
+		<input type="text" id="abilityInput" class="form-control mb-3" placeholder="Enter MTG ability keyword (e.g., trample, flash)" oninput="filterAbilities()" />
+		<ul id="customSuggestions" class="list-group position-absolute w-100 z-3" style="top:100%; display: none;"></ul>
 		<div id="divider"></div>
 		<div id="abilityList"></div>
 		<div id="abilityDetails">
@@ -68,10 +76,10 @@
 <script>
 const abilityList = document.getElementById("abilityList");
 const abilityInput = document.getElementById("abilityInput");
-const abilitySuggestions = document.getElementById("abilitySuggestions");
 const abilityDetails = document.getElementById("abilityDetails");
 const selectedAbility = document.getElementById("selectedAbility");
 const abilityText = document.getElementById("abilityText");
+const suggestionBox = document.getElementById("customSuggestions");
 
 let abilities = {};
 window.mtgData = {};
@@ -80,37 +88,28 @@ fetch('abilities/ability_data.json')
 	.then(res => res.json())
 	.then(data => {
 		window.mtgData = data;
-
 		abilities = {
 			...data.abilities,
 			...data.evergreen,
 			...data.arena
 		};
-
-		// ✅ special은 일관된 객체 형태로 병합
 		Object.entries(data.special).forEach(([name, text]) => {
 			abilities[name] = {
 				text: text,
 				type: "special"
 			};
 		});
-
 		renderAbilityList();
 	});
 
 function renderAbilityList() {
 	abilityList.innerHTML = "";
-	abilitySuggestions.innerHTML = "";
 	Object.keys(abilities).forEach(name => {
 		const badge = document.createElement("div");
 		badge.className = "ability-badge";
 		badge.innerText = name;
 		badge.onclick = () => showAbility(name);
 		abilityList.appendChild(badge);
-
-		const option = document.createElement("option");
-		option.value = name;
-		abilitySuggestions.appendChild(option);
 	});
 }
 
@@ -123,15 +122,15 @@ function formatText(text) {
 }
 
 function showAbility(name) {
+	suggestionBox.style.display = "none";
+
 	const info = abilities[name];
+	if (!info || !info.text) return;
+
 	selectedAbility.innerText = name;
 
 	let label = "";
-	let textHtml = `<p>${formatText(info.text)}</p>`;
-
-	if (info.type === "special") {
-		label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
-	} else if (mtgData.evergreen && mtgData.evergreen[name]) {
+	if (mtgData.evergreen && mtgData.evergreen[name]) {
 		label = `<span class='badge bg-success ms-2'>Evergreen</span>`;
 	} else if (mtgData.arena && mtgData.arena[name]) {
 		label = `<span class='badge bg-warning text-dark ms-2'>Arena-only</span>`;
@@ -141,19 +140,20 @@ function showAbility(name) {
 		label = `<span class='badge bg-primary ms-2'>Keyword Action</span>`;
 	} else if (info.type === "keywordAbility") {
 		label = `<span class='badge bg-secondary ms-2'>Keyword Ability</span>`;
+	} else if (info.type === "special") {
+		label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
 	}
 
-	if (info.image) {
-		textHtml += `<br><img src="${info.image}" style="max-width: 200px; margin-top: 1rem;" />`;
-	}
-
-	abilityText.innerHTML = textHtml + label;
+	abilityText.innerHTML = formatText(`<p>${info.text}</p>` + label +
+		(info.image ? `<br><img src="${info.image}" style="max-width: 200px; margin-top: 1rem;" />` : "")
+	);
 	abilityList.style.display = "none";
 	abilityDetails.style.display = "block";
 }
 
 function resetView() {
 	abilityInput.value = "";
+	suggestionBox.style.display = "none";
 	abilityDetails.style.display = "none";
 	abilityList.style.display = "flex";
 }
@@ -161,11 +161,36 @@ function resetView() {
 function filterAbilities() {
 	const query = abilityInput.value.toLowerCase();
 	const matchedKey = Object.keys(abilities).find(key => key.toLowerCase() === query);
+
 	if (matchedKey) {
 		showAbility(matchedKey);
+		return;
 	}
+
+	const suggestions = Object.keys(abilities)
+		.filter(key => key.toLowerCase().includes(query))
+		.slice(0, 10);
+
+	suggestionBox.innerHTML = "";
+	if (suggestions.length === 0 || query === "") {
+		suggestionBox.style.display = "none";
+		return;
+	}
+
+	suggestions.forEach(name => {
+		const li = document.createElement("li");
+		li.className = "list-group-item list-group-item-action";
+		li.innerText = name;
+		li.onclick = () => {
+			abilityInput.value = name;
+			suggestionBox.style.display = "none";
+			showAbility(name);
+		};
+		suggestionBox.appendChild(li);
+	});
+
+	suggestionBox.style.display = "block";
 }
 </script>
-
 </body>
 </html>
