@@ -109,6 +109,11 @@
 		const sidebar = document.getElementById("sidebar");
 		const sidebarOverlay = document.getElementById("sidebar-overlay");
 		const toggleBtn = document.getElementById("toggleSidebarBtn");
+		function isMobileDevice() {
+			return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+		}
+
+		const isMobile = isMobileDevice();
 
 		function toggleSidebar(show) {
 			if (show) {
@@ -181,13 +186,22 @@
 		fetch(toolIndexUrl)
 			.then(res => res.json())
 			.then(data => {
-				const toolsByParent = data.tools.reduce((acc, tool) => {
+				const enabledTools = data.tools.filter(tool => {
+					if (tool.enable === false) return false;
+					if (tool.mobileOnly === true && !isMobile) return false;
+					if (tool.desktopOnly === true && isMobile) return false;
+					return true;
+				});
+
+				// parent별로 툴을 그룹화 (enable: true인 것만 포함)
+				const toolsByParent = enabledTools.reduce((acc, tool) => {
 					const parent = tool.parent || "기타";
 					if (!acc[parent]) acc[parent] = [];
 					acc[parent].push(tool);
 					return acc;
 				}, {});
 
+				// 각 parent를 UI에 렌더링
 				Object.keys(toolsByParent).forEach(parent => {
 					const parentLi = document.createElement("li");
 					parentLi.className = "nav-item";
@@ -207,7 +221,6 @@
 					subUl.addEventListener('show.bs.collapse', () => {
 						parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
 					});
-
 					subUl.addEventListener('hide.bs.collapse', () => {
 						parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-up', 'bi-chevron-down');
 					});
@@ -234,8 +247,11 @@
 						subUl.appendChild(item);
 					});
 
-					parentLi.appendChild(subUl);
-					toolList.appendChild(parentLi);
+					// 툴이 하나라도 있을 경우에만 parent 추가
+					if (toolsByParent[parent].length > 0) {
+						parentLi.appendChild(subUl);
+						toolList.appendChild(parentLi);
+					}
 				});
 			});
 	</script>

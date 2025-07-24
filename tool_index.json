@@ -7,6 +7,7 @@
 			"path": "tools/mtg-json-splitter/",
 			"tags": ["json", "split", "mtg"],
 			"enable": true,
+			"desktopOnly": true,
 			"inputs": [
 				{ "label": "파일 선택", "type": "file", "accept": ".json,.txt", "id": "fileInput" },
 				{ "label": "분할 용량 (MB)", "type": "number", "id": "sizeInput", "default": 150 },
@@ -21,6 +22,7 @@
 			"path": "tools/csv-cleaner/",
 			"tags": ["csv", "clean"],
 			"enable": true,
+			"desktopOnly": true,
 			"inputs": [
 				{ "label": "CSV 파일 선택", "type": "file", "accept": ".csv", "id": "csvFile" },
 				{ "label": "헤더 유무", "type": "checkbox", "id": "hasHeader", "default": true },
@@ -34,12 +36,22 @@
 			"path": "tools/gui-card-manager/",
 			"tags": ["gui", "mtg", "desktop"],
 			"enable": true,
+			"desktopOnly": true,
 			"download": "gui-card-manager.zip"
 		},
 		{
 			"name": "cardkingdom-order-sorter",
 			"description": "CardKingdom 주문 내역을 시각적으로 정리하는 도구입니다.",
 			"path": "tools/cardkingdom-order-sorter/",
+			"type": "html",
+			"desktopOnly": true,
+			"enable": true
+		},
+		{
+			"name": "mtg-ability-finder",
+			"parent": "MTG",
+			"description": "MTG 카드의 능력을 찾는 도구입니다.",
+			"path": "tools/mtg-ability-finder/",
 			"type": "html",
 			"enable": true
 		},
