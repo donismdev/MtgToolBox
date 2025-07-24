@@ -73,7 +73,12 @@ const abilityDetails = document.getElementById("abilityDetails");
 const selectedAbility = document.getElementById("selectedAbility");
 const abilityText = document.getElementById("abilityText");
 
-let abilities = {};
+let abilities = {
+			...data.abilities,
+			...data.evergreen,
+			...data.arena,
+			...data.special
+		};
 window.mtgData = {};
 
 fetch('abilities/ability_data.json')
@@ -127,6 +132,8 @@ function showAbility(name) {
 		label = `<span class='badge bg-primary ms-2'>Keyword Action</span>`;
 	} else if (info.type === "keywordAbility") {
 		label = `<span class='badge bg-secondary ms-2'>Keyword Ability</span>`;
+	} else if (mtgData.special && mtgData.special[name]) {
+		label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
 	}
 
 	abilityText.innerHTML = formatText(`<p>${info.text}</p>` + label +
