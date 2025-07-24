@@ -90,15 +90,32 @@
 <script>
 const abilityList = document.getElementById("abilityList");
 const abilityInput = document.getElementById("abilityInput");
-const suggestionBox = document.getElementById("suggestionBox");
 const abilityDetails = document.getElementById("abilityDetails");
 const selectedAbility = document.getElementById("selectedAbility");
 const abilityText = document.getElementById("abilityText");
 
-let abilities = {};
-let currentSuggestions = [];
-let currentSuggestionIndex = -1;
+const suggestionBox = document.createElement("ul");
+suggestionBox.id = "customSuggestions";
+suggestionBox.style.position = "absolute";
+suggestionBox.style.top = "100%";
+suggestionBox.style.left = "0";
+suggestionBox.style.right = "0";
+suggestionBox.style.zIndex = "1000";
+suggestionBox.style.listStyle = "none";
+suggestionBox.style.margin = "0";
+suggestionBox.style.padding = "0";
+suggestionBox.style.backgroundColor = "#fff";
+suggestionBox.style.border = "1px solid #ccc";
+suggestionBox.style.borderTop = "none";
+suggestionBox.style.maxHeight = "200px";
+suggestionBox.style.overflowY = "auto";
+suggestionBox.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.1)";
+suggestionBox.style.display = "none";
 
+abilityInput.parentNode.style.position = "relative";
+abilityInput.parentNode.appendChild(suggestionBox);
+
+let abilities = {};
 window.mtgData = {};
 
 fetch('abilities/ability_data.json')
@@ -129,13 +146,23 @@ function formatText(text) {
 	return text.replace(/\{\{([^}]+)\}\}/g, (match, p1) => {
 		const key = p1.toLowerCase();
 		const ref = abilities[key] || mtgData.abilities?.[key];
-		return ref ? `<span title="${ref.text}" style="text-decoration: underline dotted; cursor: help;">${p1}</span>` : p1;
+		return ref && ref.text ? `<span title="${ref.text}" style="text-decoration: underline dotted; cursor: help;">${p1}</span>` : p1;
 	});
 }
 
 function showAbility(name) {
-	const info = abilities[name];
-	if (!info) return;
+	let info = abilities[name];
+
+	// ❗ info 자체가 없는 경우
+	if (info === undefined) {
+		console.warn(`No info found for "${name}"`);
+		return;
+	}
+
+	// ✅ string이면 객체로 변환
+	if (typeof info === "string") {
+		info = { text: info };
+	}
 
 	selectedAbility.innerText = name;
 
@@ -170,77 +197,75 @@ function resetView() {
 }
 
 abilityInput.addEventListener("keydown", function (e) {
+	const items = suggestionBox.querySelectorAll("li");
+	let index = Array.from(items).findIndex(item => item.classList.contains("selected"));
+
 	if (e.key === "ArrowDown") {
-		if (currentSuggestionIndex < currentSuggestions.length - 1) {
-			currentSuggestionIndex++;
-			highlightSuggestion();
+		if (items.length > 0) {
+			e.preventDefault();
+			if (index >= 0) items[index].classList.remove("selected");
+			index = (index + 1) % items.length;
+			items[index].classList.add("selected");
 		}
-		e.preventDefault();
 	} else if (e.key === "ArrowUp") {
-		if (currentSuggestionIndex > 0) {
-			currentSuggestionIndex--;
-			highlightSuggestion();
+		if (items.length > 0) {
+			e.preventDefault();
+			if (index >= 0) items[index].classList.remove("selected");
+			index = (index - 1 + items.length) % items.length;
+			items[index].classList.add("selected");
 		}
-		e.preventDefault();
 	} else if (e.key === "Enter") {
-		if (currentSuggestionIndex >= 0) {
-			const name = currentSuggestions[currentSuggestionIndex];
-			abilityInput.value = name;
-			showAbility(name);
+		if (index >= 0) {
+			e.preventDefault();
+			items[index].click();
 		} else {
 			const query = abilityInput.value.toLowerCase();
-			if (abilities[query]) showAbility(query);
+			const matched = Object.keys(abilities).filter(name => name.toLowerCase() === query);
+			if (matched.length === 1) {
+				showAbility(matched[0]);
+				suggestionBox.style.display = "none";
+			}
 		}
-		suggestionBox.style.display = "none";
 	}
 });
-
-function highlightSuggestion() {
-	const items = suggestionBox.querySelectorAll(".suggestion-item");
-	items.forEach((el, idx) => {
-		el.classList.toggle("active", idx === currentSuggestionIndex);
-	});
-}
 
 function filterAbilities() {
 	const query = abilityInput.value.toLowerCase();
 	suggestionBox.innerHTML = "";
-	currentSuggestions = [];
-	currentSuggestionIndex = -1;
 
 	if (query === "") {
 		suggestionBox.style.display = "none";
 		return;
 	}
 
-	const matches = Object.keys(abilities).filter(name =>
-		name.toLowerCase().startsWith(query)
-	);
+	const matched = Object.keys(abilities).filter(name => name.toLowerCase().startsWith(query));
+	const exactMatch = matched.find(name => name.toLowerCase() === query);
 
-	currentSuggestions = matches.slice(0, 10);
+	// ✅ 정확히 1개일 때만 자동 선택
+	if (exactMatch && matched.length === 1) {
+		showAbility(exactMatch);
+		suggestionBox.style.display = "none";
+		return;
+	}
 
-	currentSuggestions.forEach((name, idx) => {
+	matched.forEach(name => {
 		const li = document.createElement("li");
-		li.className = "suggestion-item";
-		li.textContent = name;
+		li.innerText = name;
+		li.style.padding = "8px 12px";
+		li.style.cursor = "pointer";
+		li.onmouseover = () => li.classList.add("selected");
+		li.onmouseout = () => li.classList.remove("selected");
 		li.onclick = () => {
 			abilityInput.value = name;
 			showAbility(name);
+			suggestionBox.style.display = "none";
 		};
 		suggestionBox.appendChild(li);
 	});
 
-	if (
-		abilities[query] &&
-		matches.length === 1 &&
-		matches[0].toLowerCase() === query
-	) {
-		showAbility(query);
-		suggestionBox.style.display = "none";
-	} else {
-		suggestionBox.style.display = currentSuggestions.length > 0 ? "block" : "none";
-	}
+	suggestionBox.style.display = "block";
 }
 </script>
+
 </body>
 </html>
