@@ -80,6 +80,72 @@
 			padding: 12px;
 		}
 	}
+
+	/* 결과 테이블 개선 스타일 */
+		.result-table {
+			width: 100%;
+			max-width: 600px;
+			margin: auto;
+			font-size: 15px;
+			text-align: center;
+			border-collapse: collapse;
+			margin-bottom: 1.5rem;
+			box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+		}
+		.result-table th, .result-table td {
+			padding: 8px;
+			border: 1px solid #ccc;
+			vertical-align: middle;
+		}
+		.result-table th {
+			background-color: #f0f0f0;
+			font-weight: bold;
+		}
+		.result-table td.name {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 0.3em;
+			font-weight: bold;
+		}
+		.result-table td.rank,
+		.result-table td.elo,
+		.result-table td.winrate {
+			text-align: center;
+			font-weight: bold;
+		}
+		.result-table td.winrate-high {
+			color: #198754;
+		}
+		.result-table td.winrate-low {
+			color: #dc3545;
+		}
+		tr.full-win {
+			background: linear-gradient(270deg, #fffbe6, #ffe6e6, #e6f7ff, #fffbe6);
+			background-size: 600% 600%;
+			animation: bgSlide 5s ease infinite;
+		}
+		.full-win .crown {
+			animation: crownScale 1.5s ease-in-out infinite;
+			font-size: 1.1em;
+		}
+		@keyframes bgSlide {
+			0% { background-position: 0% 50%; }
+			50% { background-position: 100% 50%; }
+			100% { background-position: 0% 50%; }
+		}
+		@keyframes crownScale {
+			0% { transform: scale(1); }
+			50% { transform: scale(1.25); }
+			100% { transform: scale(1); }
+		}
+		@media (max-width: 480px) {
+			.result-table {
+				font-size: 14px;
+			}
+		}
+
+
 	</style>
 </head>
 <body class="p-4">
@@ -117,16 +183,17 @@
 			<button class="btn btn-warning" id="viewResultBtn" disabled>결과 보기</button>
 		</div>
 	</div>
-
+	
 	<div id="resultView" class="hidden">
 		<h2>최종 결과</h2>
-		<div id="resultSummary" class="mb-4">결과 출력 예정</div>
+		<div id="resultSummary" class="mb-4"></div>
 		<div>
 			<button class="btn btn-primary me-2" id="replayBtn">동일 설정으로 다시 하기</button>
 			<button class="btn btn-secondary me-2" id="editLastResultBtn">결과 재기입</button>
 			<button class="btn btn-secondary" id="resetBtn">처음부터 다시</button>
 		</div>
 	</div>
+
 
 	<script>
 		const setupView = document.getElementById("setupView");
@@ -437,16 +504,27 @@
 			}
 			const resultArray = [...scores.values()].sort((a, b) => b.elo - a.elo);
 			let html = `
-				<table class="table table-bordered table-striped">
+				<table class="result-table">
 					<thead>
 						<tr>
-							<th>순위</th><th>이름</th><th>경기수</th><th>승</th><th>패</th><th>무</th><th>승률(%)</th><th>ELO</th>
+							<th>순위</th><th>이름</th><th>경기수</th><th>승</th><th>패</th><th>무</th><th>승률</th><th>ELO</th>
 						</tr>
 					</thead><tbody>
 			`;
 			resultArray.forEach((entry, idx) => {
 				const winRate = entry.played > 0 ? ((entry.win + 0.5 * entry.draw) / entry.played * 100).toFixed(1) : "0.0";
-				html += `<tr><td>${idx + 1}</td><td>${entry.name}</td><td>${entry.played}</td><td>${entry.win}</td><td>${entry.lose}</td><td>${entry.draw}</td><td>${winRate}</td><td>${Math.round(entry.elo)}</td></tr>`;
+				const winrateClass = winRate >= 100 ? "winrate-high" : winRate <= 33 ? "winrate-low" : "";
+				const isFullWin = entry.played > 0 && entry.win === entry.played;
+				html += `<tr class="${isFullWin ? 'full-win' : ''}">
+					<td class="rank">${idx + 1}</td>
+					<td class="name">${entry.name}${isFullWin ? ' <span class="crown">👑</span>' : ''}</td>
+					<td>${entry.played}</td>
+					<td>${entry.win}</td>
+					<td>${entry.lose}</td>
+					<td>${entry.draw}</td>
+					<td class="winrate ${winrateClass}">${winRate}%</td>
+					<td class="elo">${Math.round(entry.elo)}</td>
+				</tr>`;
 			});
 			html += "</tbody></table>";
 			resultSummary.innerHTML = html;
