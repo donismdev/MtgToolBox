@@ -1,45 +1,93 @@
 body {
-	font-family: sans-serif;
-	margin: 0;
-	display: flex;
-	min-height: 100vh;
+    height: 100vh; /* 전체 뷰포트 높이 */
+    overflow: hidden; /* 전체 페이지 스크롤 방지 */
 }
 
 #sidebar {
-	width: 250px;
-	background: #f3f3f3;
-	border-right: 1px solid #ccc;
-	overflow-y: auto;
-	transition: transform 0.3s ease;
+    width: 240px; /* 너비 축소 */
+    height: 100vh; /* 사이드바 높이 고정 */
+    overflow-y: auto; /* 사이드바 내부 스크롤 */
+    border-right: 1px solid #dee2e6; /* 시각적 구분선 */
 }
 
 #content {
-	flex: 1;
-	padding: 20px;
-	transition: margin-left 0.3s ease;
+    flex: 1;
+    overflow-y: auto; /* 콘텐츠 영역 스크롤 */
 }
 
-/* ✅ 사이드바 숨김 시 전체화면 확장 */
-.sidebar-hidden #sidebar {
-	transform: translateX(-100%);
+.nav-link {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    line-height: 1.2;
 }
 
-.sidebar-hidden #content {
-	margin-left: 0;
+.nav-item {
+    margin-bottom: 5px; /* 목차 항목 간 간격 추가 */
 }
 
-#toggleBtn {
-	position: fixed;
-	top: 10px;
-	left: 250px;
-	z-index: 999;
-	background: #ccc;
-	border: none;
-	cursor: pointer;
-	padding: 5px;
-	transition: left 0.3s ease;
+.collapse-icon {
+    width: 16px; /* 아이콘 너비 고정 */
+    text-align: center;
 }
 
-.sidebar-hidden #toggleBtn {
-	left: 0;
+/* 텍스트 애니메이션 스타일 */
+.tool-link-text-container {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis; /* 텍스트 넘침 방지 */
+    display: inline-block;
+    flex-grow: 1; /* 남은 공간 채우기 */
+    /* 아이콘 및 여백 고려하여 최대 너비 설정 */
+    max-width: calc(100% - 35px);
+}
+
+.tool-link-text {
+    display: inline-block;
+    /* transition 속성은 JavaScript에서 동적으로 제어 */
+}
+
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    background-color: #0d6efd;
+}
+
+.nav-link.active-tool {
+    background-color: #e9ecef; /* 선택된 툴 하이라이트 색상 */
+    color: #000; /* 선택된 툴 텍스트 색상 */
+}
+
+.card-header {
+    position: relative; /* 툴팁 위치의 기준점 */
+    padding-top: 0.2rem; /* 상단 패딩 추가 조정 */
+    padding-bottom: 0.2rem; /* 하단 패딩 추가 조정 */
+}
+
+.card-header h2 {
+    font-size: 1.25rem; /* 캡션 제목 크기 줄임 */
+    margin-bottom: 0;
+}
+
+.card-body {
+    padding: 0; /* card-body 패딩 0으로 설정 */
+}
+
+.card-text {
+    font-size: 0.85rem; /* 설명 텍스트 크기 줄임 */
+    color: #6c757d; /* 설명 텍스트 색상 변경 */
+}
+
+iframe {
+    min-height: 85vh;
+}
+
+.custom-tooltip {
+    display: none;
+    position: fixed;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    pointer-events: none; /* 툴팁이 마우스 이벤트를 가로채지 않도록 */
+    z-index: 1070; /* 다른 요소들 위에 표시되도록 z-index 설정 */
 }
