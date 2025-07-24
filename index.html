@@ -1,46 +1,131 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>MtgToolBox</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-	<link rel="stylesheet" href="assets/style.css">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+	<link rel="stylesheet" href="assets/style.css" />
 	<style>
+		body {
+			overflow-x: hidden;
+		}
+
+		#sidebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 280px;
+			height: 100vh;
+			background-color: #f8f9fa;
+			transform: translateX(-100%);
+			transition: transform 0.3s ease-in-out;
+			z-index: 1050;
+			box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
+			padding: 1rem;
+		}
+
+		#sidebar.show {
+			transform: translateX(0);
+		}
+
+		#sidebar .close-btn {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			border: none;
+			background: transparent;
+			font-size: 1.5rem;
+			color: #333;
+		}
+
+		#sidebar-overlay {
+			position: fixed;
+			inset: 0;
+			background-color: rgba(0, 0, 0, 0.3);
+			z-index: 1040;
+			display: none;
+		}
+
+		#sidebar-overlay.active {
+			display: block;
+		}
+
+		#toggleSidebarBtn {
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			z-index: 1100;
+			display: none;
+		}
+
+		#content {
+			padding: 2rem;
+			margin-left: 0;
+		}
 	</style>
 </head>
 <body>
-	<div class="d-flex">
-		<div id="sidebar" class="d-flex flex-column flex-shrink-0 p-2 bg-light">
-			<a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
-				<span class="fs-4">MtgToolBox</span>
-			</a>
-			<hr>
-			<ul class="nav nav-pills flex-column mb-auto" id="tool-list"></ul>
-			<hr>
-			<div class="dropdown">
-				<a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-					<strong>v1.0.0</strong>
-				</a>
-				<ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
-					<li><a class="dropdown-item" href="https://github.com/seonglae/MtgToolbox" target="_blank">GitHub</a></li>
-				</ul>
-			</div>
-		</div>
+	<!-- 사이드바 오버레이 -->
+	<div id="sidebar-overlay" class="active" onclick="toggleSidebar(false)"></div>
 
-		<div id="content" class="p-4">
-			<h1 class="display-5">툴을 선택해주세요</h1>
-			<p class="lead">왼쪽 사이드바에서 툴을 선택하여 시작하세요.</p>
+	<!-- 사이드바: 기본 show 상태 -->
+	<div id="sidebar" class="show">
+		<button class="close-btn" onclick="toggleSidebar(false)">&times;</button>
+		<a href="/" class="d-flex align-items-center mb-3 link-dark text-decoration-none">
+			<span class="fs-4">MtgToolBox</span>
+		</a>
+		<hr />
+		<ul class="nav nav-pills flex-column mb-auto" id="tool-list"></ul>
+		<hr />
+		<div class="dropdown">
+			<a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
+				<strong>v1.0.0</strong>
+			</a>
+			<ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
+				<li><a class="dropdown-item" href="https://github.com/seonglae/MtgToolbox" target="_blank">GitHub</a></li>
+			</ul>
 		</div>
 	</div>
+
+	<!-- 콘텐츠 -->
+	<div id="content">
+		<h1 class="display-5">툴을 선택해주세요</h1>
+		<p class="lead">왼쪽 목차를 열어 툴을 선택하세요.</p>
+	</div>
+
+	<!-- 목차 열기 버튼 (처음엔 숨김) -->
+	<button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
+		<i class="bi bi-list fs-4"></i>
+	</button>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
 		const toolIndexUrl = "tool_index.json";
 		const toolList = document.getElementById("tool-list");
 		const content = document.getElementById("content");
-		const adContainer = document.getElementById("ad-container");
+
+		const sidebar = document.getElementById("sidebar");
+		const sidebarOverlay = document.getElementById("sidebar-overlay");
+		const toggleBtn = document.getElementById("toggleSidebarBtn");
+
+		function toggleSidebar(show) {
+			if (show) {
+				sidebar.classList.add("show");
+				sidebarOverlay.classList.add("active");
+				toggleBtn.style.display = "none";
+			} else {
+				sidebar.classList.remove("show");
+				sidebarOverlay.classList.remove("active");
+				toggleBtn.style.display = "block";
+			}
+		}
+
+		// 초기 상태: 목차 보여주기
+		toggleSidebar(true);
+
+		toggleBtn.addEventListener("click", () => toggleSidebar(true));
 
 		function getIconForTool(tool) {
 			if (tool.tags?.includes("mtg")) return "bi-box-seam";
@@ -61,7 +146,7 @@
 
 			if (tool.type === "html") {
 				const htmlPath = `${tool.path}${tool.name}.html`;
-				html += `<iframe src="${htmlPath}" class="w-100 h-100 border-0"></iframe>`;
+				html += `<iframe src="${htmlPath}" class="w-100" style="height: 80vh; border: none;"></iframe>`;
 			} else {
 				html += `<form id="toolForm">`;
 
@@ -89,9 +174,8 @@
 				}
 			}
 
-			content.className = 'pt-4 px-4 pb-4';
 			content.innerHTML = html;
-
+			toggleSidebar(false); // 도구 클릭 시 닫기
 		}
 
 		fetch(toolIndexUrl)
@@ -107,6 +191,7 @@
 				Object.keys(toolsByParent).forEach(parent => {
 					const parentLi = document.createElement("li");
 					parentLi.className = "nav-item";
+
 					const parentLink = document.createElement("a");
 					parentLink.href = `#collapse-${parent.replace(/\s/g, '')}`;
 					parentLink.className = "nav-link link-dark";
@@ -135,7 +220,7 @@
 						const link = document.createElement('a');
 						link.href = '#';
 						link.className = 'nav-link link-dark';
-						link.innerHTML = `<i class="bi ${icon} me-2"></i><span class="tool-link-text-container"><span class="tool-link-text">${tool.name}</span></span>`;
+						link.innerHTML = `<i class="bi ${icon} me-2"></i>${tool.name}`;
 						item.appendChild(link);
 
 						link.onclick = (e) => {
