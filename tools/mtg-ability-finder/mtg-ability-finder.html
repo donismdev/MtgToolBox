@@ -24,6 +24,24 @@
 			z-index: 4;
 			margin-bottom: 0.2rem;
 		}
+		#customSuggestions {
+			position: absolute;
+			width: 100%;
+			background-color: white;
+			border: 1px solid #ccc;
+			border-radius: 0.3rem;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			z-index: 3;
+		}
+		#customSuggestions li {
+			list-style: none;
+			padding: 0.8rem 1rem;
+			cursor: pointer;
+			border-bottom: 1px solid #eee;
+		}
+		#customSuggestions li:hover {
+			background-color: #f2f2f2;
+		}
 		#abilityList {
 			margin-top: 2rem;
 			display: flex;
@@ -54,16 +72,12 @@
 		#resetBtn {
 			margin-top: 0.5rem;
 		}
-		#customSuggestions {
-			margin-top: 0.2rem;
-			z-index: 3;
-		}
 	</style>
 </head>
 <body>
 	<div id="searchSection">
-		<input type="text" id="abilityInput" class="form-control mb-3" placeholder="Enter MTG ability keyword (e.g., trample, flash)" oninput="filterAbilities()" />
-		<ul id="customSuggestions" class="list-group position-absolute w-100 z-3" style="top:100%; display: none;"></ul>
+		<input type="text" id="abilityInput" class="form-control mb-1" placeholder="Enter MTG ability keyword" oninput="filterAbilities()" autocomplete="off" />
+		<ul id="customSuggestions"></ul>
 		<div id="divider"></div>
 		<div id="abilityList"></div>
 		<div id="abilityDetails">
@@ -76,13 +90,23 @@
 <script>
 const abilityList = document.getElementById("abilityList");
 const abilityInput = document.getElementById("abilityInput");
+const suggestionBox = document.getElementById("customSuggestions");
 const abilityDetails = document.getElementById("abilityDetails");
 const selectedAbility = document.getElementById("selectedAbility");
 const abilityText = document.getElementById("abilityText");
-const suggestionBox = document.getElementById("customSuggestions");
 
 let abilities = {};
 window.mtgData = {};
+
+abilityInput.addEventListener("keydown", function (e) {
+	if (e.key === "Enter") {
+		const query = abilityInput.value.toLowerCase();
+		if (abilities[query]) {
+			showAbility(query);
+			suggestionBox.style.display = "none";
+		}
+	}
+});
 
 fetch('abilities/ability_data.json')
 	.then(res => res.json())
@@ -91,14 +115,9 @@ fetch('abilities/ability_data.json')
 		abilities = {
 			...data.abilities,
 			...data.evergreen,
-			...data.arena
+			...data.arena,
+			...data.special
 		};
-		Object.entries(data.special).forEach(([name, text]) => {
-			abilities[name] = {
-				text: text,
-				type: "special"
-			};
-		});
 		renderAbilityList();
 	});
 
@@ -122,11 +141,8 @@ function formatText(text) {
 }
 
 function showAbility(name) {
-	suggestionBox.style.display = "none";
-
 	const info = abilities[name];
-	if (!info || !info.text) return;
-
+	if (!info) return;
 	selectedAbility.innerText = name;
 
 	let label = "";
@@ -140,7 +156,7 @@ function showAbility(name) {
 		label = `<span class='badge bg-primary ms-2'>Keyword Action</span>`;
 	} else if (info.type === "keywordAbility") {
 		label = `<span class='badge bg-secondary ms-2'>Keyword Ability</span>`;
-	} else if (info.type === "special") {
+	} else if (mtgData.special && mtgData.special[name]) {
 		label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
 	}
 
@@ -149,47 +165,60 @@ function showAbility(name) {
 	);
 	abilityList.style.display = "none";
 	abilityDetails.style.display = "block";
+	suggestionBox.style.display = "none"; // ✅ 자동완성 숨기기
 }
 
 function resetView() {
 	abilityInput.value = "";
-	suggestionBox.style.display = "none";
 	abilityDetails.style.display = "none";
 	abilityList.style.display = "flex";
+	suggestionBox.style.display = "none";
 }
 
 function filterAbilities() {
 	const query = abilityInput.value.toLowerCase();
-	const matchedKey = Object.keys(abilities).find(key => key.toLowerCase() === query);
-
-	if (matchedKey) {
-		showAbility(matchedKey);
-		return;
-	}
-
-	const suggestions = Object.keys(abilities)
-		.filter(key => key.toLowerCase().includes(query))
-		.slice(0, 10);
-
 	suggestionBox.innerHTML = "";
-	if (suggestions.length === 0 || query === "") {
+
+	if (query === "") {
 		suggestionBox.style.display = "none";
 		return;
 	}
 
-	suggestions.forEach(name => {
-		const li = document.createElement("li");
-		li.className = "list-group-item list-group-item-action";
-		li.innerText = name;
-		li.onclick = () => {
-			abilityInput.value = name;
-			suggestionBox.style.display = "none";
-			showAbility(name);
-		};
-		suggestionBox.appendChild(li);
-	});
+	const allMatches = Object.keys(abilities).filter(name =>
+		name.toLowerCase().startsWith(query)
+	);
 
-	suggestionBox.style.display = "block";
+	const suggestions = allMatches
+		.filter(name => name.toLowerCase() !== query)
+		.slice(0, 10);
+
+	// ✅ 자동 선택: query와 정확히 일치하고 전체 후보도 그거 하나일 때만
+	if (
+		abilities[query] !== undefined &&
+		allMatches.length === 1 &&
+		allMatches[0].toLowerCase() === query
+	) {
+		showAbility(query);
+		suggestionBox.style.display = "none";
+		return;
+	}
+
+	// 추천 리스트 표시
+	if (suggestions.length > 0) {
+		suggestions.forEach(name => {
+			const li = document.createElement("li");
+			li.innerText = name;
+			li.onclick = () => {
+				abilityInput.value = name;
+				showAbility(name);
+				suggestionBox.style.display = "none";
+			};
+			suggestionBox.appendChild(li);
+		});
+		suggestionBox.style.display = "block";
+	} else {
+		suggestionBox.style.display = "none";
+	}
 }
 </script>
 </body>
