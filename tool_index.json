@@ -52,8 +52,10 @@
 			"parent": "MTG",
 			"description": "MTG 카드의 능력을 찾는 도구입니다.",
 			"path": "tools/mtg-ability-finder/",
-			"type": "html",
-			"enable": true
+			"type": ["html", "html_modal"],
+			"enable": true,
+            "modalIcon": "A",
+            "modalIconColor": "#6c757d"
 		},
 		{
 			"name": "swiss-tool",
@@ -62,6 +64,16 @@
 			"path": "tools/swiss-tool/",
 			"type": "html",
 			"enable": true
+		},
+        {
+			"name": "mtg-life-counter",
+			"parent": "MTG",
+			"description": "모바일 친화적인 매직 더 개더링 라이프 카운터입니다.",
+			"path": "tools/mtg-life-counter/",
+			"type": ["html", "html_modal"],
+			"enable": true,
+            "modalIcon": "L",
+            "modalIconColor": "#dc3545"
 		}
 	]
 }

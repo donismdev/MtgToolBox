@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>MTG Life Counter</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+        }
+        .player-area {
+            width: 100%; height: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: #2c3e50;
+            color: white;
+        }
+        .player-area.opponent { transform: rotate(180deg); }
+        .life-total {
+            font-size: 10vh;
+            font-weight: bold;
+        }
+        .button-area {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+        .increase-button, .decrease-button {
+            position: absolute;
+            left: 0; width: 100%;
+            height: 50%;
+            z-index: 1; /* 라이프 증감 버튼은 플레이어 영역 내에서 가장 위에 */
+        }
+        .increase-button { top: 0; }
+        .decrease-button { bottom: 0; }
+
+        #center-buttons {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 990; /* 오버레이보다 아래 (오버레이가 없을 때만 눌림) */
+        }
+        #center-buttons button {
+            font-size: 1.2rem;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+		#center-buttons button.confirm-animation {
+            font-size: 2rem; /* 더 크게 */
+            font-weight: bold; /* 볼드체 */
+            color: #e74c3c; /* 빨간색 계열로 강조 (선택 사항) */
+            background-color: #f9f9f9; /* 배경색 변경 (선택 사항) */
+            animation: pulse 1s infinite alternate; /* pulse 애니메이션 적용 */
+            transition: all 0.2s ease-in-out; /* 부드러운 전환 효과 */
+        }
+
+		/* pulse 애니메이션 정의 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        #dice-area {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: none; /* 초기에는 숨김 */
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none; /* 오버레이가 클릭을 처리하므로 주사위 영역 자체는 클릭 불가 */
+            z-index: 998; /* 오버레이 바로 아래 */
+        }
+        .dice-row {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .dice {
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background 0.2s ease;
+        }
+        .dice.finalized {
+            background: #cce5ff;
+            font-weight: bold;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 900; /* 중앙 버튼보다 낮은 z-index */
+            display: none;
+            pointer-events: none; /* 기본적으로는 클릭을 통과시킴. 필요할 때 'auto'로 변경하여 막음 */
+        }
+
+        #settings-panel, .dice-menu {
+            z-index: 1000; /* 오버레이 위로 */
+            pointer-events: auto; /* 자체적으로 클릭 가능하게 */
+        }
+        #settings-panel {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            display: none;
+            min-width: 250px;
+            text-align: center;
+        }
+        #settings-panel input {
+            margin: 0.5rem 0;
+            width: 80%;
+            padding: 0.4rem;
+            font-size: 1rem;
+            border-radius: 0.4rem;
+            border: 1px solid #ccc;
+        }
+        #settings-panel button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+        }
+        .dice-menu-label {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .dice-menu {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+            z-index: 1000; /* 오버레이 위로 */
+            width: max-content;
+            transform: translateX(-50%); /* 중앙 정렬을 위한 추가 */
+        }
+
+		.dice-option {
+            margin: 0.3rem;
+            padding: 0.5rem 1rem; /* 패딩을 늘려 버튼처럼 보이게 */
+            background: #444; /* 어두운 배경색 */
+            color: white; /* 글자색 흰색 */
+            border-radius: 0.3rem;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+            border: 1px solid #555; /* 테두리 추가 */
+            transition: background 0.2s ease, transform 0.1s ease; /* 호버/클릭 애니메이션 */
+        }
+
+        .dice-option:hover {
+            background: #666; /* 호버 시 색상 변경 */
+            transform: translateY(-1px); /* 살짝 위로 뜨는 효과 */
+        }
+
+        .dice-option:active {
+            transform: translateY(0); /* 클릭 시 원상 복귀 */
+            background: #333; /* 클릭 시 더 어둡게 */
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay" class="overlay"></div>
+    <div id="diceCountMenu" class="dice-menu"></div>
+    <div id="diceSidesMenu" class="dice-menu"></div>
+
+    <div class="player-area opponent" id="opponent-area">
+        <div class="life-total" id="opponent-life">20</div>
+        <div class="button-area">
+            <div class="increase-button"></div>
+            <div class="decrease-button"></div>
+        </div>
+    </div>
+
+    <div class="player-area" id="player-area">
+        <div class="life-total" id="player-life">20</div>
+        <div class="button-area">
+            <div class="increase-button"></div>
+            <div class="decrease-button"></div>
+        </div>
+    </div>
+
+    <div id="center-buttons">
+        <button id="reset-button">라이프 리셋</button>
+        <button id="dice-button">주사위</button>
+        <button id="settings-button">설정</button>
+    </div>
+
+    <div id="settings-panel">
+        <h3>설정</h3>
+        <label>최대 라이프 수치</label><br>
+        <input type="number" id="lifeMaxInput" min="1" /><br>
+        <label>주사위 눈 수 (4~20)</label><br>
+        <input type="number" id="diceSidesInput" min="4" max="20" /><br>
+        <button id="save-settings-button">저장</button>
+    </div>
+
+    <div id="dice-area">
+        <div class="dice-row" id="dice-row-top"></div>
+        <div class="dice-row" id="dice-row-bottom"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const global = window.parent || window;
+            if (!global.modal_data) global.modal_data = {};
+            if (!global.session_data) global.session_data = {};
+            const params = new URLSearchParams(window.location.search);
+            const isModal = params.get("modal") === "true";
+            const dataSpace = isModal ? global.modal_data : global.session_data;
+
+            if (!dataSpace.settings) dataSpace.settings = { lifeMax: 20, diceSides: 20 };
+            if (!dataSpace.lifeCounter) {
+                dataSpace.lifeCounter = {
+                    player: dataSpace.settings.lifeMax,
+                    opponent: dataSpace.settings.lifeMax
+                };
+            }
+
+            let playerLife = dataSpace.lifeCounter.player;
+            let opponentLife = dataSpace.lifeCounter.opponent;
+
+            const playerLifeElement = document.getElementById('player-life');
+            const opponentLifeElement = document.getElementById('opponent-life');
+
+            const resetButton = document.getElementById('reset-button');
+            const diceButton = document.getElementById('dice-button');
+            const settingsButton = document.getElementById('settings-button');
+            const saveSettingsButton = document.getElementById('save-settings-button');
+
+            const diceCountMenu = document.getElementById('diceCountMenu');
+            const diceSidesMenu = document.getElementById('diceSidesMenu');
+            const overlay = document.getElementById('overlay');
+            const settingsPanel = document.getElementById('settings-panel');
+            const diceArea = document.getElementById('dice-area');
+
+            let activeUI = null; // 현재 활성화된 UI (null, 'resetConfirm', 'diceMenu', 'settings', 'diceRolling')
+
+            // 오버레이 관련 함수
+            function showOverlay(blockClicks = true) {
+                overlay.style.display = 'block';
+                overlay.style.pointerEvents = blockClicks ? 'auto' : 'none';
+            }
+
+            function hideOverlay() {
+                overlay.style.display = 'none';
+                overlay.style.pointerEvents = 'none';
+            }
+
+            // 모든 오버레이 및 메뉴 숨기기 (현재 활성화된 UI 제외)
+             function hideAllOverlays() {
+                settingsPanel.style.display = 'none';
+                diceCountMenu.style.display = 'none';
+                diceSidesMenu.style.display = 'none';
+                diceArea.style.display = 'none'; // 주사위 영역 숨김
+                document.getElementById('dice-row-top').innerHTML = '';
+                document.getElementById('dice-row-bottom').innerHTML = '';
+
+                // 리셋 버튼 텍스트 원상 복구 및 애니메이션 클래스 제거
+                resetButton.textContent = '라이프 리셋';
+                resetButton.classList.remove('confirm-animation'); // 애니메이션 클래스 제거
+
+                activeUI = null; // 활성 UI 없음
+                hideOverlay(); // 오버레이도 숨김
+            }
+
+            // 오버레이 클릭 이벤트: 특정 조건에서 닫히도록
+            overlay.addEventListener('click', () => {
+                // 주사위 굴림 중이든 아니든 오버레이 클릭 시 무조건 닫도록 처리
+                if (activeUI === 'diceRolling') {
+                    // 굴림 중인 모든 주사위 애니메이션 중단 (선택 사항, 필요시 구현)
+                    // 예를 들어, 모든 .dice 요소에 저장된 animationId를 clearTimeout
+                    document.querySelectorAll('.dice').forEach(die => {
+                        if (die.animationId) {
+                            clearTimeout(die.animationId);
+                        }
+                    });
+                }
+                hideAllOverlays(); // 모든 UI 숨김
+            });
+
+
+            // 라이프 증감 버튼 이벤트
+            document.querySelector('#opponent-area .increase-button')
+                .addEventListener('click', () => changeLife('opponent', 1));
+            document.querySelector('#opponent-area .decrease-button')
+                .addEventListener('click', () => changeLife('opponent', -1));
+            document.querySelector('#player-area .increase-button')
+                .addEventListener('click', () => changeLife('player', 1));
+            document.querySelector('#player-area .decrease-button')
+                .addEventListener('click', () => changeLife('player', -1));
+
+            // 중앙 버튼 이벤트
+            resetButton.addEventListener('click', MtgLifeReset);
+            diceButton.addEventListener('click', () => {
+                hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
+                showDiceMenu(diceCountMenu, [1, 2, 3, 4, 5, 6], 'count');
+                showDiceMenu(diceSidesMenu, [4, 6, 8, 10, 12, 20], 'sides');
+                activeUI = 'diceMenu'; // 주사위 메뉴 활성화 상태로 설정
+                showOverlay(true); // 오버레이로 클릭 방지
+            });
+            settingsButton.addEventListener('click', openSettings);
+            saveSettingsButton.addEventListener('click', applySettings);
+
+            // 라이프 값 업데이트
+            function updateDisplay() {
+                playerLifeElement.textContent = playerLife;
+                opponentLifeElement.textContent = opponentLife;
+            }
+
+            // 라이프 변경
+            function changeLife(player, amount) {
+                // 어떤 UI도 활성화되어 있지 않을 때만 라이프 변경 허용
+                if (activeUI !== null) {
+                    return;
+                }
+                if (player === 'player') {
+                    playerLife += amount;
+                    dataSpace.lifeCounter.player = playerLife;
+                } else {
+                    opponentLife += amount;
+                    dataSpace.lifeCounter.opponent = opponentLife;
+                }
+                updateDisplay();
+            }
+
+            // 라이프 리셋
+            function MtgLifeReset() {
+                if (activeUI === 'resetConfirm') {
+                    // 이미 확인 상태이고 다시 눌렀을 때
+                    playerLife = dataSpace.settings.lifeMax;
+                    opponentLife = dataSpace.settings.lifeMax;
+                    dataSpace.lifeCounter = {
+                        player: playerLife,
+                        opponent: opponentLife
+                    };
+                    updateDisplay();
+                    hideAllOverlays(); // 리셋 후 모든 UI 숨김
+                } else {
+                    // 첫 클릭 시
+                    hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
+
+                    // '확인' 버튼 스타일 및 애니메이션 적용
+                    resetButton.textContent = '확인'; // 버튼 텍스트 변경
+                    resetButton.classList.add('confirm-animation'); // 애니메이션 클래스 추가
+
+                    activeUI = 'resetConfirm'; // 리셋 확인 상태로 변경
+                    showOverlay(true); // 오버레이로 클릭 방지
+                }
+            }
+
+            // 설정 패널 열기
+            function openSettings() {
+                hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
+                document.getElementById('lifeMaxInput').value = dataSpace.settings.lifeMax;
+                document.getElementById('diceSidesInput').value = dataSpace.settings.diceSides;
+                settingsPanel.style.display = 'block';
+                activeUI = 'settings'; // 설정 UI 활성화 상태로 설정
+                showOverlay(true); // 오버레이로 클릭 방지
+            }
+
+            // 설정 적용
+            function applySettings() {
+                const newLife = parseInt(document.getElementById('lifeMaxInput').value);
+                const newSides = parseInt(document.getElementById('diceSidesInput').value);
+                
+                let settingsChanged = false;
+
+                if (!isNaN(newLife) && newLife > 0) {
+                    if (dataSpace.settings.lifeMax !== newLife) {
+                        dataSpace.settings.lifeMax = newLife;
+                        settingsChanged = true;
+                    }
+                } else {
+                    alert("유효한 최대 라이프 수치를 입력해주세요 (1 이상).");
+                    return;
+                }
+                
+                if (!isNaN(newSides) && newSides >= 4 && newSides <= 20) {
+                    if (dataSpace.settings.diceSides !== newSides) {
+                        dataSpace.settings.diceSides = newSides;
+                        settingsChanged = true;
+                    }
+                } else {
+                    alert("주사위 눈 수는 4에서 20 사이로 입력해주세요.");
+                    return;
+                }
+
+                if (settingsChanged) {
+                    MtgLifeReset(); // 설정 변경 후 라이프 리셋 (초기값으로)
+                }
+                hideAllOverlays(); // 설정 저장 후 모든 UI 숨김
+            }
+
+            // 주사위 메뉴 표시
+            function showDiceMenu(container, options, type) {
+                container.innerHTML = ''; // 기존 내용 삭제
+
+                const label = document.createElement('div');
+                label.className = 'dice-menu-label';
+                label.textContent = type === 'count' ? '굴릴 주사위 개수 선택' : '주사위 면 수 설정';
+                container.appendChild(label);
+
+                options.forEach(option => {
+                    const div = document.createElement('div');
+                    div.className = 'dice-option';
+                    div.textContent = option;
+                    div.addEventListener('click', () => {
+                        if (type === 'count') {
+                            hideAllOverlays(); // 메뉴 숨기고 오버레이도 숨김
+                            rollDiceVisual(option, dataSpace.settings.diceSides);
+                        } else if (type === 'sides') {
+                            dataSpace.settings.diceSides = option; // 주사위 면 수 설정
+                            hideAllOverlays(); // 메뉴 숨기고 오버레이도 숨김
+                        }
+                    });
+                    container.appendChild(div);
+                });
+
+                // 메뉴 위치 조정
+                container.style.top = (type === 'count') ? '10%' : '70%';
+                container.style.left = '50%';
+                container.style.transform = 'translateX(-50%)';
+                container.style.display = 'block';
+            }
+
+            // 주사위 시각적으로 굴리기
+            function rollDiceVisual(count = 1, sides = 20) {
+                hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
+                activeUI = 'diceRolling'; // 주사위 굴리는 중 상태로 변경
+                showOverlay(true); // 주사위 굴리는 동안 오버레이로 클릭 막기
+
+                const topRow = document.getElementById('dice-row-top');
+                const bottomRow = document.getElementById('dice-row-bottom');
+
+                diceArea.style.display = 'flex'; // 주사위 영역 표시
+                topRow.innerHTML = ''; // 기존 주사위 삭제
+                bottomRow.innerHTML = '';
+
+                // 각 플레이어에게 주사위를 할당
+                for (let i = 0; i < count; i++) {
+                    createRollingDie(topRow, sides); // 위쪽(상대방) 주사위
+                    createRollingDie(bottomRow, sides); // 아래쪽(플레이어) 주사위
+                }
+            }
+
+            // 단일 주사위 생성 및 애니메이션
+            function createRollingDie(container, sides) {
+                const die = document.createElement('div');
+                die.className = 'dice';
+                container.appendChild(die);
+
+                let rollCount = 0;
+                const delay = 30; // 굴러가는 속도
+                const maxRolls = 15 + Math.floor(Math.random() * 10); // 총 굴림 횟수
+                let animationId; // setTimeout ID를 저장할 변수
+
+                function animateRoll() {
+                    die.textContent = Math.floor(Math.random() * sides) + 1; // 랜덤 숫자 표시
+                    rollCount++;
+
+                    if (rollCount >= maxRolls) {
+                        die.classList.add('finalized'); // 최종 결과 표시
+                        // 모든 주사위가 굴러 끝났더라도 오버레이를 자동으로 닫지 않음.
+                        // 사용자가 암막을 클릭할 때까지 기다림.
+                        return;
+                    }
+                    animationId = setTimeout(animateRoll, delay);
+                }
+                animateRoll();
+
+                // 주사위 객체에 animationId를 저장하여 나중에 clearTimeout을 할 수 있도록 함 (선택 사항)
+                die.animationId = animationId;
+            }
+
+            updateDisplay(); // 초기 화면 업데이트
+        });
+    </script>
+</body>
+</html>

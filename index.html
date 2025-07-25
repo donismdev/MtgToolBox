@@ -57,7 +57,6 @@
 			bottom: 20px;
 			right: 20px;
 			z-index: 1100;
-			display: none;
 		}
 
 		#content {
@@ -68,10 +67,10 @@
 </head>
 <body>
 	<!-- 사이드바 오버레이 -->
-	<div id="sidebar-overlay" class="active" onclick="toggleSidebar(false)"></div>
+	<div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
-	<!-- 사이드바: 기본 show 상태 -->
-	<div id="sidebar" class="show">
+	<!-- 사이드바 -->
+	<div id="sidebar">
 		<button class="close-btn" onclick="toggleSidebar(false)">&times;</button>
 		<a href="/" class="d-flex align-items-center mb-3 link-dark text-decoration-none">
 			<span class="fs-4">MtgToolBox</span>
@@ -95,16 +94,28 @@
 		<p class="lead">왼쪽 목차를 열어 툴을 선택하세요.</p>
 	</div>
 
-	<!-- 목차 열기 버튼 (처음엔 숨김) -->
+	<!-- 목차 열기 버튼 -->
+    <div id="modal-button-container"></div>
 	<button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
 		<i class="bi bi-list fs-4"></i>
 	</button>
+
+    <div id="modal-overlay">
+      <div id="modal-content">
+        <span id="modal-close">&times;</span>
+        <iframe id="modal-iframe" src=""></iframe>
+      </div>
+    </div>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
 		const toolIndexUrl = "tool_index.json";
 		const toolList = document.getElementById("tool-list");
+        const modalButtonContainer = document.getElementById("modal-button-container");
 		const content = document.getElementById("content");
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalClose = document.getElementById('modal-close');
+        const modalIframe = document.getElementById('modal-iframe');
 
 		const sidebar = document.getElementById("sidebar");
 		const sidebarOverlay = document.getElementById("sidebar-overlay");
@@ -136,7 +147,7 @@
 			if (tool.tags?.includes("mtg")) return "bi-box-seam";
 			if (tool.tags?.includes("csv")) return "bi-file-earmark-spreadsheet";
 			if (tool.tags?.includes("json")) return "bi-file-earmark-code";
-			if (tool.type === "html") return "bi-file-earmark-play";
+			if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) return "bi-file-earmark-play";
 			return "bi-tools";
 		}
 
@@ -149,7 +160,7 @@
 				</div>
 			`;
 
-			if (tool.type === "html") {
+			if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
 				const htmlPath = `${tool.path}${tool.name}.html`;
 				html += `<iframe src="${htmlPath}" class="w-100" style="height: 80vh; border: none;"></iframe>`;
 			} else {
@@ -193,7 +204,23 @@
 					return true;
 				});
 
-				// parent별로 툴을 그룹화 (enable: true인 것만 포함)
+                const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
+
+                modalTools.forEach(tool => {
+                    const button = document.createElement('button');
+                    button.className = 'btn modal-tool-button';
+                    button.innerHTML = tool.modalIcon || tool.name.charAt(0).toUpperCase();
+                    button.title = tool.name;
+                    if (tool.modalIconColor) {
+                        button.style.backgroundColor = tool.modalIconColor;
+                    }
+                    button.onclick = () => {						
+						modalIframe.src = `${tool.path}${tool.name}.html?modal=true`;
+                        modalOverlay.style.display = 'flex';
+                    };
+                    modalButtonContainer.appendChild(button);
+                });
+
 				const toolsByParent = enabledTools.reduce((acc, tool) => {
 					const parent = tool.parent || "기타";
 					if (!acc[parent]) acc[parent] = [];
@@ -201,7 +228,6 @@
 					return acc;
 				}, {});
 
-				// 각 parent를 UI에 렌더링
 				Object.keys(toolsByParent).forEach(parent => {
 					const parentLi = document.createElement("li");
 					parentLi.className = "nav-item";
@@ -247,13 +273,24 @@
 						subUl.appendChild(item);
 					});
 
-					// 툴이 하나라도 있을 경우에만 parent 추가
 					if (toolsByParent[parent].length > 0) {
 						parentLi.appendChild(subUl);
 						toolList.appendChild(parentLi);
 					}
 				});
 			});
+
+        modalClose.addEventListener('click', () => {
+            modalOverlay.style.display = 'none';
+            modalIframe.src = '';
+        });
+
+        modalOverlay.addEventListener('click', (event) => {
+            if (event.target === modalOverlay) {
+                modalOverlay.style.display = 'none';
+                modalIframe.src = '';
+            }
+        });
 	</script>
 </body>
 </html>
