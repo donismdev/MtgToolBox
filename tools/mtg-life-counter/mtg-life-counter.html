@@ -71,11 +71,17 @@
 
         /* Center Buttons */
         #center-buttons {
-            display: flex; flex-wrap: wrap; justify-content: center;
-            gap: 0.5rem; position: absolute;
+            display: flex;
+            /* [수정] 버튼이 한 줄에 표시되도록 wrap 해제 */
+            flex-wrap: nowrap; 
+            justify-content: center;
+            gap: 0.5rem; 
+            position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 90%; max-width: 600px; z-index: 1010;
+            width: 90%; 
+            max-width: 480px;
+            z-index: 1010;
             transition: top 0.3s ease;
         }
 
@@ -84,10 +90,16 @@
         body.buttons-raised.font-size-large #center-buttons { top: 35%; }
 
         #center-buttons button {
-            min-width: 100px; height: 50px; font-size: 1rem;
+            /* [수정] 버튼이 유연하게 크기를 조절하도록 변경 */
+            flex-grow: 1;
+            flex-basis: 0;
+            height: 50px; 
+            font-size: 0.9rem;
             border: 1px solid #ccc; background-color: white;
             border-radius: 0.5rem; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 0 0.5rem;
+            white-space: nowrap;
         }
         #center-buttons button.confirm-animation {
             color: #e74c3c; background-color: #ffe0e0;
@@ -104,7 +116,7 @@
             transform: translate(-50%, -50%);
             width: 90%; display: none; justify-content: center;
             align-items: center; gap: 1rem;
-            z-index: 950; /* [수정] 오버레이(900)보다 위로 올림 */
+            z-index: 950;
         }
         .dice-container.pushed-up { top: 40%; }
         .dice-container.pushed-down { top: 60%; }
@@ -112,7 +124,8 @@
         .individual-dice-wrapper {
             display: flex; gap: 0.5rem; overflow-x: auto;
             justify-content: center; flex-wrap: wrap;
-            max-height: calc(3rem * 2 + 0.5rem);
+            /* [수정] 더 많은 주사위가 보이도록 최대 높이 늘리기 */
+            max-height: calc(3rem * 3 + 1rem); 
             scrollbar-width: none;
         }
         .individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
@@ -397,7 +410,7 @@
 
         function rollDiceVisual(count, sides) {
             hideAllOverlays();
-            centerButtons.style.display = 'none'; // [수정] 주사위 굴릴 때 중앙 버튼 숨기기
+            centerButtons.style.display = 'none';
             overlay.style.display = 'block';
             activeUI = 'diceRolling';
 
