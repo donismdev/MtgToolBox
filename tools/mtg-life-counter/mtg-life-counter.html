@@ -21,6 +21,7 @@
             position: relative;
             background-color: #2c3e50;
             color: white;
+            overflow: hidden;
         }
         .player-area.opponent { transform: rotate(180deg); }
         .life-total {
@@ -28,204 +29,241 @@
             font-weight: bold;
         }
         .button-area {
-			position: absolute;
-			top: 0; left: 0;
-			width: 100%; height: 100%;
-			/* 라이프 증감 버튼 영역 자체가 중앙 버튼을 침범하지 않도록 z-index 조정 */
-			z-index: 10; /* 중앙 버튼(990)보다 훨씬 낮게 설정하여 겹치지 않게 */
-		}
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+        }
         .increase-button, .decrease-button {
-			position: absolute;
-			left: 0; width: 100%;
-			height: 50%;
-			/* 이 버튼들은 .button-area 안에 있으므로, .button-area의 z-index를 따릅니다. */
-			/* 따라서 여기의 z-index: 1은 의미가 없습니다. 제거하거나 놔둬도 무방. */
-			/* z-index: 1; */
-		}
+            flex-grow: 1;
+            width: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
         .increase-button { top: 0; }
         .decrease-button { bottom: 0; }
 
-        /* 중앙 버튼 컨테이너 */
-    #center-buttons {
-        display: flex;
-        flex-direction: row; /* 기본적으로 가로 배열 */
-        flex-wrap: wrap; /* 공간이 부족하면 다음 줄로 넘어가도록 */
-        justify-content: center;
-        align-items: center;
-        gap: 0.5rem; /* 버튼 간 간격 줄이기 */
-        padding: 0 1rem; /* 좌우 패딩으로 화면 가장자리와의 여백 조절 */
-        box-sizing: border-box; /* 패딩이 width에 포함되도록 */
+        #center-buttons {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0 1rem;
+            box-sizing: border-box;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            z-index: 1010;
+        }
 
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%; /* 화면 너비의 90% 사용 */
-        max-width: 400px; /* 너무 커지지 않도록 최대 너비 설정 */
+        #center-buttons button {
+            flex: 1 1 auto; /* 기본적으로 auto 유지 */
+            min-width: 60px;
+            height: 50px;
+            font-size: 1rem;
+            white-space: nowrap;
+            padding: 0.3rem 0.6rem;
+            border: 1px solid #ccc; /* 기본 테두리 추가 */
+            background-color: white; /* 기본 배경색 */
+            color: black; /* 기본 글자색 */
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease; /* 전환 효과 추가 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 기본 그림자 */
+        }
 
-        /* 중앙 버튼이 오버레이 위에 와야 하므로 z-index를 1010으로 설정 (오버레이 900, 모달/설정 1000) */
-        z-index: 1010; /* 오버레이보다 높게 설정 */
-    }
+        /* '확인' 버튼 애니메이션 스타일 변경 */
+        #center-buttons button.confirm-animation {
+            font-size: 1.1rem; /* 너무 커지지 않도록 조절 */
+            font-weight: bold;
+            color: #e74c3c; /* 텍스트 색상 */
+            background-color: #ffe0e0; /* 밝은 배경색 */
+            border: 2px solid #e74c3c; /* 강조 테두리 */
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.7), 0 0 5px rgba(231, 76, 60, 0.5); /* 강한 그림자 효과 */
+            animation: confirmPulse 1s infinite alternate; /* 새로운 애니메이션 적용 */
+            /* transform 속성은 애니메이션에서만 다루도록 하여 정렬 문제 방지 */
+        }
 
-    #center-buttons button {
-        flex: 1 1 30%; /* 각 버튼이 최소 30% 너비를 가지도록 (3개면 90% 차지) */
-        min-width: 80px; /* 각 버튼의 최소 너비 설정 (너무 작아지지 않게) */
-        height: 60px; /* 버튼 높이 고정 */
-        font-size: 1.1rem; /* 모바일에서 적절한 글자 크기 */
-        white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-        padding: 0.5rem; /* 내부 패딩 조정 */
-    }
-
-		/* '확인' 버튼 애니메이션 스타일은 그대로 유지 */
-    #center-buttons button.confirm-animation {
-        font-size: 1.8rem; /* 모바일에서 너무 크지 않게 조절 */
-        animation: pulse 1s infinite alternate;
-        /* '확인' 버튼이 하이라이트되려면 오버레이 위로 올라와야 합니다.
-           이미 #center-buttons의 z-index가 높으므로 별도 조정은 필요 없지만,
-           만약 오버레이 색상이 너무 진해서 버튼이 묻힌다면 background-color를 더 밝게 고려해볼 수 있습니다. */
-        color: #e74c3c; /* 텍스트 색상을 더 선명하게 (빨간색) */
-        background-color: #fff; /* 배경색을 흰색으로 변경하여 강조 */
-        border: 2px solid #e74c3c; /* 강조 테두리 추가 */
-        box-shadow: 0 0 10px rgba(231, 76, 60, 0.7); /* 그림자 효과로 더욱 강조 */
-    }
-
-		    /* pulse 애니메이션 정의 */
-    @keyframes pulse {
-        0% { transform: scale(1) translateX(-50%); } /* transform이 translate(-50%, -50%)를 덮어쓰지 않도록 수정 */
-        100% { transform: scale(1.1) translateX(-50%); }
-    }
+        /* 새로운 confirmPulse 애니메이션 정의 */
+        @keyframes confirmPulse {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(231, 76, 60, 0.7), 0 0 5px rgba(231, 76, 60, 0.5); }
+            100% { transform: scale(1.03); box-shadow: 0 0 20px rgba(231, 76, 60, 0.9), 0 0 8px rgba(231, 76, 60, 0.7); }
+        }
 
         #dice-area {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        display: none; /* 초기에는 숨김 */
-        flex-direction: column;
-        justify-content: space-between;
-        pointer-events: none; /* 오버레이가 클릭을 처리하므로 주사위 영역 자체는 클릭 불가 */
-        z-index: 998; /* 오버레이 바로 아래 */
-    }
-    .dice-row {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        padding: 1rem;
-    }
-    .dice {
-        width: 4rem; /* 모바일에서 주사위 크기 약간 키움 */
-        height: 4rem;
-        font-size: 2rem; /* 주사위 숫자 크기 키움 */
-    }
-    .dice.finalized {
-        background: #cce5ff;
-        font-weight: bold;
-    }
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            pointer-events: none;
+            z-index: 998;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .dice-row {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+        .dice {
+            width: 3.5rem;
+            height: 3.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            background-color: #34495e;
+            color: white;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            transform-origin: center center;
+            border: 2px solid rgba(255,255,255,0.2); /* 주사위 테두리 추가 */
+        }
+
+        .dice.rolling {
+            animation: diceRollAnimation 0.1s infinite alternate; /* 더 빠르게 깜빡이도록 */
+            background-color: #556a80;
+            color: #f0f0f0;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255,255,255,0.5); /* 굴림 중 테두리 강조 */
+        }
+        @keyframes diceRollAnimation {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.02) rotate(3deg); opacity: 0.95; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .dice.finalized {
+            background-color: #2ecc71;
+            color: white;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+            animation: diceFinalizeAnimation 0.5s ease-out forwards;
+            border: 2px solid #28a745; /* 최종 테두리 색상 */
+        }
+        @keyframes diceFinalizeAnimation {
+            0% { transform: scale(0.8) rotate(-10deg); opacity: 0.5; }
+            80% { transform: scale(1.1) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
 
         .overlay {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.4);
-        z-index: 900; /* 중앙 버튼보다 낮은 z-index */
-        display: none;
-        pointer-events: none; /* 기본적으로는 클릭을 통과시킴. 필요할 때 'auto'로 변경하여 막음 */
-    }
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 900;
+            display: none;
+            pointer-events: none;
+        }
 
-        /* 설정 패널 및 주사위 메뉴 (모달처럼 동작하는 UI) */
-    #settings-panel, .dice-menu {
-        z-index: 1000; /* 오버레이 위로, 중앙 버튼(1010)보다는 낮게 */
-        pointer-events: auto; /* 자체적으로 클릭 가능하게 */
-    }
-    #settings-panel {
-        position: absolute;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        background: #fff;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        display: none;
-        min-width: 250px;
-        text-align: center;
-    }
-    #settings-panel input {
-        margin: 0.5rem 0;
-        width: 80%;
-        padding: 0.4rem;
-        font-size: 1rem;
-        border-radius: 0.4rem;
-        border: 1px solid #ccc;
-    }
-    #settings-panel button {
-        margin-top: 1rem;
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-        border: none;
-        border-radius: 0.5rem;
-        background-color: #2c3e50;
-        color: white;
-        cursor: pointer;
-    }
+        #settings-panel, .dice-menu {
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        #settings-panel {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            display: none;
+            min-width: 250px;
+            text-align: center;
+        }
+        #settings-panel input {
+            margin: 0.5rem 0;
+            width: 80%;
+            padding: 0.4rem;
+            font-size: 1rem;
+            border-radius: 0.4rem;
+            border: 1px solid #ccc;
+        }
+        #settings-panel button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+        }
 
-    .dice-menu-label {
-        text-align: center;
-        margin-bottom: 0.8rem;
-        font-weight: bold;
-        font-size: 1.1rem;
-        width: 100%;
-    }
-    .dice-menu {
-        position: absolute;
-        background: rgba(0, 0, 0, 0.85);
-        color: white;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        display: none;
-        z-index: 1000; /* 오버레이 위, 중앙 버튼보다 낮게 */
-        width: 80%;
-        max-width: 300px;
-        box-sizing: border-box;
-        
-        display: flex; /* Flexbox 활성화 */
-        flex-direction: column; /* 세로 정렬 */
-        align-items: center; /* 가로 중앙 정렬 */
-        justify-content: center;
+        .dice-menu-label {
+            text-align: center;
+            margin-bottom: 0.8rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            width: 100%;
+        }
+        .dice-menu {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+            z-index: 1000;
+            width: 95%;
+            max-width: 600px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            left: 50%;
+            transform: translateX(-50%);
+        }
 
-        left: 50%;
-        transform: translateX(-50%);
-    }
+        .dice-option-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.3rem;
+            width: 100%;
+            margin-bottom: 0.3rem;
+        }
 
-    .dice-option-group {
-        display: flex;
-        flex-wrap: wrap; /* 버튼들이 한 줄에 다 안 들어가면 다음 줄로 */
-        justify-content: center; /* 버튼들을 중앙 정렬 */
-        gap: 0.5rem; /* 버튼들 사이 간격 */
-        width: 100%; /* 컨테이너 너비 100% 사용 */
-        margin-bottom: 0.5rem;
-    }
+        .dice-option {
+            flex-basis: auto;
+            min-width: 40px;
+            padding: 0.5rem 0.8rem;
+            margin: 0.1rem;
+            font-size: 0.9rem;
+            background: #444;
+            color: white;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            text-align: center;
+            border: 1px solid #555;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
 
-    .dice-option {
-        flex-basis: auto;
-        min-width: 50px;
-        padding: 0.8rem 1.2rem;
-        margin: 0.2rem;
-        
-        background: #444;
-        color: white;
-        border-radius: 0.3rem;
-        cursor: pointer;
-        text-align: center;
-        border: 1px solid #555;
-        transition: background 0.2s ease, transform 0.1s ease;
-    }
+        .dice-option:hover {
+            background: #666;
+            transform: translateY(-1px);
+        }
 
-    .dice-option:hover {
-        background: #666;
-        transform: translateY(-1px);
-    }
+        .dice-option:active {
+            transform: translateY(0);
+            background: #333;
+        }
 
-    .dice-option:active {
-        transform: translateY(0);
-        background: #333;
-    }
+        .player-area.overlay-active .button-area {
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -303,9 +341,12 @@
             const settingsPanel = document.getElementById('settings-panel');
             const diceArea = document.getElementById('dice-area');
 
-            let activeUI = null; // 현재 활성화된 UI (null, 'resetConfirm', 'diceMenu', 'settings', 'diceRolling')
+            let playerArea = document.getElementById('player-area');
+            let opponentArea = document.getElementById('opponent-area');
+            let centerButtons = document.getElementById('center-buttons');
 
-            // 오버레이 관련 함수
+            let activeUI = null;
+
             function showOverlay(blockClicks = true) {
                 overlay.style.display = 'block';
                 overlay.style.pointerEvents = blockClicks ? 'auto' : 'none';
@@ -316,40 +357,35 @@
                 overlay.style.pointerEvents = 'none';
             }
 
-            // 모든 오버레이 및 메뉴 숨기기 (현재 활성화된 UI 제외)
-             function hideAllOverlays() {
+            function hideAllOverlays() {
                 settingsPanel.style.display = 'none';
                 diceCountMenu.style.display = 'none';
                 diceSidesMenu.style.display = 'none';
-                diceArea.style.display = 'none'; // 주사위 영역 숨김
+                diceArea.style.display = 'none';
                 document.getElementById('dice-row-top').innerHTML = '';
                 document.getElementById('dice-row-bottom').innerHTML = '';
-
-                // 리셋 버튼 텍스트 원상 복구 및 애니메이션 클래스 제거
                 resetButton.textContent = '라이프 리셋';
-                resetButton.classList.remove('confirm-animation'); // 애니메이션 클래스 제거
-
-                activeUI = null; // 활성 UI 없음
-                hideOverlay(); // 오버레이도 숨김
+                resetButton.classList.remove('confirm-animation');
+                playerArea.classList.remove('overlay-active');
+                opponentArea.classList.remove('overlay-active');
+                centerButtons.style.display = 'flex';
+                activeUI = null;
+                // 오버레이 색상을 원래대로 복원
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.4)';
+                hideOverlay();
             }
 
-            // 오버레이 클릭 이벤트: 특정 조건에서 닫히도록
             overlay.addEventListener('click', () => {
-                // 주사위 굴림 중이든 아니든 오버레이 클릭 시 무조건 닫도록 처리
                 if (activeUI === 'diceRolling') {
-                    // 굴림 중인 모든 주사위 애니메이션 중단 (선택 사항, 필요시 구현)
-                    // 예를 들어, 모든 .dice 요소에 저장된 animationId를 clearTimeout
                     document.querySelectorAll('.dice').forEach(die => {
                         if (die.animationId) {
                             clearTimeout(die.animationId);
                         }
                     });
                 }
-                hideAllOverlays(); // 모든 UI 숨김
+                hideAllOverlays();
             });
 
-
-            // 라이프 증감 버튼 이벤트
             document.querySelector('#opponent-area .increase-button')
                 .addEventListener('click', () => changeLife('opponent', 1));
             document.querySelector('#opponent-area .decrease-button')
@@ -359,27 +395,23 @@
             document.querySelector('#player-area .decrease-button')
                 .addEventListener('click', () => changeLife('player', -1));
 
-            // 중앙 버튼 이벤트
             resetButton.addEventListener('click', MtgLifeReset);
             diceButton.addEventListener('click', () => {
-                hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
+                hideAllOverlays();
                 showDiceMenu(diceCountMenu, [1, 2, 3, 4, 5, 6], 'count');
                 showDiceMenu(diceSidesMenu, [4, 6, 8, 10, 12, 20], 'sides');
-                activeUI = 'diceMenu'; // 주사위 메뉴 활성화 상태로 설정
-                showOverlay(true); // 오버레이로 클릭 방지
+                activeUI = 'diceMenu';
+                showOverlay(true);
             });
             settingsButton.addEventListener('click', openSettings);
             saveSettingsButton.addEventListener('click', applySettings);
 
-            // 라이프 값 업데이트
             function updateDisplay() {
                 playerLifeElement.textContent = playerLife;
                 opponentLifeElement.textContent = opponentLife;
             }
 
-            // 라이프 변경
             function changeLife(player, amount) {
-                // 어떤 UI도 활성화되어 있지 않을 때만 라이프 변경 허용
                 if (activeUI !== null) {
                     return;
                 }
@@ -393,46 +425,36 @@
                 updateDisplay();
             }
 
-            // 라이프 리셋
             function MtgLifeReset() {
                 if (activeUI === 'resetConfirm') {
-                    // 이미 확인 상태이고 다시 눌렀을 때
                     playerLife = dataSpace.settings.lifeMax;
                     opponentLife = dataSpace.settings.lifeMax;
-                    dataSpace.lifeCounter = {
-                        player: playerLife,
-                        opponent: opponentLife
-                    };
+                    dataSpace.lifeCounter = { player: playerLife, opponent: opponentLife };
                     updateDisplay();
-                    hideAllOverlays(); // 리셋 후 모든 UI 숨김
+                    hideAllOverlays();
                 } else {
-                    // 첫 클릭 시
-                    hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
-
-                    // '확인' 버튼 스타일 및 애니메이션 적용
-                    resetButton.textContent = '확인'; // 버튼 텍스트 변경
-                    resetButton.classList.add('confirm-animation'); // 애니메이션 클래스 추가
-
-                    activeUI = 'resetConfirm'; // 리셋 확인 상태로 변경
-                    showOverlay(true); // 오버레이로 클릭 방지
+                    hideAllOverlays();
+                    resetButton.textContent = '확인';
+                    resetButton.classList.add('confirm-animation');
+                    activeUI = 'resetConfirm';
+                    showOverlay(true);
                 }
             }
 
-            // 설정 패널 열기
             function openSettings() {
-                hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
+                hideAllOverlays();
                 document.getElementById('lifeMaxInput').value = dataSpace.settings.lifeMax;
                 document.getElementById('diceSidesInput').value = dataSpace.settings.diceSides;
                 settingsPanel.style.display = 'block';
-                activeUI = 'settings'; // 설정 UI 활성화 상태로 설정
-                showOverlay(true); // 오버레이로 클릭 방지
+                centerButtons.style.display = 'none';
+                activeUI = 'settings';
+                showOverlay(true);
             }
 
-            // 설정 적용
             function applySettings() {
                 const newLife = parseInt(document.getElementById('lifeMaxInput').value);
                 const newSides = parseInt(document.getElementById('diceSidesInput').value);
-                
+
                 let settingsChanged = false;
 
                 if (!isNaN(newLife) && newLife > 0) {
@@ -444,7 +466,7 @@
                     alert("유효한 최대 라이프 수치를 입력해주세요 (1 이상).");
                     return;
                 }
-                
+
                 if (!isNaN(newSides) && newSides >= 4 && newSides <= 20) {
                     if (dataSpace.settings.diceSides !== newSides) {
                         dataSpace.settings.diceSides = newSides;
@@ -456,24 +478,22 @@
                 }
 
                 if (settingsChanged) {
-                    MtgLifeReset(); // 설정 변경 후 라이프 리셋 (초기값으로)
+                    MtgLifeReset();
                 }
-                hideAllOverlays(); // 설정 저장 후 모든 UI 숨김
+                hideAllOverlays();
             }
 
-            // 주사위 메뉴 표시
             function showDiceMenu(container, options, type) {
-                container.innerHTML = ''; // 기존 내용 삭제
+                container.innerHTML = '';
 
                 const label = document.createElement('div');
                 label.className = 'dice-menu-label';
                 label.textContent = type === 'count' ? '굴릴 주사위 개수 선택' : '주사위 면 수 설정';
                 container.appendChild(label);
 
-                // 새로운 컨테이너 생성: dice-option들을 여기에 담습니다.
                 const optionsGroup = document.createElement('div');
-                optionsGroup.className = 'dice-option-group'; // 이전에 정의한 CSS 클래스 적용
-                container.appendChild(optionsGroup); // 주 메뉴 컨테이너에 추가
+                optionsGroup.className = 'dice-option-group';
+                container.appendChild(optionsGroup);
 
                 options.forEach(option => {
                     const div = document.createElement('div');
@@ -488,65 +508,77 @@
                             hideAllOverlays();
                         }
                     });
-                    optionsGroup.appendChild(div); // 새로 만든 optionsGroup에 추가
+                    optionsGroup.appendChild(div);
                 });
 
-                container.style.top = (type === 'count') ? '10%' : '70%';
+                container.style.top = (type === 'count') ? '15%' : '65%';
                 container.style.left = '50%';
                 container.style.transform = 'translateX(-50%)';
-                container.style.display = 'block'; // JS에 의해 메뉴가 보이도록 함
+                container.style.display = 'block';
+
+                playerArea.classList.add('overlay-active');
+                opponentArea.classList.add('overlay-active');
             }
 
-            // 주사위 시각적으로 굴리기
             function rollDiceVisual(count = 1, sides = 20) {
-                hideAllOverlays(); // 다른 UI가 있다면 먼저 숨김
-                activeUI = 'diceRolling'; // 주사위 굴리는 중 상태로 변경
-                showOverlay(true); // 주사위 굴리는 동안 오버레이로 클릭 막기
+                hideAllOverlays();
+                activeUI = 'diceRolling';
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.7)'; // 주사위 굴림 중 암막 강조
+                showOverlay(true);
 
                 const topRow = document.getElementById('dice-row-top');
                 const bottomRow = document.getElementById('dice-row-bottom');
 
-                diceArea.style.display = 'flex'; // 주사위 영역 표시
-                topRow.innerHTML = ''; // 기존 주사위 삭제
+                diceArea.style.display = 'flex';
+                topRow.innerHTML = '';
                 bottomRow.innerHTML = '';
 
-                // 각 플레이어에게 주사위를 할당
+                let diceRolledCount = 0;
+                const totalDice = count * 2;
+
                 for (let i = 0; i < count; i++) {
-                    createRollingDie(topRow, sides); // 위쪽(상대방) 주사위
-                    createRollingDie(bottomRow, sides); // 아래쪽(플레이어) 주사위
+                    createRollingDie(topRow, sides, () => {
+                        diceRolledCount++;
+                        // 모든 주사위가 굴러 끝났을 때만 오버레이 배경색을 원래대로 돌리지 않고,
+                        // 사용자가 닫을 때까지 유지하도록 로직 변경
+                        // if (diceRolledCount === totalDice) {
+                        //     overlay.style.backgroundColor = 'rgba(0,0,0,0.4)';
+                        // }
+                    });
+                    createRollingDie(bottomRow, sides, () => {
+                        diceRolledCount++;
+                        // if (diceRolledCount === totalDice) {
+                        //     overlay.style.backgroundColor = 'rgba(0,0,0,0.4)';
+                        // }
+                    });
                 }
             }
 
-            // 단일 주사위 생성 및 애니메이션
-            function createRollingDie(container, sides) {
+            function createRollingDie(container, sides, callback) {
                 const die = document.createElement('div');
-                die.className = 'dice';
+                die.className = 'dice rolling';
                 container.appendChild(die);
 
                 let rollCount = 0;
-                const delay = 30; // 굴러가는 속도
-                const maxRolls = 15 + Math.floor(Math.random() * 10); // 총 굴림 횟수
-                let animationId; // setTimeout ID를 저장할 변수
+                const delay = 50;
+                const maxRolls = 20 + Math.floor(Math.random() * 10);
 
                 function animateRoll() {
-                    die.textContent = Math.floor(Math.random() * sides) + 1; // 랜덤 숫자 표시
+                    die.textContent = Math.floor(Math.random() * sides) + 1;
                     rollCount++;
 
                     if (rollCount >= maxRolls) {
-                        die.classList.add('finalized'); // 최종 결과 표시
-                        // 모든 주사위가 굴러 끝났더라도 오버레이를 자동으로 닫지 않음.
-                        // 사용자가 암막을 클릭할 때까지 기다림.
+                        die.classList.remove('rolling');
+                        die.classList.add('finalized');
+                        if (callback) callback();
                         return;
                     }
-                    animationId = setTimeout(animateRoll, delay);
+                    die.animationId = setTimeout(animateRoll, delay);
                 }
                 animateRoll();
-
-                // 주사위 객체에 animationId를 저장하여 나중에 clearTimeout을 할 수 있도록 함 (선택 사항)
-                die.animationId = animationId;
             }
 
-            updateDisplay(); // 초기 화면 업데이트
+            updateDisplay();
         });
     </script>
 </body>
