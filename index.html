@@ -73,23 +73,27 @@
 
         #modal-content {
             background-color: white;
-            padding: 20px;
+            padding: 0; /* 내부 콘텐츠 iframe이 채우도록 패딩 제거 */
             border-radius: 5px;
             position: relative;
-            width: 80%;
-            height: 80%;
+            /* 이전 width: 80%; height: 80%; 대신 뷰포트 기반으로 크게 설정 */
+            width: 95vw; /* 뷰포트 너비의 95% */
+            height: 95vh; /* 뷰포트 높이의 95% */
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* iframe이 모달 컨텐츠 밖으로 나가지 않도록 */
         }
 
         #modal-close {
             position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
+            top: 5px; /* 상단 여백 줄임 */
+            right: 10px; /* 우측 여백 줄임 */
+            font-size: 28px; /* 닫기 버튼 아이콘 크기 약간 키움 */
             font-weight: bold;
             cursor: pointer;
             z-index: 1001;
+            color: #ccc; /* 닫기 버튼 색상을 배경과 어우러지게 */
+            text-shadow: 0 0 3px rgba(0,0,0,0.5); /* 그림자 추가로 가독성 높임 */
         }
 
         #modal-iframe {
