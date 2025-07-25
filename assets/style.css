@@ -162,3 +162,27 @@ iframe {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.22);
     transform: translateY(-2px);
 }
+
+/* A, L, 메뉴 버튼을 담을 컨테이너 스타일 */
+#fixed-buttons-container {
+	position: fixed;
+	top: 15px; /* 상단에서 조금 떨어뜨림 */
+	right: 15px; /* 우측에서 조금 떨어뜨림 */
+	z-index: 1200; /* 다른 요소들 위에 확실히 표시 */
+	display: flex;
+	flex-direction: column; /* 버튼들을 세로로 정렬 */
+	gap: 10px; /* 버튼 사이 간격 */
+	align-items: flex-end; /* 오른쪽 정렬 */
+}
+
+/* 기존 #toggleSidebarBtn 위치 조정 (이제 #fixed-buttons-container 안으로 이동) */
+#toggleSidebarBtn {
+	/* 기존 fixed 속성 제거 또는 변경 */
+	position: static; /* 컨테이너 내에서 일반적인 흐름에 따르도록 */
+	margin-top: auto; /* 필요시 컨테이너 내에서 아래쪽으로 배치 */
+}
+
+/* 원래 #toggleSidebarBtn의 bi-list 아이콘 크기 조정 */
+#toggleSidebarBtn .bi-list {
+	font-size: 1.8rem !important; /* 모바일에서 더 크게 */
+}

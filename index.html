@@ -1,104 +1,176 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>MtgToolBox</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-	<link rel="stylesheet" href="assets/style.css" />
-	<style>
-		body {
-			overflow-x: hidden;
-		}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MtgToolBox</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="assets/style.css" /> <style>
+        /* 여기에는 index.html에만 필요한 고유한 스타일만 남깁니다. */
+        body {
+            overflow-x: hidden;
+        }
 
-		#sidebar {
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 280px;
-			height: 100vh;
-			background-color: #f8f9fa;
-			transform: translateX(-100%);
-			transition: transform 0.3s ease-in-out;
-			z-index: 1050;
-			box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
-			padding: 1rem;
-		}
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background-color: #f8f9fa;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1050;
+            box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+        }
 
-		#sidebar.show {
-			transform: translateX(0);
-		}
+        #sidebar.show {
+            transform: translateX(0);
+        }
 
-		#sidebar .close-btn {
-			position: absolute;
-			top: 10px;
-			right: 10px;
-			border: none;
-			background: transparent;
-			font-size: 1.5rem;
-			color: #333;
-		}
+        #sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: none;
+            background: transparent;
+            font-size: 1.5rem;
+            color: #333;
+        }
 
-		#sidebar-overlay {
-			position: fixed;
-			inset: 0;
-			background-color: rgba(0, 0, 0, 0.3);
-			z-index: 1040;
-			display: none;
-		}
+        #sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 1040;
+            display: none;
+        }
 
-		#sidebar-overlay.active {
-			display: block;
-		}
+        #sidebar-overlay.active {
+            display: block;
+        }
 
-		#toggleSidebarBtn {
-			position: fixed;
-			bottom: 20px;
-			right: 20px;
-			z-index: 1100;
-		}
+        #content {
+            padding: 2rem;
+            margin-left: 0;
+        }
 
-		#content {
-			padding: 2rem;
-			margin-left: 0;
-		}
-	</style>
+        /* Modal styles (index.html에서 모달을 직접 제어하므로 여기에 두는 것이 합리적) */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            position: relative;
+            width: 80%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        #modal-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            flex-grow: 1;
+        }
+
+        /* 고정 버튼 컨테이너 - style.css에 있을 수도 있지만, 여기에 있으면 로딩 순서상 안전 */
+        #fixed-buttons-container {
+            position: fixed;
+            top: 15px; /* 상단에서 조금 떨어뜨림 */
+            right: 15px; /* 우측에서 조금 떨어뜨림 */
+            z-index: 1200; /* 다른 요소들 위에 확실히 표시 */
+            display: flex;
+            flex-direction: column; /* 버튼들을 세로로 정렬 */
+            gap: 10px; /* 버튼 사이 간격 */
+            align-items: flex-end; /* 오른쪽 정렬 */
+        }
+
+        /* modal-tool-button의 기본 스타일 (fixed-buttons-container 안에 있으므로 여기에 두는 것이 좋습니다) */
+        .modal-tool-button {
+            width: 48px; /* 고정 크기 */
+            height: 48px; /* 고정 크기 */
+            border-radius: 50%; /* 원형 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+            flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 */
+        }
+
+        /* #toggleSidebarBtn는 이제 #fixed-buttons-container의 자식이므로 position: static이 됩니다. */
+        #toggleSidebarBtn {
+            position: static; /* 컨테이너 내에서 일반적인 흐름에 따르도록 */
+            /* margin-top: auto; // 필요시 컨테이너 내에서 아래쪽으로 배치 */
+        }
+
+        /* 원래 #toggleSidebarBtn의 bi-list 아이콘 크기 조정 */
+        #toggleSidebarBtn .bi-list {
+            font-size: 1.8rem !important; /* 모바일에서 더 크게 */
+        }
+
+    </style>
 </head>
 <body>
-	<!-- 사이드바 오버레이 -->
-	<div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
-	<!-- 사이드바 -->
-	<div id="sidebar">
-		<button class="close-btn" onclick="toggleSidebar(false)">&times;</button>
-		<a href="/" class="d-flex align-items-center mb-3 link-dark text-decoration-none">
-			<span class="fs-4">MtgToolBox</span>
-		</a>
-		<hr />
-		<ul class="nav nav-pills flex-column mb-auto" id="tool-list"></ul>
-		<hr />
-		<div class="dropdown">
-			<a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-				<strong>v1.0.0</strong>
-			</a>
-			<ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
-				<li><a class="dropdown-item" href="https://github.com/seonglae/MtgToolbox" target="_blank">GitHub</a></li>
-			</ul>
-		</div>
-	</div>
+    <div id="sidebar">
+        <button class="close-btn" onclick="toggleSidebar(false)">&times;</button>
+        <a href="/" class="d-flex align-items-center mb-3 link-dark text-decoration-none">
+            <span class="fs-4">MtgToolBox</span>
+        </a>
+        <hr />
+        <ul class="nav nav-pills flex-column mb-auto" id="tool-list"></ul>
+        <hr />
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
+                <strong>v1.0.0</strong>
+            </a>
+            <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
+                <li><a class="dropdown-item" href="https://github.com/seonglae/MtgToolbox" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </div>
 
-	<!-- 콘텐츠 -->
-	<div id="content">
-		<h1 class="display-5">툴을 선택해주세요</h1>
-		<p class="lead">왼쪽 목차를 열어 툴을 선택하세요.</p>
-	</div>
+    <div id="content">
+        <h1 class="display-5">툴을 선택해주세요</h1>
+        <p class="lead">왼쪽 목차를 열어 툴을 선택하세요.</p>
+    </div>
 
-	<!-- 목차 열기 버튼 -->
-    <div id="modal-button-container"></div>
-	<button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
-		<i class="bi bi-list fs-4"></i>
-	</button>
+    <div id="fixed-buttons-container">
+        <div id="modal-button-container"></div> <button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+    </div>
 
     <div id="modal-overlay">
       <div id="modal-content">
@@ -107,102 +179,107 @@
       </div>
     </div>
 
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script>
-		const toolIndexUrl = "tool_index.json";
-		const toolList = document.getElementById("tool-list");
-        const modalButtonContainer = document.getElementById("modal-button-container");
-		const content = document.getElementById("content");
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const toolIndexUrl = "tool_index.json";
+
+        const toolList = document.getElementById("tool-list");
+        const content = document.getElementById("content");
         const modalOverlay = document.getElementById('modal-overlay');
         const modalClose = document.getElementById('modal-close');
         const modalIframe = document.getElementById('modal-iframe');
 
-		const sidebar = document.getElementById("sidebar");
-		const sidebarOverlay = document.getElementById("sidebar-overlay");
-		const toggleBtn = document.getElementById("toggleSidebarBtn");
-		function isMobileDevice() {
-			return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-		}
+        const sidebar = document.getElementById("sidebar");
+        const sidebarOverlay = document.getElementById("sidebar-overlay");
+        const toggleBtn = document.getElementById("toggleSidebarBtn");
 
-		const isMobile = isMobileDevice();
+        // 변경: modal-button-container를 #fixed-buttons-container 안에서 찾도록
+        // 이 부분이 중요합니다!
+        const modalButtonContainer = document.getElementById("fixed-buttons-container").querySelector("#modal-button-container");
+        
+        function isMobileDevice() {
+            return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
 
-		function toggleSidebar(show) {
-			if (show) {
-				sidebar.classList.add("show");
-				sidebarOverlay.classList.add("active");
-				toggleBtn.style.display = "none";
-			} else {
-				sidebar.classList.remove("show");
-				sidebarOverlay.classList.remove("active");
-				toggleBtn.style.display = "block";
-			}
-		}
+        const isMobile = isMobileDevice();
 
-		// 초기 상태: 목차 보여주기
-		toggleSidebar(true);
+        function toggleSidebar(show) {
+            if (show) {
+                sidebar.classList.add("show");
+                sidebarOverlay.classList.add("active");
+                toggleBtn.style.display = "none";
+            } else {
+                sidebar.classList.remove("show");
+                sidebarOverlay.classList.remove("active");
+                toggleBtn.style.display = "block";
+            }
+        }
 
-		toggleBtn.addEventListener("click", () => toggleSidebar(true));
+        // 초기 상태: 목차 보여주기 (필요하다면)
+        toggleSidebar(true);
 
-		function getIconForTool(tool) {
-			if (tool.tags?.includes("mtg")) return "bi-box-seam";
-			if (tool.tags?.includes("csv")) return "bi-file-earmark-spreadsheet";
-			if (tool.tags?.includes("json")) return "bi-file-earmark-code";
-			if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) return "bi-file-earmark-play";
-			return "bi-tools";
-		}
+        toggleBtn.addEventListener("click", () => toggleSidebar(true));
 
-		function renderTool(tool) {
-			let html = `
-				<div class="card mb-3">
-					<div class="card-header">
-						<h2 class="card-title mb-0" title="${tool.description}">${tool.name}</h2>
-					</div>
-				</div>
-			`;
+        function getIconForTool(tool) {
+            if (tool.tags?.includes("mtg")) return "bi-box-seam";
+            if (tool.tags?.includes("csv")) return "bi-file-earmark-spreadsheet";
+            if (tool.tags?.includes("json")) return "bi-file-earmark-code";
+            if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) return "bi-file-earmark-play";
+            return "bi-tools";
+        }
 
-			if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
-				const htmlPath = `${tool.path}${tool.name}.html`;
-				html += `<iframe src="${htmlPath}" class="w-100" style="height: 80vh; border: none;"></iframe>`;
-			} else {
-				html += `<form id="toolForm">`;
+        function renderTool(tool) {
+            let html = `
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h2 class="card-title mb-0" title="${tool.description}">${tool.name}</h2>
+                    </div>
+                </div>
+            `;
 
-				if (tool.inputs && Array.isArray(tool.inputs)) {
-					tool.inputs.forEach(input => {
-						html += `
-							<div class="mb-3">
-								<label for="${input.id}" class="form-label">${input.label}</label>
-								<input type="${input.type}" class="form-control" id="${input.id}"
-									${input.accept ? `accept="${input.accept}"` : ""}
-									${input.default ? `value="${input.default}"` : ""}
-								>
-							</div>
-						`;
-					});
-				}
+            if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
+                const htmlPath = `${tool.path}${tool.name}.html`;
+                html += `<iframe src="${htmlPath}" class="w-100" style="height: 80vh; border: none;"></iframe>`;
+            } else {
+                html += `<form id="toolForm">`;
 
-				html += `</form>`;
+                if (tool.inputs && Array.isArray(tool.inputs)) {
+                    tool.inputs.forEach(input => {
+                        html += `
+                            <div class="mb-3">
+                                <label for="${input.id}" class="form-label">${input.label}</label>
+                                <input type="${input.type}" class="form-control" id="${input.id}"
+                                    ${input.accept ? `accept="${input.accept}"` : ""}
+                                    ${input.default ? `value="${input.default}"` : ""}
+                                >
+                            </div>
+                        `;
+                    });
+                }
 
-				if (tool.path && tool.name && tool.download) {
-					const zipPath = `${tool.path}${tool.name}.zip`;
-					html += `<a href="${zipPath}" class="btn btn-primary" download>
-								<i class="bi bi-download"></i> 다운로드 (.zip)
-							 </a>`;
-				}
-			}
+                html += `</form>`;
 
-			content.innerHTML = html;
-			toggleSidebar(false); // 도구 클릭 시 닫기
-		}
+                if (tool.path && tool.name && tool.download) {
+                    const zipPath = `${tool.path}${tool.name}.zip`;
+                    html += `<a href="${zipPath}" class="btn btn-primary" download>
+                                <i class="bi bi-download"></i> 다운로드 (.zip)
+                             </a>`;
+                }
+            }
 
-		fetch(toolIndexUrl)
-			.then(res => res.json())
-			.then(data => {
-				const enabledTools = data.tools.filter(tool => {
-					if (tool.enable === false) return false;
-					if (tool.mobileOnly === true && !isMobile) return false;
-					if (tool.desktopOnly === true && isMobile) return false;
-					return true;
-				});
+            content.innerHTML = html;
+            toggleSidebar(false); // 도구 클릭 시 닫기
+        }
+
+        fetch(toolIndexUrl)
+            .then(res => res.json())
+            .then(data => {
+                const enabledTools = data.tools.filter(tool => {
+                    if (tool.enable === false) return false;
+                    if (tool.mobileOnly === true && !isMobile) return false;
+                    if (tool.desktopOnly === true && isMobile) return false;
+                    return true;
+                });
 
                 const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
 
@@ -214,71 +291,71 @@
                     if (tool.modalIconColor) {
                         button.style.backgroundColor = tool.modalIconColor;
                     }
-                    button.onclick = () => {						
-						modalIframe.src = `${tool.path}${tool.name}.html?modal=true`;
+                    button.onclick = () => {                       
+                        modalIframe.src = `${tool.path}${tool.name}.html?modal=true`;
                         modalOverlay.style.display = 'flex';
                     };
                     modalButtonContainer.appendChild(button);
                 });
 
-				const toolsByParent = enabledTools.reduce((acc, tool) => {
-					const parent = tool.parent || "기타";
-					if (!acc[parent]) acc[parent] = [];
-					acc[parent].push(tool);
-					return acc;
-				}, {});
+                const toolsByParent = enabledTools.reduce((acc, tool) => {
+                    const parent = tool.parent || "기타";
+                    if (!acc[parent]) acc[parent] = [];
+                    acc[parent].push(tool);
+                    return acc;
+                }, {});
 
-				Object.keys(toolsByParent).forEach(parent => {
-					const parentLi = document.createElement("li");
-					parentLi.className = "nav-item";
+                Object.keys(toolsByParent).forEach(parent => {
+                    const parentLi = document.createElement("li");
+                    parentLi.className = "nav-item";
 
-					const parentLink = document.createElement("a");
-					parentLink.href = `#collapse-${parent.replace(/\s/g, '')}`;
-					parentLink.className = "nav-link link-dark";
-					parentLink.setAttribute("data-bs-toggle", "collapse");
-					parentLink.setAttribute("aria-expanded", "true");
-					parentLink.innerHTML = `<i class="bi bi-folder me-2"></i>${parent}<span class="ms-auto flex-shrink-0"><i class="bi bi-chevron-down collapse-icon"></i></span>`;
-					parentLi.appendChild(parentLink);
+                    const parentLink = document.createElement("a");
+                    parentLink.href = `#collapse-${parent.replace(/\s/g, '')}`;
+                    parentLink.className = "nav-link link-dark";
+                    parentLink.setAttribute("data-bs-toggle", "collapse");
+                    parentLink.setAttribute("aria-expanded", "true");
+                    parentLink.innerHTML = `<i class="bi bi-folder me-2"></i>${parent}<span class="ms-auto flex-shrink-0"><i class="bi bi-chevron-down collapse-icon"></i></span>`;
+                    parentLi.appendChild(parentLink);
 
-					const subUl = document.createElement("ul");
-					subUl.id = `collapse-${parent.replace(/\s/g, '')}`;
-					subUl.className = "nav nav-pills flex-column ms-3 collapse show";
+                    const subUl = document.createElement("ul");
+                    subUl.id = `collapse-${parent.replace(/\s/g, '')}`;
+                    subUl.className = "nav nav-pills flex-column ms-3 collapse show";
 
-					subUl.addEventListener('show.bs.collapse', () => {
-						parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
-					});
-					subUl.addEventListener('hide.bs.collapse', () => {
-						parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-up', 'bi-chevron-down');
-					});
+                    subUl.addEventListener('show.bs.collapse', () => {
+                        parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
+                    });
+                    subUl.addEventListener('hide.bs.collapse', () => {
+                        parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-up', 'bi-chevron-down');
+                    });
 
-					toolsByParent[parent].forEach(tool => {
-						const item = document.createElement("li");
-						item.className = "nav-item";
-						const icon = getIconForTool(tool);
+                    toolsByParent[parent].forEach(tool => {
+                        const item = document.createElement("li");
+                        item.className = "nav-item";
+                        const icon = getIconForTool(tool);
 
-						const link = document.createElement('a');
-						link.href = '#';
-						link.className = 'nav-link link-dark';
-						link.innerHTML = `<i class="bi ${icon} me-2"></i>${tool.name}`;
-						item.appendChild(link);
+                        const link = document.createElement('a');
+                        link.href = '#';
+                        link.className = 'nav-link link-dark';
+                        link.innerHTML = `<i class="bi ${icon} me-2"></i>${tool.name}`;
+                        item.appendChild(link);
 
-						link.onclick = (e) => {
-							e.preventDefault();
-							const currentActive = document.querySelector('.nav-link.active-tool');
-							if (currentActive) currentActive.classList.remove('active-tool');
-							link.classList.add('active-tool');
-							renderTool(tool);
-						};
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            const currentActive = document.querySelector('.nav-link.active-tool');
+                            if (currentActive) currentActive.classList.remove('active-tool');
+                            link.classList.add('active-tool');
+                            renderTool(tool);
+                        };
 
-						subUl.appendChild(item);
-					});
+                        subUl.appendChild(item);
+                    });
 
-					if (toolsByParent[parent].length > 0) {
-						parentLi.appendChild(subUl);
-						toolList.appendChild(parentLi);
-					}
-				});
-			});
+                    if (toolsByParent[parent].length > 0) {
+                        parentLi.appendChild(subUl);
+                        toolList.appendChild(parentLi);
+                    }
+                });
+            });
 
         modalClose.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
@@ -291,6 +368,6 @@
                 modalIframe.src = '';
             }
         });
-	</script>
+    </script>
 </body>
 </html>
