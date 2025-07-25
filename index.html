@@ -234,13 +234,9 @@
         }
 
         function renderTool(tool) {
-            let html = `
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h2 class="card-title mb-0" title="${tool.description}">${tool.name}</h2>
-                    </div>
-                </div>
-            `;
+            // **[수정]** 제목을 표시하는 card-header 부분을 제거하고,
+            //            바로 콘텐츠(iframe 또는 form)가 오도록 html 변수를 빈 문자열로 초기화합니다.
+            let html = ``;
 
             if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
                 const htmlPath = `${tool.path}${tool.name}.html`;
@@ -268,7 +264,7 @@
                     const zipPath = `${tool.path}${tool.name}.zip`;
                     html += `<a href="${zipPath}" class="btn btn-primary" download>
                                 <i class="bi bi-download"></i> 다운로드 (.zip)
-                             </a>`;
+                            </a>`;
                 }
             }
 
