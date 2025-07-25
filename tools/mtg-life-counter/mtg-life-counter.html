@@ -221,6 +221,7 @@
 </div>
 
 <script>
+    // 외부(index.html)에서 호출될 수 있도록 전역 스코프에 함수를 정의합니다.
     function onModalClose() {
         if (window.saveLifeTotals) {
             window.saveLifeTotals();
@@ -232,7 +233,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const dataSpace = (window.parent || window).session_data || {};
+        // [수정] 상위 창의 session_data 객체에 안정적으로 연결하고, 없으면 생성합니다.
+        const parentWindow = window.parent || window;
+        if (!parentWindow.session_data) {
+            parentWindow.session_data = {};
+        }
+        const dataSpace = parentWindow.session_data;
+
+        // 최초 로딩 시, 저장된 데이터가 없으면 기본값으로 초기화
         if (!dataSpace.settings) {
             dataSpace.settings = {
                 lifeMax: 20, diceSides: 20, playerCount: 2, 
@@ -254,6 +262,8 @@
         const diceSidesMenu = document.getElementById('diceSidesMenu');
         const threePlayerLayoutButtonsContainer = document.getElementById('three-player-layout-buttons');
         
+        // [수정] 누락되었던 변수 선언 추가
+        let activeUI = null;
         let players = []; 
         let localSettings = JSON.parse(JSON.stringify(dataSpace.settings));
 
@@ -338,6 +348,7 @@
         }
 
         function showMenu(container, labelText, options, onSelect) {
+            activeUI = 'menu'; // 메뉴가 열리면 activeUI 상태 변경
             container.innerHTML = `<div class="dice-menu-label">${labelText}</div>`;
             const group = document.createElement('div');
             group.className = 'dice-option-group';
@@ -422,6 +433,7 @@
             hideAllOverlays();
             centerButtons.style.display = 'none';
             overlay.style.display = 'block';
+            activeUI = 'diceRolling';
 
             players.forEach(player => {
                 player.elements.area.classList.add('dice-rolling');
@@ -477,8 +489,6 @@
             });
             dataSpace.lifeCounter = lifeTotalsToSave;
             dataSpace.playerRotations = rotationsToSave;
-            
-            // localSettings에 있는 playerCount를 dataSpace에도 반영
             dataSpace.settings = localSettings;
         };
 
@@ -506,6 +516,7 @@
                 hideAllOverlays();
             } else {
                 hideAllOverlays();
+                activeUI = 'reset';
                 e.target.classList.add('confirm-animation');
                 overlay.style.display = 'block';
             }
