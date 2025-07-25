@@ -221,10 +221,7 @@
 </div>
 
 <script>
-    // 외부에서 호출될 수 있도록 전역 스코프에 함수를 정의합니다.
     function onModalClose() {
-        console.log('모달 닫힘 이벤트 수신: 현재 상태를 저장합니다.');
-        // window.saveLifeTotals 함수가 존재하면 호출합니다.
         if (window.saveLifeTotals) {
             window.saveLifeTotals();
         }
@@ -236,7 +233,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const dataSpace = (window.parent || window).session_data || {};
-        // 최초 로딩 시, 저장된 데이터가 없으면 기본값으로 초기화
         if (!dataSpace.settings) {
             dataSpace.settings = {
                 lifeMax: 20, diceSides: 20, playerCount: 2, 
@@ -259,7 +255,6 @@
         const threePlayerLayoutButtonsContainer = document.getElementById('three-player-layout-buttons');
         
         let players = []; 
-        // 로컬 상태 객체: 현재 모달 내의 모든 상태 변경은 여기에 우선 기록됩니다.
         let localSettings = JSON.parse(JSON.stringify(dataSpace.settings));
 
         class Player {
@@ -271,7 +266,7 @@
                 this.createDOM();
                 this.updateDisplay();
             }
-
+            
             createDOM() {
                 this.elements.area = document.createElement('div');
                 this.elements.area.id = `${this.id}-area`;
@@ -376,7 +371,7 @@
             let lifeData = dataSpace.lifeCounter;
             let rotationData = dataSpace.playerRotations;
             
-            if (parseInt(localSettings.playerCount, 10) !== parseInt(count, 10)) {
+            if (parseInt(dataSpace.settings.playerCount, 10) !== parseInt(count, 10)) {
                 lifeData = {};
                 rotationData = {};
                 if (parseInt(count, 10) === 2) rotationData['player-1'] = 180;
@@ -482,6 +477,8 @@
             });
             dataSpace.lifeCounter = lifeTotalsToSave;
             dataSpace.playerRotations = rotationsToSave;
+            
+            // localSettings에 있는 playerCount를 dataSpace에도 반영
             dataSpace.settings = localSettings;
         };
 
