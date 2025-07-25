@@ -28,197 +28,204 @@
             font-weight: bold;
         }
         .button-area {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-        }
+			position: absolute;
+			top: 0; left: 0;
+			width: 100%; height: 100%;
+			/* 라이프 증감 버튼 영역 자체가 중앙 버튼을 침범하지 않도록 z-index 조정 */
+			z-index: 10; /* 중앙 버튼(990)보다 훨씬 낮게 설정하여 겹치지 않게 */
+		}
         .increase-button, .decrease-button {
-            position: absolute;
-            left: 0; width: 100%;
-            height: 50%;
-            z-index: 1; /* 라이프 증감 버튼은 플레이어 영역 내에서 가장 위에 */
-        }
+			position: absolute;
+			left: 0; width: 100%;
+			height: 50%;
+			/* 이 버튼들은 .button-area 안에 있으므로, .button-area의 z-index를 따릅니다. */
+			/* 따라서 여기의 z-index: 1은 의미가 없습니다. 제거하거나 놔둬도 무방. */
+			/* z-index: 1; */
+		}
         .increase-button { top: 0; }
         .decrease-button { bottom: 0; }
 
-        #center-buttons {
-			display: flex;
-			flex-direction: row; /* 기본적으로 가로 배열 */
-			flex-wrap: wrap; /* 공간이 부족하면 다음 줄로 넘어가도록 */
-			justify-content: center;
-			align-items: center;
-			gap: 0.5rem; /* 버튼 간 간격 줄이기 */
-			padding: 0 1rem; /* 좌우 패딩으로 화면 가장자리와의 여백 조절 */
-			box-sizing: border-box; /* 패딩이 width에 포함되도록 */
+        /* 중앙 버튼 컨테이너 */
+    #center-buttons {
+        display: flex;
+        flex-direction: row; /* 기본적으로 가로 배열 */
+        flex-wrap: wrap; /* 공간이 부족하면 다음 줄로 넘어가도록 */
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem; /* 버튼 간 간격 줄이기 */
+        padding: 0 1rem; /* 좌우 패딩으로 화면 가장자리와의 여백 조절 */
+        box-sizing: border-box; /* 패딩이 width에 포함되도록 */
 
-			/* position: absolute; 등 기존 위치 관련 속성은 그대로 유지 */
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 90%; /* 화면 너비의 90% 사용 */
-			max-width: 400px; /* 너무 커지지 않도록 최대 너비 설정 */
-		}
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%; /* 화면 너비의 90% 사용 */
+        max-width: 400px; /* 너무 커지지 않도록 최대 너비 설정 */
 
-        #center-buttons button {
-			flex: 1 1 auto; /* 가능한 공간을 균등하게 차지하고, 필요시 줄바꿈 */
-			min-width: 80px; /* 각 버튼의 최소 너비 설정 */
-			height: 60px; /* 버튼 높이 고정 */
-			font-size: 1.1rem; /* 모바일에서 적절한 글자 크기 */
-			white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-			padding: 0.5rem; /* 내부 패딩 조정 */
-		}
+        /* 중앙 버튼이 오버레이 위에 와야 하므로 z-index를 1010으로 설정 (오버레이 900, 모달/설정 1000) */
+        z-index: 1010; /* 오버레이보다 높게 설정 */
+    }
+
+    #center-buttons button {
+        flex: 1 1 30%; /* 각 버튼이 최소 30% 너비를 가지도록 (3개면 90% 차지) */
+        min-width: 80px; /* 각 버튼의 최소 너비 설정 (너무 작아지지 않게) */
+        height: 60px; /* 버튼 높이 고정 */
+        font-size: 1.1rem; /* 모바일에서 적절한 글자 크기 */
+        white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+        padding: 0.5rem; /* 내부 패딩 조정 */
+    }
 
 		/* '확인' 버튼 애니메이션 스타일은 그대로 유지 */
-		#center-buttons button.confirm-animation {
-			font-size: 1.8rem; /* 모바일에서 너무 크지 않게 조절 */
-			animation: pulse 1s infinite alternate;
-		}
+    #center-buttons button.confirm-animation {
+        font-size: 1.8rem; /* 모바일에서 너무 크지 않게 조절 */
+        animation: pulse 1s infinite alternate;
+        /* '확인' 버튼이 하이라이트되려면 오버레이 위로 올라와야 합니다.
+           이미 #center-buttons의 z-index가 높으므로 별도 조정은 필요 없지만,
+           만약 오버레이 색상이 너무 진해서 버튼이 묻힌다면 background-color를 더 밝게 고려해볼 수 있습니다. */
+        color: #e74c3c; /* 텍스트 색상을 더 선명하게 (빨간색) */
+        background-color: #fff; /* 배경색을 흰색으로 변경하여 강조 */
+        border: 2px solid #e74c3c; /* 강조 테두리 추가 */
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.7); /* 그림자 효과로 더욱 강조 */
+    }
 
-		/* pulse 애니메이션 정의 */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-        }
+		    /* pulse 애니메이션 정의 */
+    @keyframes pulse {
+        0% { transform: scale(1) translateX(-50%); } /* transform이 translate(-50%, -50%)를 덮어쓰지 않도록 수정 */
+        100% { transform: scale(1.1) translateX(-50%); }
+    }
 
         #dice-area {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            display: none; /* 초기에는 숨김 */
-            flex-direction: column;
-            justify-content: space-between;
-            pointer-events: none; /* 오버레이가 클릭을 처리하므로 주사위 영역 자체는 클릭 불가 */
-            z-index: 998; /* 오버레이 바로 아래 */
-        }
-        .dice-row {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1rem;
-        }
-        .dice {
-            width: 4rem; /* 모바일에서 주사위 크기 약간 키움 */
-			height: 4rem;
-			font-size: 2rem; /* 주사위 숫자 크기 키움 */
-        }
-        .dice.finalized {
-            background: #cce5ff;
-            font-weight: bold;
-        }
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: none; /* 초기에는 숨김 */
+        flex-direction: column;
+        justify-content: space-between;
+        pointer-events: none; /* 오버레이가 클릭을 처리하므로 주사위 영역 자체는 클릭 불가 */
+        z-index: 998; /* 오버레이 바로 아래 */
+    }
+    .dice-row {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    .dice {
+        width: 4rem; /* 모바일에서 주사위 크기 약간 키움 */
+        height: 4rem;
+        font-size: 2rem; /* 주사위 숫자 크기 키움 */
+    }
+    .dice.finalized {
+        background: #cce5ff;
+        font-weight: bold;
+    }
 
         .overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 900; /* 중앙 버튼보다 낮은 z-index */
-            display: none;
-            pointer-events: none; /* 기본적으로는 클릭을 통과시킴. 필요할 때 'auto'로 변경하여 막음 */
-        }
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 900; /* 중앙 버튼보다 낮은 z-index */
+        display: none;
+        pointer-events: none; /* 기본적으로는 클릭을 통과시킴. 필요할 때 'auto'로 변경하여 막음 */
+    }
 
-        #settings-panel, .dice-menu {
-            z-index: 1000; /* 오버레이 위로 */
-            pointer-events: auto; /* 자체적으로 클릭 가능하게 */
-        }
-        #settings-panel {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            display: none;
-            min-width: 250px;
-            text-align: center;
-        }
-        #settings-panel input {
-            margin: 0.5rem 0;
-            width: 80%;
-            padding: 0.4rem;
-            font-size: 1rem;
-            border-radius: 0.4rem;
-            border: 1px solid #ccc;
-        }
-        #settings-panel button {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            border: none;
-            border-radius: 0.5rem;
-            background-color: #2c3e50;
-            color: white;
-            cursor: pointer;
-        }
+        /* 설정 패널 및 주사위 메뉴 (모달처럼 동작하는 UI) */
+    #settings-panel, .dice-menu {
+        z-index: 1000; /* 오버레이 위로, 중앙 버튼(1010)보다는 낮게 */
+        pointer-events: auto; /* 자체적으로 클릭 가능하게 */
+    }
+    #settings-panel {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        display: none;
+        min-width: 250px;
+        text-align: center;
+    }
+    #settings-panel input {
+        margin: 0.5rem 0;
+        width: 80%;
+        padding: 0.4rem;
+        font-size: 1rem;
+        border-radius: 0.4rem;
+        border: 1px solid #ccc;
+    }
+    #settings-panel button {
+        margin-top: 1rem;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        background-color: #2c3e50;
+        color: white;
+        cursor: pointer;
+    }
+
+    .dice-menu-label {
+        text-align: center;
+        margin-bottom: 0.8rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+        width: 100%;
+    }
+    .dice-menu {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        display: none;
+        z-index: 1000; /* 오버레이 위, 중앙 버튼보다 낮게 */
+        width: 80%;
+        max-width: 300px;
+        box-sizing: border-box;
         
-		.dice-menu {
-			position: absolute;
-			background: rgba(0, 0, 0, 0.85);
-			color: white;
-			padding: 1rem;
-			border-radius: 0.5rem;
-			display: none; /* JS에 의해 block으로 변경됨 */
-			z-index: 1000;
-			width: 80%; /* 모바일 화면에 맞게 너비 조절 */
-			max-width: 300px; /* 너무 커지지 않도록 */
-			box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+        display: flex; /* Flexbox 활성화 */
+        flex-direction: column; /* 세로 정렬 */
+        align-items: center; /* 가로 중앙 정렬 */
+        justify-content: center;
 
-			/* 이 부분이 중요합니다. flexbox를 사용하여 내부 요소들을 정렬합니다. */
-			display: flex; /* flexbox 사용 */
-			flex-direction: column; /* 레이블과 옵션 그룹을 세로로 배치 */
-			align-items: center; /* 가로 중앙 정렬 */
-			justify-content: center; /* 세로 중앙 정렬 (필요시) */
+        left: 50%;
+        transform: translateX(-50%);
+    }
 
-			left: 50%;
-			transform: translateX(-50%);
-		}
+    .dice-option-group {
+        display: flex;
+        flex-wrap: wrap; /* 버튼들이 한 줄에 다 안 들어가면 다음 줄로 */
+        justify-content: center; /* 버튼들을 중앙 정렬 */
+        gap: 0.5rem; /* 버튼들 사이 간격 */
+        width: 100%; /* 컨테이너 너비 100% 사용 */
+        margin-bottom: 0.5rem;
+    }
 
-		.dice-menu-label {
-			text-align: center;
-			margin-bottom: 0.8rem; /* 레이블과 버튼 사이 간격 */
-			font-weight: bold;
-			font-size: 1.1rem; /* 레이블 글자 크기 조정 */
-			width: 100%; /* 레이블이 컨테이너 전체 너비를 차지하도록 */
-		}
+    .dice-option {
+        flex-basis: auto;
+        min-width: 50px;
+        padding: 0.8rem 1.2rem;
+        margin: 0.2rem;
+        
+        background: #444;
+        color: white;
+        border-radius: 0.3rem;
+        cursor: pointer;
+        text-align: center;
+        border: 1px solid #555;
+        transition: background 0.2s ease, transform 0.1s ease;
+    }
 
-		/* 주사위 옵션 버튼들을 감싸는 새로운 div를 만들거나,
-		dice-option 자체를 flex 컨테이너 안에 넣고 싶다면,
-		dice-option을 `display: inline-flex`로 변경하고 `flex-wrap`을 추가합니다. */
-		.dice-option-group { /* 이 클래스는 JS에서 생성할 새로운 컨테이너에 사용 */
-			display: flex;
-			flex-wrap: wrap; /* 버튼들이 한 줄에 다 안 들어가면 다음 줄로 */
-			justify-content: center; /* 버튼들을 중앙 정렬 */
-			gap: 0.5rem; /* 버튼들 사이 간격 */
-			width: 100%; /* 컨테이너 너비 100% 사용 */
-			margin-bottom: 0.5rem; /* 각 그룹 하단에 간격 추가 (선택 사항) */
-		}
+    .dice-option:hover {
+        background: #666;
+        transform: translateY(-1px);
+    }
 
-		.dice-option {
-			/* display: inline-block; 대신 flex 아이템으로 동작하도록 변경 */
-			/* width: auto; 대신 flex-basis를 사용하거나 최소 너비만 설정 */
-			flex-basis: auto; /* 내용물에 따라 너비 조절 */
-			min-width: 50px; /* 각 버튼의 최소 너비 설정 (모바일에서 너무 작아지지 않도록) */
-			padding: 0.8rem 1.2rem; /* 패딩을 더 주어 터치 영역 확보 */
-			margin: 0.2rem; /* 간격 조정 */
-			
-			/* 기존 스타일 */
-			background: #444;
-			color: white;
-			border-radius: 0.3rem;
-			cursor: pointer;
-			text-align: center;
-			border: 1px solid #555;
-			transition: background 0.2s ease, transform 0.1s ease;
-		}
-
-        .dice-option:hover {
-            background: #666; /* 호버 시 색상 변경 */
-            transform: translateY(-1px); /* 살짝 위로 뜨는 효과 */
-        }
-
-        .dice-option:active {
-            transform: translateY(0); /* 클릭 시 원상 복귀 */
-            background: #333; /* 클릭 시 더 어둡게 */
-        }
+    .dice-option:active {
+        transform: translateY(0);
+        background: #333;
+    }
     </style>
 </head>
 <body>
