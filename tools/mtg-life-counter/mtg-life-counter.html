@@ -149,27 +149,65 @@
             color: white;
             cursor: pointer;
         }
-        .dice-menu-label {
-            text-align: center;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-        .dice-menu {
-			/* 기존 스타일 유지하면서 위치 조정 */
-			left: 50%;
-			transform: translateX(-50%);
+        
+		.dice-menu {
+			position: absolute;
+			background: rgba(0, 0, 0, 0.85);
+			color: white;
+			padding: 1rem;
+			border-radius: 0.5rem;
+			display: none; /* JS에 의해 block으로 변경됨 */
+			z-index: 1000;
 			width: 80%; /* 모바일 화면에 맞게 너비 조절 */
 			max-width: 300px; /* 너무 커지지 않도록 */
-			box-sizing: border-box;
-			text-align: center; /* 내부 요소 중앙 정렬 */
+			box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+
+			/* 이 부분이 중요합니다. flexbox를 사용하여 내부 요소들을 정렬합니다. */
+			display: flex; /* flexbox 사용 */
+			flex-direction: column; /* 레이블과 옵션 그룹을 세로로 배치 */
+			align-items: center; /* 가로 중앙 정렬 */
+			justify-content: center; /* 세로 중앙 정렬 (필요시) */
+
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
+		.dice-menu-label {
+			text-align: center;
+			margin-bottom: 0.8rem; /* 레이블과 버튼 사이 간격 */
+			font-weight: bold;
+			font-size: 1.1rem; /* 레이블 글자 크기 조정 */
+			width: 100%; /* 레이블이 컨테이너 전체 너비를 차지하도록 */
+		}
+
+		/* 주사위 옵션 버튼들을 감싸는 새로운 div를 만들거나,
+		dice-option 자체를 flex 컨테이너 안에 넣고 싶다면,
+		dice-option을 `display: inline-flex`로 변경하고 `flex-wrap`을 추가합니다. */
+		.dice-option-group { /* 이 클래스는 JS에서 생성할 새로운 컨테이너에 사용 */
+			display: flex;
+			flex-wrap: wrap; /* 버튼들이 한 줄에 다 안 들어가면 다음 줄로 */
+			justify-content: center; /* 버튼들을 중앙 정렬 */
+			gap: 0.5rem; /* 버튼들 사이 간격 */
+			width: 100%; /* 컨테이너 너비 100% 사용 */
+			margin-bottom: 0.5rem; /* 각 그룹 하단에 간격 추가 (선택 사항) */
 		}
 
 		.dice-option {
-			display: inline-block; /* 버튼들이 한 줄에 여러 개 표시되도록 */
-			width: auto; /* 내용에 따라 너비 자동 조절 */
-			min-width: 45px; /* 최소 너비 지정 */
-			padding: 0.6rem 0.8rem; /* 패딩 조정 */
+			/* display: inline-block; 대신 flex 아이템으로 동작하도록 변경 */
+			/* width: auto; 대신 flex-basis를 사용하거나 최소 너비만 설정 */
+			flex-basis: auto; /* 내용물에 따라 너비 조절 */
+			min-width: 50px; /* 각 버튼의 최소 너비 설정 (모바일에서 너무 작아지지 않도록) */
+			padding: 0.8rem 1.2rem; /* 패딩을 더 주어 터치 영역 확보 */
 			margin: 0.2rem; /* 간격 조정 */
+			
+			/* 기존 스타일 */
+			background: #444;
+			color: white;
+			border-radius: 0.3rem;
+			cursor: pointer;
+			text-align: center;
+			border: 1px solid #555;
+			transition: background 0.2s ease, transform 0.1s ease;
 		}
 
         .dice-option:hover {
@@ -425,27 +463,31 @@
                 label.textContent = type === 'count' ? '굴릴 주사위 개수 선택' : '주사위 면 수 설정';
                 container.appendChild(label);
 
+                // 새로운 컨테이너 생성: dice-option들을 여기에 담습니다.
+                const optionsGroup = document.createElement('div');
+                optionsGroup.className = 'dice-option-group'; // 이전에 정의한 CSS 클래스 적용
+                container.appendChild(optionsGroup); // 주 메뉴 컨테이너에 추가
+
                 options.forEach(option => {
                     const div = document.createElement('div');
                     div.className = 'dice-option';
                     div.textContent = option;
                     div.addEventListener('click', () => {
                         if (type === 'count') {
-                            hideAllOverlays(); // 메뉴 숨기고 오버레이도 숨김
+                            hideAllOverlays();
                             rollDiceVisual(option, dataSpace.settings.diceSides);
                         } else if (type === 'sides') {
-                            dataSpace.settings.diceSides = option; // 주사위 면 수 설정
-                            hideAllOverlays(); // 메뉴 숨기고 오버레이도 숨김
+                            dataSpace.settings.diceSides = option;
+                            hideAllOverlays();
                         }
                     });
-                    container.appendChild(div);
+                    optionsGroup.appendChild(div); // 새로 만든 optionsGroup에 추가
                 });
 
-                // 메뉴 위치 조정
                 container.style.top = (type === 'count') ? '10%' : '70%';
                 container.style.left = '50%';
                 container.style.transform = 'translateX(-50%)';
-                container.style.display = 'block';
+                container.style.display = 'block'; // JS에 의해 메뉴가 보이도록 함
             }
 
             // 주사위 시각적으로 굴리기
