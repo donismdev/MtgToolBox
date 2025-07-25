@@ -65,14 +65,17 @@
         }
         .player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
 
-        .font-size-small .life-total { font-size: 10vh; }
-        .font-size-medium .life-total { font-size: 13vh; }
-        .font-size-large .life-total { font-size: 16vh; }
+        /* [수정] 폰트 크기 옵션 4단계로 변경 */
+        .font-size-small { --life-font-size: 10vh; }
+        .font-size-medium { --life-font-size: 16vh; }
+        .font-size-large { --life-font-size: 20vh; }
+        .font-size-xlarge { --life-font-size: 24vh; }
+        .life-total { font-size: var(--life-font-size); }
+
 
         /* Center Buttons */
         #center-buttons {
             display: flex;
-            /* [수정] 버튼이 한 줄에 표시되도록 wrap 해제 */
             flex-wrap: nowrap; 
             justify-content: center;
             gap: 0.5rem; 
@@ -85,12 +88,14 @@
             transition: top 0.3s ease;
         }
 
+        /* [수정] 폰트 크기 옵션에 맞춰 버튼 위치 조정 로직 업데이트 */
         body.buttons-raised #center-buttons { top: 40%; }
-        body.buttons-raised.font-size-medium #center-buttons { top: 38%; }
-        body.buttons-raised.font-size-large #center-buttons { top: 35%; }
+        body.buttons-raised.font-size-medium #center-buttons { top: 35%; }
+        body.buttons-raised.font-size-large #center-buttons { top: 32%; }
+        body.buttons-raised.font-size-xlarge #center-buttons { top: 28%; }
+
 
         #center-buttons button {
-            /* [수정] 버튼이 유연하게 크기를 조절하도록 변경 */
             flex-grow: 1;
             flex-basis: 0;
             height: 50px; 
@@ -124,7 +129,6 @@
         .individual-dice-wrapper {
             display: flex; gap: 0.5rem; overflow-x: auto;
             justify-content: center; flex-wrap: wrap;
-            /* [수정] 더 많은 주사위가 보이도록 최대 높이 늘리기 */
             max-height: calc(3rem * 3 + 1rem); 
             scrollbar-width: none;
         }
@@ -192,7 +196,7 @@
         .player-area.player-pos-bottom-right .rotate-button { top: 10px; right: 10px; }
     </style>
 </head>
-<body class="font-size-small">
+<body>
 <div id="overlay" class="overlay"></div>
 <div id="player-count-menu" class="dice-menu"></div>
 <div id="diceCountMenu" class="dice-menu"></div>
@@ -351,7 +355,7 @@
         }
         
         function applyLifeFontSize(size) {
-            body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
+            body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large', 'font-size-xlarge');
             body.classList.add(`font-size-${size}`);
             dataSpace.settings.lifeFontSize = size;
         }
@@ -501,8 +505,8 @@
                 hideAllOverlays();
             });
 
-            const showFontMenu = () => showMenu(fontSizeMenu, '폰트 크기 선택', ['기본', '보통', '크게'], (selection) => {
-                const sizeMap = {'기본': 'small', '보통': 'medium', '크게': 'large'};
+            const showFontMenu = () => showMenu(fontSizeMenu, '폰트 크기 선택', ['작음', '보통', '크게', '아주 크게'], (selection) => {
+                const sizeMap = {'작음': 'small', '보통': 'medium', '크게': 'large', '아주 크게': 'xlarge'};
                 applyLifeFontSize(sizeMap[selection]);
                 hideAllOverlays();
             });
