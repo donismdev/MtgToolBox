@@ -1,89 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>MTG Ability Finder</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-	<style>
-				body {
-			background-color: #f4f4f4;
-			font-family: system-ui, sans-serif;
-		}
-		#searchSection {
-			max-width: 800px;
-			margin: 0 auto;
-			position: relative;
-		}
-		#abilityInput {
-			font-size: 1.5rem;
-			padding: 1rem;
-			height: 4rem;
-		}
-		#suggestionBox {
-			background: white;
-			border: 1px solid #ccc;
-			border-radius: 0.5rem;
-			margin-top: 4px;
-			max-height: 200px;
-			overflow-y: auto;
-			padding-left: 0;
-			position: absolute;
-			width: 100%;
-			z-index: 1000;
-			list-style: none;
-		}
-		.suggestion-item {
-			padding: 0.6rem 1rem;
-			cursor: pointer;
-		}
-		.suggestion-item:hover,
-		.suggestion-item.active {
-			background-color: #007bff;
-			color: white;
-		}
-		#abilityList {
-			margin-top: 2rem;
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0.5rem;
-			justify-content: center;
-		}
-		.ability-badge {
-			padding: 0.6rem 1rem;
-			background-color: #e0e0e0;
-			border-radius: 1rem;
-			cursor: pointer;
-			font-weight: 500;
-			transition: background-color 0.2s;
-		}
-		.ability-badge:hover {
-			background-color: #c0c0c0;
-		}
-		#divider {
-			margin: 3rem 0 1rem 0;
-			border-bottom: 2px solid #bbb;
-		}
-		#abilityDetails {
-			display: none;
-			margin-top: 2rem;
-			text-align: center;
-		}
-		#resetBtn {
-			margin-top: 1.5rem;
-		}
-	</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MTG Ability Finder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        /* HTML 및 Body가 뷰포트를 채우고 flex 컨테이너가 되도록 설정 */
+        html, body {
+            height: 100%; /* 뷰포트 높이 100% */
+            margin: 0;
+            padding: 0;
+            display: flex; /* flexbox 사용 */
+            flex-direction: column; /* 자식 요소들을 세로로 배열 */
+            background-color: #f4f4f4;
+            font-family: system-ui, sans-serif;
+        }
+
+        #searchSection {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            padding: 1rem; /* 모바일에서 좌우 여백 확보 */
+            flex-shrink: 0; /* 키보드 나타나도 이 섹션은 줄어들지 않음 */
+            flex-grow: 0; /* 이 섹션은 공간을 차지하려고 늘어나지 않음 */
+        }
+        #abilityInput {
+            font-size: 1.5rem;
+            padding: 1rem;
+            height: 4rem;
+        }
+        #suggestionBox {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            margin-top: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-left: 0;
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+            list-style: none;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            /* input 아래에 정확히 위치하도록 조정 */
+            top: calc(100% + 5px); /* input 높이 + 약간의 여백 */
+            left: 0;
+            right: 0;
+        }
+        .suggestion-item {
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+        }
+        .suggestion-item:hover,
+        .suggestion-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* 스크롤 가능한 콘텐츠를 담을 새로운 래퍼 */
+        #scrollableContent {
+            flex-grow: 1; /* 남은 세로 공간을 모두 차지 */
+            overflow-y: auto; /* 내용이 넘치면 세로 스크롤 가능 */
+            -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
+            padding: 0 1rem 1rem 1rem; /* 상하좌우 패딩 */
+        }
+
+        #abilityList {
+            margin-top: 0; /* #scrollableContent의 패딩으로 대체되므로 마진 제거 */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        .ability-badge {
+            padding: 0.6rem 1rem;
+            background-color: #e0e0e0;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .ability-badge:hover {
+            background-color: #c0c0c0;
+        }
+        #divider {
+            margin: 3rem 0 1rem 0;
+            border-bottom: 2px solid #bbb;
+        }
+        #abilityDetails {
+            display: none;
+            margin-top: 2rem;
+            text-align: center;
+            padding-bottom: 20px; /* 스크롤 가능 영역 하단 여백 */
+        }
+        #resetBtn {
+            margin-top: 1.5rem;
+        }
+    </style>
 </head>
 <body>
 <div id="searchSection">
-	<input type="text" id="abilityInput" class="form-control mb-1" placeholder="Enter MTG ability keyword" oninput="filterAbilities()" autocomplete="off" />
-	<div id="divider"></div>
-	<div id="abilityList"></div>
-	<div id="abilityDetails">
-		<h2 id="selectedAbility"></h2>
-		<p id="abilityText" class="mt-3"></p>
-		<button class="btn btn-secondary" id="resetBtn" onclick="resetView()">Reset</button>
-	</div>
+    <input type="text" id="abilityInput" class="form-control mb-1" placeholder="Enter MTG ability keyword" oninput="filterAbilities()" autocomplete="off" />
+    </div>
+
+<div id="scrollableContent">
+    <div id="divider"></div>
+    <div id="abilityList"></div>
+    <div id="abilityDetails">
+        <h2 id="selectedAbility"></h2>
+        <p id="abilityText" class="mt-3"></p>
+        <button class="btn btn-secondary" id="resetBtn" onclick="resetView()">Reset</button>
+    </div>
 </div>
 
 <script>
@@ -92,23 +121,12 @@ const abilityInput = document.getElementById("abilityInput");
 const abilityDetails = document.getElementById("abilityDetails");
 const selectedAbility = document.getElementById("selectedAbility");
 const abilityText = document.getElementById("abilityText");
+const scrollableContent = document.getElementById("scrollableContent"); // 새로 추가된 요소
 
 const suggestionBox = document.createElement("ul");
 suggestionBox.id = "customSuggestions";
-suggestionBox.style.position = "absolute";
-suggestionBox.style.top = "100%";
-suggestionBox.style.left = "0";
-suggestionBox.style.right = "0";
-suggestionBox.style.zIndex = "1000";
-suggestionBox.style.listStyle = "none";
-suggestionBox.style.margin = "0";
-suggestionBox.style.padding = "0";
-suggestionBox.style.backgroundColor = "#fff";
-suggestionBox.style.border = "1px solid #ccc";
-suggestionBox.style.borderTop = "none";
-suggestionBox.style.maxHeight = "200px";
-suggestionBox.style.overflowY = "auto";
-suggestionBox.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.1)";
+// 스타일은 CSS에서 이미 정의했으므로, 여기서는 기본적인 position과 display만 설정
+suggestionBox.style.position = "absolute"; 
 suggestionBox.style.display = "none";
 
 abilityInput.parentNode.style.position = "relative";
@@ -118,160 +136,215 @@ let abilities = {};
 window.mtgData = {};
 
 fetch('abilities/ability_data.json')
-	.then(res => res.json())
-	.then(data => {
-		window.mtgData = data;
-		abilities = {
-			...data.abilities,
-			...data.evergreen,
-			...data.arena,
-			...data.special
-		};
-		renderAbilityList();
-	});
+    .then(res => res.json())
+    .then(data => {
+        window.mtgData = data;
+        abilities = {
+            ...data.abilities,
+            ...data.evergreen,
+            ...data.arena,
+            ...data.special
+        };
+        renderAbilityList();
+        adjustContentHeight(); // 데이터 로드 후 초기 높이 조정
+    });
 
 function renderAbilityList() {
-	abilityList.innerHTML = "";
-	Object.keys(abilities).forEach(name => {
-		const badge = document.createElement("div");
-		badge.className = "ability-badge";
-		badge.innerText = name;
-		badge.onclick = () => showAbility(name);
-		abilityList.appendChild(badge);
-	});
+    abilityList.innerHTML = "";
+    Object.keys(abilities).forEach(name => {
+        const badge = document.createElement("div");
+        badge.className = "ability-badge";
+        badge.innerText = name;
+        badge.onclick = () => showAbility(name);
+        abilityList.appendChild(badge);
+    });
 }
 
 function formatText(text) {
-	return text.replace(/\{\{([^}]+)\}\}/g, (match, p1) => {
-		const key = p1.toLowerCase();
-		const ref = abilities[key] || mtgData.abilities?.[key];
-		return ref && ref.text ? `<span title="${ref.text}" style="text-decoration: underline dotted; cursor: help;">${p1}</span>` : p1;
-	});
+    return text.replace(/\{\{([^}]+)\}\}/g, (match, p1) => {
+        const key = p1.toLowerCase();
+        const ref = abilities[key] || mtgData.abilities?.[key];
+        return ref && ref.text ? `<span title="${ref.text}" style="text-decoration: underline dotted; cursor: help;">${p1}</span>` : p1;
+    });
 }
 
 function showAbility(name) {
-	let info = abilities[name];
+    let info = abilities[name];
 
-	// ❗ info 자체가 없는 경우
-	if (info === undefined) {
-		console.warn(`No info found for "${name}"`);
-		return;
-	}
+    if (info === undefined) {
+        console.warn(`No info found for "${name}"`);
+        return;
+    }
 
-	// ✅ string이면 객체로 변환
-	if (typeof info === "string") {
-		info = { text: info };
-	}
+    if (typeof info === "string") {
+        info = { text: info };
+    }
 
-	selectedAbility.innerText = name;
+    selectedAbility.innerText = name;
 
-	let label = "";
-	if (mtgData.evergreen?.[name]) {
-		label = `<span class='badge bg-success ms-2'>Evergreen</span>`;
-	} else if (mtgData.arena?.[name]) {
-		label = `<span class='badge bg-warning text-dark ms-2'>Arena-only</span>`;
-	} else if (info.type === "abilityWord") {
-		label = `<span class='badge bg-info ms-2'>Ability Word</span>`;
-	} else if (info.type === "keywordAction") {
-		label = `<span class='badge bg-primary ms-2'>Keyword Action</span>`;
-	} else if (info.type === "keywordAbility") {
-		label = `<span class='badge bg-secondary ms-2'>Keyword Ability</span>`;
-	} else if (mtgData.special?.[name]) {
-		label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
-	}
+    let label = "";
+    if (mtgData.evergreen?.[name]) {
+        label = `<span class='badge bg-success ms-2'>Evergreen</span>`;
+    } else if (mtgData.arena?.[name]) {
+        label = `<span class='badge bg-warning text-dark ms-2'>Arena-only</span>`;
+    } else if (info.type === "abilityWord") {
+        label = `<span class='badge bg-info ms-2'>Ability Word</span>`;
+    } else if (info.type === "keywordAction") {
+        label = `<span class='badge bg-primary ms-2'>Keyword Action</span>`;
+    } else if (info.type === "keywordAbility") {
+        label = `<span class='badge bg-secondary ms-2'>Keyword Ability</span>`;
+    } else if (mtgData.special?.[name]) {
+        label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
+    }
 
-	abilityText.innerHTML = formatText(`<p>${info.text}</p>` + label +
-		(info.image ? `<br><img src="${info.image}" style="max-width: 200px; margin-top: 1rem;" />` : "")
-	);
-	abilityList.style.display = "none";
-	abilityDetails.style.display = "block";
-	suggestionBox.style.display = "none";
+    abilityText.innerHTML = formatText(`<p>${info.text}</p>` + label +
+        (info.image ? `<br><img src="${info.image}" style="max-width: 200px; margin-top: 1rem;" />` : "")
+    );
+    abilityList.style.display = "none";
+    abilityDetails.style.display = "block";
+    suggestionBox.style.display = "none";
+    
+    // 내용이 변경될 때 스크롤 맨 위로 이동
+    scrollableContent.scrollTop = 0;
 }
 
 function resetView() {
-	abilityInput.value = "";
-	abilityDetails.style.display = "none";
-	abilityList.style.display = "flex";
-	suggestionBox.style.display = "none";
+    abilityInput.value = "";
+    abilityDetails.style.display = "none";
+    abilityList.style.display = "flex";
+    suggestionBox.style.display = "none";
+    scrollableContent.scrollTop = 0; // 리셋 시 스크롤 맨 위로
 }
 
-abilityInput.addEventListener("keydown", function (e) {
-	const items = suggestionBox.querySelectorAll("li");
-	let index = Array.from(items).findIndex(item => item.classList.contains("selected"));
+// **[핵심 수정]** Visual Viewport API를 사용하여 동적으로 높이 조정
+function adjustContentHeight() {
+    // visualViewport 지원 여부 확인 (구형 브라우저 대비)
+    if (!window.visualViewport) {
+        console.warn("Visual Viewport API not supported. Dynamic height adjustment may not work.");
+        // 이전 scrollIntoView 로직을 fallback으로 남겨둘 수도 있음
+        return;
+    }
 
-	if (e.key === "ArrowDown") {
-		if (items.length > 0) {
-			e.preventDefault();
-			if (index >= 0) items[index].classList.remove("selected");
-			index = (index + 1) % items.length;
-			items[index].classList.add("selected");
-		}
-	} else if (e.key === "ArrowUp") {
-		if (items.length > 0) {
-			e.preventDefault();
-			if (index >= 0) items[index].classList.remove("selected");
-			index = (index - 1 + items.length) % items.length;
-			items[index].classList.add("selected");
-		}
-	} else if (e.key === "Enter") {
-		if (index >= 0) {
-			e.preventDefault();
-			items[index].click();
-		} else {
-			const query = abilityInput.value.toLowerCase();
-			const matched = Object.keys(abilities).filter(name => name.toLowerCase() === query);
-			if (matched.length === 1) {
-				showAbility(matched[0]);
-				suggestionBox.style.display = "none";
-			}
-		}
-	}
+    const searchSection = document.getElementById('searchSection');
+    const searchSectionHeight = searchSection.offsetHeight; // 검색 섹션의 실제 높이
+
+    // visualViewport.height는 가상 키보드가 나타나면 줄어듭니다.
+    const availableViewportHeight = window.visualViewport.height;
+
+    // scrollableContent가 차지할 높이 계산
+    // 전체 뷰포트 높이에서 검색 섹션의 높이를 뺌
+    const newScrollableHeight = availableViewportHeight - searchSectionHeight;
+
+    // 계산된 높이를 적용 (음수가 되지 않도록 Math.max 사용)
+    scrollableContent.style.height = `${Math.max(0, newScrollableHeight)}px`;
+    
+    // input 필드에 포커스가 있을 경우, 키보드 위에 노출되도록 강제로 스크롤
+    // 이 부분은 보조적인 역할이며, 주된 해결책은 높이 조정입니다.
+    if (document.activeElement === abilityInput) {
+        setTimeout(() => { // 레이아웃 조정 후 스크롤이 적용되도록 약간의 딜레이
+            abilityInput.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+        }, 50);
+    }
+}
+
+// visualViewport 크기 변경 감지 (가상 키보드 출현/사라짐, 화면 회전 등)
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', adjustContentHeight);
+    window.visualViewport.addEventListener('scroll', adjustContentHeight); // 가끔 스크롤도 레이아웃에 영향을 줌
+} else {
+    // visualViewport를 지원하지 않는 경우 window.resize를 사용하지만, 정확도는 떨어짐
+    window.addEventListener('resize', adjustContentHeight);
+}
+
+
+// 페이지 로드 시 초기 높이 조정
+document.addEventListener('DOMContentLoaded', adjustContentHeight);
+
+
+// 이전 scrollIntoView 로직은 제거 (새로운 동적 높이 조정이 주된 해결책이므로)
+// abilityInput.addEventListener("focus", ... ) 제거
+
+
+abilityInput.addEventListener("keydown", function (e) {
+    const items = suggestionBox.querySelectorAll("li");
+    let index = Array.from(items).findIndex(item => item.classList.contains("selected"));
+
+    if (e.key === "ArrowDown") {
+        if (items.length > 0) {
+            e.preventDefault();
+            if (index >= 0) items[index].classList.remove("selected");
+            index = (index + 1) % items.length;
+            items[index].classList.add("selected");
+            // 선택된 항목이 스크롤되도록
+            items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    } else if (e.key === "ArrowUp") {
+        if (items.length > 0) {
+            e.preventDefault();
+            if (index >= 0) items[index].classList.remove("selected");
+            index = (index - 1 + items.length) % items.length;
+            items[index].classList.add("selected");
+            // 선택된 항목이 스크롤되도록
+            items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    } else if (e.key === "Enter") {
+        if (index >= 0) {
+            e.preventDefault();
+            items[index].click();
+        } else {
+            const query = abilityInput.value.toLowerCase();
+            const matched = Object.keys(abilities).filter(name => name.toLowerCase() === query);
+            if (matched.length === 1) {
+                showAbility(matched[0]);
+                suggestionBox.style.display = "none";
+            }
+        }
+    }
 });
 
 function filterAbilities() {
-	const query = abilityInput.value.toLowerCase();
-	suggestionBox.innerHTML = "";
+    const query = abilityInput.value.toLowerCase();
+    suggestionBox.innerHTML = "";
 
-	if (query === "") {
-		suggestionBox.style.display = "none";
-		return;
-	}
+    if (query === "") {
+        suggestionBox.style.display = "none";
+        return;
+    }
 
-	const matched = Object.keys(abilities).filter(name => name.toLowerCase().startsWith(query));
-	const exactMatch = matched.find(name => name.toLowerCase() === query);
+    const matched = Object.keys(abilities).filter(name => name.toLowerCase().startsWith(query));
+    const exactMatch = matched.find(name => name.toLowerCase() === query);
 
-	// ✅ 정확히 1개일 때만 자동 선택
-	if (exactMatch && matched.length === 1) {
-		showAbility(exactMatch);
-		suggestionBox.style.display = "none";
-		return;
-	}
+    if (exactMatch && matched.length === 1) {
+        showAbility(exactMatch);
+        suggestionBox.style.display = "none";
+        return;
+    }
 
-	matched.forEach(name => {
-		const li = document.createElement("li");
-		li.innerText = name;
-		li.style.padding = "8px 12px";
-		li.style.cursor = "pointer";
-		li.onmouseover = () => li.classList.add("selected");
-		li.onmouseout = () => li.classList.remove("selected");
-		li.onclick = () => {
-			abilityInput.value = name;
-			showAbility(name);
-			suggestionBox.style.display = "none";
-		};
-		suggestionBox.appendChild(li);
-	});
+    matched.forEach(name => {
+        const li = document.createElement("li");
+        li.innerText = name;
+        li.style.padding = "8px 12px";
+        li.style.cursor = "pointer";
+        li.onmouseover = () => li.classList.add("selected");
+        li.onmouseout = () => li.classList.remove("selected");
+        li.onclick = () => {
+            abilityInput.value = name;
+            showAbility(name);
+            suggestionBox.style.display = "none";
+        };
+        suggestionBox.appendChild(li);
+    });
 
-	positionSuggestionBox();
-	suggestionBox.style.display = "block";
+    positionSuggestionBox();
+    suggestionBox.style.display = "block";
 }
 
 function positionSuggestionBox() {
-	const inputRect = abilityInput.getBoundingClientRect();
-	const parentRect = abilityInput.parentElement.getBoundingClientRect();
-	const offsetTop = inputRect.bottom - parentRect.top;
+    const inputRect = abilityInput.getBoundingClientRect();
+    const parentRect = abilityInput.parentElement.getBoundingClientRect();
+    const offsetTop = inputRect.bottom - parentRect.top;
 
-	suggestionBox.style.top = `${offsetTop}px`;
+    suggestionBox.style.top = `${offsetTop}px`;
 }
 </script>
 
