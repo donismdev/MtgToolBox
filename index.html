@@ -6,12 +6,11 @@
     <title>MtgToolBox</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="assets/style.css" /> <style>
-        /* 여기에는 index.html에만 필요한 고유한 스타일만 남깁니다. */
+    <link rel="stylesheet" href="assets/style.css" />
+    <style>
         body {
             overflow-x: hidden;
         }
-
         #sidebar {
             position: fixed;
             top: 0;
@@ -25,11 +24,9 @@
             box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
             padding: 1rem;
         }
-
         #sidebar.show {
             transform: translateX(0);
         }
-
         #sidebar .close-btn {
             position: absolute;
             top: 10px;
@@ -39,7 +36,6 @@
             font-size: 1.5rem;
             color: #333;
         }
-
         #sidebar-overlay {
             position: fixed;
             inset: 0;
@@ -47,17 +43,13 @@
             z-index: 1040;
             display: none;
         }
-
         #sidebar-overlay.active {
             display: block;
         }
-
         #content {
             padding: 2rem;
             margin-left: 0;
         }
-
-        /* Modal styles (index.html에서 모달을 직접 제어하므로 여기에 두는 것이 합리적) */
         #modal-overlay {
             position: fixed;
             top: 0;
@@ -70,56 +62,48 @@
             align-items: center;
             z-index: 1000;
         }
-
         #modal-content {
             background-color: white;
-            padding: 0; /* 내부 콘텐츠 iframe이 채우도록 패딩 제거 */
+            padding: 0;
             border-radius: 5px;
             position: relative;
-            /* 이전 width: 80%; height: 80%; 대신 뷰포트 기반으로 크게 설정 */
-            width: 95vw; /* 뷰포트 너비의 95% */
-            height: 95vh; /* 뷰포트 높이의 95% */
+            width: 95vw;
+            height: 95vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* iframe이 모달 컨텐츠 밖으로 나가지 않도록 */
+            overflow: hidden;
         }
-
         #modal-close {
             position: absolute;
-            top: 5px; /* 상단 여백 줄임 */
-            right: 10px; /* 우측 여백 줄임 */
-            font-size: 28px; /* 닫기 버튼 아이콘 크기 약간 키움 */
+            top: 5px;
+            right: 10px;
+            font-size: 28px;
             font-weight: bold;
             cursor: pointer;
             z-index: 1001;
-            color: #ccc; /* 닫기 버튼 색상을 배경과 어우러지게 */
-            text-shadow: 0 0 3px rgba(0,0,0,0.5); /* 그림자 추가로 가독성 높임 */
+            color: #ccc;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
-
         #modal-iframe {
             width: 100%;
             height: 100%;
             border: none;
             flex-grow: 1;
         }
-
-        /* 고정 버튼 컨테이너 - style.css에 있을 수도 있지만, 여기에 있으면 로딩 순서상 안전 */
         #fixed-buttons-container {
             position: fixed;
-            top: 15px; /* 상단에서 조금 떨어뜨림 */
-            right: 15px; /* 우측에서 조금 떨어뜨림 */
-            z-index: 1200; /* 다른 요소들 위에 확실히 표시 */
+            top: 15px;
+            right: 15px;
+            z-index: 1200;
             display: flex;
-            flex-direction: column; /* 버튼들을 세로로 정렬 */
-            gap: 10px; /* 버튼 사이 간격 */
-            align-items: flex-end; /* 오른쪽 정렬 */
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
         }
-
-        /* modal-tool-button의 기본 스타일 (fixed-buttons-container 안에 있으므로 여기에 두는 것이 좋습니다) */
         .modal-tool-button {
-            width: 48px; /* 고정 크기 */
-            height: 48px; /* 고정 크기 */
-            border-radius: 50%; /* 원형 */
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -128,20 +112,14 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             border: none;
             cursor: pointer;
-            flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 */
+            flex-shrink: 0;
         }
-
-        /* #toggleSidebarBtn는 이제 #fixed-buttons-container의 자식이므로 position: static이 됩니다. */
         #toggleSidebarBtn {
-            position: static; /* 컨테이너 내에서 일반적인 흐름에 따르도록 */
-            /* margin-top: auto; // 필요시 컨테이너 내에서 아래쪽으로 배치 */
+            position: static;
         }
-
-        /* 원래 #toggleSidebarBtn의 bi-list 아이콘 크기 조정 */
         #toggleSidebarBtn .bi-list {
-            font-size: 1.8rem !important; /* 모바일에서 더 크게 */
+            font-size: 1.8rem !important;
         }
-
     </style>
 </head>
 <body>
@@ -187,20 +165,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const toolIndexUrl = "tool_index.json";
-
         const toolList = document.getElementById("tool-list");
         const content = document.getElementById("content");
         const modalOverlay = document.getElementById('modal-overlay');
         const modalClose = document.getElementById('modal-close');
         const modalIframe = document.getElementById('modal-iframe');
-
         const sidebar = document.getElementById("sidebar");
         const sidebarOverlay = document.getElementById("sidebar-overlay");
         const toggleBtn = document.getElementById("toggleSidebarBtn");
-
         const modalButtonContainer = document.getElementById("fixed-buttons-container").querySelector("#modal-button-container");
         
-        // 현재 열려있는 모달의 URL을 저장하는 변수
         let currentOpenModalUrl = null;
 
         function isMobileDevice() {
@@ -234,16 +208,12 @@
         }
 
         function renderTool(tool) {
-            // **[수정]** 제목을 표시하는 card-header 부분을 제거하고,
-            //            바로 콘텐츠(iframe 또는 form)가 오도록 html 변수를 빈 문자열로 초기화합니다.
             let html = ``;
-
             if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
                 const htmlPath = `${tool.path}${tool.name}.html`;
                 html += `<iframe src="${htmlPath}" class="w-100" style="height: 80vh; border: none;"></iframe>`;
             } else {
                 html += `<form id="toolForm">`;
-
                 if (tool.inputs && Array.isArray(tool.inputs)) {
                     tool.inputs.forEach(input => {
                         html += `
@@ -257,9 +227,7 @@
                         `;
                     });
                 }
-
                 html += `</form>`;
-
                 if (tool.path && tool.name && tool.download) {
                     const zipPath = `${tool.path}${tool.name}.zip`;
                     html += `<a href="${zipPath}" class="btn btn-primary" download>
@@ -267,9 +235,8 @@
                             </a>`;
                 }
             }
-
             content.innerHTML = html;
-            toggleSidebar(false); // 도구 클릭 시 닫기
+            toggleSidebar(false);
         }
 
         fetch(toolIndexUrl)
@@ -289,25 +256,20 @@
                     button.className = 'btn modal-tool-button';
                     button.innerHTML = tool.modalIcon || tool.name.charAt(0).toUpperCase();
                     button.title = tool.name;
-                    // 버튼이 어떤 모달을 여는지 식별할 수 있는 데이터 속성 추가
                     button.dataset.modalUrl = `${tool.path}${tool.name}.html?modal=true`; 
                     
                     if (tool.modalIconColor) {
                         button.style.backgroundColor = tool.modalIconColor;
                     }
 
-                    // **[핵심 수정]** 버튼 클릭 로직 변경
                     button.onclick = () => {
                         const targetUrl = button.dataset.modalUrl;
-
                         if (modalOverlay.style.display === 'flex' && currentOpenModalUrl === targetUrl) {
-                            // 현재 모달이 열려있고, 클릭된 버튼이 현재 열려있는 모달과 동일하다면 닫기
                             closeModal();
                         } else {
-                            // 모달이 닫혀있거나, 다른 모달이 열려있다면 새로 열기
                             modalIframe.src = targetUrl;
                             modalOverlay.style.display = 'flex';
-                            currentOpenModalUrl = targetUrl; // 현재 열린 모달 URL 업데이트
+                            currentOpenModalUrl = targetUrl;
                         }
                     };
                     modalButtonContainer.appendChild(button);
@@ -323,7 +285,6 @@
                 Object.keys(toolsByParent).forEach(parent => {
                     const parentLi = document.createElement("li");
                     parentLi.className = "nav-item";
-
                     const parentLink = document.createElement("a");
                     parentLink.href = `#collapse-${parent.replace(/\s/g, '')}`;
                     parentLink.className = "nav-link link-dark";
@@ -331,11 +292,9 @@
                     parentLink.setAttribute("aria-expanded", "true");
                     parentLink.innerHTML = `<i class="bi bi-folder me-2"></i>${parent}<span class="ms-auto flex-shrink-0"><i class="bi bi-chevron-down collapse-icon"></i></span>`;
                     parentLi.appendChild(parentLink);
-
                     const subUl = document.createElement("ul");
                     subUl.id = `collapse-${parent.replace(/\s/g, '')}`;
                     subUl.className = "nav nav-pills flex-column ms-3 collapse show";
-
                     subUl.addEventListener('show.bs.collapse', () => {
                         parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
                     });
@@ -347,13 +306,11 @@
                         const item = document.createElement("li");
                         item.className = "nav-item";
                         const icon = getIconForTool(tool);
-
                         const link = document.createElement('a');
                         link.href = '#';
                         link.className = 'nav-link link-dark';
                         link.innerHTML = `<i class="bi ${icon} me-2"></i>${tool.name}`;
                         item.appendChild(link);
-
                         link.onclick = (e) => {
                             e.preventDefault();
                             const currentActive = document.querySelector('.nav-link.active-tool');
@@ -361,7 +318,6 @@
                             link.classList.add('active-tool');
                             renderTool(tool);
                         };
-
                         subUl.appendChild(item);
                     });
 
@@ -372,16 +328,36 @@
                 });
             });
         
-        // **[핵심 추가]** 모달 닫기 함수
+        // [핵심 수정] 모달 iframe의 로딩 완료 이벤트를 감지
+        modalIframe.onload = () => {
+            try {
+                const iframeWindow = modalIframe.contentWindow;
+                if (iframeWindow && typeof iframeWindow.onModalOpen === 'function') {
+                    iframeWindow.onModalOpen(); // 툴에 열렸음을 알림
+                }
+            } catch (e) {
+                console.error("Iframe 접근 오류:", e);
+            }
+        };
+
+        // [핵심 수정] 모달 닫기 함수
         function closeModal() {
+            try {
+                const iframeWindow = modalIframe.contentWindow;
+                // 닫기 전에 툴에 닫힘을 알림
+                if (iframeWindow && typeof iframeWindow.onModalClose === 'function') {
+                    iframeWindow.onModalClose();
+                }
+            } catch(e) {
+                 console.error("Iframe 접근 오류:", e);
+            }
+
             modalOverlay.style.display = 'none';
-            modalIframe.src = ''; // iframe src 초기화 (메모리 해제 및 상태 리셋)
-            currentOpenModalUrl = null; // 현재 열린 모달 URL 초기화
+            modalIframe.src = 'about:blank'; // iframe src를 빈 페이지로 변경하여 메모리 누수 방지
+            currentOpenModalUrl = null;
         }
 
-        modalClose.addEventListener('click', () => {
-            closeModal();
-        });
+        modalClose.addEventListener('click', closeModal);
 
         modalOverlay.addEventListener('click', (event) => {
             if (event.target === modalOverlay) {
