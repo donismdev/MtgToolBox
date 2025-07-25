@@ -221,15 +221,26 @@
 </div>
 
 <script>
+    // 외부에서 호출될 수 있도록 전역 스코프에 함수를 정의합니다.
+    function onModalClose() {
+        console.log('모달 닫힘 이벤트 수신: 현재 상태를 저장합니다.');
+        // window.saveLifeTotals 함수가 존재하면 호출합니다.
+        if (window.saveLifeTotals) {
+            window.saveLifeTotals();
+        }
+    }
+    
+    function onModalOpen() {
+        console.log('라이프 카운터 모달이 열렸습니다.');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const dataSpace = (window.parent || window).session_data || {};
+        // 최초 로딩 시, 저장된 데이터가 없으면 기본값으로 초기화
         if (!dataSpace.settings) {
             dataSpace.settings = {
-                lifeMax: 20,
-                diceSides: 20,
-                playerCount: 2,
-                threePlayerLayout: 'top',
-                lifeFontSize: 'small'
+                lifeMax: 20, diceSides: 20, playerCount: 2, 
+                threePlayerLayout: 'top', lifeFontSize: 'small'
             };
         }
         if (!dataSpace.lifeCounter) dataSpace.lifeCounter = {};
@@ -246,15 +257,16 @@
         const fontSizeMenu = document.getElementById('fontSizeMenu');
         const diceSidesMenu = document.getElementById('diceSidesMenu');
         const threePlayerLayoutButtonsContainer = document.getElementById('three-player-layout-buttons');
-
-        let activeUI = null;
-        let players = [];
+        
+        let players = []; 
+        // 로컬 상태 객체: 현재 모달 내의 모든 상태 변경은 여기에 우선 기록됩니다.
+        let localSettings = JSON.parse(JSON.stringify(dataSpace.settings));
 
         class Player {
-            constructor(id, initialLife) {
+            constructor(id, initialLife, initialRotation) {
                 this.id = id;
                 this.life = initialLife;
-                this.rotation = dataSpace.playerRotations[id] ?? 0;
+                this.rotation = initialRotation;
                 this.elements = {};
                 this.createDOM();
                 this.updateDisplay();
@@ -299,26 +311,21 @@
 
             changeLife(amount) {
                 this.life += amount;
-                dataSpace.lifeCounter[this.id] = this.life;
                 this.updateDisplay();
             }
 
-            updateDisplay() {
-                this.elements.lifeTotal.textContent = this.life;
-            }
+            updateDisplay() { this.elements.lifeTotal.textContent = this.life; }
 
             setLife(newLife) {
                 this.life = newLife;
-                dataSpace.lifeCounter[this.id] = this.life;
                 this.updateDisplay();
             }
 
             rotateArea() {
                 this.rotation = (this.rotation + 90) % 360;
-                dataSpace.playerRotations[this.id] = this.rotation;
                 this.updateRotationClass();
             }
-
+            
             updateRotationClass() {
                 this.elements.contentWrapper.className = `player-content-wrapper rotation-${this.rotation}`;
                 this.elements.diceContainer.classList.remove('pushed-up', 'pushed-down');
@@ -356,7 +363,7 @@
         function applyLifeFontSize(size) {
             body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large', 'font-size-xlarge');
             body.classList.add(`font-size-${size}`);
-            dataSpace.settings.lifeFontSize = size;
+            localSettings.lifeFontSize = size;
         }
 
         function initializePlayers(count) {
@@ -366,23 +373,24 @@
             
             players = [];
             
-            // [수정] 플레이어 수 변경 시에만 데이터를 초기화하도록 로직 보강
-            const previousPlayerCount = parseInt(dataSpace.settings.playerCount, 10);
-            const newPlayerCount = parseInt(count, 10);
-
-            if (previousPlayerCount !== newPlayerCount) {
-                dataSpace.lifeCounter = {};
-                dataSpace.playerRotations = {};
-                if (newPlayerCount === 2) dataSpace.playerRotations['player-1'] = 180;
+            let lifeData = dataSpace.lifeCounter;
+            let rotationData = dataSpace.playerRotations;
+            
+            if (parseInt(localSettings.playerCount, 10) !== parseInt(count, 10)) {
+                lifeData = {};
+                rotationData = {};
+                if (parseInt(count, 10) === 2) rotationData['player-1'] = 180;
             }
             
+            localSettings.playerCount = count;
+
             if (count === 3) {
-                const layout = dataSpace.settings.threePlayerLayout;
+                const layout = localSettings.threePlayerLayout;
                 if (layout === 'left' || layout === 'right') body.classList.add('buttons-raised');
 
-                const p1 = new Player('player-1', dataSpace.lifeCounter['player-1'] ?? dataSpace.settings.lifeMax);
-                const p2 = new Player('player-2', dataSpace.lifeCounter['player-2'] ?? dataSpace.settings.lifeMax);
-                const p3 = new Player('player-3', dataSpace.lifeCounter['player-3'] ?? dataSpace.settings.lifeMax);
+                const p1 = new Player('player-1', lifeData['player-1'] ?? localSettings.lifeMax, rotationData['player-1'] ?? 0);
+                const p2 = new Player('player-2', lifeData['player-2'] ?? localSettings.lifeMax, rotationData['player-2'] ?? 0);
+                const p3 = new Player('player-3', lifeData['player-3'] ?? localSettings.lifeMax, rotationData['player-3'] ?? 0);
                 players.push(p1, p2, p3);
 
                 if (layout === 'left' || layout === 'right') {
@@ -406,20 +414,19 @@
                 }
             } else {
                 for (let i = 0; i < count; i++) {
-                    const player = new Player(`player-${i + 1}`, dataSpace.lifeCounter[`player-${i + 1}`] ?? dataSpace.settings.lifeMax);
+                    const playerId = `player-${i + 1}`;
+                    const player = new Player(playerId, lifeData[playerId] ?? localSettings.lifeMax, rotationData[playerId] ?? 0);
                     player.elements.area.classList.add(`player-count-${count}`);
                     players.push(player);
                     gameContainer.appendChild(player.elements.area);
                 }
             }
-            dataSpace.settings.playerCount = count;
         }
 
         function rollDiceVisual(count, sides) {
             hideAllOverlays();
             centerButtons.style.display = 'none';
             overlay.style.display = 'block';
-            activeUI = 'diceRolling';
 
             players.forEach(player => {
                 player.elements.area.classList.add('dice-rolling');
@@ -466,6 +473,18 @@
             };
         }
 
+        window.saveLifeTotals = () => {
+            const lifeTotalsToSave = {};
+            const rotationsToSave = {};
+            players.forEach(p => {
+                lifeTotalsToSave[p.id] = p.life;
+                rotationsToSave[p.id] = p.rotation;
+            });
+            dataSpace.lifeCounter = lifeTotalsToSave;
+            dataSpace.playerRotations = rotationsToSave;
+            dataSpace.settings = localSettings;
+        };
+
         // --- Event Listeners ---
         overlay.addEventListener('click', hideAllOverlays);
 
@@ -476,7 +495,7 @@
                 if (count === 3) {
                     showMenu(threePlayerLayoutButtonsContainer, '3인 레이아웃 선택', ['위', '아래', '왼쪽', '오른쪽'], (layout) => {
                         const layoutMap = {'위':'top', '아래':'bottom', '왼쪽':'left', '오른쪽':'right'};
-                        dataSpace.settings.threePlayerLayout = layoutMap[layout];
+                        localSettings.threePlayerLayout = layoutMap[layout];
                         initializePlayers(3);
                         hideAllOverlays();
                     });
@@ -486,7 +505,7 @@
 
         document.getElementById('reset-button').addEventListener('click', (e) => {
             if (e.target.classList.contains('confirm-animation')) {
-                players.forEach(p => p.setLife(dataSpace.settings.lifeMax));
+                players.forEach(p => p.setLife(localSettings.lifeMax));
                 hideAllOverlays();
             } else {
                 hideAllOverlays();
@@ -497,13 +516,13 @@
 
         document.getElementById('dice-button').addEventListener('click', () => {
             showMenu(diceCountMenu, '굴릴 주사위 개수', [1, 2, 3, 4, 5, 6], (count) => {
-                rollDiceVisual(count, dataSpace.settings.diceSides);
+                rollDiceVisual(count, localSettings.diceSides);
             });
         });
 
         document.getElementById('settings-button').addEventListener('click', () => {
-            const showLifeMenu = () => showMenu(lifeMaxMenu, `시작 라이프 (현재 ${dataSpace.settings.lifeMax})`, [20, 30, 40], (life) => {
-                dataSpace.settings.lifeMax = life;
+            const showLifeMenu = () => showMenu(lifeMaxMenu, `시작 라이프 (현재 ${localSettings.lifeMax})`, [20, 30, 40], (life) => {
+                localSettings.lifeMax = life;
                 players.forEach(p => p.setLife(life));
                 hideAllOverlays();
             });
@@ -514,8 +533,8 @@
                 hideAllOverlays();
             });
 
-            const showDiceSidesMenu = () => showMenu(diceSidesMenu, `주사위 면 수 (현재 D${dataSpace.settings.diceSides})`, [4, 6, 8, 10, 12, 20], (sides) => {
-                dataSpace.settings.diceSides = sides;
+            const showDiceSidesMenu = () => showMenu(diceSidesMenu, `주사위 면 수 (현재 D${localSettings.diceSides})`, [4, 6, 8, 10, 12, 20], (sides) => {
+                localSettings.diceSides = sides;
                 hideAllOverlays();
             });
             
@@ -527,8 +546,8 @@
         });
         
         // Initial Load
-        applyLifeFontSize(dataSpace.settings.lifeFontSize || 'small');
-        initializePlayers(dataSpace.settings.playerCount);
+        applyLifeFontSize(localSettings.lifeFontSize);
+        initializePlayers(localSettings.playerCount);
     });
 </script>
 </body>
