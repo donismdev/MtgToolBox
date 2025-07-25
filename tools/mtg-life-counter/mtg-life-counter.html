@@ -8,771 +8,508 @@
         body, html {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
-            overflow: hidden; /* body 전체 스크롤 방지 */
+            overflow: hidden;
             font-family: sans-serif;
             background-color: #f4f4f4;
-        }
-        .player-area {
-            width: 100%; height: 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative; /* 주사위 컨테이너가 fixed로 바뀌면서 relative가 필수적이지 않음 */
-            background-color: #2c3e50;
-            color: white;
-            overflow: hidden; /* 플레이어 영역 내부에서 넘치는 콘텐츠 숨김 */
-        }
-        .player-area.opponent { 
-            transform: rotate(180deg); 
-            /* 주사위 컨테이너가 fixed로 배치되므로, 이 transform은 이제 라이프 숫자만 영향을 줍니다. */
-        }
-        .life-total {
-            font-size: 10vh; /* PC에서 기본 크기 */
-            font-weight: bold;
-            transition: font-size 0.3s ease, opacity 0.3s ease; /* 전환 효과 추가 */
-            z-index: 1; /* 주사위 컨테이너 뒤로 가도록 z-index 낮춤 */
-            position: relative; /* z-index 적용을 위해 position 추가 */
-        }
-
-        /* 주사위 굴림 중일 때 라이프 숫자 크기 줄임 및 투명도 */
-        .player-area.dice-rolling .life-total {
-            font-size: 5vh; /* 주사위 굴림 시 라이프 숫자 크기 줄임 */
-            opacity: 0.2; /* 라이프 숫자를 배경처럼 보이게 투명도 낮춤 */
-        }
-
-        .button-area {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 20; /* 라이프 증감 버튼이 다른 UI 요소보다 위에 있도록 */
             display: flex;
             flex-direction: column;
         }
-        .increase-button, .decrease-button {
-            flex-grow: 1;
-            width: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .increase-button { top: 0; }
-        .decrease-button { bottom: 0; }
-
-        #center-buttons {
+        #game-container {
             display: flex;
+            flex: 1;
             flex-direction: row;
             flex-wrap: wrap;
-            justify-content: center; /* 기본 중앙 정렬 (PC) */
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0 1rem;
-            box-sizing: border-box;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 400px;
-            z-index: 1010; /* 오버레이보다 위, 주사위보다 아래 */
+            position: relative;
         }
-
-        #center-buttons button {
-            flex: 1 1 auto;
-            min-width: 60px;
-            height: 50px;
-            font-size: 1rem;
-            white-space: nowrap;
-            padding: 0.3rem 0.6rem;
-            border: 1px solid #ccc;
-            background-color: white;
-            color: black;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        #center-buttons button.confirm-animation {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #e74c3c;
-            background-color: #ffe0e0;
-            border: 2px solid #e74c3c;
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.7), 0 0 5px rgba(231, 76, 60, 0.5);
-            animation: confirmPulse 1s infinite alternate;
-        }
-
-        @keyframes confirmPulse {
-            0% { transform: scale(1); box-shadow: 0 0 15px rgba(231, 76, 60, 0.7), 0 0 5px rgba(231, 76, 60, 0.5); }
-            100% { transform: scale(1.03); box-shadow: 0 0 20px rgba(231, 76, 60, 0.9), 0 0 8px rgba(231, 76, 60, 0.7); }
-        }
-
-        /* ============ 주사위 관련 스타일 ============ */
-        .dice-container {
-            /* fixed로 변경하여 뷰포트 기준으로 배치 및 상위 transform 영향 받지 않음 */
-            position: fixed; 
-            width: 100%; /* 뷰포트 너비 100% */
-            height: 50%; /* 각 플레이어 영역 높이 (뷰포트 기준) */
-            display: flex; /* 내부 요소들을 가로로 정렬 */
-            align-items: center; /* 세로 중앙 정렬 */
-            justify-content: center; /* 개별 주사위 묶음과 총합을 함께 중앙 정렬 */
-            padding: 0 1rem; /* 좌우 패딩 */
-            box-sizing: border-box;
-            gap: 1rem; /* 개별 주사위 그룹과 총합 사이 간격 */
-            z-index: 9999; /* 모든 다른 요소들보다 최상위 */
-            display: none; /* 초기에는 숨김 */
-        }
-        /* 상대방 주사위 컨테이너 위치 */
-        #opponent-dice-container {
-            top: 0; /* 뷰포트 상단에 붙음 */
-            left: 0;
-            /* transform: translateY(-50%) 제거, 이미 top:0 이므로 필요 없음 */
-        }
-        /* 플레이어 주사위 컨테이너 위치 */
-        #player-dice-container {
-            top: 50%; /* 뷰포트 중앙에 붙음 */
-            left: 0;
-            /* transform: translateY(-50%) 제거, 이미 top:50%이므로 필요 없음 */
-        }
-
-        /* 개별 주사위들을 감싸는 래퍼 */
-        .individual-dice-wrapper {
-            display: flex;
-            gap: 0.5rem; /* 개별 주사위 사이 간격 */
-            overflow-x: auto; /* 가로 스크롤 가능 */
-            -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
-            /* flex-grow: 1; 제거 - 공간을 채우기보다 내용물에 맞게 */
-            justify-content: center; /* 개별 주사위들을 중앙 정렬 */
-            padding-bottom: 5px; /* 스크롤바가 콘텐츠를 가리지 않도록 여백 확보 */
-            /* 명확한 최대 너비를 주어 스크롤이 발생할 기준 마련 */
-            max-width: calc(100% - 4rem - 1rem - 2rem); /* 100% - 총합 너비 - gap - 총 패딩(1rem*2) */
-            /* 이 max-width는 1rem padding이 dice-container에 적용된 것을 고려 */
-        }
-
-        /* 스크롤바 숨기기 (선택 사항) */
-        .individual-dice-wrapper::-webkit-scrollbar {
-            height: 0px; /* Chrome, Safari */
-        }
-        .individual-dice-wrapper {
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
-        }
-
-
-        .dice {
-            flex-shrink: 0; /* 주사위가 줄어들지 않도록 */
-            width: 3rem; /* 주사위 크기 조정 */
-            height: 3rem; /* 주사위 크기 조정 */
-            font-size: 1.8rem; /* 주사위 숫자 크기 조정 */
-            font-weight: bold;
-            background-color: #34495e;
-            color: white;
-            border-radius: 0.5rem;
+        .player-area {
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            transform-origin: center center;
-            border: 2px solid rgba(255,255,255,0.2);
-            /* 상대방 주사위가 뒤집히는 문제 해결 */
-            /* 이 주사위가 .player-area.opponent의 transform 영향을 받으므로, 그 영향을 다시 되돌려야 합니다. */
-            /* JavaScript에서 동적으로 적용할 예정 */
-        }
-
-        .dice.rolling {
-            animation: diceRollAnimation 0.1s infinite alternate;
-            background-color: #556a80;
-            color: #f0f0f0;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-            border: 2px solid rgba(255,255,255,0.5);
-        }
-        @keyframes diceRollAnimation {
-            0% { transform: scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: scale(1.02) rotate(3deg); opacity: 0.95; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        .dice.finalized {
-            background-color: #2ecc71;
-            color: white;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-            animation: diceFinalizeAnimation 0.5s ease-out forwards;
-            border: 2px solid #28a745;
-        }
-        @keyframes diceFinalizeAnimation {
-            0% { transform: scale(0.8) rotate(-10deg); opacity: 0.5; }
-            80% { transform: scale(1.1) rotate(5deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-
-        /* 주사위 총합 표시 스타일 */
-        .dice-sum-display {
-            flex-shrink: 0; /* 공간이 부족해도 줄어들지 않음 */
-            width: 4rem; /* 총합 표시 박스 크기 */
-            height: 4rem; /* 총합 표시 박스 크기 */
-            font-size: 2.5rem; /* 총합 숫자 크게 */
-            font-weight: bold;
-            color: white;
-            background-color: #e74c3c; /* 빨간색 배경 */
-            border-radius: 0.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            opacity: 0; /* 초기에는 숨김 */
-            transform: scale(0.8); /* 초기 크기 작게 */
-        }
-        .dice-sum-display.show {
-            opacity: 1; /* 표시될 때 나타나도록 */
-            transform: scale(1); /* 최종 크기 */
-        }
-
-        /* ============ 오버레이 및 메뉴 스타일 (이전과 동일) ============ */
-        .overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 900; /* 주사위 컨테이너보다 아래 */
-            display: none;
-            pointer-events: none;
-        }
-
-        #settings-panel, .dice-menu {
-            z-index: 1000; /* 오버레이보다 위, 주사위 컨테이너보다 아래 */
-            pointer-events: auto;
-        }
-        #settings-panel {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            display: none;
-            min-width: 250px;
-            text-align: center;
-        }
-        #settings-panel input {
-            margin: 0.5rem 0;
-            width: 80%;
-            padding: 0.4rem;
-            font-size: 1rem;
-            border-radius: 0.4rem;
-            border: 1px solid #ccc;
-        }
-        #settings-panel button {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            border: none;
-            border-radius: 0.5rem;
+            position: relative;
             background-color: #2c3e50;
             color: white;
-            cursor: pointer;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
 
-        .dice-menu-label {
-            text-align: center;
-            margin-bottom: 0.8rem;
+        /* Layouts */
+        .player-area.player-count-2 { width: 100%; height: 50%; }
+        .player-area.player-count-3 { /* JS에서 제어 */ }
+        .player-area.player-count-4 { width: 50%; height: 50%; }
+
+        .game-layout-3-top #player-1-area { width: 100%; height: 50%; order: 0; }
+        .game-layout-3-top #player-2-area,
+        .game-layout-3-top #player-3-area { width: 50%; height: 50%; order: 1; }
+
+        .game-layout-3-bottom #player-1-area { width: 100%; height: 50%; order: 1; }
+        .game-layout-3-bottom #player-2-area,
+        .game-layout-3-bottom #player-3-area { width: 50%; height: 50%; order: 0; }
+        
+        /* Player Content */
+        .player-content-wrapper {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            transform-origin: center center;
+        }
+        .player-content-wrapper.rotation-90 { transform: rotate(90deg); }
+        .player-content-wrapper.rotation-180 { transform: rotate(180deg); }
+        .player-content-wrapper.rotation-270 { transform: rotate(270deg); }
+
+        .life-total {
             font-weight: bold;
-            font-size: 1.1rem;
-            width: 100%;
+            transition: font-size 0.3s ease, opacity 0.3s ease;
+            z-index: 1;
+            transform: rotate(0deg) !important;
+        }
+        .player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
+
+        .font-size-small .life-total { font-size: 10vh; }
+        .font-size-medium .life-total { font-size: 13vh; }
+        .font-size-large .life-total { font-size: 16vh; }
+
+        /* Center Buttons */
+        #center-buttons {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 0.5rem; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; max-width: 600px; z-index: 1010;
+            transition: top 0.3s ease;
+        }
+
+        body.buttons-raised #center-buttons { top: 40%; }
+        body.buttons-raised.font-size-medium #center-buttons { top: 38%; }
+        body.buttons-raised.font-size-large #center-buttons { top: 35%; }
+
+        #center-buttons button {
+            min-width: 100px; height: 50px; font-size: 1rem;
+            border: 1px solid #ccc; background-color: white;
+            border-radius: 0.5rem; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #center-buttons button.confirm-animation {
+            color: #e74c3c; background-color: #ffe0e0;
+            border: 2px solid #e74c3c;
+            animation: confirmPulse 1s infinite alternate;
+        }
+        @keyframes confirmPulse {
+            from { transform: scale(1); } to { transform: scale(1.03); }
+        }
+
+        /* Dice & Menus */
+        .dice-container {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; display: none; justify-content: center;
+            align-items: center; gap: 1rem;
+            z-index: 950; /* [수정] 오버레이(900)보다 위로 올림 */
+        }
+        .dice-container.pushed-up { top: 40%; }
+        .dice-container.pushed-down { top: 60%; }
+
+        .individual-dice-wrapper {
+            display: flex; gap: 0.5rem; overflow-x: auto;
+            justify-content: center; flex-wrap: wrap;
+            max-height: calc(3rem * 2 + 0.5rem);
+            scrollbar-width: none;
+        }
+        .individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
+        .dice {
+            flex-shrink: 0; min-width: 3rem; height: 3rem;
+            font-size: 1.8rem; font-weight: bold;
+            background-color: #34495e; color: white;
+            border-radius: 0.5rem; display: flex;
+            justify-content: center; align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transform: rotate(0deg) !important;
+        }
+        .dice.rolling { animation: diceRollAnimation 0.1s infinite alternate; }
+        @keyframes diceRollAnimation { from { transform: scale(1); } to { transform: scale(1.02); } }
+        .dice.finalized {
+            background-color: #2ecc71;
+            animation: diceFinalizeAnimation 0.5s ease-out forwards;
+        }
+        @keyframes diceFinalizeAnimation { from { transform: scale(0.8); } to { transform: scale(1); } }
+        .dice-sum-display {
+            flex-shrink: 0; width: 4rem; height: 4rem;
+            font-size: 2.5rem; font-weight: bold;
+            color: white; background-color: #e74c3c;
+            border-radius: 0.5rem; display: flex;
+            justify-content: center; align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0; transform: scale(0.8);
+        }
+        .dice-sum-display.show { opacity: 1; transform: scale(1); }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); z-index: 900; display: none;
         }
         .dice-menu {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            display: none;
-            z-index: 1000;
-            width: 95%;
-            max-width: 600px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            left: 50%;
-            transform: translateX(-50%);
+            position: absolute; background: rgba(0, 0, 0, 0.85);
+            color: white; padding: 1rem; border-radius: 0.5rem;
+            display: none; z-index: 1000; width: 95%; max-width: 600px;
+            box-sizing: border-box; flex-direction: column;
+            align-items: center; left: 50%; transform: translateX(-50%);
         }
-
-        .dice-option-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.3rem;
-            width: 100%;
-            margin-bottom: 0.3rem;
-        }
-
+        .dice-menu-label { margin-bottom: 0.8rem; font-weight: bold; font-size: 1.1rem; }
+        .dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
         .dice-option {
-            flex-basis: auto;
-            min-width: 40px;
-            padding: 0.5rem 0.8rem;
-            margin: 0.1rem;
-            font-size: 0.9rem;
-            background: #444;
-            color: white;
-            border-radius: 0.3rem;
-            cursor: pointer;
-            text-align: center;
-            border: 1px solid #555;
-            transition: background 0.2s ease, transform 0.1s ease;
+            min-width: 40px; padding: 0.5rem 0.8rem;
+            font-size: 0.9rem; background: #444;
+            border-radius: 0.3rem; cursor: pointer; text-align: center;
         }
+        #three-player-layout-buttons { display: none; }
 
-        .dice-option:hover {
-            background: #666;
-            transform: translateY(-1px);
+        /* Rotate Button */
+        .rotate-button {
+            position: absolute; background: rgba(0,0,0,0.5); color: white;
+            border: none; border-radius: 50%;
+            width: 30px; height: 30px; font-size: 1rem;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 100; opacity: 0.7;
+            transition: all 0.2s ease;
         }
-
-        .dice-option:active {
-            transform: translateY(0);
-            background: #333;
-        }
-
-        .player-area.overlay-active .button-area {
-            pointer-events: none;
-        }
-
-        /* ======== 모바일 화면 (767px 이하) 전용 스타일 조정 ======== */
-        @media (max-width: 767px) {
-            .life-total {
-                font-size: 16vh; /* 모바일에서 라이프 숫자 크기 훨씬 크게 */
-            }
-
-            /* 주사위 굴림 중일 때 라이프 숫자 크기 더 작게 줄임 (모바일) */
-            .player-area.dice-rolling .life-total {
-                font-size: 6vh; /* 모바일에서 주사위 굴림 시 라이프 숫자 크기 더 작게 */
-            }
-
-            #center-buttons {
-                top: auto;
-                bottom: 5vh;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-                max-width: none;
-                justify-content: flex-end;
-                padding-right: 2rem;
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 1.0rem;
-            }
-
-            #center-buttons button {
-                width: 120px;
-                height: 55px;
-                font-size: 1.2rem;
-                padding: 0.5rem 1rem;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            }
-
-            #center-buttons button.confirm-animation {
-                font-size: 1.3rem;
-            }
-
-            .dice-menu {
-                padding: 1.5rem;
-                border-radius: 1rem;
-            }
-            .dice-menu-label {
-                font-size: 1.3rem;
-                margin-bottom: 1.2rem;
-            }
-            .dice-option-group {
-                gap: 0.6rem;
-            }
-            .dice-option {
-                min-width: 50px;
-                padding: 0.8rem 1.2rem;
-                font-size: 1.1rem;
-            }
-
-            /* 모바일 주사위 컨테이너 조정 */
-            .dice-container {
-                padding: 0 0.5rem; /* 모바일에서 패딩 줄임 */
-                gap: 0.5rem; /* 간격 줄임 */
-            }
-            .individual-dice-wrapper {
-                gap: 0.3rem; /* 개별 주사위 간격 더 줄임 */
-            }
-            .dice {
-                width: 2.5rem; /* 모바일에서 주사위 크기 더 줄임 */
-                height: 2.5rem;
-                font-size: 1.5rem;
-            }
-            .dice-sum-display {
-                width: 3rem; /* 모바일에서 총합 박스 크기 줄임 */
-                height: 3rem;
-                font-size: 1.8rem; /* 모바일에서 총합 글자 크기 줄임 */
-            }
-        }
+        .player-area.player-pos-top-left .rotate-button { bottom: 10px; left: 10px; }
+        .player-area.player-pos-top-right .rotate-button { bottom: 10px; right: 10px; }
+        .player-area.player-pos-bottom-left .rotate-button { top: 10px; left: 10px; }
+        .player-area.player-pos-bottom-right .rotate-button { top: 10px; right: 10px; }
     </style>
 </head>
-<body>
-    <div id="overlay" class="overlay"></div>
-    <div id="diceCountMenu" class="dice-menu"></div>
-    <div id="diceSidesMenu" class="dice-menu"></div>
+<body class="font-size-small">
+<div id="overlay" class="overlay"></div>
+<div id="player-count-menu" class="dice-menu"></div>
+<div id="diceCountMenu" class="dice-menu"></div>
+<div id="settingsMenu" class="dice-menu"></div>
+<div id="lifeMaxMenu" class="dice-menu"></div>
+<div id="fontSizeMenu" class="dice-menu"></div>
+<div id="diceSidesMenu" class="dice-menu"></div>
 
-    <div class="player-area opponent" id="opponent-area">
-        <div class="life-total" id="opponent-life">20</div>
-        <div class="dice-container" id="opponent-dice-container">
-            <div class="individual-dice-wrapper" id="opponent-individual-dice-wrapper"></div>
-            <div class="dice-sum-display" id="opponent-dice-sum"></div>
-        </div>
-        <div class="button-area">
-            <div class="increase-button"></div>
-            <div class="decrease-button"></div>
-        </div>
+<div id="three-player-layout-buttons" class="dice-menu">
+    <div class="dice-menu-label">3인 레이아웃 선택</div>
+    <div class="dice-option-group">
+        <button id="layout-top-button" class="dice-option">위</button>
+        <button id="layout-bottom-button" class="dice-option">아래</button>
+        <button id="layout-left-button" class="dice-option">왼쪽</button>
+        <button id="layout-right-button" class="dice-option">오른쪽</button>
     </div>
+</div>
 
-    <div class="player-area" id="player-area">
-        <div class="life-total" id="player-life">20</div>
-        <div class="dice-container" id="player-dice-container">
-            <div class="individual-dice-wrapper" id="player-individual-dice-wrapper"></div>
-            <div class="dice-sum-display" id="player-dice-sum"></div>
-        </div>
-        <div class="button-area">
-            <div class="increase-button"></div>
-            <div class="decrease-button"></div>
-        </div>
-    </div>
+<div id="game-container"></div>
 
-    <div id="center-buttons">
-        <button id="reset-button">라이프 리셋</button>
-        <button id="dice-button">주사위</button>
-        <button id="settings-button">설정</button>
-    </div>
+<div id="center-buttons">
+    <button id="player-select-button">플레이어 수</button>
+    <button id="reset-button">라이프 리셋</button>
+    <button id="dice-button">주사위</button>
+    <button id="settings-button">설정</button>
+</div>
 
-    <div id="settings-panel">
-        <h3>설정</h3>
-        <label>최대 라이프 수치</label><br>
-        <input type="number" id="lifeMaxInput" min="1" /><br>
-        <label>주사위 눈 수 (4~20)</label><br>
-        <input type="number" id="diceSidesInput" min="4" max="20" /><br>
-        <button id="save-settings-button">저장</button>
-    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dataSpace = (window.parent || window).session_data || {};
+        if (!dataSpace.settings) {
+            dataSpace.settings = { 
+                lifeMax: 20, 
+                diceSides: 20, 
+                playerCount: 2, 
+                threePlayerLayout: 'top',
+                lifeFontSize: 'small'
+            };
+        }
+        if (!dataSpace.lifeCounter) dataSpace.lifeCounter = {};
+        if (!dataSpace.playerRotations) dataSpace.playerRotations = {};
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const global = window.parent || window;
-            if (!global.modal_data) global.modal_data = {};
-            if (!global.session_data) global.session_data = {};
-            const params = new URLSearchParams(window.location.search);
-            const isModal = params.get("modal") === "true";
-            const dataSpace = isModal ? global.modal_data : global.session_data;
+        const body = document.body;
+        const gameContainer = document.getElementById('game-container');
+        const overlay = document.getElementById('overlay');
+        const centerButtons = document.getElementById('center-buttons');
+        const playerCountMenu = document.getElementById('player-count-menu');
+        const diceCountMenu = document.getElementById('diceCountMenu');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const lifeMaxMenu = document.getElementById('lifeMaxMenu');
+        const fontSizeMenu = document.getElementById('fontSizeMenu');
+        const diceSidesMenu = document.getElementById('diceSidesMenu');
+        const threePlayerLayoutButtonsContainer = document.getElementById('three-player-layout-buttons');
+        
+        let activeUI = null;
+        let players = [];
 
-            if (!dataSpace.settings) dataSpace.settings = { lifeMax: 20, diceSides: 20 };
-            if (!dataSpace.lifeCounter) {
-                dataSpace.lifeCounter = {
-                    player: dataSpace.settings.lifeMax,
-                    opponent: dataSpace.settings.lifeMax
-                };
+        class Player {
+            constructor(id, initialLife) {
+                this.id = id;
+                this.life = initialLife;
+                this.rotation = dataSpace.playerRotations[id] ?? 0;
+                this.elements = {};
+                this.createDOM();
+                this.updateDisplay();
             }
 
-            let playerLife = dataSpace.lifeCounter.player;
-            let opponentLife = dataSpace.settings.lifeMax; // 상대방 라이프도 설정값으로 초기화
+            createDOM() {
+                this.elements.area = document.createElement('div');
+                this.elements.area.id = `${this.id}-area`;
+                this.elements.area.className = `player-area`;
+                this.elements.contentWrapper = document.createElement('div');
+                this.elements.area.appendChild(this.elements.contentWrapper);
+                this.elements.lifeTotal = document.createElement('div');
+                this.elements.lifeTotal.className = 'life-total';
+                this.elements.contentWrapper.appendChild(this.elements.lifeTotal);
+                this.elements.diceContainer = document.createElement('div');
+                this.elements.diceContainer.className = 'dice-container';
+                this.elements.area.appendChild(this.elements.diceContainer);
+                this.elements.area.addEventListener('click', (event) => {
+                    if (activeUI !== null || event.target.closest('.rotate-button')) return;
+                    const rect = this.elements.area.getBoundingClientRect();
+                    const clickX = event.clientX - rect.left;
+                    const clickY = event.clientY - rect.top;
+                    let amount = 0;
+                    switch (this.rotation) {
+                        case 0: amount = (clickY > rect.height / 2) ? -1 : 1; break;
+                        case 180: amount = (clickY > rect.height / 2) ? 1 : -1; break;
+                        case 90: amount = (clickX > rect.width / 2) ? 1 : -1; break;
+                        case 270: amount = (clickX > rect.width / 2) ? -1 : 1; break;
+                    }
+                    this.changeLife(amount);
+                });
+                const rotateButton = document.createElement('button');
+                rotateButton.className = 'rotate-button';
+                rotateButton.innerHTML = '&#x21bb;';
+                rotateButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); this.rotateArea();
+                });
+                this.elements.area.appendChild(rotateButton);
+                this.updateRotationClass();
+            }
 
-            const playerLifeElement = document.getElementById('player-life');
-            const opponentLifeElement = document.getElementById('opponent-life');
+            changeLife(amount) {
+                this.life += amount;
+                dataSpace.lifeCounter[this.id] = this.life;
+                this.updateDisplay();
+            }
 
-            const resetButton = document.getElementById('reset-button');
-            const diceButton = document.getElementById('dice-button');
-            const settingsButton = document.getElementById('settings-button');
-            const saveSettingsButton = document.getElementById('save-settings-button');
+            updateDisplay() { this.elements.lifeTotal.textContent = this.life; }
 
-            const diceCountMenu = document.getElementById('diceCountMenu');
-            const diceSidesMenu = document.getElementById('diceSidesMenu');
-            const overlay = document.getElementById('overlay');
-            const settingsPanel = document.getElementById('settings-panel');
+            setLife(newLife) {
+                this.life = newLife;
+                dataSpace.lifeCounter[this.id] = this.life;
+                this.updateDisplay();
+            }
+
+            rotateArea() {
+                this.rotation = (this.rotation + 90) % 360;
+                dataSpace.playerRotations[this.id] = this.rotation;
+                this.updateRotationClass();
+            }
+
+            updateRotationClass() {
+                this.elements.contentWrapper.className = `player-content-wrapper rotation-${this.rotation}`;
+                this.elements.diceContainer.classList.remove('pushed-up', 'pushed-down');
+                if (this.rotation === 0) this.elements.diceContainer.classList.add('pushed-up');
+                if (this.rotation === 180) this.elements.diceContainer.classList.add('pushed-down');
+            }
+        }
+
+        function hideAllOverlays() {
+            [playerCountMenu, diceCountMenu, settingsMenu, lifeMaxMenu, fontSizeMenu, diceSidesMenu, threePlayerLayoutButtonsContainer].forEach(el => el.style.display = 'none');
+            overlay.style.display = 'none';
+            centerButtons.style.display = 'flex';
+            document.getElementById('reset-button').classList.remove('confirm-animation');
+            activeUI = null;
+        }
+
+        function showMenu(container, labelText, options, onSelect) {
+            container.innerHTML = `<div class="dice-menu-label">${labelText}</div>`;
+            const group = document.createElement('div');
+            group.className = 'dice-option-group';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'dice-option';
+                btn.textContent = opt;
+                btn.onclick = () => onSelect(opt);
+                group.appendChild(btn);
+            });
+            container.appendChild(group);
+            container.style.display = 'flex';
+            overlay.style.display = 'block';
+            centerButtons.style.display = 'none';
+            container.style.top = '40%';
+        }
+        
+        function applyLifeFontSize(size) {
+            body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
+            body.classList.add(`font-size-${size}`);
+            dataSpace.settings.lifeFontSize = size;
+        }
+
+        function initializePlayers(count) {
+            gameContainer.innerHTML = '';
+            body.classList.remove('buttons-raised');
+            gameContainer.classList.remove('game-layout-3-top', 'game-layout-3-bottom');
             
-            // 각 플레이어 영역의 주사위 관련 요소들
-            const opponentDiceContainer = document.getElementById('opponent-dice-container');
-            const playerDiceContainer = document.getElementById('player-dice-container');
-            const opponentIndividualDiceWrapper = document.getElementById('opponent-individual-dice-wrapper');
-            const playerIndividualDiceWrapper = document.getElementById('player-individual-dice-wrapper');
-            const opponentDiceSum = document.getElementById('opponent-dice-sum');
-            const playerDiceSum = document.getElementById('player-dice-sum');
+            players = [];
 
-
-            let playerArea = document.getElementById('player-area');
-            let opponentArea = document.getElementById('opponent-area');
-            let centerButtons = document.getElementById('center-buttons');
-
-            let activeUI = null;
-
-            function showOverlay(blockClicks = true) {
-                overlay.style.display = 'block';
-                overlay.style.pointerEvents = blockClicks ? 'auto' : 'none';
+            if (dataSpace.settings.playerCount !== count) {
+                dataSpace.lifeCounter = {};
+                dataSpace.playerRotations = {};
+                if (count === 2) dataSpace.playerRotations['player-1'] = 180;
             }
+            
+            if (count === 3) {
+                const layout = dataSpace.settings.threePlayerLayout;
+                if (layout === 'left' || layout === 'right') body.classList.add('buttons-raised');
 
-            function hideOverlay() {
-                overlay.style.display = 'none';
-                overlay.style.pointerEvents = 'none';
-            }
+                const p1 = new Player('player-1', dataSpace.lifeCounter['player-1'] ?? dataSpace.settings.lifeMax);
+                const p2 = new Player('player-2', dataSpace.lifeCounter['player-2'] ?? dataSpace.settings.lifeMax);
+                const p3 = new Player('player-3', dataSpace.lifeCounter['player-3'] ?? dataSpace.settings.lifeMax);
+                players.push(p1, p2, p3);
 
-            function hideAllOverlays() {
-                settingsPanel.style.display = 'none';
-                diceCountMenu.style.display = 'none';
-                diceSidesMenu.style.display = 'none';
-                
-                // 주사위 관련 요소 숨기기 및 초기화
-                opponentDiceContainer.style.display = 'none';
-                playerDiceContainer.style.display = 'none';
-                opponentIndividualDiceWrapper.innerHTML = '';
-                playerIndividualDiceWrapper.innerHTML = '';
-                opponentDiceSum.innerHTML = '';
-                playerDiceSum.innerHTML = '';
-                opponentDiceSum.classList.remove('show');
-                playerDiceSum.classList.remove('show');
-
-                // 라이프 숫자 크기 원상 복구
-                playerArea.classList.remove('dice-rolling');
-                opponentArea.classList.remove('dice-rolling');
-
-                resetButton.textContent = '라이프 리셋';
-                resetButton.classList.remove('confirm-animation');
-                playerArea.classList.remove('overlay-active');
-                opponentArea.classList.remove('overlay-active');
-                centerButtons.style.display = 'flex';
-                activeUI = null;
-                overlay.style.backgroundColor = 'rgba(0,0,0,0.4)';
-                hideOverlay();
-            }
-
-            overlay.addEventListener('click', () => {
-                if (activeUI === 'diceRolling') {
-                    document.querySelectorAll('.dice').forEach(die => {
-                        if (die.animationId) {
-                            clearTimeout(die.animationId);
-                        }
-                    });
-                }
-                hideAllOverlays();
-            });
-
-            document.querySelector('#opponent-area .increase-button')
-                .addEventListener('click', () => changeLife('opponent', 1));
-            document.querySelector('#opponent-area .decrease-button')
-                .addEventListener('click', () => changeLife('opponent', -1));
-            document.querySelector('#player-area .increase-button')
-                .addEventListener('click', () => changeLife('player', 1));
-            document.querySelector('#player-area .decrease-button')
-                .addEventListener('click', () => changeLife('player', -1));
-
-            resetButton.addEventListener('click', MtgLifeReset);
-            diceButton.addEventListener('click', () => {
-                hideAllOverlays();
-                showDiceMenu(diceCountMenu, [1, 2, 3, 4, 5, 6], 'count');
-                showDiceMenu(diceSidesMenu, [4, 6, 8, 10, 12, 20], 'sides');
-                activeUI = 'diceMenu';
-                showOverlay(true);
-            });
-            settingsButton.addEventListener('click', openSettings);
-            saveSettingsButton.addEventListener('click', applySettings);
-
-            function updateDisplay() {
-                playerLifeElement.textContent = playerLife;
-                opponentLifeElement.textContent = opponentLife;
-            }
-
-            function changeLife(player, amount) {
-                if (activeUI !== null) {
-                    return;
-                }
-                if (player === 'player') {
-                    playerLife += amount;
-                    dataSpace.lifeCounter.player = playerLife;
-                } else {
-                    opponentLife += amount;
-                    dataSpace.lifeCounter.opponent = opponentLife;
-                }
-                updateDisplay();
-            }
-
-            function MtgLifeReset() {
-                if (activeUI === 'resetConfirm') {
-                    playerLife = dataSpace.settings.lifeMax;
-                    opponentLife = dataSpace.settings.lifeMax;
-                    dataSpace.lifeCounter = { player: playerLife, opponent: opponentLife };
-                    updateDisplay();
-                    hideAllOverlays();
-                } else {
-                    hideAllOverlays();
-                    resetButton.textContent = '확인';
-                    resetButton.classList.add('confirm-animation');
-                    activeUI = 'resetConfirm';
-                    showOverlay(true);
-                }
-            }
-
-            function openSettings() {
-                hideAllOverlays();
-                document.getElementById('lifeMaxInput').value = dataSpace.settings.lifeMax;
-                document.getElementById('diceSidesInput').value = dataSpace.settings.diceSides;
-                settingsPanel.style.display = 'block';
-                centerButtons.style.display = 'none';
-                activeUI = 'settings';
-                showOverlay(true);
-            }
-
-            function applySettings() {
-                const newLife = parseInt(document.getElementById('lifeMaxInput').value);
-                const newSides = parseInt(document.getElementById('diceSidesInput').value);
-
-                let settingsChanged = false;
-
-                if (!isNaN(newLife) && newLife > 0) {
-                    if (dataSpace.settings.lifeMax !== newLife) {
-                        dataSpace.settings.lifeMax = newLife;
-                        settingsChanged = true;
+                if (layout === 'left' || layout === 'right') {
+                    const column = document.createElement('div');
+                    column.style.cssText = 'display:flex; flex-direction:column; width:50%; height:100%;';
+                    p2.elements.area.style.cssText = 'height:50%; width:100%;';
+                    p3.elements.area.style.cssText = 'height:50%; width:100%;';
+                    column.appendChild(p2.elements.area);
+                    column.appendChild(p3.elements.area);
+                    p1.elements.area.style.cssText = 'width:50%; height:100%;';
+                    if (layout === 'left') {
+                        gameContainer.appendChild(p1.elements.area);
+                        gameContainer.appendChild(column);
+                    } else {
+                        gameContainer.appendChild(column);
+                        gameContainer.appendChild(p1.elements.area);
                     }
                 } else {
-                    alert("유효한 최대 라이프 수치를 입력해주세요 (1 이상).");
-                    return;
+                    gameContainer.classList.add(`game-layout-3-${layout}`);
+                    players.forEach(p => gameContainer.appendChild(p.elements.area));
                 }
-
-                if (!isNaN(newSides) && newSides >= 4 && newSides <= 20) {
-                    if (dataSpace.settings.diceSides !== newSides) {
-                        dataSpace.settings.diceSides = newSides;
-                        settingsChanged = true;
-                    }
-                } else {
-                    alert("주사위 눈 수는 4에서 20 사이로 입력해주세요.");
-                    return;
-                }
-
-                if (settingsChanged) {
-                    MtgLifeReset();
-                }
-                hideAllOverlays();
-            }
-
-            function showDiceMenu(container, options, type) {
-                container.innerHTML = '';
-
-                const label = document.createElement('div');
-                label.className = 'dice-menu-label';
-                label.textContent = type === 'count' ? '굴릴 주사위 개수 선택' : '주사위 면 수 설정';
-                container.appendChild(label);
-
-                const optionsGroup = document.createElement('div');
-                optionsGroup.className = 'dice-option-group';
-                container.appendChild(optionsGroup);
-
-                options.forEach(option => {
-                    const div = document.createElement('div');
-                    div.className = 'dice-option';
-                    div.textContent = option;
-                    div.addEventListener('click', () => {
-                        if (type === 'count') {
-                            hideAllOverlays();
-                            rollDiceVisual(option, dataSpace.settings.diceSides);
-                        } else if (type === 'sides') {
-                            dataSpace.settings.diceSides = option;
-                            hideAllOverlays();
-                        }
-                    });
-                    optionsGroup.appendChild(div);
-                });
-
-                container.style.top = (type === 'count') ? '15%' : '65%';
-                container.style.left = '50%';
-                container.style.transform = 'translateX(-50%)';
-                container.style.display = 'block';
-
-                playerArea.classList.add('overlay-active');
-                opponentArea.classList.add('overlay-active');
-            }
-
-            function rollDiceVisual(count = 1, sides = 20) {
-                hideAllOverlays();
-                activeUI = 'diceRolling';
-                overlay.style.backgroundColor = 'rgba(0,0,0,0.7)';
-                showOverlay(true);
-
-                // 라이프 숫자 크기 줄임 효과 (주사위 굴림 중임을 시각적으로 표현)
-                playerArea.classList.add('dice-rolling');
-                opponentArea.classList.add('dice-rolling');
-
-                // 주사위 컨테이너 표시
-                opponentDiceContainer.style.display = 'flex';
-                playerDiceContainer.style.display = 'flex';
-
-                // 주사위 래퍼와 총합 초기화
-                opponentIndividualDiceWrapper.innerHTML = '';
-                playerIndividualDiceWrapper.innerHTML = '';
-                opponentDiceSum.innerHTML = '';
-                playerDiceSum.innerHTML = '';
-                opponentDiceSum.classList.remove('show');
-                playerDiceSum.classList.remove('show');
-
-                let opponentDicePromises = [];
-                let playerDicePromises = [];
-
+            } else {
                 for (let i = 0; i < count; i++) {
-                    // 상대방 주사위 생성 및 Promise 추가 (상대방 주사위는 텍스트를 다시 180도 돌림)
-                    opponentDicePromises.push(new Promise(resolve => createRollingDie(opponentIndividualDiceWrapper, sides, resolve, true)));
-                    // 플레이어 주사위 생성 및 Promise 추가
-                    playerDicePromises.push(new Promise(resolve => createRollingDie(playerIndividualDiceWrapper, sides, resolve, false)));
+                    const player = new Player(`player-${i + 1}`, dataSpace.lifeCounter[`player-${i + 1}`] ?? dataSpace.settings.lifeMax);
+                    player.elements.area.classList.add(`player-count-${count}`);
+                    players.push(player);
+                    gameContainer.appendChild(player.elements.area);
                 }
-
-                // 상대방 주사위 굴림 완료 후 총합 계산 및 표시
-                Promise.all(opponentDicePromises).then(results => {
-                    const sum = results.reduce((acc, val) => acc + val, 0);
-                    opponentDiceSum.textContent = sum;
-                    opponentDiceSum.classList.add('show');
-                    // 스크롤바가 생겼을 경우 총합이 가려지지 않도록 스크롤 조절
-                    opponentIndividualDiceWrapper.scrollLeft = opponentIndividualDiceWrapper.scrollWidth;
-                });
-
-                // 플레이어 주사위 굴림 완료 후 총합 계산 및 표시
-                Promise.all(playerDicePromises).then(results => {
-                    const sum = results.reduce((acc, val) => acc + val, 0);
-                    playerDiceSum.textContent = sum;
-                    playerDiceSum.classList.add('show');
-                    // 스크롤바가 생겼을 경우 총합이 가려지지 않도록 스크롤 조절
-                    playerIndividualDiceWrapper.scrollLeft = playerIndividualDiceWrapper.scrollWidth;
-                });
             }
+            dataSpace.settings.playerCount = count;
+        }
 
-            // createRollingDie 함수에 isOpponent 인자 추가
-            function createRollingDie(container, sides, resolve, isOpponent = false) {
-                const die = document.createElement('div');
-                die.className = 'dice rolling';
-                // 상대방 주사위일 경우 텍스트를 다시 180도 돌림
-                if (isOpponent) {
-                    die.style.transform = 'rotate(180deg)';
-                }
-                container.appendChild(die);
+        function rollDiceVisual(count, sides) {
+            hideAllOverlays();
+            centerButtons.style.display = 'none'; // [수정] 주사위 굴릴 때 중앙 버튼 숨기기
+            overlay.style.display = 'block';
+            activeUI = 'diceRolling';
 
-                let rollCount = 0;
-                const delay = 50;
-                const maxRolls = 20 + Math.floor(Math.random() * 10);
-                let finalValue;
+            players.forEach(player => {
+                player.elements.area.classList.add('dice-rolling');
+                const diceContainer = player.elements.diceContainer;
+                diceContainer.style.display = 'flex';
+                diceContainer.innerHTML = '<div class="individual-dice-wrapper"></div><div class="dice-sum-display"></div>';
+                const wrapper = diceContainer.querySelector('.individual-dice-wrapper');
+                const sumDisplay = diceContainer.querySelector('.dice-sum-display');
 
-                function animateRoll() {
-                    finalValue = Math.floor(Math.random() * sides) + 1;
-                    die.textContent = finalValue;
-                    rollCount++;
+                const promises = Array.from({ length: count }, () => new Promise(resolve => {
+                    const die = document.createElement('div');
+                    die.className = 'dice rolling';
+                    wrapper.appendChild(die);
+                    let rollCount = 0;
+                    const animate = () => {
+                        const val = Math.floor(Math.random() * sides) + 1;
+                        die.textContent = val;
+                        if (++rollCount > 20) {
+                            die.classList.remove('rolling');
+                            die.classList.add('finalized');
+                            resolve(val);
+                        } else {
+                            setTimeout(animate, 50);
+                        }
+                    };
+                    animate();
+                }));
 
-                    if (rollCount >= maxRolls) {
-                        die.classList.remove('rolling');
-                        die.classList.add('finalized');
-                        resolve(finalValue);
-                        return;
+                Promise.all(promises).then(results => {
+                    if (results.length > 1) {
+                        sumDisplay.textContent = results.reduce((a, b) => a + b, 0);
+                        sumDisplay.classList.add('show');
                     }
-                    die.animationId = setTimeout(animateRoll, delay);
-                }
-                animateRoll();
-            }
+                });
+            });
 
-            updateDisplay();
+            overlay.onclick = () => {
+                players.forEach(p => {
+                    p.elements.area.classList.remove('dice-rolling');
+                    p.elements.diceContainer.style.display = 'none';
+                });
+                hideAllOverlays();
+                overlay.onclick = hideAllOverlays;
+            };
+        }
+
+        // --- Event Listeners ---
+        overlay.addEventListener('click', hideAllOverlays);
+
+        document.getElementById('player-select-button').addEventListener('click', () => {
+            showMenu(playerCountMenu, '플레이어 수 선택', [2, 3, 4], (count) => {
+                initializePlayers(count);
+                hideAllOverlays();
+                if (count === 3) {
+                    showMenu(threePlayerLayoutButtonsContainer, '3인 레이아웃 선택', ['위', '아래', '왼쪽', '오른쪽'], (layout) => {
+                        const layoutMap = {'위':'top', '아래':'bottom', '왼쪽':'left', '오른쪽':'right'};
+                        dataSpace.settings.threePlayerLayout = layoutMap[layout];
+                        initializePlayers(3);
+                        hideAllOverlays();
+                    });
+                }
+            });
         });
-    </script>
+
+        document.getElementById('reset-button').addEventListener('click', (e) => {
+            if (e.target.classList.contains('confirm-animation')) {
+                players.forEach(p => p.setLife(dataSpace.settings.lifeMax));
+                hideAllOverlays();
+            } else {
+                hideAllOverlays();
+                e.target.classList.add('confirm-animation');
+                overlay.style.display = 'block';
+            }
+        });
+
+        document.getElementById('dice-button').addEventListener('click', () => {
+            showMenu(diceCountMenu, '굴릴 주사위 개수', [1, 2, 3, 4, 5, 6], (count) => {
+                rollDiceVisual(count, dataSpace.settings.diceSides);
+            });
+        });
+
+        document.getElementById('settings-button').addEventListener('click', () => {
+            const showLifeMenu = () => showMenu(lifeMaxMenu, `시작 라이프 (현재 ${dataSpace.settings.lifeMax})`, [20, 30, 40], (life) => {
+                dataSpace.settings.lifeMax = life;
+                players.forEach(p => p.setLife(life));
+                hideAllOverlays();
+            });
+
+            const showFontMenu = () => showMenu(fontSizeMenu, '폰트 크기 선택', ['기본', '보통', '크게'], (selection) => {
+                const sizeMap = {'기본': 'small', '보통': 'medium', '크게': 'large'};
+                applyLifeFontSize(sizeMap[selection]);
+                hideAllOverlays();
+            });
+
+            const showDiceSidesMenu = () => showMenu(diceSidesMenu, `주사위 면 수 (현재 D${dataSpace.settings.diceSides})`, [4, 6, 8, 10, 12, 20], (sides) => {
+                dataSpace.settings.diceSides = sides;
+                hideAllOverlays();
+            });
+            
+            showMenu(settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수'], (selection) => {
+                if (selection === '시작 라이프') showLifeMenu();
+                else if (selection === '폰트 크기') showFontMenu();
+                else if (selection === '주사위 면 수') showDiceSidesMenu();
+            });
+        });
+        
+        // Initial Load
+        applyLifeFontSize(dataSpace.settings.lifeFontSize || 'small');
+        initializePlayers(dataSpace.settings.playerCount);
+    });
+</script>
 </body>
 </html>
