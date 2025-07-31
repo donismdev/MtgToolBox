@@ -49,6 +49,8 @@
         #content {
             padding: 2rem;
             margin-left: 0;
+			background-color: #121212; /* var(--background-color)와 맞춰서 지정 */
+			min-height: 100vh;
         }
         #modal-overlay {
             position: fixed;
@@ -238,6 +240,11 @@
             }
             content.innerHTML = html;
             toggleSidebar(false);
+
+			setTimeout(() => {
+				window.scrollTo(0, 0); // 스크롤 상단으로 이동
+				document.body.offsetHeight; // 강제 리플로우
+			}, 10);
         }
 
         fetch(toolIndexUrl)

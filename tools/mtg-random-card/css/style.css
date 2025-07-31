@@ -30,7 +30,9 @@ body {
 .container {
     width: 100%;
     /* max-width: 500px; */ /* Removed */
-    height: 100vh; /* Added */
+    height: auto; /* Added */
+	min-height: 100vh;
+	box-sizing: border-box;
     border-radius: 0; /* Added */
     background-color: var(--surface-color);
     padding: 1.5rem;
