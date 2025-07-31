@@ -75,16 +75,23 @@
             justify-content: center;
         }
         .ability-badge {
-            padding: 0.6rem 1rem;
-            background-color: #e0e0e0;
-            border-radius: 1rem;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-        .ability-badge:hover {
-            background-color: #c0c0c0;
-        }
+			padding: 0.6rem 1rem;
+			background-color: #e0e0e0;
+			border-radius: 1rem;
+			cursor: pointer;
+			font-weight: 600;
+			display: inline-block;
+			white-space: nowrap;
+			text-align: center;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 살짝 입체감 */
+			border: 1px solid #ccc;
+			min-width: 100px;
+			transition: all 0.2s ease-in-out;
+		}
+		.ability-badge:hover {
+			background-color: #c0c0c0;
+			transform: scale(1.03); /* 살짝 확대 효과 */
+		}
         #divider {
             margin: 3rem 0 1rem 0;
             border-bottom: 2px solid #bbb;
