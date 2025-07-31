@@ -18,7 +18,7 @@ body {
     align-items: center;
     min-height: 100vh;
     text-align: center;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .main-container {
@@ -156,6 +156,7 @@ h1 {
 }
 
 #rollButton {
+    display: block;
     padding: 1rem;
     font-size: 1.2rem;
     font-weight: bold;
