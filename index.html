@@ -52,6 +52,10 @@
 			background-color: #121212; /* var(--background-color)와 맞춰서 지정 */
 			min-height: 100vh;
         }
+		body.modal-open {
+			overflow: hidden;
+			touch-action: none;
+		}
         #modal-overlay {
             position: fixed;
             top: 0;
@@ -180,6 +184,8 @@
         
         let currentOpenModalUrl = null;
 
+		history.replaceState({ modal: false }, '', location.href);
+
         function isMobileDevice() {
             return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         }
@@ -211,6 +217,10 @@
         }
 
         function renderTool(tool) {
+			if (modalOverlay.style.display === 'flex') {
+				closeModal(false);
+			}
+
             let html = ``;
             if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
                 const htmlPath = `${tool.path}${tool.name}.html`;
@@ -273,12 +283,14 @@
                     button.onclick = () => {
                         const targetUrl = button.dataset.modalUrl;
                         if (modalOverlay.style.display === 'flex' && currentOpenModalUrl === targetUrl) {
-                            closeModal();
-                        } else {
-                            modalIframe.src = targetUrl;
-                            modalOverlay.style.display = 'flex';
-                            currentOpenModalUrl = targetUrl;
-                        }
+							closeModal();
+						} else {
+							modalIframe.src = targetUrl;
+							modalOverlay.style.display = 'flex';
+							document.body.classList.add('modal-open');
+							currentOpenModalUrl = targetUrl;
+							history.pushState({ modal: true }, '', '');
+						}
                     };
                     modalButtonContainer.appendChild(button);
                 });
@@ -348,22 +360,26 @@
             }
         };
 
-        // [핵심 수정] 모달 닫기 함수
-        function closeModal() {
-            try {
-                const iframeWindow = modalIframe.contentWindow;
-                // 닫기 전에 툴에 닫힘을 알림
-                if (iframeWindow && typeof iframeWindow.onModalClose === 'function') {
-                    iframeWindow.onModalClose();
-                }
-            } catch(e) {
-                 console.error("Iframe 접근 오류:", e);
-            }
+        function closeModal(pushStateBack = true) {
+			try {
+				const iframeWindow = modalIframe.contentWindow;
+				if (iframeWindow && typeof iframeWindow.onModalClose === 'function') {
+					iframeWindow.onModalClose();
+				}
+			} catch(e) {
+				console.error("Iframe 접근 오류:", e);
+			}
 
-            modalOverlay.style.display = 'none';
-            modalIframe.src = 'about:blank'; // iframe src를 빈 페이지로 변경하여 메모리 누수 방지
-            currentOpenModalUrl = null;
-        }
+			modalOverlay.style.display = 'none';
+			document.body.classList.remove('modal-open');
+			modalIframe.src = 'about:blank';
+			currentOpenModalUrl = null;
+
+			// 모달 닫을 때 pushState(false)를 트리거
+			if (pushStateBack) {
+				history.back();
+			}
+		}
 
         modalClose.addEventListener('click', closeModal);
 
@@ -372,6 +388,14 @@
                 closeModal();
             }
         });
+
+		// popstate 이벤트 처리
+		window.addEventListener('popstate', (event) => {
+			if (event.state?.modal) {
+				closeModal(false); // history.back()으로 인한 닫기일 땐 다시 push하지 않음
+			}
+		});
+
     </script>
 </body>
 </html>
