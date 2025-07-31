@@ -1,0 +1,259 @@
+
+:root {
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --primary-color: #6200ee;
+    --primary-variant-color: #3700b3;
+    --secondary-color: #03dac6;
+    --text-color: #ffffff;
+    --text-color-secondary: #b3b3b3;
+    --border-color: #2c2c2c;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    text-align: center;
+    color: var(--text-color);
+    margin-top: 0;
+    margin-bottom: 2rem;
+    font-size: 1.75rem;
+}
+
+fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+}
+
+legend {
+    font-weight: 600;
+    color: var(--secondary-color);
+    padding: 0 0.5rem;
+    font-size: 1.1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.filter-group label {
+    display: block;
+}
+
+/* Custom Checkboxes */
+.filter-group input[type="checkbox"] {
+    display: none;
+}
+
+.filter-group input[type="checkbox"] + span {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    background-color: #333;
+    color: var(--text-color-secondary);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+}
+
+.filter-group input[type="checkbox"]:checked + span {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    font-weight: 500;
+    box-shadow: 0 0 10px rgba(98, 0, 238, 0.4);
+}
+
+#wifiConfirmLabel {
+    width: 100%;
+    background: #2a2a2a;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+#wifiConfirmLabel strong {
+    color: var(--secondary-color);
+}
+
+/* CMC Controls */
+.cmc-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.cmc-controls select, .cmc-controls input {
+    background-color: #333;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+
+.cmc-controls select {
+    flex-shrink: 0;
+}
+
+.cmc-controls input[type="number"] {
+    width: 100%;
+}
+
+/* Submit Button */
+button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-color);
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-variant-color));
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    margin-top: 1rem;
+}
+
+button[type="submit"]:hover {
+    box-shadow: 0 0 20px rgba(98, 0, 238, 0.6);
+    transform: translateY(-2px);
+}
+
+/* Card Result */
+#cardResult {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.card-container {
+    position: relative;
+    padding-bottom: 140%; /* Aspect ratio for MTG cards */
+    height: 0;
+    width: 100%;
+    max-width: 350px;
+    margin: 0.5rem auto;
+}
+
+.card-container .card-img, .card-container .loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    object-fit: contain;
+}
+
+.card-img {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.card-img.loaded {
+    opacity: 1;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.filter-summary {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(3, 218, 198, 0.1);
+    border-left: 4px solid var(--secondary-color);
+    text-align: left;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+}
+
+.filter-summary strong {
+    color: var(--secondary-color);
+}
+
+/* Loader Animation */
+.loader {
+    display: none;
+    border: 5px solid #333;
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e74c3c;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    transition: bottom 0.5s ease;
+    z-index: 1000;
+    font-weight: 500;
+}
+
+.toast.show {
+    bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    body {
+        padding: 0.5rem;
+    }
+    .container {
+        padding: 1rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    .filter-group input[type="checkbox"] + span {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+}
