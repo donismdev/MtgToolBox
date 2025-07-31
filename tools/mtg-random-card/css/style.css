@@ -154,17 +154,16 @@ button[type="submit"]:hover {
 
 /* Card Result */
 #cardResult {
-    margin-top: 1.5rem;
-    text-align: center;
+    margin: 0.5rem auto;
+	text-align: center;
 }
 
 .card-container {
-    position: relative;
-    padding-bottom: 140%; /* Aspect ratio for MTG cards */
-    height: 0;
-    width: 100%;
-    max-width: 350px;
-    margin: 0.5rem auto;
+	aspect-ratio: 5 / 7;
+	width: 100%;
+	max-width: 350px;
+	margin: 0.5rem auto;
+	position: relative;
 }
 
 .card-container .card-img, .card-container .loader {

@@ -95,3 +95,13 @@ document.getElementById("filterForm").addEventListener("submit", async function 
         console.error(err);
     }
 });
+
+window.addEventListener("DOMContentLoaded", () => {
+	const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+	if (!isMobile) {
+		const wifiCheckbox = document.getElementById("wifiConfirm");
+		if (wifiCheckbox) {
+			wifiCheckbox.checked = true;
+		}
+	}
+});
