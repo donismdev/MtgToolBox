@@ -4,11 +4,16 @@ from datetime import datetime
 
 # ====== 경로 설정 ======
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ABILITY_JSON_PATH = os.path.join(BASE_DIR, "abilities.json")
-OUTPUT_JSON_PATH = os.path.join(BASE_DIR, "converted_keywords.json")
+RESOURCE_DIR = os.path.join(BASE_DIR, "resources")
+OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+
+ABILITY_JSON_PATH = os.path.join(RESOURCE_DIR, "abilities.json")
+OUTPUT_JSON_PATH = os.path.join(OUTPUT_DIR, "ability_data.json")
 
 # ====== 설명 정의 (분리된 세트에서 병합) ======
-from keyword_descriptions import keywordTexts, keywordActions, abilityWords, specialWords
+from resources.keyword_descriptions import (
+	keywordTexts, keywordActions, abilityWords, specialWords, specialCounters
+)
 
 # KEYWORD_TEXTS로 통합 (전부 소문자 정규화)
 KEYWORD_TEXTS = {}
@@ -78,11 +83,16 @@ for keyword in arena_missing_in_json:
 	else:
 		not_found.append(keyword.strip())
 
-# ====== special 항목 정리 ======
+# ====== special, special counters 항목 정리 ======
 special = {}
 for key, desc in specialWords.items():
 	lower = key.strip().lower()
 	special[lower] = desc.strip()
+
+special_counters = {}
+for key, desc in specialCounters.items():
+	lower = key.strip().lower()
+	special_counters[lower] = desc.strip()
 
 # ====== evergreen 키워드 정리 ======
 evergreen = {}
@@ -104,6 +114,7 @@ final_output = {
 	"abilities": abilities,
 	"not_found": sorted(set(not_found)),
 	"special": special,
+	"special_counters": special_counters,
 	"evergreen": evergreen,
 	"arena": arena_only
 }

@@ -135,7 +135,7 @@ abilityInput.parentNode.appendChild(suggestionBox);
 let abilities = {};
 window.mtgData = {};
 
-fetch('abilities/ability_data.json')
+fetch('output/ability_data.json')
     .then(res => res.json())
     .then(data => {
         window.mtgData = data;
@@ -143,7 +143,8 @@ fetch('abilities/ability_data.json')
             ...data.abilities,
             ...data.evergreen,
             ...data.arena,
-            ...data.special
+            ...data.special,
+			...data.special_counters
         };
         renderAbilityList();
         adjustContentHeight(); // 데이터 로드 후 초기 높이 조정
@@ -195,7 +196,9 @@ function showAbility(name) {
         label = `<span class='badge bg-secondary ms-2'>Keyword Ability</span>`;
     } else if (mtgData.special?.[name]) {
         label = `<span class='badge bg-dark text-white ms-2'>Special</span>`;
-    }
+    } else if (mtgData.special_counters?.[name]) {
+        label = `<span class='badge bg-danger ms-2'>Special Counter</span>`;
+	}
 
     abilityText.innerHTML = formatText(`<p>${info.text}</p>` + label +
         (info.image ? `<br><img src="${info.image}" style="max-width: 200px; margin-top: 1rem;" />` : "")

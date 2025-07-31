@@ -160,7 +160,7 @@ keywordTexts = {
 	"living metal": "Living metal (As long as it's your turn, this Vehicle is also a creature.)",
 	"living weapon": "Living weapon (When this Equipment enters the battlefield, create a 0/0 black Germ creature token, then attach this to it.)",
 	"melee": "Melee (Whenever this creature attacks, it gets +1/+1 until end of turn for each opponent you attacked this combat.)",
-	"mobilize": "Mobilize — Tap any number of untapped creatures you control. [effect].",
+	"mobilize": "Mobilize N (Whenever this creature attacks, create N 1/1 red Warrior creature tokens tapped and attacking. Exile those tokens at the beginning of the next end step.)",
 	"monstrosity": "Monstrosity N — [Cost] (If this creature isn’t monstrous, put N +1/+1 counters on it and it becomes monstrous.)",
 	"more than meets the eye": "More Than Meets the Eye [Cost] (You may cast this card converted for its alternate form and cost.)",
 	"mountaincycling": "Mountaincycling [Cost] ([Cost], Discard this card: Search your library for a Mountain card, put it into your hand, then shuffle.)",
@@ -385,4 +385,8 @@ specialWords = {
     "party": "A party consists of up to one each of Cleric, Rogue, Warrior, and Wizard you control. Some cards become stronger depending on how many unique roles are filled in your party."
 }
 
-
+specialCounters = {
+	"finality": "Finality Counter — If a permanent with a finality counter would die, exile it instead.",
+	"shield": "Shield Counter — If this permanent would be destroyed or dealt damage, remove a shield counter instead.",
+	"stun": "Stun Counter — If a permanent with a stun counter would untap, remove one instead.",
+}
