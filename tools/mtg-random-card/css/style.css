@@ -20,7 +20,7 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
-    padding: 1rem;
+    padding: 0; /* Modified */
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -29,9 +29,10 @@ body {
 
 .container {
     width: 100%;
-    max-width: 500px;
+    /* max-width: 500px; */ /* Removed */
+    height: 100vh; /* Added */
+    border-radius: 0; /* Added */
     background-color: var(--surface-color);
-    border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
@@ -244,7 +245,7 @@ h3 {
 /* Responsive */
 @media (max-width: 600px) {
     body {
-        padding: 0.5rem;
+        padding: 0; /* Modified */
     }
     .container {
         padding: 1rem;
