@@ -89,7 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isRolling) return;
         isRolling = true;
         rollButton.disabled = true;
-        resultArea.textContent = '';
+        resultArea.innerHTML = '';
+        resultArea.classList.remove('show-result');
 
         const items = diceContainer.querySelectorAll('.scene');
         let results = [];
@@ -132,14 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             if (currentMode === 'dice') {
+                let resultHTML = `<div>${results.join(', ')}</div>`;
                 if (results.length > 1) {
-                    resultArea.textContent = `Results: ${results.join(', ')} (Total: ${totalResult})`;
-                } else {
-                    resultArea.textContent = `Result: ${results[0]}`;
+                    resultHTML += `<div>Total: ${totalResult}</div>`;
                 }
+                resultArea.innerHTML = resultHTML;
             } else {
-                 resultArea.textContent = `Results: ${results.join(', ')}`;
+                 resultArea.innerHTML = `<div>${results.join(', ')}</div>`;
             }
+            resultArea.classList.add('show-result');
             isRolling = false;
             rollButton.disabled = false;
         }, 2100); // Increased timeout for animation

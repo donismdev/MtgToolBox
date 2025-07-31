@@ -44,6 +44,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow-x: auto;
 }
 
 #dice-container {
@@ -55,11 +56,22 @@ h1 {
 }
 
 .result-area {
-    min-height: 3rem;
-    font-size: 2rem;
+    font-size: 1.5rem;
+    line-height: 1.5rem;
     font-weight: 700;
     color: var(--secondary-color);
     text-shadow: 0 0 15px rgba(255, 71, 87, 0.5);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 0;
+    box-shadow: none;
+    transition: all 0.3s ease;
+}
+
+.result-area.show-result {
+    padding: 1rem;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
 }
 
 .scene {
@@ -116,7 +128,7 @@ h1 {
 
 .control-section {
     background-color: var(--surface-color);
-    padding: 1rem;
+    padding: 0.8rem;
     border-radius: 12px;
 }
 
@@ -131,14 +143,14 @@ h1 {
 .control-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
     justify-content: center;
 }
 
 .control-group button {
     flex-grow: 1;
-    padding: 0.7rem;
-    font-size: 0.9rem;
+    padding: 0.5rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--text-color);
     background-color: #3b3b40;
