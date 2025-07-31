@@ -142,7 +142,8 @@ abilityInput.parentNode.appendChild(suggestionBox);
 let abilities = {};
 window.mtgData = {};
 
-fetch('output/ability_data.json')
+const base = location.pathname.replace(/\/[^\/]*$/, ''); // index.html 제거
+fetch(`${base}/output/ability_data.json`)
     .then(res => res.json())
     .then(data => {
         window.mtgData = data;
