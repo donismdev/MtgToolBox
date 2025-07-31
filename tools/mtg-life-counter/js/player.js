@@ -20,19 +20,27 @@ export class Player {
         this.elements.diceContainer = document.createElement('div');
         this.elements.diceContainer.className = 'dice-container';
         this.elements.area.appendChild(this.elements.diceContainer);
-        this.elements.area.addEventListener('click', (event) => {
+        this.elements.area.addEventListener('touchstart', (event) => {
+            event.preventDefault();
             if (window.activeUI !== null || event.target.closest('.rotate-button')) return;
-            const rect = this.elements.area.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const clickY = event.clientY - rect.top;
-            let amount = 0;
-            switch (this.rotation) {
-                case 0: amount = (clickY > rect.height / 2) ? -1 : 1; break;
-                case 180: amount = (clickY > rect.height / 2) ? 1 : -1; break;
-                case 90: amount = (clickX > rect.width / 2) ? 1 : -1; break;
-                case 270: amount = (clickX > rect.width / 2) ? -1 : 1; break;
+
+            for (const touch of event.changedTouches) {
+                const rect = this.elements.area.getBoundingClientRect();
+                const touchX = touch.clientX - rect.left;
+                const touchY = touch.clientY - rect.top;
+
+                // Check if the touch is within the player's area
+                if (touchX >= 0 && touchX <= rect.width && touchY >= 0 && touchY <= rect.height) {
+                    let amount = 0;
+                    switch (this.rotation) {
+                        case 0: amount = (touchY > rect.height / 2) ? -1 : 1; break;
+                        case 180: amount = (touchY > rect.height / 2) ? 1 : -1; break;
+                        case 90: amount = (touchX > rect.width / 2) ? 1 : -1; break;
+                        case 270: amount = (touchX > rect.width / 2) ? -1 : 1; break;
+                    }
+                    this.changeLife(amount);
+                }
             }
-            this.changeLife(amount);
         });
         const rotateButton = document.createElement('button');
         rotateButton.className = 'rotate-button';

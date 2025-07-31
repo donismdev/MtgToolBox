@@ -369,24 +369,31 @@ abilityWords = {
 }
 
 specialWords = {
-	"adventure": "Adventure is a special card type that allows you to cast a spell as an instant or sorcery before casting the creature part. The adventure card is exiled after casting the adventure part.",
-	"gold": "Gold is an artifact token with 'Sacrifice this artifact: Add one mana of any color.'",
-	"treasure": "Treasure is an artifact token with 'T, Sacrifice this artifact: Add one mana of any color.'",
-	"clue": "Clue is an artifact token with '2, Sacrifice this artifact: Draw a card.'",
-	"food": "Food is an artifact token with '2, T, Sacrifice this artifact: You gain 3 life.'",
-	"blood": "Blood is an artifact token with '1, T, Discard a card, Sacrifice this artifact: Draw a card.'",
-	"incubator": "Incubator is a token with a number of +1/+1 counters on it. You may pay {2} to transform it into a 0/0 Phyrexian artifact creature.",
-	"map": "Map is an artifact token with '1, T, Sacrifice this artifact: Target creature you control explores. Activate only as a sorcery.' Explore means that creature’s controller reveals the top card of their library. If it's a land card, put it into their hand. Otherwise, put a +1/+1 counter on that creature and you may put the card into the graveyard.",
-	"lander": "Lander is an artifact token with {2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+	"adventure": "Adventure — A special card type allowing you to cast one half (the Adventure instant or sorcery) before the creature. After casting the Adventure part, the creature card is exiled and then can be cast. Common in Theros Beyond Death and Lord of the Rings (2020).",
+	"omen": "Omen — A noncreature spell inset on a creature card. When cast as an Omen (instead of casting the creature), it's cast as an instant or sorcery, and when it resolves it is shuffled back into its owner's library instead of going to the graveyard. Introduced in Tarkir: Dragonstorm (2025).",
+	"companion": "Companion is a special rule that allows you to have a companion card in your sideboard. If your starting deck meets the companion's condition, you can cast it from outside the game once per game.",
 	"monarch": "Monarch is a designation a player can have. At the beginning of your end step, if you're the monarch, you draw a card. A player becomes the monarch by dealing combat damage to the current monarch.",
-    "role": "Roles are colorless Aura enchantment tokens with 'Enchant creature'. Only one Role per creature per player can be attached at a time. If another Role is created for the same creature by the same player, the old Role is put into the graveyard.",
     "initiative": "The Initiative is a designation a player can have. When you take the Initiative, you venture into the Undercity. If you already have the Initiative, you instead venture deeper. The Initiative can be stolen by dealing combat damage to the player who currently has it.",
     "city_blessing": "The City's Blessing is a status you gain once you control ten or more permanents. Once you have it, you keep it for the rest of the game. Some cards have Ascend and become stronger if you have the City’s Blessing.",
-    "party": "A party consists of up to one each of Cleric, Rogue, Warrior, and Wizard you control. Some cards become stronger depending on how many unique roles are filled in your party."
 }
 
 specialCounters = {
 	"finality": "Finality Counter — If a permanent with a finality counter would die, exile it instead.",
 	"shield": "Shield Counter — If this permanent would be destroyed or dealt damage, remove a shield counter instead.",
 	"stun": "Stun Counter — If a permanent with a stun counter would untap, remove one instead.",
+}
+
+specialTokens = {
+    "lander": "Lander Token — Artifact token with “{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.” Introduced in Edge of Eternities (2025).",
+    "blood": "Blood Token — Artifact token with “{1}, {T}, Discard a card, Sacrifice this artifact: Draw a card.” Introduced in Innistrad: Crimson Vow (2021).",
+    "map": "Map Token — Artifact token with “{1}, {T}, Sacrifice this artifact: Target creature you control explores.” Introduced in The Lost Caverns of Ixalan (2023).",
+    "treasure": "Treasure Token — Artifact token with “{T}, Sacrifice this artifact: Add one mana of any color.” Evergreen since Ixalan (2017).",
+    "gold": "Gold Token — Artifact token with “Sacrifice this artifact: Add one mana of any color.” Similar to Treasure but activation doesn’t require tapping.",
+    "clue": "Clue Token — Artifact token with “{2}, Sacrifice this artifact: Draw a card.” Created by Investigate and related effects.",
+    "food": "Food Token — Artifact token with “{2}, {T}, Sacrifice this artifact: You gain 3 life.” First appeared in Throne of Eldraine (2019).",
+    "incubator": "Incubator Token — Artifact token with “{2}: Transform this artifact.” It transforms into a 0/0 Phyrexian artifact creature with N +1/+1 counters on it.",
+    "powerstone": "Powerstone Token — Artifact token with “{T}: Add {C}. This mana can’t be spent to cast a nonartifact spell.” Introduced in The Brothers' War (2022).",
+    "junk": "Junk Token — Artifact token with “{T}, Sacrifice this artifact: Exile the top card of your library. You may play that card this turn.”",
+    "shard": "Shard Token — Enchantment token with “{2}, Sacrifice this enchantment: Scry 1, then draw a card.” Created by the Constellation mechanic (Kaldheim Commander decks).",
+    "role": "Role Token — Enchantment Aura token with various keywords and abilities. Created by cards in Wilds of Eldraine (2023). Only one Role per creature per controller."
 }
