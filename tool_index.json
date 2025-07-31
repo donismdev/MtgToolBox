@@ -84,6 +84,16 @@
 			"enable": true,
 			"modalIcon": "R",
 			"modalIconColor": "#20c997"
-	}
+		},
+		{
+			"name": "mtg-dice",
+			"parent": "MTG",
+			"description": "다양한 주사위(D4~D20)와 동전 던지기 기능을 지원하는 MTG용 간단한 주사위 도구입니다.",
+			"path": "tools/mtg-dice/",
+			"type": ["html", "html_modal"],
+			"enable": true,
+			"modalIcon": "D",
+			"modalIconColor": "#17a2b8"
+		}
 	]
 }

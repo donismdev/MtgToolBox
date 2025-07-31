@@ -1,0 +1,177 @@
+
+:root {
+    --background-color: #1f1f23;
+    --surface-color: #2a2a2e;
+    --primary-color: #00aaff;
+    --secondary-color: #ff4757;
+    --text-color: #f1f1f1;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    overflow: hidden;
+}
+
+.main-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+h1 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+    margin: 0;
+}
+
+#viewport {
+    width: 100%;
+    height: 200px;
+    perspective: 1200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#dice-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    transform-style: preserve-3d;
+}
+
+.result-area {
+    min-height: 3rem;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    text-shadow: 0 0 15px rgba(255, 71, 87, 0.5);
+}
+
+.scene {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    transform-style: preserve-3d;
+}
+
+.dice, .coin {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 2s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.face, .coin-face {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    border: 1px solid #ccc;
+    color: #333;
+    font-size: 50px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backface-visibility: hidden;
+}
+
+.face-1 { transform: rotateY(0deg) translateZ(50px); }
+.face-6 { transform: rotateY(180deg) translateZ(50px); }
+.face-2 { transform: rotateX(90deg) translateZ(50px); }
+.face-5 { transform: rotateX(-90deg) translateZ(50px); }
+.face-3 { transform: rotateY(90deg) translateZ(50px); }
+.face-4 { transform: rotateY(-90deg) translateZ(50px); }
+
+.coin-face {
+    border-radius: 50%;
+    background: linear-gradient(145deg, #f1c40f, #f39c12);
+    border: 2px solid #e67e22;
+    font-size: 1.2rem;
+}
+.coin-heads { transform: translateZ(2px); }
+.coin-tails { transform: rotateX(180deg) translateZ(2px); }
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.control-section {
+    background-color: var(--surface-color);
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+.control-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    margin-bottom: 0.8rem;
+    text-align: left;
+}
+
+.control-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.control-group button {
+    flex-grow: 1;
+    padding: 0.7rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+    background-color: #3b3b40;
+    border: 1px solid #555;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.control-group button.active {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+}
+
+#rollButton {
+    padding: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background: var(--secondary-color);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+#rollButton:active {
+    transform: scale(0.97);
+}
+
+#rollButton:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
