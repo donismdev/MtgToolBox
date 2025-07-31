@@ -78,15 +78,20 @@ export function setupEventListeners() {
     });
 
     document.getElementById('reset-button').addEventListener('click', (e) => {
-        if (e.target.classList.contains('confirm-animation')) {
-            window.players.forEach(p => p.setLife(window.localSettings.lifeMax));
-            hideAllOverlays();
-        } else {
-            hideAllOverlays();
-            window.activeUI = 'reset';
-            e.target.classList.add('confirm-animation');
-            window.overlay.style.display = 'block';
-        }
+        const btn = e.currentTarget;
+
+		if (btn.classList.contains('confirm-animation')) {
+			window.players.forEach(p => p.setLife(window.localSettings.lifeMax));
+			btn.textContent = '라이프 초기화';
+			btn.classList.remove('confirm-animation');
+			hideAllOverlays();
+		} else {
+			hideAllOverlays();
+			window.activeUI = 'reset';
+			btn.textContent = '확인';
+			btn.classList.add('confirm-animation');
+			window.overlay.style.display = 'block';
+		}
     });
 
     document.getElementById('dice-button').addEventListener('click', () => {
@@ -102,21 +107,32 @@ export function setupEventListeners() {
             hideAllOverlays();
         });
 
+		const showAdjustDirectionMenu = () => showMenu(
+			window.settingsMenu,
+			'라이프 조절 방향',
+			['좌우', '상하'],
+			(selection) => {
+				window.localSettings.lifeAdjustDirection = (selection === '좌우') ? 'horizontal' : 'vertical';
+				hideAllOverlays();
+			}
+		);
+
         const showFontMenu = () => showMenu(window.fontSizeMenu, '폰트 크기 선택', ['작음', '보통', '크게', '아주 크게'], (selection) => {
             const sizeMap = {'작음': 'small', '보통': 'medium', '크게': 'large', '아주 크게': 'xlarge'};
             applyLifeFontSize(sizeMap[selection]);
             hideAllOverlays();
         });
 
-        const showDiceSidesMenu = () => showMenu(window.diceSidesMenu, `주사위 면 수 (현재 D${window.localSettings.diceSides})`, [4, 6, 8, 10, 12, 20], (sides) => {
+        const showDiceSidesMenu = () => showMenu(window.diceSidesMenu, `주사위 면 수 (현재 D${window.localSettings.diceSides})`, [6, 20, 4, 8, 10, 12], (sides) => {
             window.localSettings.diceSides = sides;
             hideAllOverlays();
         });
         
-        showMenu(window.settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수'], (selection) => {
+        showMenu(window.settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
             if (selection === '시작 라이프') showLifeMenu();
             else if (selection === '폰트 크기') showFontMenu();
             else if (selection === '주사위 면 수') showDiceSidesMenu();
+            else if (selection === '라이프 조절 방향') showAdjustDirectionMenu();
         });
     });
 }

@@ -2,8 +2,13 @@ export function hideAllOverlays() {
     [window.playerCountMenu, window.diceCountMenu, window.settingsMenu, window.lifeMaxMenu, window.fontSizeMenu, window.diceSidesMenu, window.threePlayerLayoutButtonsContainer].forEach(el => el.style.display = 'none');
     window.overlay.style.display = 'none';
     window.centerButtons.style.display = 'flex';
-    document.getElementById('reset-button').classList.remove('confirm-animation');
-    window.activeUI = null;
+
+	const resetBtn = document.getElementById('reset-button');
+
+	resetBtn.textContent = '라이프 초기화';
+    resetBtn.classList.remove('confirm-animation');
+
+	window.activeUI = null;
 }
 
 export function showMenu(container, labelText, options, onSelect) {

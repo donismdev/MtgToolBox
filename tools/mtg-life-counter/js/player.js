@@ -20,27 +20,34 @@ export class Player {
         this.elements.diceContainer = document.createElement('div');
         this.elements.diceContainer.className = 'dice-container';
         this.elements.area.appendChild(this.elements.diceContainer);
-        this.elements.area.addEventListener('touchstart', (event) => {
-            event.preventDefault();
+        this.elements.area.addEventListener('pointerdown', (event) => {
             if (window.activeUI !== null || event.target.closest('.rotate-button')) return;
 
-            for (const touch of event.changedTouches) {
-                const rect = this.elements.area.getBoundingClientRect();
-                const touchX = touch.clientX - rect.left;
-                const touchY = touch.clientY - rect.top;
+			const rect = this.elements.area.getBoundingClientRect();
+			const pointerX = event.clientX - rect.left;
+			const pointerY = event.clientY - rect.top;
 
-                // Check if the touch is within the player's area
-                if (touchX >= 0 && touchX <= rect.width && touchY >= 0 && touchY <= rect.height) {
-                    let amount = 0;
-                    switch (this.rotation) {
-                        case 0: amount = (touchY > rect.height / 2) ? -1 : 1; break;
-                        case 180: amount = (touchY > rect.height / 2) ? 1 : -1; break;
-                        case 90: amount = (touchX > rect.width / 2) ? 1 : -1; break;
-                        case 270: amount = (touchX > rect.width / 2) ? -1 : 1; break;
-                    }
-                    this.changeLife(amount);
-                }
-            }
+			let amount = 0;
+			let adjustMode = window.localSettings.lifeAdjustDirection; 
+
+			if (adjustMode === 'vertical') {
+				switch (this.rotation) {
+					case 0: amount = (pointerY > rect.height / 2) ? -1 : 1; break;
+					case 180: amount = (pointerY > rect.height / 2) ? 1 : -1; break;
+					case 90: amount = (pointerX > rect.width / 2) ? 1 : -1; break;
+					case 270: amount = (pointerX > rect.width / 2) ? -1 : 1; break;
+				}
+				
+			} else { // horizontal
+				switch (this.rotation) {
+					case 0: amount = (pointerX > rect.width / 2) ? 1 : -1; break;
+					case 180: amount = (pointerX > rect.width / 2) ? -1 : 1; break;
+					case 90: amount = (pointerY > rect.height / 2) ? -1 : 1; break;
+					case 270: amount = (pointerY > rect.height / 2) ? 1 : -1; break;
+				}
+			}
+			
+			this.changeLife(amount);
         });
         const rotateButton = document.createElement('button');
         rotateButton.className = 'rotate-button';

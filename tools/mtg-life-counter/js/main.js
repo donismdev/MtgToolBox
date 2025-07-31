@@ -12,8 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // 최초 로딩 시, 저장된 데이터가 없으면 기본값으로 초기화
     if (!window.dataSpace.settings) {
         window.dataSpace.settings = {
-            lifeMax: 20, diceSides: 20, playerCount: 2, 
-            threePlayerLayout: 'top', lifeFontSize: 'small'
+            lifeMax: 20,
+			diceSides: 6,
+			playerCount: 2,
+            threePlayerLayout: 'top',
+			lifeFontSize: 'small',
+			lifeAdjustDirection: 'horizontal'
         };
     }
     if (!window.dataSpace.lifeCounter) window.dataSpace.lifeCounter = {};
