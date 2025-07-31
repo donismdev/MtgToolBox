@@ -60,7 +60,7 @@ document.getElementById("filterForm").addEventListener("submit", async function 
         if (typeList.length) summary.push(`<strong>Types:</strong> ${typeList.join(", ")}`);
         if (colorList.length) summary.push(`<strong>Colors:</strong> ${colorList.join(", ")}`);
         if (rarityList.length) summary.push(`<strong>Rarity:</strong> ${rarityList.join(", ")}`);
-        if (form.querySelector("#legendaryOnly").checked) summary.push("<strong>Legendary Only</strong>");
+        // if (form.querySelector("#legendaryOnly").checked) summary.push("<strong>Legendary Only</strong>");
         if (form.querySelector("#excludeBasic").checked) summary.push("<strong>Exclude Basic Lands</strong>");
         if (cmcRaw !== "") summary.push(`<strong>CMC:</strong> ${form.querySelector("#cmcOperator").value} ${cmcRaw}`);
 
