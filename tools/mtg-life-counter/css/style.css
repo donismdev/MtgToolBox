@@ -1,0 +1,187 @@
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+        }
+        #game-container {
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        .player-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: #2c3e50;
+            color: white;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        /* Layouts */
+        .player-area.player-count-2 { width: 100%; height: 50%; }
+        .player-area.player-count-3 { /* JS에서 제어 */ }
+        .player-area.player-count-4 { width: 50%; height: 50%; }
+
+        .game-layout-3-top #player-1-area { width: 100%; height: 50%; order: 0; }
+        .game-layout-3-top #player-2-area,
+        .game-layout-3-top #player-3-area { width: 50%; height: 50%; order: 1; }
+
+        .game-layout-3-bottom #player-1-area { width: 100%; height: 50%; order: 1; }
+        .game-layout-3-bottom #player-2-area,
+        .game-layout-3-bottom #player-3-area { width: 50%; height: 50%; order: 0; }
+        
+        /* Player Content */
+        .player-content-wrapper {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            transform-origin: center center;
+        }
+        .player-content-wrapper.rotation-90 { transform: rotate(90deg); }
+        .player-content-wrapper.rotation-180 { transform: rotate(180deg); }
+        .player-content-wrapper.rotation-270 { transform: rotate(270deg); }
+
+        .life-total {
+            font-weight: bold;
+            transition: font-size 0.3s ease, opacity 0.3s ease;
+            z-index: 1;
+            transform: rotate(0deg) !important;
+        }
+        .player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
+
+        .font-size-small { --life-font-size: 10vh; }
+        .font-size-medium { --life-font-size: 16vh; }
+        .font-size-large { --life-font-size: 20vh; }
+        .font-size-xlarge { --life-font-size: 24vh; }
+        .life-total { font-size: var(--life-font-size); }
+
+        /* Center Buttons */
+        #center-buttons {
+            display: flex;
+            flex-wrap: nowrap; 
+            justify-content: center;
+            gap: 0.5rem; 
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; 
+            max-width: 480px;
+            z-index: 1010;
+            transition: top 0.3s ease;
+        }
+
+        body.buttons-raised #center-buttons { top: 40%; }
+        body.buttons-raised.font-size-medium #center-buttons { top: 35%; }
+        body.buttons-raised.font-size-large #center-buttons { top: 32%; }
+        body.buttons-raised.font-size-xlarge #center-buttons { top: 28%; }
+
+        #center-buttons button {
+            flex-grow: 1;
+            flex-basis: 0;
+            height: 50px; 
+            font-size: 0.9rem;
+            border: 1px solid #ccc; background-color: white;
+            border-radius: 0.5rem; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 0 0.5rem;
+            white-space: nowrap;
+        }
+        #center-buttons button.confirm-animation {
+            color: #e74c3c; background-color: #ffe0e0;
+            border: 2px solid #e74c3c;
+            animation: confirmPulse 1s infinite alternate;
+        }
+        @keyframes confirmPulse {
+            from { transform: scale(1); } to { transform: scale(1.03); }
+        }
+
+        /* Dice & Menus */
+        .dice-container {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; display: none; justify-content: center;
+            align-items: center; gap: 1rem;
+            z-index: 950;
+        }
+        .dice-container.pushed-up { top: 40%; }
+        .dice-container.pushed-down { top: 60%; }
+
+        .individual-dice-wrapper {
+            display: flex; gap: 0.5rem; overflow-x: auto;
+            justify-content: center; flex-wrap: wrap;
+            max-height: 12rem;
+            scrollbar-width: none;
+        }
+        .individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
+        .dice {
+            flex-shrink: 0; min-width: 3rem; height: 3rem;
+            font-size: 1.8rem; font-weight: bold;
+            background-color: #34495e; color: white;
+            border-radius: 0.5rem; display: flex;
+            justify-content: center; align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transform: rotate(0deg) !important;
+        }
+        .dice.rolling { animation: diceRollAnimation 0.1s infinite alternate; }
+        @keyframes diceRollAnimation { from { transform: scale(1); } to { transform: scale(1.02); } }
+        .dice.finalized {
+            background-color: #2ecc71;
+            animation: diceFinalizeAnimation 0.5s ease-out forwards;
+        }
+        @keyframes diceFinalizeAnimation { from { transform: scale(0.8); } to { transform: scale(1); } }
+        .dice-sum-display {
+            flex-shrink: 0; width: 4rem; height: 4rem;
+            font-size: 2.5rem; font-weight: bold;
+            color: white; background-color: #e74c3c;
+            border-radius: 0.5rem; display: flex;
+            justify-content: center; align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0; transform: scale(0.8);
+        }
+        .dice-sum-display.show { opacity: 1; transform: scale(1); }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); z-index: 900; display: none;
+        }
+        .dice-menu {
+            position: absolute; background: rgba(0, 0, 0, 0.85);
+            color: white; padding: 1rem; border-radius: 0.5rem;
+            display: none; z-index: 1000; width: 95%; max-width: 600px;
+            box-sizing: border-box; flex-direction: column;
+            align-items: center; left: 50%; transform: translateX(-50%);
+        }
+        .dice-menu-label { margin-bottom: 0.8rem; font-weight: bold; font-size: 1.1rem; }
+        .dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
+        .dice-option {
+            min-width: 40px; padding: 0.5rem 0.8rem;
+            font-size: 0.9rem; background: #444;
+            border-radius: 0.3rem; cursor: pointer; text-align: center;
+        }
+        #three-player-layout-buttons { display: none; }
+
+        /* Rotate Button */
+        .rotate-button {
+            position: absolute; background: rgba(0,0,0,0.5); color: white;
+            border: none; border-radius: 50%;
+            width: 30px; height: 30px; font-size: 1rem;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 100; opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        .player-area.player-pos-top-left .rotate-button { bottom: 10px; left: 10px; }
+        .player-area.player-pos-top-right .rotate-button { bottom: 10px; right: 10px; }
+        .player-area.player-pos-bottom-left .rotate-button { top: 10px; left: 10px; }
+        .player-area.player-pos-bottom-right .rotate-button { top: 10px; right: 10px; }
+    
