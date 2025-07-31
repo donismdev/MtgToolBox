@@ -30,7 +30,7 @@ document.getElementById("filterForm").addEventListener("submit", async function 
     const rarityList = Array.from(form.querySelectorAll("input[name='rarity']:checked")).map(cb => cb.value);
     if (rarityList.length) query.push(`(${rarityList.map(r => `rarity:${r}`).join(" or ")})`);
 
-    if (form.querySelector("#legendaryOnly").checked) query.push("is:legendary");
+    // if (form.querySelector("#legendaryOnly").checked) query.push("is:legendary");
     if (form.querySelector("#excludeBasic").checked) query.push("-type:basic");
 
     const cmcRaw = form.querySelector("#cmcValue").value.trim();
