@@ -1,454 +1,459 @@
 
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            font-family: sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            flex-direction: column;
-        }
-        #game-container {
-            display: flex;
-            flex: 1;
-            flex-direction: row;
-            flex-wrap: wrap;
-            position: relative;
-            touch-action: manipulation;
-        }
-        .player-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            background-color: #2c3e50;
-            color: white;
-			overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.1);
-            box-sizing: border-box;
+			body, html {
+				margin: 0; padding: 0;
+				width: 100%; height: 100%;
+				overflow: hidden;
+				font-family: sans-serif;
+				background-color: #f4f4f4;
+				display: flex;
+				flex-direction: column;
+			}
+			#game-container {
+				display: flex;
+				flex: 1;
+				flex-direction: row;
+				flex-wrap: wrap;
+				position: relative;
+				touch-action: manipulation;
+			}
+			.player-area {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				position: relative;
+				background-color: #2c3e50;
+				color: white;
+				overflow: hidden;
+				border: 1px solid rgba(0,0,0,0.1);
+				box-sizing: border-box;
 
-        }
+			}
 
-		.user-select-none {
-			user-select: none;
-			-webkit-user-select: none; /* Safari */
-			-ms-user-select: none;     /* IE10+ */
-		}
+			.user-select-none {
+				user-select: none;
+				-webkit-user-select: none; /* Safari */
+				-ms-user-select: none;     /* IE10+ */
+			}
 
-        /* Layouts */
-        .player-area.player-count-2 { width: 100%; height: 50%; }
-        .player-area.player-count-3 { /* JS에서 제어 */ }
-        .player-area.player-count-4 { width: 50%; height: 50%; }
+			/* Layouts */
+			.player-area.player-count-2 { width: 100%; height: 50%; }
+			.player-area.player-count-3 { /* JS에서 제어 */ }
+			.player-area.player-count-4 { width: 50%; height: 50%; }
 
-        .game-layout-3-top #player-1-area { width: 100%; height: 50%; order: 0; }
-        .game-layout-3-top #player-2-area,
-        .game-layout-3-top #player-3-area { width: 50%; height: 50%; order: 1; }
+			.game-layout-3-top #player-1-area { width: 100%; height: 50%; order: 0; }
+			.game-layout-3-top #player-2-area,
+			.game-layout-3-top #player-3-area { width: 50%; height: 50%; order: 1; }
 
-        .game-layout-3-bottom #player-1-area { width: 100%; height: 50%; order: 1; }
-        .game-layout-3-bottom #player-2-area,
-        .game-layout-3-bottom #player-3-area { width: 50%; height: 50%; order: 0; }
-        
-        /* Player Content */
-        .player-content-wrapper {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            transform-origin: center center;
-			z-index: 1;;
-        }
-        .player-content-wrapper.rotation-90 { transform: rotate(90deg); }
-        .player-content-wrapper.rotation-180 { transform: rotate(180deg); }
-        .player-content-wrapper.rotation-270 { transform: rotate(270deg); }
+			.game-layout-3-bottom #player-1-area { width: 100%; height: 50%; order: 1; }
+			.game-layout-3-bottom #player-2-area,
+			.game-layout-3-bottom #player-3-area { width: 50%; height: 50%; order: 0; }
+			
+			/* Player Content */
+			.player-content-wrapper {
+				position: absolute; top: 0; left: 0;
+				width: 100%; height: 100%;
+				display: flex; justify-content: center; align-items: center;
+				transform-origin: center center;
+				z-index: 1;;
+			}
+			.player-content-wrapper.rotation-90 { transform: rotate(90deg); }
+			.player-content-wrapper.rotation-180 { transform: rotate(180deg); }
+			.player-content-wrapper.rotation-270 { transform: rotate(270deg); }
 
-        .life-total {
-            font-weight: bold;
-            transition: font-size 0.3s ease, opacity 0.3s ease;
-            z-index: 5;
-        }
-        .player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
+			.life-total {
+				font-weight: bold;
+				transition: font-size 0.3s ease, opacity 0.3s ease;
+				z-index: 5;
+			}
+			.player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
 
-        .font-size-small { --life-font-size: 12vh; }
-        .font-size-medium { --life-font-size: 18vh; }
-        .font-size-large { --life-font-size: 22vh; }
-        .font-size-xlarge { --life-font-size: 26vh; }
-        .life-total { font-size: var(--life-font-size); }
+			.font-size-small { --life-font-size: 12vh; }
+			.font-size-medium { --life-font-size: 18vh; }
+			.font-size-large { --life-font-size: 22vh; }
+			.font-size-xlarge { --life-font-size: 26vh; }
+			.life-total { font-size: var(--life-font-size); }
 
-		@keyframes lifeIntro {
+			@keyframes lifeIntro {
+				from {
+					transform: rotate(0deg) scale(1.4);
+					opacity: 0;
+				}
+				to {
+					transform: rotate(0deg) scale(1);
+					opacity: 1;
+				}
+			}
+
+			.life-total.animate-intro {
+				animation: lifeIntro 0.3s ease-out;
+			}
+
+			.life-hint {
+				position: absolute;
+				font-size: 2.5rem;
+				font-weight: 700;
+				color: white;
+				text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+				opacity: 1;
+				pointer-events: none;
+				transition: opacity 0.2s ease, transform 0.2s ease;
+
+				user-select: none;
+				-webkit-user-select: none; /* Safari */
+				-ms-user-select: none;     /* IE10+ */
+			}
+			.life-hint.increase {
+			}
+			.life-hint.decrease {
+			}
+
+			.life-feedback {
+				position: absolute;
+				font-size: 2.5rem;
+				font-weight: bold;
+				color: #fff;
+				text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+				pointer-events: none;
+				user-select: none;
+				animation: feedbackPop 0.6s ease-out forwards;
+				z-index: 5;
+			}
+			@keyframes feedbackPop {
+				0% {
+					opacity: 1;
+					transform: scale(1) translateY(0);
+				}
+				50% {
+					opacity: 0.9;
+					transform: scale(1.2) translateY(-20px);
+				}
+				100% {
+					opacity: 0;
+					transform: scale(1) translateY(-40px);
+				}
+			}
+
+			.life-ripple {
+				position: absolute;
+				width: 100px;
+				height: 100px;
+				border-radius: 50%;
+				/* background-color 속성을 여기서 제거합니다. */
+				transform: scale(0);
+				animation: rippleExpand 0.6s ease-out forwards;
+				pointer-events: none;
+				z-index: 1000;
+			}
+
+			.life-ripple.minus {
+				/* 이 규칙은 이제 비어있거나, 색상 외 다른 효과가 필요하면 사용합니다. */
+				/* 혹은 규칙 자체를 삭제해도 괜찮습니다. */
+			}
+
+			.life-feedback.immediate {
+				font-size: 1.5rem; /* 기본 2.5rem보다 작게 설정 */
+				text-shadow: 0 0 4px rgba(0, 0, 0, 0.8); /* 작은 글씨에 맞게 그림자 약하게 */
+			}
+
+			@keyframes rippleExpand {
+				0% {
+					transform: scale(0);
+					opacity: 0.8;
+				}
+				100% {
+					transform: scale(5);
+					opacity: 0;
+				}
+			}
+
+			/* Center Buttons */
+			#center-buttons {
+				display: flex;
+				flex-wrap: nowrap; 
+				justify-content: center;
+				gap: 0.5rem; 
+				position: absolute;
+				top: 50%; left: 50%;
+				transform: translate(-50%, -50%);
+				width: 90%; 
+				max-width: 480px;
+				z-index: 1010;
+				transition: top 0.3s ease;
+			}
+
+			body.buttons-left #center-buttons {
+				left: 25%;
+				top: 50%;	
+				transform: translate(-50%, -50%);
+			}
+
+			body.buttons-right #center-buttons {
+				left: 75%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+			}
+
+			body.buttons-raised #center-buttons { top: 40%; }
+			body.buttons-raised.font-size-medium #center-buttons { top: 35%; }
+			body.buttons-raised.font-size-large #center-buttons { top: 32%; }
+			body.buttons-raised.font-size-xlarge #center-buttons { top: 28%; }
+
+			#center-buttons button {
+				flex-grow: 1;
+				flex-basis: 0;
+				height: 50px; 
+				font-size: 0.9rem;
+				border: 1px solid #ccc; background-color: white;
+				border-radius: 0.5rem; cursor: pointer;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+				padding: 0 0.5rem;
+				white-space: nowrap;
+				min-width: 100px;
+				text-align: center;
+			}
+			#center-buttons button.confirm-animation {
+				color: #e74c3c;
+				background-color: #ffe0e0;
+				border: 2px solid #e74c3c;
+				animation: buttonPulse 1s infinite alternate;
+				transform-origin: center center;
+			}
+			@keyframes buttonPulse {
+				from { box-shadow: 0 0 0px rgba(231, 76, 60, 0.3); }
+				to   { box-shadow: 0 0 15px rgba(231, 76, 60, 1); }
+			}
+
+			/* Dice & Menus */
+			.dice-container {
+				position: absolute; top: 50%; left: 50%;
+				transform: translate(-50%, -50%);
+				width: 90%; display: none; justify-content: center;
+				align-items: center; gap: 1rem;
+				z-index: 950;
+			}
+			.dice-container.pushed-up { top: 40%; }
+			.dice-container.pushed-down { top: 60%; }
+
+			.individual-dice-wrapper {
+				display: flex; gap: 0.5rem; overflow-x: auto;
+				justify-content: center; flex-wrap: wrap;
+				max-height: 12rem;
+				scrollbar-width: none;
+			}
+			.individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
+			.dice {
+				flex-shrink: 0; min-width: 3rem; height: 3rem;
+				font-size: 1.8rem; font-weight: bold;
+				background-color: #34495e; color: white;
+				border-radius: 0.5rem; display: flex;
+				justify-content: center; align-items: center;
+				box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+				transform: rotate(0deg) !important;
+			}
+			.dice.rolling { animation: diceRollAnimation 0.1s infinite alternate; }
+			@keyframes diceRollAnimation { from { transform: scale(1); } to { transform: scale(1.02); } }
+			.dice.finalized {
+				background-color: #2ecc71;
+				animation: diceFinalizeAnimation 0.5s ease-out forwards;
+			}
+			@keyframes diceFinalizeAnimation { from { transform: scale(0.8); } to { transform: scale(1); } }
+			.dice-sum-display {
+				flex-shrink: 0; width: 4rem; height: 4rem;
+				font-size: 2.5rem; font-weight: bold;
+				color: white; background-color: #e74c3c;
+				border-radius: 0.5rem; display: flex;
+				justify-content: center; align-items: center;
+				box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+				transition: opacity 0.3s ease, transform 0.3s ease;
+				opacity: 0; transform: scale(0.8);
+			}
+			.dice-sum-display.show { opacity: 1; transform: scale(1); }
+
+			.overlay {
+				position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+				background: rgba(0,0,0,0.8); /* 80% 불투명도로 변경하여 훨씬 어둡게 */
+				z-index: 900; display: none;
+			}
+			.dice-menu {
+				position: absolute; background: rgba(0, 0, 0, 0.85);
+				color: white; padding: 1rem; border-radius: 0.5rem;
+				display: none; z-index: 1000; width: 95%; max-width: 600px;
+				box-sizing: border-box; flex-direction: column;
+				align-items: center; left: 50%; transform: translateX(-50%);
+			}
+			.dice-menu-label { margin-bottom: 0.8rem; font-weight: bold; font-size: 1.1rem; }
+			.dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
+			.dice-option {
+				min-width: 40px; padding: 0.5rem 0.8rem;
+				font-size: 0.9rem; background: #444;
+				border-radius: 0.3rem; cursor: pointer; text-align: center;
+			}
+			#three-player-layout-buttons { display: none; }
+
+			/* Rotate Button */
+			.rotate-button {
+				position: absolute; background: rgba(0,0,0,0.5); color: white;
+				border: none; border-radius: 50%;
+				width: 30px; height: 30px; font-size: 1rem;
+				display: flex; justify-content: center; align-items: center;
+				cursor: pointer; z-index: 100; opacity: 0.7;
+				transition: all 0.2s ease;
+			}
+			.player-area.player-pos-top-left .rotate-button { bottom: 10px; left: 10px; }
+			.player-area.player-pos-top-right .rotate-button { bottom: 10px; right: 10px; }
+			.player-area.player-pos-bottom-left .rotate-button { top: 10px; left: 10px; }
+			.player-area.player-pos-bottom-right .rotate-button { top: 10px; right: 10px; }
+
+			.player-header-buttons {
+				position: absolute;
+				top: 10px;
+				left: 10px; /* 왼쪽 가장자리에서 10px 위치에 고정 */
+				/* transform: translateX(-50%);  <-- 이 줄을 삭제하거나 주석 처리 */
+				display: flex;
+				gap: 10px;
+				z-index: 20;
+			}
+
+
+			.header-button {
+				width: 60px;
+				height: 60px;
+				/* background-color: rgba(0, 0, 0, 0.4); <-- 기존 색상 대신 변수 사용 */
+				background-color: var(--button-bg-color);
+				border: 2px solid transparent;
+				border-radius: 20%; /* 요청하신대로 수정 */
+				cursor: pointer;
+				background-size: 85%;
+				background-position: center;
+				background-repeat: no-repeat;
+				transition: all 0.2s ease;
+			}
+
+			.header-button:hover {
+				/* background-color: rgba(0, 0, 0, 0.6); <-- 기존 색상 대신 변수 사용 */
+				background-color: var(--button-hover-bg-color);
+			}
+
+
+			.theme-selector-overlay {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.7);
+				display: none; /* Initially hidden */
+				justify-content: center;
+				align-items: center;
+				z-index: 1050;
+			}
+
+			.theme-selector-container {
+				display: flex;
+				/* flex-wrap: nowrap; 아이템을 한 줄로만 표시하도록 변경 */
+				/* 또는 flex-direction을 row로 명시하면 기본값이 nowrap입니다. */
+				flex-direction: row; 
+				gap: 10px;
+				padding: 20px;
+				background-color: #2c3e50;
+				border-radius: 10px;
+				max-width: 80%;
+				/* max-height는 이제 필요 없으므로 제거합니다. */
+				overflow-x: auto; /* 가로 스크롤을 자동으로 표시 */
+			}
+
+			/* 스크롤바 전체 - 가로 스크롤이므로 높이(height)를 조절 */
+			.theme-selector-container::-webkit-scrollbar {
+			height: 8px;
+			}
+
+			/* 스크롤바 트랙(배경) */
+			.theme-selector-container::-webkit-scrollbar-track {
+			background: rgba(0, 0, 0, 0.2);
+			border-radius: 4px;
+			}
+
+			/* 스크롤바 핸들(움직이는 막대) */
+			.theme-selector-container::-webkit-scrollbar-thumb {
+			background: rgba(255, 255, 255, 0.4);
+			border-radius: 4px;
+			}
+
+			.theme-selector-container::-webkit-scrollbar-thumb:hover {
+			background: rgba(255, 255, 255, 0.6);
+			}
+
+			.theme-swatch {
+				width: 50px;
+				height: 50px;
+				border-radius: 5px;
+				cursor: pointer;
+				border: 2px solid #fff;
+				transition: transform 0.1s ease;
+				flex-shrink: 0; 
+			}
+
+			.theme-swatch:hover {
+				transform: scale(1.1);
+			}
+
+			.theme-swatch.disabled {
+				cursor: not-allowed;
+				opacity: 0.5;
+				border-color: #666;
+			}
+
+			.dungeon-overlay {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.8);
+				z-index: 2000;
+				display: none; /* Initially hidden */
+				justify-content: center;
+				align-items: center;
+				color: white;
+				font-size: 2rem;
+			}
+
+		@keyframes colorShift {
 			from {
-				transform: rotate(0deg) scale(1.4);
-				opacity: 0;
+				filter: hue-rotate(0deg) brightness(1.2);
 			}
 			to {
-				transform: rotate(0deg) scale(1);
-				opacity: 1;
+				filter: hue-rotate(45deg) brightness(1.2);
 			}
 		}
 
-		.life-total.animate-intro {
-			animation: lifeIntro 0.3s ease-out;
+		.header-button.active {
+			box-shadow: 
+			/* 바깥 글로우: blur-radius를 15px -> 18px로 키워 살짝 넓게 */
+			0 0 15px var(--highlight-color, transparent),
+			/* 안쪽 글로우: spread-radius를 2px -> 0px로 바꿔 훨씬 부드럽고 은은하게 */
+			inset 0 0 6px 0px var(--highlight-color, transparent);
+
+			border-color: var(--highlight-color, transparent);
 		}
 
-		.life-hint {
-			position: absolute;
-			font-size: 2.5rem;
-			font-weight: 700;
-			color: white;
-			text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-			opacity: 1;
-			pointer-events: none;
-			transition: opacity 0.2s ease, transform 0.2s ease;
-
-			user-select: none;
-			-webkit-user-select: none; /* Safari */
-			-ms-user-select: none;     /* IE10+ */
-		}
-		.life-hint.increase {
-		}
-		.life-hint.decrease {
+		.header-button.is-animating {
+			animation: colorShift 2s infinite alternate ease-in-out;
 		}
 
-		.life-feedback {
-			position: absolute;
-			font-size: 2.5rem;
-			font-weight: bold;
-			color: #fff;
-			text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
-			pointer-events: none;
-			user-select: none;
-			animation: feedbackPop 0.6s ease-out forwards;
-			z-index: 5;
-		}
-		@keyframes feedbackPop {
-			0% {
-				opacity: 1;
-				transform: scale(1) translateY(0);
-			}
-			50% {
-				opacity: 0.9;
-				transform: scale(1.2) translateY(-20px);
-			}
-			100% {
-				opacity: 0;
-				transform: scale(1) translateY(-40px);
-			}
-		}
-
-		.life-ripple {
-			position: absolute;
-			width: 100px;
-			height: 100px;
-			border-radius: 50%;
-			/* background-color 속성을 여기서 제거합니다. */
-			transform: scale(0);
-			animation: rippleExpand 0.6s ease-out forwards;
-			pointer-events: none;
-			z-index: 1000;
-		}
-
-		.life-ripple.minus {
-			/* 이 규칙은 이제 비어있거나, 색상 외 다른 효과가 필요하면 사용합니다. */
-			/* 혹은 규칙 자체를 삭제해도 괜찮습니다. */
-		}
-
-		@keyframes rippleExpand {
-			0% {
-				transform: scale(0);
-				opacity: 0.8;
-			}
-			100% {
-				transform: scale(5);
-				opacity: 0;
-			}
-		}
-
-        /* Center Buttons */
-        #center-buttons {
-            display: flex;
-            flex-wrap: nowrap; 
-            justify-content: center;
-            gap: 0.5rem; 
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%; 
-            max-width: 480px;
-            z-index: 1010;
-            transition: top 0.3s ease;
-        }
-
-		body.buttons-left #center-buttons {
-			left: 25%;
-			top: 50%;	
-			transform: translate(-50%, -50%);
-		}
-
-		body.buttons-right #center-buttons {
-			left: 75%;
-			top: 50%;
-			transform: translate(-50%, -50%);
-		}
-
-        body.buttons-raised #center-buttons { top: 40%; }
-        body.buttons-raised.font-size-medium #center-buttons { top: 35%; }
-        body.buttons-raised.font-size-large #center-buttons { top: 32%; }
-        body.buttons-raised.font-size-xlarge #center-buttons { top: 28%; }
-
-        #center-buttons button {
-            flex-grow: 1;
-            flex-basis: 0;
-            height: 50px; 
-            font-size: 0.9rem;
-            border: 1px solid #ccc; background-color: white;
-            border-radius: 0.5rem; cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 0 0.5rem;
-            white-space: nowrap;
-			min-width: 100px;
-			text-align: center;
-        }
-        #center-buttons button.confirm-animation {
-			color: #e74c3c;
-			background-color: #ffe0e0;
-			border: 2px solid #e74c3c;
-			animation: buttonPulse 1s infinite alternate;
-			transform-origin: center center;
-		}
-		@keyframes buttonPulse {
-			from { box-shadow: 0 0 0px rgba(231, 76, 60, 0.3); }
-			to   { box-shadow: 0 0 15px rgba(231, 76, 60, 1); }
-		}
-
-        /* Dice & Menus */
-        .dice-container {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%; display: none; justify-content: center;
-            align-items: center; gap: 1rem;
-            z-index: 950;
-        }
-        .dice-container.pushed-up { top: 40%; }
-        .dice-container.pushed-down { top: 60%; }
-
-        .individual-dice-wrapper {
-            display: flex; gap: 0.5rem; overflow-x: auto;
-            justify-content: center; flex-wrap: wrap;
-            max-height: 12rem;
-            scrollbar-width: none;
-        }
-        .individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
-        .dice {
-            flex-shrink: 0; min-width: 3rem; height: 3rem;
-            font-size: 1.8rem; font-weight: bold;
-            background-color: #34495e; color: white;
-            border-radius: 0.5rem; display: flex;
-            justify-content: center; align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transform: rotate(0deg) !important;
-        }
-        .dice.rolling { animation: diceRollAnimation 0.1s infinite alternate; }
-        @keyframes diceRollAnimation { from { transform: scale(1); } to { transform: scale(1.02); } }
-        .dice.finalized {
-            background-color: #2ecc71;
-            animation: diceFinalizeAnimation 0.5s ease-out forwards;
-        }
-        @keyframes diceFinalizeAnimation { from { transform: scale(0.8); } to { transform: scale(1); } }
-        .dice-sum-display {
-            flex-shrink: 0; width: 4rem; height: 4rem;
-            font-size: 2.5rem; font-weight: bold;
-            color: white; background-color: #e74c3c;
-            border-radius: 0.5rem; display: flex;
-            justify-content: center; align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            opacity: 0; transform: scale(0.8);
-        }
-        .dice-sum-display.show { opacity: 1; transform: scale(1); }
-
-        .overlay {
-			position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-			background: rgba(0,0,0,0.8); /* 80% 불투명도로 변경하여 훨씬 어둡게 */
-			z-index: 900; display: none;
-		}
-        .dice-menu {
-            position: absolute; background: rgba(0, 0, 0, 0.85);
-            color: white; padding: 1rem; border-radius: 0.5rem;
-            display: none; z-index: 1000; width: 95%; max-width: 600px;
-            box-sizing: border-box; flex-direction: column;
-            align-items: center; left: 50%; transform: translateX(-50%);
-        }
-        .dice-menu-label { margin-bottom: 0.8rem; font-weight: bold; font-size: 1.1rem; }
-        .dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
-        .dice-option {
-            min-width: 40px; padding: 0.5rem 0.8rem;
-            font-size: 0.9rem; background: #444;
-            border-radius: 0.3rem; cursor: pointer; text-align: center;
-        }
-        #three-player-layout-buttons { display: none; }
-
-        /* Rotate Button */
-        .rotate-button {
-            position: absolute; background: rgba(0,0,0,0.5); color: white;
-            border: none; border-radius: 50%;
-            width: 30px; height: 30px; font-size: 1rem;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 100; opacity: 0.7;
-            transition: all 0.2s ease;
-        }
-        .player-area.player-pos-top-left .rotate-button { bottom: 10px; left: 10px; }
-        .player-area.player-pos-top-right .rotate-button { bottom: 10px; right: 10px; }
-        .player-area.player-pos-bottom-left .rotate-button { top: 10px; left: 10px; }
-        .player-area.player-pos-bottom-right .rotate-button { top: 10px; right: 10px; }
-
-        .player-header-buttons {
-			position: absolute;
-			top: 10px;
-			left: 10px; /* 왼쪽 가장자리에서 10px 위치에 고정 */
-			/* transform: translateX(-50%);  <-- 이 줄을 삭제하거나 주석 처리 */
-			display: flex;
-			gap: 10px;
-			z-index: 20;
-		}
-
-
-        .header-button {
-			width: 60px;
-			height: 60px;
-			/* background-color: rgba(0, 0, 0, 0.4); <-- 기존 색상 대신 변수 사용 */
-			background-color: var(--button-bg-color);
-			border: 2px solid transparent;
-			border-radius: 20%; /* 요청하신대로 수정 */
-			cursor: pointer;
-			background-size: 85%;
-			background-position: center;
-			background-repeat: no-repeat;
-			transition: all 0.2s ease;
-		}
-
-        .header-button:hover {
-			/* background-color: rgba(0, 0, 0, 0.6); <-- 기존 색상 대신 변수 사용 */
-			background-color: var(--button-hover-bg-color);
-		}
-
-
-        .theme-selector-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none; /* Initially hidden */
-            justify-content: center;
-            align-items: center;
-            z-index: 1050;
-        }
-
-		.theme-selector-container {
-			display: flex;
-			/* flex-wrap: nowrap; 아이템을 한 줄로만 표시하도록 변경 */
-			/* 또는 flex-direction을 row로 명시하면 기본값이 nowrap입니다. */
-			flex-direction: row; 
-			gap: 10px;
-			padding: 20px;
-			background-color: #2c3e50;
-			border-radius: 10px;
-			max-width: 80%;
-			/* max-height는 이제 필요 없으므로 제거합니다. */
-			overflow-x: auto; /* 가로 스크롤을 자동으로 표시 */
-		}
-
-		/* 스크롤바 전체 - 가로 스크롤이므로 높이(height)를 조절 */
-		.theme-selector-container::-webkit-scrollbar {
-		height: 8px;
-		}
-
-		/* 스크롤바 트랙(배경) */
-		.theme-selector-container::-webkit-scrollbar-track {
-		background: rgba(0, 0, 0, 0.2);
-		border-radius: 4px;
-		}
-
-		/* 스크롤바 핸들(움직이는 막대) */
-		.theme-selector-container::-webkit-scrollbar-thumb {
-		background: rgba(255, 255, 255, 0.4);
-		border-radius: 4px;
-		}
-
-		.theme-selector-container::-webkit-scrollbar-thumb:hover {
-		background: rgba(255, 255, 255, 0.6);
-		}
-
-        .theme-swatch {
-            width: 50px;
-            height: 50px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 2px solid #fff;
-            transition: transform 0.1s ease;
-			flex-shrink: 0; 
-        }
-
-        .theme-swatch:hover {
-            transform: scale(1.1);
-        }
-
-        .theme-swatch.disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-            border-color: #666;
-        }
-
-        .dungeon-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            display: none; /* Initially hidden */
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 2rem;
-        }
-
-	@keyframes colorShift {
-		from {
-			filter: hue-rotate(0deg) brightness(1.2);
-		}
-		to {
-			filter: hue-rotate(45deg) brightness(1.2);
-		}
+	#toggle-button-container {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 1020;
 	}
 
-	.header-button.active {
-		box-shadow: 
-		/* 바깥 글로우: blur-radius를 15px -> 18px로 키워 살짝 넓게 */
-		0 0 15px var(--highlight-color, transparent),
-		/* 안쪽 글로우: spread-radius를 2px -> 0px로 바꿔 훨씬 부드럽고 은은하게 */
-		inset 0 0 6px 0px var(--highlight-color, transparent);
-
-		border-color: var(--highlight-color, transparent);
+	#toggle-button {
+		width: 60px;
+		height: 60px;
+		cursor: pointer;
+		border-radius: 50%;
+		box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 	}
-
-	.header-button.is-animating {
-		animation: colorShift 2s infinite alternate ease-in-out;
-	}
-
-#toggle-button-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1020;
-}
-
-#toggle-button {
-    width: 60px;
-    height: 60px;
-    cursor: pointer;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
 

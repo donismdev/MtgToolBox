@@ -3,82 +3,91 @@ import { showMenu, hideAllOverlays, applyLifeFontSize } from './ui.js';
 import { rollDiceVisual } from './dice.js';
 
 export function initializePlayers(count) {
-	window.gameContainer.innerHTML = '';
+    window.gameContainer.innerHTML = '';
 
-	// 초기화: 관련 클래스 모두 제거
-	document.body.classList.remove(
-		'buttons-raised',
-		'buttons-left',
-		'buttons-right'
-	);
-	window.gameContainer.classList.remove(
-		'game-layout-3-top',
-		'game-layout-3-bottom'
-	);
+    // 초기화: 관련 클래스 모두 제거
+    document.body.classList.remove(
+        'buttons-raised',
+        'buttons-left',
+        'buttons-right'
+    );
+    window.gameContainer.classList.remove(
+        'game-layout-3-top',
+        'game-layout-3-bottom'
+    );
 
-	window.players = [];
+    window.players = [];
 
-	let lifeData = window.dataSpace.lifeCounter;
-	let rotationData = window.dataSpace.playerRotations;
-	let themeData = window.dataSpace.themeData;
+    let lifeData = window.dataSpace.lifeCounter;
+    let rotationData = window.dataSpace.playerRotations;
+    let themeData = window.dataSpace.themeData;
 
-	if (parseInt(window.dataSpace.settings.playerCount, 10) !== parseInt(count, 10)) {
+    if (parseInt(window.dataSpace.settings.playerCount, 10) !== parseInt(count, 10)) {
         lifeData = {};
         rotationData = {};
         themeData = {};
     }
 
-	window.localSettings.playerCount = count;
+    window.localSettings.playerCount = count;
 
-	if (count === 3) {
-		const layout = window.localSettings.threePlayerLayout;
+    if (count === 3) {
+        const layout = window.localSettings.threePlayerLayout;
 
-		const p1 = new Player('player-1', lifeData['player-1'] ?? window.localSettings.lifeMax, rotationData['player-1'] ?? 0, themeData['player-1'] ?? 0);
-		const p2 = new Player('player-2', lifeData['player-2'] ?? window.localSettings.lifeMax, rotationData['player-2'] ?? 0, themeData['player-2'] ?? 1);
-		const p3 = new Player('player-3', lifeData['player-3'] ?? window.localSettings.lifeMax, rotationData['player-3'] ?? 0, themeData['player-3'] ?? 2);
-		window.players.push(p1, p2, p3);
+        const p1 = new Player('player-1', lifeData['player-1'] ?? window.localSettings.lifeMax, rotationData['player-1'] ?? 0, themeData['player-1'] ?? 0);
+        const p2 = new Player('player-2', lifeData['player-2'] ?? window.localSettings.lifeMax, rotationData['player-2'] ?? 0, themeData['player-2'] ?? 1);
+        const p3 = new Player('player-3', lifeData['player-3'] ?? window.localSettings.lifeMax, rotationData['player-3'] ?? 0, themeData['player-3'] ?? 2);
+        
+        // [추가] 생성 직후 'start' 로그 기록
+        p1.logEvent('start', { lifeAfter: p1.life });
+        p2.logEvent('start', { lifeAfter: p2.life });
+        p3.logEvent('start', { lifeAfter: p3.life });
 
-		if (layout === 'left' || layout === 'right') {
-			document.body.classList.add(layout === 'left' ? 'buttons-right' : 'buttons-left');
+        window.players.push(p1, p2, p3);
 
-			const column = document.createElement('div');
-			column.style.cssText = 'display:flex; flex-direction:column; width:50%; height:100%;';
-			p2.elements.area.style.cssText = 'height:50%; width:100%;';
-			p3.elements.area.style.cssText = 'height:50%; width:100%;';
-			column.appendChild(p2.elements.area);
-			column.appendChild(p3.elements.area);
-			p1.elements.area.style.cssText = 'width:50%; height:100%;';
+        if (layout === 'left' || layout === 'right') {
+            document.body.classList.add(layout === 'left' ? 'buttons-right' : 'buttons-left');
 
-			if (layout === 'left') {
-				window.gameContainer.appendChild(p1.elements.area);
-				window.gameContainer.appendChild(column);
-			} else {
-				window.gameContainer.appendChild(column);
-				window.gameContainer.appendChild(p1.elements.area);
-			}
-		} else {
-			// top 또는 bottom
-			window.gameContainer.classList.add(`game-layout-3-${layout}`);
-			window.players.forEach(p => window.gameContainer.appendChild(p.elements.area));
-		}
-	} else {
-		// 2인 / 4인
-		for (let i = 0; i < count; i++) {
+            const column = document.createElement('div');
+            column.style.cssText = 'display:flex; flex-direction:column; width:50%; height:100%;';
+            p2.elements.area.style.cssText = 'height:50%; width:100%;';
+            p3.elements.area.style.cssText = 'height:50%; width:100%;';
+            column.appendChild(p2.elements.area);
+            column.appendChild(p3.elements.area);
+            p1.elements.area.style.cssText = 'width:50%; height:100%;';
+
+            if (layout === 'left') {
+                window.gameContainer.appendChild(p1.elements.area);
+                window.gameContainer.appendChild(column);
+            } else {
+                window.gameContainer.appendChild(column);
+                window.gameContainer.appendChild(p1.elements.area);
+            }
+        } else {
+            // top 또는 bottom
+            window.gameContainer.classList.add(`game-layout-3-${layout}`);
+            window.players.forEach(p => window.gameContainer.appendChild(p.elements.area));
+        }
+    } else {
+        // 2인 / 4인
+        for (let i = 0; i < count; i++) {
             const playerId = `player-${i + 1}`;
             let rotation = rotationData[playerId] ?? 0;
             if (count === 2) {
                 if (i === 0) rotation = 180;
                 if (i === 1) rotation = 0;
             }
-			const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotation, themeData[playerId] ?? i);
-			player.elements.area.classList.add(`player-count-${count}`);
-			window.players.push(player);
-			window.gameContainer.appendChild(player.elements.area);
-		}
-	}
+            const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotation, themeData[playerId] ?? i);
+            
+            // [추가] 생성 직후 'start' 로그 기록
+            player.logEvent('start', { lifeAfter: player.life });
+
+            player.elements.area.classList.add(`player-count-${count}`);
+            window.players.push(player);
+            window.gameContainer.appendChild(player.elements.area);
+        }
+    }
     window.players.forEach(p => p.updateRotationClass());
 }
-
 
 export function setupEventListeners() {
     window.overlay.addEventListener('click', hideAllOverlays);
@@ -89,7 +98,7 @@ export function setupEventListeners() {
 		if (btn.classList.contains('confirm-animation')) {
 	
 			window.players.forEach(p => {
-				p.setLife(window.localSettings.lifeMax);
+				p.setLife(window.localSettings.lifeMax, true);
 				p.playIntroAnimation?.();  // 등장 애니메이션 재생
 			});
 			
