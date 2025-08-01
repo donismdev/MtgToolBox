@@ -60,10 +60,10 @@
         }
         .player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
 
-        .font-size-small { --life-font-size: 10vh; }
-        .font-size-medium { --life-font-size: 16vh; }
-        .font-size-large { --life-font-size: 20vh; }
-        .font-size-xlarge { --life-font-size: 24vh; }
+        .font-size-small { --life-font-size: 12vh; }
+        .font-size-medium { --life-font-size: 18vh; }
+        .font-size-large { --life-font-size: 22vh; }
+        .font-size-xlarge { --life-font-size: 26vh; }
         .life-total { font-size: var(--life-font-size); }
 
 		.life-hint {

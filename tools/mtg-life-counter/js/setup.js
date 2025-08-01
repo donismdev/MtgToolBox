@@ -62,21 +62,6 @@ export function initializePlayers(count) {
 export function setupEventListeners() {
     window.overlay.addEventListener('click', hideAllOverlays);
 
-    document.getElementById('player-select-button').addEventListener('click', () => {
-        showMenu(window.playerCountMenu, '플레이어 수 선택', [2, 3, 4], (count) => {
-            initializePlayers(count);
-            hideAllOverlays();
-            if (count === 3) {
-                showMenu(window.threePlayerLayoutButtonsContainer, '3인 레이아웃 선택', ['위', '아래', '왼쪽', '오른쪽'], (layout) => {
-                    const layoutMap = {'위':'top', '아래':'bottom', '왼쪽':'left', '오른쪽':'right'};
-                    window.localSettings.threePlayerLayout = layoutMap[layout];
-                    initializePlayers(3);
-                    hideAllOverlays();
-                });
-            }
-        });
-    });
-
     document.getElementById('reset-button').addEventListener('click', (e) => {
         const btn = e.currentTarget;
 
@@ -101,7 +86,24 @@ export function setupEventListeners() {
     });
 
     document.getElementById('settings-button').addEventListener('click', () => {
-        const showLifeMenu = () => showMenu(window.lifeMaxMenu, `시작 라이프 (현재 ${window.localSettings.lifeMax})`, [20, 30, 40], (life) => {
+        
+		const showPlayerCountMenu = () => showMenu(window.playerCountMenu, `플레이어 수 선택 (현재 ${window.localSettings.playerCount})`, [2, 3, 4], (count) => {
+			window.localSettings.playerCount = count;
+			initializePlayers(count);
+			hideAllOverlays();
+
+			if (count === 3) {
+				hideAllOverlays();
+				showMenu(window.threePlayerLayoutButtonsContainer, '3인 레이아웃 선택', ['위', '아래', '왼쪽', '오른쪽'], (layout) => {
+					const layoutMap = { '위': 'top', '아래': 'bottom', '왼쪽': 'left', '오른쪽': 'right' };
+					window.localSettings.threePlayerLayout = layoutMap[layout];
+					initializePlayers(3);
+					hideAllOverlays();
+				});
+			}
+		});
+		
+		const showLifeMenu = () => showMenu(window.lifeMaxMenu, `시작 라이프 (현재 ${window.localSettings.lifeMax})`, [20, 30, 40], (life) => {
             window.localSettings.lifeMax = life;
             window.players.forEach(p => p.setLife(life));
             hideAllOverlays();
@@ -127,9 +129,10 @@ export function setupEventListeners() {
             window.localSettings.diceSides = sides;
             hideAllOverlays();
         });
-        
-        showMenu(window.settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
-            if (selection === '시작 라이프') showLifeMenu();
+
+        showMenu(window.settingsMenu, '설정', ['플레이어 수', '시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
+            if (selection === '플레이어 수') { hideAllOverlays(); showPlayerCountMenu(); }
+            else if (selection === '시작 라이프') showLifeMenu();
             else if (selection === '폰트 크기') showFontMenu();
             else if (selection === '주사위 면 수') showDiceSidesMenu();
             else if (selection === '라이프 조절 방향') showAdjustDirectionMenu();

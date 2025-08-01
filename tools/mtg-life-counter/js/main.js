@@ -1,25 +1,25 @@
 import { initializePlayers, setupEventListeners } from './setup.js';
 import { applyLifeFontSize } from './ui.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // [수정] 상위 창의 session_data 객체에 안정적으로 연결하고, 없으면 생성합니다.
-    const parentWindow = window.parent || window;
-    if (!parentWindow.session_data) {
-        parentWindow.session_data = {};
-    }
-    window.dataSpace = parentWindow.session_data;
+	document.addEventListener('DOMContentLoaded', () => {
+		// [수정] 상위 창의 session_data 객체에 안정적으로 연결하고, 없으면 생성합니다.
+		const parentWindow = window.parent || window;
+		if (!parentWindow.session_data) {
+			parentWindow.session_data = {};
+		}
+		window.dataSpace = parentWindow.session_data;
 
-    // 최초 로딩 시, 저장된 데이터가 없으면 기본값으로 초기화
-    if (!window.dataSpace.settings) {
-        window.dataSpace.settings = {
-            lifeMax: 20,
-			diceSides: 6,
-			playerCount: 2,
-            threePlayerLayout: 'top',
-			lifeFontSize: 'small',
-			lifeAdjustDirection: 'horizontal'
-        };
-    }
+		// 최초 로딩 시, 저장된 데이터가 없으면 기본값으로 초기화
+		if (!window.dataSpace.settings) {
+			window.dataSpace.settings = {
+				lifeMax: 20,
+				diceSides: 6,
+				playerCount: 2,
+				threePlayerLayout: 'top',
+				lifeFontSize: 'large',
+				lifeAdjustDirection: 'horizontal'
+			};
+		}
     if (!window.dataSpace.lifeCounter) window.dataSpace.lifeCounter = {};
     if (!window.dataSpace.playerRotations) window.dataSpace.playerRotations = {};
 
