@@ -1,556 +1,608 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>스위스 라운드 매칭 도우미 v6.2</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-	<style>
-		.hidden { display: none; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>스위스 라운드 매칭 도우미 v7.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        /* --- 🎨 1. 전체 테마 및 레이아웃 개선 --- */
+        :root {
+            --primary-color: #0d6efd;
+            --background-color: #1a1a1a;
+            --surface-color: #2c2c2c;
+            --text-color: #e0e0e0;
+            --border-color: #444;
+        }
 
-		.match-card {
-		border: 2px solid #ccc;
-		border-radius: 8px;
-		padding: 16px;
-		margin-bottom: 20px;
-		background-color: #f9f9f9;
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		max-width: 100%;
-	}
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Pretendard', sans-serif; /* 더 깔끔한 폰트 (선택 사항) */
+        }
 
-	.player-name {
-		font-weight: bold;
-		font-size: 1.1rem;
-		text-align: center;
-	}
+        .container-main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        
+        h2 {
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
 
-	.radio-group {
-		display: flex;
-		justify-content: center;
-		flex-wrap: wrap;
-		gap: 8px;
-	}
+        .form-control, .form-select {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            border-color: var(--border-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #333;
+            color: var(--text-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-control::placeholder {
+            color: #888;
+        }
 
-	.radio-box {
-		position: relative;
-	}
+        /* --- 🎬 2. 부드러운 화면 전환 효과 --- */
+        .view {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            will-change: opacity, transform;
+        }
+        .hidden {
+            display: block !important; /* display:none 대신 사용 */
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+        }
 
-	.radio-box label {
-		display: inline-block;
-		padding: 10px 14px;
-		border: 1px solid #888;
-		border-radius: 6px;
-		background-color: white;
-		cursor: pointer;
-		font-family: monospace;
-		font-size: 1rem;
-		user-select: none;
-		min-width: 40px;
-		text-align: center;
-	}
+        /* --- ✨ 3. 핵심 UI 컴포넌트 디자인 개선 --- */
+        
+        /* 매치 카드 */
+        .match-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .match-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
 
-	.radio-box input[type="radio"] {
-		display: none;
-	}
+        .player-name {
+            font-weight: 600;
+            font-size: 1.2rem;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .vs-text {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        /* 점수 선택 버튼 */
+        .radio-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .radio-box label {
+            display: inline-block;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #3e3e3e;
+            color: var(--text-color);
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 1.1rem;
+            user-select: none;
+            min-width: 45px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .radio-box input[type="radio"] {
+            display: none;
+        }
+        .radio-box input[type="radio"]:checked + label {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+        .radio-box label:hover {
+            background-color: #555;
+            border-color: #777;
+        }
 
-	.radio-box input[type="radio"]:checked + label {
-		background-color: #0d6efd;
-		color: white;
-		border-color: #0d6efd;
-		font-weight: bold;
-	}
+        /* 결과 테이블 */
+        .result-table {
+            width: 100%;
+            margin: auto;
+            font-size: 1rem;
+            text-align: center;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 1.5rem;
+            background-color: var(--surface-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .result-table th, .result-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: #333;
+            color: #fff;
+            font-weight: 600;
+        }
+        .result-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .result-table tbody tr:nth-child(even) {
+            background-color: rgba(0,0,0,0.1);
+        }
+        .result-table td.name {
+            text-align: left;
+            padding-left: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+        .result-table td.elo { font-weight: bold; color: #ffc107; }
+        .result-table td.winrate-high { color: #198754; font-weight: bold; }
+        .result-table td.winrate-low { color: #dc3545; }
 
-	.vs-text {
-		text-align: center;
-		font-size: 1.2rem;
-		font-weight: bold;
-		color: #555;
-		margin: 8px 0;
-	}
-
-	@media (max-width: 480px) {
-		.radio-box label {
-			padding: 8px 12px;
-			font-size: 0.95rem;
-			min-width: 36px;
-		}
-		.match-card {
-			padding: 12px;
-		}
-	}
-
-	/* 결과 테이블 개선 스타일 */
-		.result-table {
-			width: 100%;
-			max-width: 600px;
-			margin: auto;
-			font-size: 15px;
-			text-align: center;
-			border-collapse: collapse;
-			margin-bottom: 1.5rem;
-			box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-		}
-		.result-table th, .result-table td {
-			padding: 8px;
-			border: 1px solid #ccc;
-			vertical-align: middle;
-		}
-		.result-table th {
-			background-color: #f0f0f0;
-			font-weight: bold;
-		}
-		.result-table td.name {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			gap: 0.3em;
-			font-weight: bold;
-		}
-		.result-table td.rank,
-		.result-table td.elo,
-		.result-table td.winrate {
-			text-align: center;
-			font-weight: bold;
-		}
-		.result-table td.winrate-high {
-			color: #198754;
-		}
-		.result-table td.winrate-low {
-			color: #dc3545;
-		}
-		tr.full-win {
-			background: linear-gradient(270deg, #fffbe6, #ffe6e6, #e6f7ff, #fffbe6);
-			background-size: 600% 600%;
-			animation: bgSlide 5s ease infinite;
-		}
-		.full-win .crown {
-			animation: crownScale 1.5s ease-in-out infinite;
-			font-size: 1.1em;
-		}
-		@keyframes bgSlide {
-			0% { background-position: 0% 50%; }
-			50% { background-position: 100% 50%; }
-			100% { background-position: 0% 50%; }
-		}
-		@keyframes crownScale {
-			0% { transform: scale(1); }
-			50% { transform: scale(1.25); }
-			100% { transform: scale(1); }
-		}
-		@media (max-width: 480px) {
-			.result-table {
-				font-size: 14px;
-			}
-		}
-
-
-	</style>
+        /* 전승자 하이라이트 */
+        tr.full-win {
+            background: linear-gradient(270deg, rgba(255,215,0,0.1), rgba(255,100,100,0.1), rgba(100,150,255,0.1), rgba(255,215,0,0.1));
+            background-size: 600% 600%;
+            animation: bgSlide 5s ease infinite;
+        }
+        .full-win .crown {
+            animation: crownScale 1.5s ease-in-out infinite;
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+        @keyframes bgSlide {
+            0%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+            100%{background-position:0% 50%}
+        }
+        @keyframes crownScale {
+            0%{transform: scale(1);}
+            50%{transform: scale(1.25) rotate(5deg);}
+            100%{transform: scale(1);}
+        }
+    </style>
 </head>
-<body class="p-4">
-	<div id="setupView">
-		<h2>게임 설정</h2>
-		<div class="mb-3">
-			<label class="form-label">게임 형식</label>
-			<select id="matchFormat" class="form-select">
-				<option value="1">Bo1</option>
-				<option value="2" selected>Bo3</option>
-				<option value="3">Bo5</option>
-			</select>
-		</div>
-		<div class="mb-3">
-			<label class="form-label">최대 라운드 수</label>
-			<input type="number" id="maxRounds" class="form-control" value="3" min="1" />
-		</div>
-		<div class="mb-3">
-			<label class="form-label">참가자 명단 (줄마다 한 명)</label>
-			<textarea id="playersInput" class="form-control" rows="5" placeholder="줄마다 이름 입력 (최소 4명)"></textarea>
-		</div>
-		<div class="mb-3">
-			<button class="btn btn-sm btn-primary me-2" id="savePlayerList" disabled>명단 저장</button>
-			<button class="btn btn-sm btn-outline-secondary" id="loadPlayerList">명단 불러오기</button>
-		</div>
-		<button class="btn btn-primary" id="startBtn">게임 시작</button>
-	</div>
+<body>
+    <div class="container-main">
+        <div id="setupView" class="view">
+            <h2>게임 설정</h2>
+            <div class="mb-3">
+                <label class="form-label">게임 형식</label>
+                <select id="matchFormat" class="form-select">
+                    <option value="1">Bo1</option>
+                    <option value="2" selected>Bo3</option>
+                    <option value="3">Bo5</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">최대 라운드 수</label>
+                <input type="number" id="maxRounds" class="form-control" value="3" min="1" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">참가자 명단 (줄마다 한 명)</label>
+                <textarea id="playersInput" class="form-control" rows="5" placeholder="줄마다 이름 입력 (최소 4명)"></textarea>
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-sm btn-primary me-2" id="savePlayerList" disabled>명단 저장</button>
+                <button class="btn btn-sm btn-outline-secondary" id="loadPlayerList">명단 불러오기</button>
+            </div>
+            <button class="btn btn-primary btn-lg w-100" id="startBtn">게임 시작</button>
+        </div>
 
-	<div id="gameView" class="hidden">
-		<h2>라운드 <span id="roundNum">1</span> / <span id="totalRounds"></span></h2>
-		<div id="pairings"></div>
-		<div class="mt-4">
-			<button class="btn btn-secondary" id="backBtn">뒤로가기</button>
-			<button class="btn btn-success me-2" id="nextRoundBtn">다음 라운드</button>
-			<button class="btn btn-warning" id="viewResultBtn" disabled>결과 보기</button>
-		</div>
-	</div>
-	
-	<div id="resultView" class="hidden">
-		<h2>최종 결과</h2>
-		<div id="resultSummary" class="mb-4"></div>
-		<div>
-			<button class="btn btn-primary me-2" id="replayBtn">동일 설정으로 다시 하기</button>
-			<button class="btn btn-secondary me-2" id="editLastResultBtn">결과 재기입</button>
-			<button class="btn btn-secondary" id="resetBtn">처음부터 다시</button>
-		</div>
-	</div>
+        <div id="gameView" class="view hidden">
+            <h2>라운드 <span id="roundNum">1</span> / <span id="totalRounds"></span></h2>
+            <div id="pairings"></div>
+            <div class="mt-4 d-flex justify-content-between">
+                <button class="btn btn-secondary" id="backBtn">뒤로가기</button>
+                <div>
+                    <button class="btn btn-success me-2" id="nextRoundBtn">다음 라운드</button>
+                    <button class="btn btn-warning" id="viewResultBtn" disabled>결과 보기</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="resultView" class="view hidden">
+            <h2>최종 결과</h2>
+            <div id="resultSummary" class="mb-4"></div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary flex-grow-1" id="replayBtn">동일 설정으로 다시 하기</button>
+                <button class="btn btn-secondary flex-grow-1" id="editLastResultBtn">결과 재기입</button>
+                <button class="btn btn-outline-light flex-grow-1" id="resetBtn">처음부터 다시</button>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        const setupView = document.getElementById("setupView");
+        const gameView = document.getElementById("gameView");
+        const resultView = document.getElementById("resultView");
+        const roundNum = document.getElementById("roundNum");
+        const totalRounds = document.getElementById("totalRounds");
+        const pairingsDiv = document.getElementById("pairings");
+        const nextRoundBtn = document.getElementById("nextRoundBtn");
+        const viewResultBtn = document.getElementById("viewResultBtn");
+        const resultSummary = document.getElementById("resultSummary");
 
-	<script>
-		const setupView = document.getElementById("setupView");
-		const gameView = document.getElementById("gameView");
-		const resultView = document.getElementById("resultView");
-		const roundNum = document.getElementById("roundNum");
-		const totalRounds = document.getElementById("totalRounds");
-		const pairingsDiv = document.getElementById("pairings");
-		const nextRoundBtn = document.getElementById("nextRoundBtn");
-		const viewResultBtn = document.getElementById("viewResultBtn");
-		const resultSummary = document.getElementById("resultSummary");
+        let players = [];
+        let matchFormat = 2;
+        let maxRounds = 3;
+        let currentRound = 1;
+        let allPairings = [];
+        let matchResults = [];
+        let matchHistory = new Map();
+        
+        // --- 🎬 화면 전환 함수 ---
+        function switchView(hideView, showView) {
+            hideView.classList.add('hidden');
+            // fade-out 애니메이션이 끝난 후 fade-in
+            setTimeout(() => {
+                showView.classList.remove('hidden');
+            }, 300);
+        }
 
-		let players = [];
-		let matchFormat = 2;
-		let maxRounds = 3;
-		let currentRound = 1;
-		let allPairings = [];
-		let matchResults = [];
-		let matchHistory = new Map();
+        // 저장 관련 함수
+        function isValidName(name) {
+            const trimmed = name.trim();
+            if (trimmed === '') return false;
+            if (/^[\uAC00-\uD7A3]{1,5}$/.test(trimmed)) return true; // 한글 1~5자
+            if (/^[a-zA-Z0-9 ]{1,16}$/.test(trimmed)) return true;   // 영문+숫자 최대 16자
+            return false;
+        }
 
-		// 저장 관련 함수
-		function isValidName(name) {
-			const trimmed = name.trim();
-			if (trimmed === '') return false;
-			if (/^[\uAC00-\uD7A3]{1,5}$/.test(trimmed)) return true; // 한글 1~5자
-			if (/^[a-zA-Z0-9 ]{1,16}$/.test(trimmed)) return true;   // 영문+숫자 최대 16자
-			return false;
-		}
+        function validatePlayerInput() {
+            const lines = document.getElementById('playersInput').value.split('\n')
+                .map(name => name.trim()).filter(name => name !== '');
+            const validLines = lines.filter(isValidName);
+            const saveBtn = document.getElementById('savePlayerList');
+            saveBtn.disabled = !(validLines.length >= 4 && validLines.length <= 16);
+        }
 
-		function validatePlayerInput() {
-			const lines = document.getElementById('playersInput').value.split('\n')
-				.map(name => name.trim()).filter(name => name !== '');
-			const validLines = lines.filter(isValidName);
-			const saveBtn = document.getElementById('savePlayerList');
-			saveBtn.disabled = !(validLines.length >= 4 && validLines.length <= 16);
-		}
+        document.getElementById('playersInput').addEventListener('input', validatePlayerInput);
 
-		document.getElementById('playersInput').addEventListener('input', validatePlayerInput);
+        document.getElementById('savePlayerList').addEventListener('click', () => {
+            const names = document.getElementById('playersInput').value
+                .split('\n').map(name => name.trim())
+                .filter(name => isValidName(name));
+            if (names.length >= 4 && names.length <= 16) {
+                localStorage.setItem("swiss-last-players", names.join('\n'));
+                alert("참가자 명단이 저장되었습니다.");
+            } else {
+                alert("유효한 이름 4~16명을 입력해주세요.");
+            }
+        });
 
-		document.getElementById('savePlayerList').addEventListener('click', () => {
-			const names = document.getElementById('playersInput').value
-				.split('\n').map(name => name.trim())
-				.filter(name => isValidName(name));
-			if (names.length >= 4 && names.length <= 16) {
-				localStorage.setItem("swiss-last-players", names.join('\n'));
-				alert("참가자 명단이 저장되었습니다.");
-			} else {
-				alert("유효한 이름 4~16명을 입력해주세요.");
-			}
-		});
+        document.getElementById('loadPlayerList').addEventListener('click', () => {
+            const saved = localStorage.getItem("swiss-last-players");
+            if (saved) {
+                document.getElementById('playersInput').value = saved;
+                validatePlayerInput();
+                alert("저장된 참가자 명단을 불러왔습니다.");
+            } else {
+                alert("저장된 명단이 없습니다.");
+            }
+        });
 
-		document.getElementById('loadPlayerList').addEventListener('click', () => {
-			const saved = localStorage.getItem("swiss-last-players");
-			if (saved) {
-				document.getElementById('playersInput').value = saved;
-				validatePlayerInput();
-				alert("저장된 참가자 명단을 불러왔습니다.");
-			} else {
-				alert("저장된 명단이 없습니다.");
-			}
-		});
+        document.getElementById("editLastResultBtn").onclick = () => {
+            currentRound = maxRounds;
+            roundNum.textContent = currentRound;
+            switchView(resultView, gameView);
+            renderPairings(allPairings[currentRound - 1], currentRound - 1);
+        };
 
-		document.getElementById("editLastResultBtn").onclick = () => {
-			currentRound = maxRounds;
-			roundNum.textContent = currentRound;
-			resultView.classList.add("hidden");
-			gameView.classList.remove("hidden");
-			renderPairings(allPairings[currentRound - 1], currentRound - 1);
-		};
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem("swiss-last-players");
+            if (saved) {
+                document.getElementById('playersInput').value = saved;
+                validatePlayerInput();
+            }
+        });
 
-		// 초기 로드 시 저장된 값 자동 불러오기
-		window.addEventListener('DOMContentLoaded', () => {
-			const saved = localStorage.getItem("swiss-last-players");
-			if (saved) {
-				document.getElementById('playersInput').value = saved;
-				validatePlayerInput();
-			}
-		});
+        function hasPlayed(p1, p2) {
+            return (matchHistory.get(p1)?.includes(p2) || false);
+        }
+        function addMatchHistory(p1, p2) {
+            if (!matchHistory.has(p1)) matchHistory.set(p1, []);
+            if (!matchHistory.has(p2)) matchHistory.set(p2, []);
+            matchHistory.get(p1).push(p2);
+            matchHistory.get(p2).push(p1);
+        }
 
-		function hasPlayed(p1, p2) {
-			return (matchHistory.get(p1)?.includes(p2) || false);
-		}
-		function addMatchHistory(p1, p2) {
-			if (!matchHistory.has(p1)) matchHistory.set(p1, []);
-			if (!matchHistory.has(p2)) matchHistory.set(p2, []);
-			matchHistory.get(p1).push(p2);
-			matchHistory.get(p2).push(p1);
-		}
+        function generatePairings() {
+            const shuffled = [...players].sort(() => Math.random() - 0.5);
+            const matches = [];
+            const used = new Set();
+            for (let i = 0; i < shuffled.length; i++) {
+                if (used.has(i)) continue;
+                let opponentIdx = -1;
+                for (let j = i + 1; j < shuffled.length; j++) {
+                    if (used.has(j)) continue;
+                    if (!hasPlayed(shuffled[i], shuffled[j])) {
+                        opponentIdx = j;
+                        break;
+                    }
+                }
+                if (opponentIdx === -1) {
+                    for (let j = i + 1; j < shuffled.length; j++) {
+                        if (!used.has(j)) {
+                            opponentIdx = j;
+                            break;
+                        }
+                    }
+                }
+                if (opponentIdx !== -1) {
+                    matches.push([shuffled[i], shuffled[opponentIdx]]);
+                    used.add(i);
+                    used.add(opponentIdx);
+                    addMatchHistory(shuffled[i], shuffled[opponentIdx]);
+                } else {
+                    matches.push([shuffled[i], null]);
+                    used.add(i);
+                }
+            }
+            return matches;
+        }
 
-		function generatePairings() {
-			const shuffled = [...players].sort(() => Math.random() - 0.5);
-			const matches = [];
-			const used = new Set();
-			for (let i = 0; i < shuffled.length; i++) {
-				if (used.has(i)) continue;
-				let opponentIdx = -1;
-				for (let j = i + 1; j < shuffled.length; j++) {
-					if (used.has(j)) continue;
-					if (!hasPlayed(shuffled[i], shuffled[j])) {
-						opponentIdx = j;
-						break;
-					}
-				}
-				if (opponentIdx === -1) {
-					for (let j = i + 1; j < shuffled.length; j++) {
-						if (!used.has(j)) {
-							opponentIdx = j;
-							break;
-						}
-					}
-				}
-				if (opponentIdx !== -1) {
-					matches.push([shuffled[i], shuffled[opponentIdx]]);
-					used.add(i);
-					used.add(opponentIdx);
-					addMatchHistory(shuffled[i], shuffled[opponentIdx]);
-				} else {
-					matches.push([shuffled[i], null]);
-					used.add(i);
-				}
-			}
-			return matches;
-		}
+        function renderPairings(pairs, roundIndex) {
+            pairingsDiv.innerHTML = "";
+            pairs.forEach(([p1, p2], idx) => {
+                const div = document.createElement("div");
+                div.className = "match-card";
 
-		function renderPairings(pairs, roundIndex) {
-			pairingsDiv.innerHTML = "";
-			pairs.forEach(([p1, p2], idx) => {
-				const div = document.createElement("div");
-				div.className = "match-card";
+                if (!p2) {
+                    div.innerHTML = `<div class="player-name">${p1}</div><div style="text-align:center;">부전승입니다.</div>`;
+                    pairingsDiv.appendChild(div);
+                    return;
+                }
 
-				if (!p2) {
-					div.innerHTML = `<div class="player-name">${p1}</div><div style="text-align:center;">부전승입니다.</div>`;
-					pairingsDiv.appendChild(div);
-					return;
-				}
+                const makeRadio = (name, selected) => {
+                    let html = "";
+                    for (let i = 0; i <= matchFormat; i++) {
+                        const checked = selected === i ? "checked" : "";
+                        html += `
+                            <span class="radio-box">
+                                <input type="radio" name="${name}" id="${name}_${i}" value="${i}" ${checked}>
+                                <label for="${name}_${i}">${i}</label>
+                            </span>
+                        `;
+                    }
+                    return html;
+                };
 
-				const makeRadio = (name, selected) => {
-					let html = "";
-					for (let i = 0; i <= matchFormat; i++) {
-						const checked = selected === i ? "checked" : "";
-						html += `
-							<span class="radio-box">
-								<input type="radio" name="${name}" id="${name}_${i}" value="${i}" ${checked}>
-								<label for="${name}_${i}">${i}</label>
-							</span>
-						`;
-					}
-					return html;
-				};
+                const saved = matchResults[roundIndex]?.[idx] ?? [null, null];
+                const p1Radios = makeRadio(`match${idx}`, saved[0]);
+                const p2Radios = makeRadio(`match${idx}_b`, saved[1]);
 
-				const saved = matchResults[roundIndex]?.[idx] ?? [null, null];
-				const p1Radios = makeRadio(`match${idx}`, saved[0]);
-				const p2Radios = makeRadio(`match${idx}_b`, saved[1]);
+                div.innerHTML = `
+                    <div class="player-name">${p1}</div>
+                    <div class="radio-group">${p1Radios}</div>
+                    <div class="vs-text">vs</div>
+                    <div class="player-name">${p2}</div>
+                    <div class="radio-group">${p2Radios}</div>
+                `;
+                pairingsDiv.appendChild(div);
+            });
 
-				div.innerHTML = `
-					<div class="player-name">${p1}</div>
-					<div class="radio-group">${p1Radios}</div>
+            nextRoundBtn.disabled = currentRound >= maxRounds;
+            viewResultBtn.disabled = currentRound < maxRounds;
+        }
 
-					<div class="vs-text">vs</div>
+        document.getElementById("startBtn").onclick = () => {
+            players = document.getElementById("playersInput").value.trim().split("\n").filter(x => x);
+            if (players.length < 4) return alert("최소 4명 이상 필요");
+            const nameSet = new Set(players);
+            if (nameSet.size < players.length) {
+                alert("동일한 이름이 2개 이상 있습니다. 이름은 중복되지 않게 입력해주세요.");
+                return;
+            }
+            matchFormat = parseInt(document.getElementById("matchFormat").value);
+            maxRounds = parseInt(document.getElementById("maxRounds").value);
+            currentRound = 1;
+            allPairings = [];
+            matchResults = [];
+            matchHistory = new Map();
 
-					<div class="player-name">${p2}</div>
-					<div class="radio-group">${p2Radios}</div>
-				`;
-				pairingsDiv.appendChild(div);
-			});
+            totalRounds.textContent = maxRounds;
+            roundNum.textContent = currentRound;
+            switchView(setupView, gameView);
 
-			nextRoundBtn.disabled = currentRound >= maxRounds;
-			viewResultBtn.disabled = currentRound < maxRounds;
-		}
+            const pairings = generatePairings();
+            allPairings.push(pairings);
+            matchResults.push([]);
+            renderPairings(pairings, currentRound - 1);
+        };
 
-		document.getElementById("startBtn").onclick = () => {
-			players = document.getElementById("playersInput").value.trim().split("\n").filter(x => x);
-			if (players.length < 4) return alert("최소 4명 이상 필요");
-			const nameSet = new Set(players);
-			if (nameSet.size < players.length) {
-				alert("동일한 이름이 2개 이상 있습니다. 이름은 중복되지 않게 입력해주세요.");
-				return;
-			}
-			matchFormat = parseInt(document.getElementById("matchFormat").value);
-			maxRounds = parseInt(document.getElementById("maxRounds").value);
-			currentRound = 1;
-			allPairings = [];
-			matchResults = [];
-			matchHistory = new Map();
+        document.getElementById("backBtn").onclick = () => {
+            if (resultView.classList.contains("hidden") === false) {
+                switchView(resultView, gameView);
+            } else if (currentRound === 1) {
+                switchView(gameView, setupView);
+            } else {
+                currentRound--;
+                roundNum.textContent = currentRound;
+                renderPairings(allPairings[currentRound - 1], currentRound - 1);
+            }
+        };
 
-			totalRounds.textContent = maxRounds;
-			roundNum.textContent = currentRound;
-			setupView.classList.add("hidden");
-			resultView.classList.add("hidden");
-			gameView.classList.remove("hidden");
+        document.getElementById("nextRoundBtn").onclick = () => {
+            const currentResults = [];
+            const pairs = allPairings[currentRound - 1];
+            for (let i = 0; i < pairs.length; i++) {
+                const [p1, p2] = pairs[i];
+                if (!p2) {
+                    currentResults.push([matchFormat, 0]);
+                    continue;
+                }
+                const a = document.querySelector(`input[name='match${i}']:checked`);
+                const b = document.querySelector(`input[name='match${i}_b']:checked`);
+                if (!a || !b) return alert("모든 경기 결과를 입력해주세요.");
+                currentResults.push([parseInt(a.value), parseInt(b.value)]);
+            }
+            matchResults[currentRound - 1] = currentResults;
 
-			const pairings = generatePairings();
-			allPairings.push(pairings);
-			matchResults.push([]);
-			renderPairings(pairings, currentRound - 1);
-		};
+            currentRound++;
+            roundNum.textContent = currentRound;
+            const pairings = generatePairings();
+            allPairings.push(pairings);
+            matchResults.push([]);
+            renderPairings(pairings, currentRound - 1);
+        };
 
-		document.getElementById("backBtn").onclick = () => {
-			if (resultView.classList.contains("hidden") === false) {
-				resultView.classList.add("hidden");
-				gameView.classList.remove("hidden");
-			} else if (currentRound === 1) {
-				setupView.classList.remove("hidden");
-				gameView.classList.add("hidden");
-			} else {
-				currentRound--;
-				roundNum.textContent = currentRound;
-				renderPairings(allPairings[currentRound - 1], currentRound - 1);
-			}
-		};
+        document.getElementById("viewResultBtn").onclick = () => {
+            const currentResults = [];
+            const pairs = allPairings[currentRound - 1];
+            for (let i = 0; i < pairs.length; i++) {
+                const [p1, p2] = pairs[i];
+                if (!p2) {
+                    currentResults.push([matchFormat, 0]);
+                    continue;
+                }
+                const a = document.querySelector(`input[name='match${i}']:checked`);
+                const b = document.querySelector(`input[name='match${i}_b']:checked`);
+                if (!a || !b) return alert("모든 경기 결과를 입력해주세요.");
+                currentResults.push([parseInt(a.value), parseInt(b.value)]);
+            }
+            matchResults[currentRound - 1] = currentResults;
 
-		document.getElementById("nextRoundBtn").onclick = () => {
-			const currentResults = [];
-			const pairs = allPairings[currentRound - 1];
-			for (let i = 0; i < pairs.length; i++) {
-				const [p1, p2] = pairs[i];
-				if (!p2) {
-					currentResults.push([matchFormat, 0]);
-					continue;
-				}
-				const a = document.querySelector(`input[name='match${i}']:checked`);
-				const b = document.querySelector(`input[name='match${i}_b']:checked`);
-				if (!a || !b) return alert("모든 경기 결과를 입력해주세요.");
-				currentResults.push([parseInt(a.value), parseInt(b.value)]);
-			}
-			matchResults[currentRound - 1] = currentResults;
+            switchView(gameView, resultView);
+            renderFinalResults();
+        };
 
-			currentRound++;
-			roundNum.textContent = currentRound;
-			const pairings = generatePairings();
-			allPairings.push(pairings);
-			matchResults.push([]);
-			renderPairings(pairings, currentRound - 1);
-		};
+        function calculateElo(current, opponent, score, k = 32) {
+            const expected = 1 / (1 + Math.pow(10, (opponent - current) / 400));
+            return current + k * (score - expected);
+        }
 
-		document.getElementById("viewResultBtn").onclick = () => {
-			const currentResults = [];
-			const pairs = allPairings[currentRound - 1];
-			for (let i = 0; i < pairs.length; i++) {
-				const [p1, p2] = pairs[i];
-				if (!p2) {
-					currentResults.push([matchFormat, 0]);
-					continue;
-				}
-				const a = document.querySelector(`input[name='match${i}']:checked`);
-				const b = document.querySelector(`input[name='match${i}_b']:checked`);
-				if (!a || !b) return alert("모든 경기 결과를 입력해주세요.");
-				currentResults.push([parseInt(a.value), parseInt(b.value)]);
-			}
-			matchResults[currentRound - 1] = currentResults;
+        function renderFinalResults() {
+            const scores = new Map();
+            players.forEach(name => {
+                scores.set(name, {
+                    name,
+                    played: 0,
+                    win: 0,
+                    lose: 0,
+                    draw: 0,
+                    elo: 1000,
+                });
+            });
+            for (let round = 0; round < allPairings.length; round++) {
+                const pairs = allPairings[round];
+                const results = matchResults[round];
+                for (let i = 0; i < pairs.length; i++) {
+                    const [p1, p2] = pairs[i];
+                    if (!results || !Array.isArray(results[i])) continue;
+                    const [s1, s2] = results[i];
+                    const rec1 = scores.get(p1);
+                    if (!p2) {
+                        rec1.played += 1;
+                        rec1.win += 1;
+                        rec1.elo += 8;
+                        continue;
+                    }
+                    const rec2 = scores.get(p2);
+                    rec1.played += 1;
+                    rec2.played += 1;
+                    if (s1 > s2) {
+                        rec1.win += 1;
+                        rec2.lose += 1;
+                        rec1.elo = calculateElo(rec1.elo, rec2.elo, 1);
+                        rec2.elo = calculateElo(rec2.elo, rec1.elo, 0);
+                    } else if (s2 > s1) {
+                        rec2.win += 1;
+                        rec1.lose += 1;
+                        rec1.elo = calculateElo(rec1.elo, rec2.elo, 0);
+                        rec2.elo = calculateElo(rec2.elo, rec1.elo, 1);
+                    } else {
+                        rec1.draw += 1;
+                        rec2.draw += 1;
+                        rec1.elo = calculateElo(rec1.elo, rec2.elo, 0.5);
+                        rec2.elo = calculateElo(rec2.elo, rec1.elo, 0.5);
+                    }
+                }
+            }
+            const resultArray = [...scores.values()].sort((a, b) => b.elo - a.elo);
+            let html = `
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>순위</th><th>이름</th><th>경기수</th><th>승</th><th>패</th><th>무</th><th>승률</th><th>ELO</th>
+                        </tr>
+                    </thead><tbody>
+            `;
+            resultArray.forEach((entry, idx) => {
+                const winRate = entry.played > 0 ? ((entry.win + 0.5 * entry.draw) / entry.played * 100).toFixed(1) : "0.0";
+                const winrateClass = winRate >= 100 ? "winrate-high" : winRate <= 33 ? "winrate-low" : "";
+                const isFullWin = entry.played > 0 && entry.win === entry.played;
+                html += `<tr class="${isFullWin ? 'full-win' : ''}">
+                    <td class="rank">${idx + 1}</td>
+                    <td class="name">${isFullWin ? '<span class="crown">👑</span> ' : ''}${entry.name}</td>
+                    <td>${entry.played}</td>
+                    <td>${entry.win}</td>
+                    <td>${entry.lose}</td>
+                    <td>${entry.draw}</td>
+                    <td class="winrate ${winrateClass}">${winRate}%</td>
+                    <td class="elo">${Math.round(entry.elo)}</td>
+                </tr>`;
+            });
+            html += "</tbody></table>";
+            resultSummary.innerHTML = html;
+        }
 
-			gameView.classList.add("hidden");
-			resultView.classList.remove("hidden");
-			renderFinalResults();
-		};
+        document.getElementById("resetBtn").onclick = () => {
+            switchView(resultView, setupView);
+        };
 
-		function calculateElo(current, opponent, score, k = 32) {
-			const expected = 1 / (1 + Math.pow(10, (opponent - current) / 400));
-			return current + k * (score - expected);
-		}
+        document.getElementById("replayBtn").onclick = () => {
+            currentRound = 1;
+            allPairings = [];
+            matchResults = [];
+            matchHistory = new Map();
+            totalRounds.textContent = maxRounds;
+            roundNum.textContent = currentRound;
+            switchView(resultView, gameView);
 
-		function renderFinalResults() {
-			const scores = new Map();
-			players.forEach(name => {
-				scores.set(name, {
-					name,
-					played: 0,
-					win: 0,
-					lose: 0,
-					draw: 0,
-					elo: 1000,
-				});
-			});
-			for (let round = 0; round < allPairings.length; round++) {
-				const pairs = allPairings[round];
-				const results = matchResults[round];
-				for (let i = 0; i < pairs.length; i++) {
-					const [p1, p2] = pairs[i];
-					if (!results || !Array.isArray(results[i])) continue;
-					const [s1, s2] = results[i];
-					const rec1 = scores.get(p1);
-					if (!p2) {
-						rec1.played += 1;
-						rec1.win += 1;
-						rec1.elo += 8;
-						continue;
-					}
-					const rec2 = scores.get(p2);
-					rec1.played += 1;
-					rec2.played += 1;
-					if (s1 > s2) {
-						rec1.win += 1;
-						rec2.lose += 1;
-						rec1.elo = calculateElo(rec1.elo, rec2.elo, 1);
-						rec2.elo = calculateElo(rec2.elo, rec1.elo, 0);
-					} else if (s2 > s1) {
-						rec2.win += 1;
-						rec1.lose += 1;
-						rec1.elo = calculateElo(rec1.elo, rec2.elo, 0);
-						rec2.elo = calculateElo(rec2.elo, rec1.elo, 1);
-					} else {
-						rec1.draw += 1;
-						rec2.draw += 1;
-						rec1.elo = calculateElo(rec1.elo, rec2.elo, 0.5);
-						rec2.elo = calculateElo(rec2.elo, rec1.elo, 0.5);
-					}
-				}
-			}
-			const resultArray = [...scores.values()].sort((a, b) => b.elo - a.elo);
-			let html = `
-				<table class="result-table">
-					<thead>
-						<tr>
-							<th>순위</th><th>이름</th><th>경기수</th><th>승</th><th>패</th><th>무</th><th>승률</th><th>ELO</th>
-						</tr>
-					</thead><tbody>
-			`;
-			resultArray.forEach((entry, idx) => {
-				const winRate = entry.played > 0 ? ((entry.win + 0.5 * entry.draw) / entry.played * 100).toFixed(1) : "0.0";
-				const winrateClass = winRate >= 100 ? "winrate-high" : winRate <= 33 ? "winrate-low" : "";
-				const isFullWin = entry.played > 0 && entry.win === entry.played;
-				html += `<tr class="${isFullWin ? 'full-win' : ''}">
-					<td class="rank">${idx + 1}</td>
-					<td class="name">${entry.name}${isFullWin ? ' <span class="crown">👑</span>' : ''}</td>
-					<td>${entry.played}</td>
-					<td>${entry.win}</td>
-					<td>${entry.lose}</td>
-					<td>${entry.draw}</td>
-					<td class="winrate ${winrateClass}">${winRate}%</td>
-					<td class="elo">${Math.round(entry.elo)}</td>
-				</tr>`;
-			});
-			html += "</tbody></table>";
-			resultSummary.innerHTML = html;
-		}
-
-		document.getElementById("resetBtn").onclick = () => {
-			setupView.classList.remove("hidden");
-			gameView.classList.add("hidden");
-			resultView.classList.add("hidden");
-		};
-
-		document.getElementById("replayBtn").onclick = () => {
-			currentRound = 1;
-			allPairings = [];
-			matchResults = [];
-			matchHistory = new Map();
-			totalRounds.textContent = maxRounds;
-			roundNum.textContent = currentRound;
-			resultView.classList.add("hidden");
-			gameView.classList.remove("hidden");
-
-			const pairings = generatePairings();
-			allPairings.push(pairings);
-			matchResults.push([]);
-			renderPairings(pairings, currentRound - 1);
-		};
-	</script>
+            const pairings = generatePairings();
+            allPairings.push(pairings);
+            matchResults.push([]);
+            renderPairings(pairings, currentRound - 1);
+        };
+    </script>
 </body>
 </html>
