@@ -714,3 +714,8 @@
 .dungeon-action-button:hover {
     background-color: #059669; /* emerald-600 */
 }
+
+/* iOS 기기일 때만 전체화면 버튼을 숨깁니다 */
+body.iOS #fullscreenBtn {
+    display: none;
+}
