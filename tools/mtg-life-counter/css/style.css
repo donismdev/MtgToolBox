@@ -29,6 +29,12 @@
 
         }
 
+		.user-select-none {
+			user-select: none;
+			-webkit-user-select: none; /* Safari */
+			-ms-user-select: none;     /* IE10+ */
+		}
+
         /* Layouts */
         .player-area.player-count-2 { width: 100%; height: 50%; }
         .player-area.player-count-3 { /* JS에서 제어 */ }

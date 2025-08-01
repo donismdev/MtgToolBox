@@ -16,6 +16,7 @@ export class Player {
         this.elements.area.appendChild(this.elements.contentWrapper);
         this.elements.lifeTotal = document.createElement('div');
         this.elements.lifeTotal.className = 'life-total';
+		this.elements.lifeTotal.classList.add('user-select-none');
 		this.elements.hintInc = document.createElement('div');
 		this.elements.hintDec = document.createElement('div');
 		this.elements.hintInc.className = 'life-hint increase';
