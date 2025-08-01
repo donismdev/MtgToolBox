@@ -9,6 +9,14 @@ export function hideAllOverlays() {
     resetBtn.classList.remove('confirm-animation');
 
 	window.activeUI = null;
+
+	if (window.players) {
+		window.players.forEach(p => {
+			if (typeof p.updateHint === 'function') {
+				p.updateHint();
+			}
+		});
+	}
 }
 
 export function showMenu(container, labelText, options, onSelect) {

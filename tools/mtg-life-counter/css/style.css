@@ -66,6 +66,19 @@
         .font-size-xlarge { --life-font-size: 24vh; }
         .life-total { font-size: var(--life-font-size); }
 
+		.life-hint {
+			position: absolute;
+			font-size: 2rem;
+			font-weight: bold;
+			color: rgba(255,255,255,0.3);
+			pointer-events: none;
+			user-select: none;
+		}
+		.life-hint.increase {
+		}
+		.life-hint.decrease {
+		}
+
         /* Center Buttons */
         #center-buttons {
             display: flex;
