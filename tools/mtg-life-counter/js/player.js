@@ -48,6 +48,9 @@ export class Player {
 		this.elements.initiativeButton = document.createElement('button');
 		this.elements.initiativeButton.className = 'header-button';
 		this.elements.initiativeButton.style.backgroundImage = 'url(./assets/initiative.png)';
+
+		this.elements.initiativeButton.style.display = 'none';
+
 		this.elements.initiativeButton.addEventListener('click', (e) => {
 			e.stopPropagation();
 			const playerIndex = this.getPlayerIndex();
