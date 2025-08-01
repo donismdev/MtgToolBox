@@ -49,15 +49,38 @@
             left: 0;
             right: 0;
         }
-        .suggestion-item {
-            padding: 0.6rem 1rem;
-            cursor: pointer;
-        }
-        .suggestion-item:hover,
-        .suggestion-item.active {
-            background-color: #007bff;
-            color: white;
-        }
+        #customSuggestions {
+			background-color: white;
+			border: 1px solid #ccc;
+			border-radius: 0.5rem;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			padding: 0.5rem;
+			z-index: 9999; /* 항상 위에 뜨도록 */
+			position: absolute;
+			width: 100%;
+			list-style: none;
+			margin-top: 5px;
+		}
+
+		.suggestion-item {
+			background-color: #e0e0e0;
+			border-radius: 1rem;
+			padding: 0.6rem 1rem;
+			margin: 0.25rem 0;
+			cursor: pointer;
+			font-weight: 500;
+			white-space: nowrap;
+			text-align: center;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			border: 1px solid #ccc;
+			transition: background-color 0.2s ease;
+		}
+
+		.suggestion-item:hover,
+		.suggestion-item.active {
+			background-color: #007bff;
+			color: white;
+		}
 
         /* 스크롤 가능한 콘텐츠를 담을 새로운 래퍼 */
         #scrollableContent {
@@ -68,25 +91,28 @@
         }
 
         #abilityList {
-            margin-top: 0; /* #scrollableContent의 패딩으로 대체되므로 마진 제거 */
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-        }
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+			justify-content: center;
+			padding: 1rem;
+		}
         .ability-badge {
+			all: unset; /* ← 초기화 */
+			display: inline-block;
 			padding: 0.6rem 1rem;
 			background-color: #e0e0e0;
 			border-radius: 1rem;
 			cursor: pointer;
 			font-weight: 600;
-			display: inline-block;
 			white-space: nowrap;
 			text-align: center;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 살짝 입체감 */
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 			border: 1px solid #ccc;
-			min-width: 100px;
-			transition: all 0.2s ease-in-out;
+			min-width: 120px;
+			text-transform: capitalize;
+			flex: 0 0 auto;
+			box-sizing: border-box;
 		}
 		.ability-badge:hover {
 			background-color: #c0c0c0;
@@ -118,7 +144,7 @@
     <div id="abilityDetails">
         <h2 id="selectedAbility"></h2>
         <p id="abilityText" class="mt-3"></p>
-        <button class="btn btn-secondary" id="resetBtn" onclick="resetView()">Reset</button>
+        <button class="btn btn-secondary" id="resetBtn" onclick="resetView()">🔁 Back to List</button>
     </div>
 </div>
 
@@ -142,8 +168,7 @@ abilityInput.parentNode.appendChild(suggestionBox);
 let abilities = {};
 window.mtgData = {};
 
-const base = location.pathname.replace(/\/[^\/]*$/, ''); // index.html 제거
-fetch(`${base}/output/ability_data.json`)
+fetch("./output/ability_data.json")
     .then(res => res.json())
     .then(data => {
         window.mtgData = data;
@@ -335,19 +360,18 @@ function filterAbilities() {
     }
 
     matched.forEach(name => {
-        const li = document.createElement("li");
-        li.innerText = name;
-        li.style.padding = "8px 12px";
-        li.style.cursor = "pointer";
-        li.onmouseover = () => li.classList.add("selected");
-        li.onmouseout = () => li.classList.remove("selected");
-        li.onclick = () => {
-            abilityInput.value = name;
-            showAbility(name);
-            suggestionBox.style.display = "none";
-        };
-        suggestionBox.appendChild(li);
-    });
+		const li = document.createElement("li");
+		li.className = "suggestion-item";
+		li.innerText = name;
+		li.onmouseover = () => li.classList.add("selected");
+		li.onmouseout = () => li.classList.remove("selected");
+		li.onclick = () => {
+			abilityInput.value = name;
+			showAbility(name);
+			suggestionBox.style.display = "none";
+		};
+		suggestionBox.appendChild(li);
+	});
 
     positionSuggestionBox();
     suggestionBox.style.display = "block";
