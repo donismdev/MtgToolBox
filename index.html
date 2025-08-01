@@ -61,8 +61,8 @@
             display: block;
         }
 
-        /* --- 모달 --- */
-        #modal-overlay {
+        /* --- ModalTool 전용 모달 --- */
+        #modal-tool-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -74,7 +74,7 @@
             align-items: center;
             z-index: 1000;
         }
-        #modal-content {
+        #modal-tool-content {
             background-color: white;
             padding: 0;
             border-radius: 5px;
@@ -85,8 +85,7 @@
             flex-direction: column;
             overflow: hidden;
         }
-
-        #modal-iframe {
+        #modal-tool-iframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -94,40 +93,34 @@
         }
 
         /* --- 오른쪽 고정 UI 버튼 --- */
-        
-        /* 전체를 감싸고 위치를 고정하는 래퍼 */
         #fixed-ui-wrapper {
-			position: fixed;
-			top: 15px;
-			right: 5px;
-			z-index: 1200;
-			display: flex;
-			flex-direction: column;
-			align-items: flex-end;
-			gap: 10px;
-			pointer-events: none;
+            position: fixed;
+            top: 15px;
+            right: 5px;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            pointer-events: none; /* 래퍼는 클릭 이벤트를 통과시킴 */
         }
 
-
-
-        /* 움직이는 버튼들을 담는 컨테이너 */
+        /* 오른쪽 플로팅 버튼들을 담는 컨테이너 */
         #fixed-buttons-container {
             position: relative;
-			display: flex;
-			flex-direction: column;
-			gap: 10px;
-			align-items: flex-end;
-			transition: transform 0.35s ease-in-out;
-			will-change: transform;
-			margin-right: -10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+            transition: transform 0.35s ease-in-out;
+            will-change: transform;
+            margin-right: -10px;
         }
-
-        /* 컨테이너를 오른쪽으로 숨기는 클래스 */
         #fixed-buttons-container.hidden-to-right {
             transform: translateX(200%);
         }
 
-        /* 모달/목록 버튼 공통 스타일 */
+        /* ModalTool 버튼 / 사이드바 목록 버튼 공통 스타일 */
         .modal-tool-button, #toggleSidebarBtn {
             width: 48px;
             height: 48px;
@@ -141,33 +134,33 @@
             flex-shrink: 0;
             transform: scale(0.85);
             transition: transform 0.2s ease-in-out, background-color 0.2s ease, opacity 0.2s ease;
+            pointer-events: auto; /* 버튼 자체는 클릭 가능해야 함 */
         }
 
-        /* 모달 버튼 개별 스타일 */
+        /* ModalTool 버튼 개별 스타일 */
         .modal-tool-button {
             font-size: 1.2rem;
             color: white;
         }
 
-        /* 목록 버튼 아이콘 스타일 */
         #toggleSidebarBtn .bi-list {
             font-size: 1.8rem !important;
         }
 
-        /* [상태] 마우스 올리면 원래 크기로 */
+        /* [상태] 마우스 오버 시 확대 */
         .modal-tool-button:hover,
         #toggleSidebarBtn:hover {
             transform: scale(1);
         }
 
-        /* [상태] 활성화된 모달 버튼 */
+        /* [상태] 활성화된 ModalTool 버튼 */
         .modal-tool-button.active-modal {
             transform: scale(1);
             box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(0, 0, 0, 0.3);
             font-weight: bold;
         }
 
-        /* [상태] 모달이 열렸을 때의 목록 버튼 */
+        /* [상태] 모달이 열렸을 때의 사이드바 버튼 (비활성화) */
         #toggleSidebarBtn.inactive-when-modal {
             transform: scale(0.85);
             background-color: #6c757d;
@@ -175,67 +168,54 @@
             opacity: 0.7;
             cursor: not-allowed;
         }
-
-        /* [상태] 비활성화된 목록 버튼은 마우스 올려도 커지지 않음 */
         #toggleSidebarBtn.inactive-when-modal:hover {
-            transform: scale(0.85);
+            transform: scale(0.85); /* 비활성화 시 hover 효과 제거 */
         }
-
-		/* --- 오른쪽 고정 UI 버튼 (수정) --- */
-    
-		/* 새로운 확장 UI 컨테이너 스타일 */
-		#expanded-ui-container {
-			display: flex;
-			flex-direction: column;
-			align-items: flex-end;
-			gap: 10px;
-			margin-bottom: 10px; /* 메인 토글 버튼과의 간격 */
-			transform-origin: bottom right;
-			transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-			transform: scale(0); /* 기본적으로는 작게 축소되어 숨김 */
-			opacity: 0;
-			pointer-events: none; /* 숨겨졌을 때는 클릭 안 되도록 */
-		}
-
-		#expanded-ui-container.show {
-			transform: scale(1); /* show 클래스가 붙으면 원래 크기로 */
-			opacity: 1;
-			pointer-events: auto; /* 보여질 때 클릭 가능하도록 */
-		}
-
-		/* 확장 UI 내부의 버튼들 스타일 */
-		#expanded-ui-container .btn {
-			width: 48px;
-			height: 48px;
-			transform: scale(0.85);
-			pointer-events: auto;
-		}
-
-		/* 메인 UI 토글 버튼 스타일 */
-		#uiToggleBtn {
-			width: 48px;
-			height: 48px;
-			font-size: 1.5rem;
-			transition: transform 0.2s ease-out !important; /* !important로 다른 transition 덮어쓰기 */
-			pointer-events: auto; /* ⭐️ 클릭 가능하도록 복원 */
-			/* 아래는 부트스트랩 클래스로 이미 적용되어 있을 수 있습니다. */
-			border-radius: 50%;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-			cursor: pointer;
-			border: none;
-		}
-
-		#uiToggleBtn.active {
-			transform: rotate(45deg); /* 활성화 시 45도 회전 (X 모양) */
-		}
         
-        #toggleButtonsVisibilityBtn i {
-             font-size: 1.5rem;
+        /* --- 확장 UI 메뉴 --- */
+        #expanded-ui-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+            transform-origin: bottom right;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+            transform: scale(0); /* 기본 숨김 */
+            opacity: 0;
+            pointer-events: none;
+        }
+        #expanded-ui-container.show {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #expanded-ui-container .btn {
+            width: 48px;
+            height: 48px;
+            transform: scale(0.85);
+            pointer-events: auto;
         }
 
+        /* 메인 UI 토글 버튼 (+) */
+        #uiToggleBtn {
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+            transition: transform 0.2s ease-out !important;
+            pointer-events: auto;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: none;
+        }
+        #uiToggleBtn.active {
+            transform: rotate(45deg); /* 활성화 시 + 아이콘을 X로 회전 */
+        }
+        
         /* --- 사이드바 내부 툴 목록 --- */
         .nav-link.active-tool {
             background-color: var(--bs-primary);
@@ -248,50 +228,42 @@
             color: white;
         }
 
-		#toggleButtonsVisibilityBtn, #toggleSidebarBtn, .modal-tool-button {
-			pointer-events: auto; /* ⭐️ 버튼 자체는 터치가 가능하도록 복원 */
-		}
-
-
-		/* --- 로딩 스피너 --- */
-		#loader-overlay {
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background-color: rgba(18, 18, 18, 0.8); /* body 배경색과 유사하게 */
-			display: none; /* 평소에는 숨김 */
-			justify-content: center;
-			align-items: center;
-			z-index: 2000; /* 최상단에 표시 */
-		}
-
-		.spinner {
-			width: 56px;
-			height: 56px;
-			border: 5px solid #f3f3f3;
-			border-top: 5px solid #3498db;
-			border-radius: 50%;
-			animation: spin 1s linear infinite;
-		}
-
-		@keyframes spin {
-			0% { transform: rotate(0deg); }
-			100% { transform: rotate(360deg); }
-		}
+        /* --- 로딩 스피너 --- */
+        #loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(18, 18, 18, 0.8);
+            display: none; /* 평소에는 숨김 */
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* 최상단에 표시 */
+        }
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
-
     <div id="sidebar">
         <button class="close-btn" onclick="toggleSidebar(false)">&times;</button>
         <a href="/" class="d-flex align-items-center mb-3 link-dark text-decoration-none">
             <span class="fs-4">MtgToolBox</span>
         </a>
         <hr />
-        <ul class="nav nav-pills flex-column mb-auto" id="tool-list"></ul>
+        <ul class="nav nav-pills flex-column mb-auto" id="tool-list-container"></ul>
         <hr />
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -309,63 +281,81 @@
     </div>
 
     <div id="fixed-ui-wrapper">
-		<div id="expanded-ui-container">
-			<button id="hideButtonsBtn" class="btn btn-light rounded-circle shadow" title="플로팅 버튼 숨기기/표시">
-				<i class="bi bi-box-arrow-right"></i>
-			</button>
-			<button id="fullscreenBtn" class="btn btn-secondary rounded-circle shadow" title="전체화면">
-				<i class="bi bi-arrows-fullscreen"></i>
-			</button>
-		</div>
+        <div id="expanded-ui-container">
+            <button id="hideButtonsBtn" class="btn btn-light rounded-circle shadow" title="플로팅 버튼 숨기기/표시">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+            <button id="fullscreenBtn" class="btn btn-secondary rounded-circle shadow" title="전체화면">
+                <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+        </div>
 
-		<button id="uiToggleBtn" class="btn btn-info text-white rounded-circle shadow">
-			<i class="bi bi-plus-lg"></i>
-		</button>
-		
-		<div id="fixed-buttons-container">
-			<button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
-				<i class="bi bi-list fs-4"></i>
-			</button>
-			</div>
-	</div>
+        <button id="uiToggleBtn" class="btn btn-info text-white rounded-circle shadow">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+        
+        <div id="fixed-buttons-container">
+            <button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            </div>
+    </div>
 
-    <div id="modal-overlay">
-      <div id="modal-content">
-        <iframe id="modal-iframe" src=""></iframe>
+    <div id="modal-tool-overlay">
+      <div id="modal-tool-content">
+        <iframe id="modal-tool-iframe" src=""></iframe>
       </div>
     </div>
 
-	 <div id="loader-overlay">
+    <div id="loader-overlay">
         <div class="spinner"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // --- 전역 변수 및 상수 정의 ---
     window.session_data = {};
     const toolIndexUrl = "tool_index.json";
-    const toolList = document.getElementById("tool-list");
-    const content = document.getElementById("content");
-    const modalOverlay = document.getElementById('modal-overlay');
 
-    const modalIframe = document.getElementById('modal-iframe');
+    // --- DOM 요소 캐싱 ---
+    const toolListContainer = document.getElementById("tool-list-container");
+    const contentArea = document.getElementById("content");
+    const loaderOverlay = document.getElementById('loader-overlay');
+    
+    // ModalTool 관련 요소
+    const modalToolOverlay = document.getElementById('modal-tool-overlay');
+    const modalTool = document.getElementById('modal-tool-iframe');
+    
+    // 사이드바 관련 요소
     const sidebar = document.getElementById("sidebar");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
-	const toggleBtn = document.getElementById('toggleSidebarBtn');
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
     
+    // 오른쪽 UI 관련 요소
     const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
-    
+    const uiToggleBtn = document.getElementById('uiToggleBtn');
+    const expandedUiContainer = document.getElementById('expanded-ui-container');
+    const hideButtonsBtn = document.getElementById('hideButtonsBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    // --- 상태 관리 변수 ---
     let currentOpenModalUrl = null;
-    const modalToolDisplayNameMap = {};
+    const modalToolDisplayNameMap = {}; // { "url": "icon" } 형식으로 ModalTool 버튼의 텍스트 저장
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+    // --- 초기화 ---
     history.replaceState({ modal: false }, '', location.href);
+    toggleSidebar(true); // 페이지 로드 시 사이드바를 기본으로 표시
 
-    function isMobileDevice() {
-        return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
+    // ===================================================================================
+    // ✨ 리팩토링 핵심 개념 ✨
+    // 1. EmbeddedTool: 사이드바 목록에서 선택하여 메인 콘텐츠 영역(#content)에 그려지는 툴
+    // 2. ModalTool: 화면 오른쪽의 플로팅 버튼을 눌러 전체 화면 모달(#modal-tool-overlay)로 로드되는 툴.
+    // ===================================================================================
 
-    const isMobile = isMobileDevice();
+    // --- 사이드바 및 UI 상태 관리 함수 ---
 
-    // ⭐️ 1. 수정된 함수: 더 이상 버튼을 숨기거나 표시하지 않습니다.
+    /** 사이드바를 열거나 닫습니다. */
     function toggleSidebar(show) {
         if (show) {
             sidebar.classList.add("show");
@@ -376,290 +366,7 @@
         }
     }
 
-    toggleSidebar(true);
-
-    function getIconForTool(tool) {
-        if (tool.tags?.includes("mtg")) return "bi-box-seam";
-        if (tool.tags?.includes("csv")) return "bi-file-earmark-spreadsheet";
-        if (tool.tags?.includes("json")) return "bi-file-earmark-code";
-        if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) return "bi-file-earmark-play";
-        return "bi-tools";
-    }
-    
-    function clearActiveModalState() {
-        document.querySelectorAll('.modal-tool-button').forEach(btn => {
-            btn.classList.remove('active-modal');
-            btn.textContent = modalToolDisplayNameMap[btn.dataset.modalUrl];
-        });
-    }
-    
-    function updateModalButtonStates(activeUrl) {
-        document.querySelectorAll('.modal-tool-button').forEach(btn => {
-            const originalText = modalToolDisplayNameMap[btn.dataset.modalUrl];
-            if (btn.dataset.modalUrl === activeUrl) {
-                btn.classList.add('active-modal');
-                btn.textContent = '✓';
-            } else {
-                btn.classList.remove('active-modal');
-                btn.textContent = originalText;
-            }
-        });
-    }
-
-    function clearActiveListSelection() {
-        const currentActive = document.querySelector('.nav-link.active-tool');
-        if (currentActive) currentActive.classList.remove('active-tool');
-    }
-
-    function renderTool(tool) {
-		const loaderOverlay = document.getElementById('loader-overlay');
-		loaderOverlay.style.display = 'flex'; // ✨ 1. 함수 시작과 동시에 로더 표시
-
-		if (modalOverlay.style.display === 'flex') {
-			closeModal(false);
-		}
-
-		// 콘텐츠를 메모리에서 먼저 구성
-		let html = `<h1 class="display-5 text-light mb-4">${tool.name}</h1>`;
-		let isIframeTool = false;
-
-		if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
-			const htmlPath = `${tool.path}${tool.name}.html`;
-			// ✨ 2. iframe에 id를 부여하여 나중에 쉽게 찾을 수 있도록 함
-			html += `<iframe id="tool-iframe" src="${htmlPath}" class="w-100" style="height: 80vh; border: none; border-radius: 8px;"></iframe>`;
-			isIframeTool = true;
-		} else {
-			// ... (iframe이 아닌 툴의 렌더링 로직은 기존과 동일)
-			html += `<form id="toolForm">`;
-			if (tool.inputs && Array.isArray(tool.inputs)) {
-				tool.inputs.forEach(input => {
-					html += `
-						<div class="mb-3">
-							<label for="${input.id}" class="form-label text-light">${input.label}</label>
-							<input type="${input.type}" class="form-control" id="${input.id}"
-								${input.accept ? `accept="${input.accept}"` : ""}
-								${input.default ? `value="${input.default}"` : ""}
-							>
-						</div>
-					`;
-				});
-			}
-			html += `</form>`;
-			if (tool.path && tool.name && tool.download) {
-				const zipPath = `${tool.path}${tool.name}.zip`;
-				html += `<a href="${zipPath}" class="btn btn-primary mt-3" download>
-							<i class="bi bi-download"></i> 다운로드 (.zip)
-						</a>`;
-			}
-		}
-
-		content.innerHTML = html; // DOM에 콘텐츠 삽입
-		toggleSidebar(false);
-
-		if (isIframeTool) {
-			// ✨ 3. Iframe 툴인 경우, 로딩이 완료되면 로더를 숨김
-			const toolIframe = document.getElementById('tool-iframe');
-			toolIframe.onload = () => {
-				loaderOverlay.style.display = 'none';
-			};
-			// 만약 iframe 로딩이 실패하거나 매우 오래 걸릴 경우를 대비한 타임아웃 (선택사항)
-			setTimeout(() => {
-				loaderOverlay.style.display = 'none';
-			}, 8000); // 8초 후 강제 숨김
-		} else {
-			// ✨ 4. Iframe 툴이 아니면 바로 로더를 숨김
-			loaderOverlay.style.display = 'none';
-		}
-
-		setTimeout(() => {
-			window.scrollTo(0, 0);
-			document.body.offsetHeight;
-		}, 10);
-	}
-
-    fetch(toolIndexUrl)
-        .then(res => res.json())
-        .then(data => {
-            const enabledTools = data.tools.filter(tool => {
-                if (tool.enable === false) return false;
-                if (tool.mobileOnly === true && !isMobile) return false;
-                if (tool.desktopOnly === true && isMobile) return false;
-                return true;
-            });
-
-            const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
-
-            modalTools.forEach(tool => {
-                const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
-                const displayName = tool.modalIcon || tool.name;
-                modalToolDisplayNameMap[fullUrl] = displayName;
-
-                const button = document.createElement('button');
-                button.className = 'btn modal-tool-button';
-                button.textContent = displayName;
-                button.dataset.modalUrl = fullUrl;
-                button.title = tool.name;
-
-                if (tool.modalIconColor) {
-                    button.style.backgroundColor = tool.modalIconColor;
-                }
-
-                
-				button.onclick = () => {
-        toggleUiExpansion(true); // 확장 UI 메뉴 닫기
-
-        const isSame = (modalOverlay.style.display === 'flex' && currentOpenModalUrl === fullUrl);
-        if (isSame) {
-            closeModal();
-            return;
-        }
-
-        const loaderOverlay = document.getElementById('loader-overlay');
-        const toggleBtn = document.getElementById('toggleSidebarBtn');
-
-        // 1. 로더를 먼저 화면에 표시합니다.
-        loaderOverlay.style.display = 'flex';
-
-        // 2. 모달의 iframe 로딩이 완료되었을 때 실행할 작업을 정의합니다.
-				modalIframe.onload = () => {
-					// 모든 준비가 끝났으니 로더를 숨깁니다.
-					loaderOverlay.style.display = 'none';
-					
-					// 그 다음 모달창을 화면에 표시합니다.
-					modalOverlay.style.display = 'flex';
-
-					// 모달이 열린 후, 모달 내부의 특정 함수를 호출하는 로직 (유지)
-					try {
-						const iframeWindow = modalIframe.contentWindow;
-						if (iframeWindow && typeof iframeWindow.onModalOpen === 'function') {
-							iframeWindow.onModalOpen();
-						}
-					} catch (e) {
-						console.error("Iframe 접근 오류:", e);
-					}
-				};
-
-				// 3. 모달이 열리기 전 필요한 상태들을 미리 변경합니다.
-				toggleSidebar(false);
-				toggleBtn.classList.add('inactive-when-modal');
-				document.body.classList.add('modal-open');
-				currentOpenModalUrl = fullUrl;
-				
-				if (!history.state?.modal) {
-					history.pushState({ modal: true }, '', '');
-				}
-				
-				updateModalButtonStates(fullUrl);
-
-				// 4. 마지막으로 iframe의 소스를 지정하여 로딩을 시작합니다.
-				modalIframe.src = fullUrl;
-			};
-			
-                fixedButtonsContainer.appendChild(button);
-            });
-            
-            const toolsByParent = enabledTools.reduce((acc, tool) => {
-                const parent = tool.parent || "기타";
-                if (!acc[parent]) acc[parent] = [];
-                acc[parent].push(tool);
-                return acc;
-            }, {});
-
-            Object.keys(toolsByParent).forEach(parent => {
-                const parentLi = document.createElement("li");
-                parentLi.className = "nav-item";
-                const parentLink = document.createElement("a");
-                parentLink.href = `#collapse-${parent.replace(/\s/g, '')}`;
-                parentLink.className = "nav-link link-dark";
-                parentLink.setAttribute("data-bs-toggle", "collapse");
-                parentLink.setAttribute("aria-expanded", "true");
-                parentLink.innerHTML = `<i class="bi bi-folder me-2"></i>${parent}<span class="ms-auto flex-shrink-0"><i class="bi bi-chevron-down collapse-icon"></i></span>`;
-                parentLi.appendChild(parentLink);
-                const subUl = document.createElement("ul");
-                subUl.id = `collapse-${parent.replace(/\s/g, '')}`;
-                subUl.className = "nav nav-pills flex-column ms-3 collapse show";
-                
-                toolsByParent[parent].forEach(tool => {
-                    const item = document.createElement("li");
-                    item.className = "nav-item";
-                    const icon = getIconForTool(tool);
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.className = 'nav-link link-dark';
-                    link.innerHTML = `<i class="bi ${icon} me-2"></i>${tool.name}`;
-                    item.appendChild(link);
-                    
-                    link.onclick = (e) => {
-                        e.preventDefault();
-                        clearActiveModalState(); 
-                        clearActiveListSelection();
-                        link.classList.add('active-tool');
-                        renderTool(tool);
-                    };
-                    subUl.appendChild(item);
-                });
-
-                if (toolsByParent[parent].length > 0) {
-                    parentLi.appendChild(subUl);
-                    toolList.appendChild(parentLi);
-                }
-            });
-        });
-    
-    modalIframe.onload = () => {
-        try {
-            const iframeWindow = modalIframe.contentWindow;
-            if (iframeWindow && typeof iframeWindow.onModalOpen === 'function') {
-                iframeWindow.onModalOpen();
-            }
-        } catch (e) {
-            console.error("Iframe 접근 오류:", e);
-        }
-    };
-
-    function closeModal(pushStateBack = true) {
-
-		modalIframe.onload = null;
-		
-        try {
-            const iframeWindow = modalIframe.contentWindow;
-            if (iframeWindow && typeof iframeWindow.onModalClose === 'function') {
-                iframeWindow.onModalClose();
-            }
-        } catch (e) {
-            console.error("Iframe 접근 오류:", e);
-        }
-
-		toggleBtn.classList.remove('inactive-when-modal');
-        modalOverlay.style.display = 'none';
-        document.body.classList.remove('modal-open');
-        modalIframe.src = 'about:blank';
-        clearActiveModalState();
-        currentOpenModalUrl = null;
-
-        if (pushStateBack && history.state?.modal) {
-            history.back();
-        }
-    }
-
-    modalOverlay.addEventListener('click', (event) => {
-        if (event.target === modalOverlay) {
-            closeModal(true);
-        }
-    });
-
-    window.addEventListener('popstate', (event) => {
-        if (!event.state?.modal && modalOverlay.style.display === 'flex') {
-            closeModal(false);
-        }
-    });
-
-    // 1. 필요한 요소들 가져오기
-    const uiToggleBtn = document.getElementById('uiToggleBtn');
-    const expandedUiContainer = document.getElementById('expanded-ui-container');
-    const hideButtonsBtn = document.getElementById('hideButtonsBtn');
-    
-    // 2. 확장 메뉴를 토글하는 공통 함수
+    /** 확장 UI 메뉴를 열거나 닫습니다. */
     function toggleUiExpansion(forceHide = false) {
         const isActive = expandedUiContainer.classList.contains('show');
         if (forceHide || isActive) {
@@ -671,63 +378,329 @@
         }
     }
 
-    // 3. 각 버튼에 이벤트 리스너 할당
+    // --- 툴 렌더링 및 관리 함수 ---
+
+    /**
+     * tool.json 객체를 기반으로 사이드바에 표시할 아이콘을 결정합니다.
+     * @param {object} tool - 툴 정보 객체
+     * @returns {string} Bootstrap 아이콘 클래스명
+     */
+    function getIconForTool(tool) {
+        if (tool.tags?.includes("mtg")) return "bi-box-seam";
+        if (tool.tags?.includes("csv")) return "bi-file-earmark-spreadsheet";
+        if (tool.tags?.includes("json")) return "bi-file-earmark-code";
+        // EmbeddedTool 타입은 재생 아이콘을 사용합니다.
+        if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) return "bi-file-earmark-play";
+        return "bi-tools"; // 기본 아이콘
+    }
+
+    /**
+     * 메인 콘텐츠 영역(#content)에 EmbeddedTool을 렌더링합니다.
+     * @param {object} tool - 렌더링할 툴 정보 객체
+     */
+    function renderEmbeddedTool(tool) {
+        loaderOverlay.style.display = 'flex'; // 로딩 시작
+
+        // 만약 ModalTool이 열려있다면 먼저 닫습니다.
+        if (modalToolOverlay.style.display === 'flex') {
+            closeModalTool(false);
+        }
+
+        let html = `<h1 class="display-5 text-light mb-4">${tool.name}</h1>`;
+        let isIframe = false;
+
+        // 툴 타입이 'html' (EmbeddedTool)인 경우 iframe으로 렌더링합니다.
+        if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
+            const htmlPath = `${tool.path}${tool.name}.html`;
+            html += `<iframe id="embedded-tool-iframe" src="${htmlPath}" class="w-100" style="height: 80vh; border: none; border-radius: 8px;"></iframe>`;
+            isIframe = true;
+        } else {
+            // 다른 타입의 툴 (예: 폼 기반)은 여기에 렌더링 로직을 추가할 수 있습니다.
+            // (기존 로직 유지)
+        }
+
+        contentArea.innerHTML = html;
+        toggleSidebar(false); // 툴을 선택하면 사이드바를 닫습니다.
+
+        if (isIframe) {
+            const embeddedToolIframe = document.getElementById('embedded-tool-iframe');
+            // iframe 로드가 완료되면 로딩 오버레이를 숨깁니다.
+            embeddedToolIframe.onload = () => {
+                loaderOverlay.style.display = 'none';
+            };
+            // 안전장치: 8초 후에도 로딩이 완료되지 않으면 강제로 로더를 숨깁니다.
+            setTimeout(() => {
+                if (loaderOverlay.style.display === 'flex') {
+                    loaderOverlay.style.display = 'none';
+                }
+            }, 8000);
+        } else {
+            // iframe이 아닌 툴은 즉시 로딩 오버레이를 숨깁니다.
+            loaderOverlay.style.display = 'none';
+        }
+
+        // 렌더링 후 화면 상단으로 스크롤합니다.
+        setTimeout(() => window.scrollTo(0, 0), 10);
+    }
     
-    // 메인 토글 버튼 클릭 시
-    uiToggleBtn.addEventListener('click', () => {
-        toggleUiExpansion();
-    });
-
-    // 확장 메뉴의 "버튼 목록 숨기기" 버튼 클릭 시
-    hideButtonsBtn.addEventListener('click', () => {
-        const icon = hideButtonsBtn.querySelector('i');
-        const isHidden = fixedButtonsContainer.classList.toggle('hidden-to-right');
+    /**
+     * ModalTool을 열고 관련 UI 상태를 업데이트합니다.
+     * @param {string} fullUrl - 로드할 ModalTool의 전체 URL
+     * @param {object} tool - ModalTool 정보 객체
+     */
+    function openModalTool(fullUrl, tool) {
+        // 이미 같은 ModalTool이 열려있으면 닫습니다.
+        if (modalToolOverlay.style.display === 'flex' && currentOpenModalUrl === fullUrl) {
+            closeModalTool();
+            return;
+        }
         
-        icon.classList.toggle('bi-box-arrow-right', !isHidden);
-        icon.classList.toggle('bi-box-arrow-left', isHidden);
-        
-        toggleUiExpansion(true); // 기능 실행 후 확장 메뉴 닫기
-    });
+        loaderOverlay.style.display = 'flex'; // 로딩 시작
 
-    // 사이드바 목록 버튼 클릭 시
-    toggleBtn.addEventListener('click', () => {
-        toggleUiExpansion(true); // 확장 메뉴 먼저 닫기
-        const isSidebarVisible = sidebar.classList.contains("show");
-        toggleSidebar(!isSidebarVisible);
-    });
+        // iframe 로드가 완료되면 로더를 숨기고 모달을 표시합니다.
+        modalTool.onload = () => {
+            loaderOverlay.style.display = 'none';
+            modalToolOverlay.style.display = 'flex';
 
-    // --- 전체화면 기능 로직 (수정) ---
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const fullscreenIcon = fullscreenBtn.querySelector('i');
+            // 모달 내부의 onModalOpen 함수가 있다면 호출합니다.
+            try {
+                const iframeWindow = modalTool.contentWindow;
+                if (iframeWindow && typeof iframeWindow.onModalOpen === 'function') {
+                    iframeWindow.onModalOpen();
+                }
+            } catch (e) {
+                console.error("Iframe 접근 오류:", e);
+            }
+        };
 
+        // 모달을 열기 전 UI 상태를 설정합니다.
+        toggleSidebar(false);
+        toggleSidebarBtn.classList.add('inactive-when-modal'); // 사이드바 버튼 비활성화
+        document.body.classList.add('modal-open');
+        currentOpenModalUrl = fullUrl;
+        updateModalToolButtonStates(fullUrl); // 활성 ModalTool 버튼 스타일 업데이트
+
+        // 브라우저 history에 모달 상태를 추가합니다 (뒤로가기 지원).
+        if (!history.state?.modal) {
+            history.pushState({ modal: true }, '', '');
+        }
+
+        // 마지막으로 iframe의 src를 설정하여 로딩을 시작합니다.
+        modalTool.src = fullUrl;
+    }
+
+    /**
+     * 현재 열려있는 ModalTool을 닫습니다.
+     * @param {boolean} pushStateBack - 브라우저 history를 뒤로 돌릴지 여부
+     */
+    function closeModalTool(pushStateBack = true) {
+        modalTool.onload = null; // onload 핸들러 초기화
+
+        // 모달 내부의 onModalClose 함수가 있다면 호출합니다.
+        try {
+            const iframeWindow = modalTool.contentWindow;
+            if (iframeWindow && typeof iframeWindow.onModalClose === 'function') {
+                iframeWindow.onModalClose();
+            }
+        } catch (e) {
+            console.error("Iframe 접근 오류:", e);
+        }
+
+        // UI 상태를 원래대로 복원합니다.
+        toggleSidebarBtn.classList.remove('inactive-when-modal');
+        modalToolOverlay.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        modalTool.src = 'about:blank'; // ModalTool 비우기
+        clearActiveModalToolButtonState(); // 모든 ModalTool 버튼 활성 상태 해제
+        currentOpenModalUrl = null;
+
+        // history.back()으로 닫는 경우를 처리합니다.
+        if (pushStateBack && history.state?.modal) {
+            history.back();
+        }
+    }
+
+
+    // --- UI 상태 업데이트 함수 ---
+
+    /** 사이드바에서 현재 선택된 EmbeddedTool의 활성 상태를 해제합니다. */
+    function clearActiveListSelection() {
+        const currentActive = document.querySelector('.nav-link.active-tool');
+        if (currentActive) currentActive.classList.remove('active-tool');
+    }
+    
+    /** 모든 ModalTool 버튼의 활성 상태(테두리, 아이콘)를 초기화합니다. */
+    function clearActiveModalToolButtonState() {
+        document.querySelectorAll('.modal-tool-button').forEach(btn => {
+            btn.classList.remove('active-modal');
+            btn.textContent = modalToolDisplayNameMap[btn.dataset.modalUrl]; // 원래 아이콘으로 복원
+        });
+    }
+    
+    /**
+     * 주어진 URL에 해당하는 ModalTool 버튼을 활성화하고 나머지는 비활성화합니다.
+     * @param {string} activeUrl - 활성화할 ModalTool의 URL
+     */
+    function updateModalToolButtonStates(activeUrl) {
+        document.querySelectorAll('.modal-tool-button').forEach(btn => {
+            if (btn.dataset.modalUrl === activeUrl) {
+                btn.classList.add('active-modal');
+                btn.textContent = '✓'; // 활성 상태 아이콘
+            } else {
+                btn.classList.remove('active-modal');
+                btn.textContent = modalToolDisplayNameMap[btn.dataset.modalUrl]; // 원래 아이콘
+            }
+        });
+    }
+
+    // --- 전체화면 관리 ---
     function toggleFullScreen() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(err => {
                 alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
             });
         } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
+            if (document.exitFullscreen) document.exitFullscreen();
         }
         toggleUiExpansion(true); // 기능 실행 후 확장 메뉴 닫기
     }
 
-    fullscreenBtn.addEventListener('click', toggleFullScreen);
+    // --- 이벤트 리스너 설정 ---
 
+    // 확장 UI 토글 버튼
+    uiToggleBtn.addEventListener('click', () => toggleUiExpansion());
+
+    // 플로팅 버튼 숨기기/표시 버튼
+    hideButtonsBtn.addEventListener('click', () => {
+        const icon = hideButtonsBtn.querySelector('i');
+        const isHidden = fixedButtonsContainer.classList.toggle('hidden-to-right');
+        icon.classList.toggle('bi-box-arrow-right', !isHidden);
+        icon.classList.toggle('bi-box-arrow-left', isHidden);
+        toggleUiExpansion(true); // 메뉴 닫기
+    });
+
+    // 사이드바 목록 토글 버튼
+    toggleSidebarBtn.addEventListener('click', () => {
+        if (toggleSidebarBtn.classList.contains('inactive-when-modal')) return; // 모달 열렸을 땐 동작 안함
+        toggleUiExpansion(true); // 확장 메뉴 먼저 닫기
+        toggleSidebar(!sidebar.classList.contains("show"));
+    });
+
+    // 전체화면 버튼
+    fullscreenBtn.addEventListener('click', toggleFullScreen);
     document.addEventListener('fullscreenchange', () => {
         const isFullscreen = !!document.fullscreenElement;
+        const fullscreenIcon = fullscreenBtn.querySelector('i');
         fullscreenIcon.classList.toggle('bi-arrows-fullscreen', !isFullscreen);
         fullscreenIcon.classList.toggle('bi-arrows-angle-contract', isFullscreen);
     });
 
-	content.addEventListener('click', () => {
-        // content 내부에 h1 태그가 있고, 그 내용이 '툴을 선택해주세요'인지 확인
-        const h1 = content.querySelector('h1');
+    // 모달 오버레이 클릭 시 닫기
+    modalToolOverlay.addEventListener('click', (event) => {
+        if (event.target === modalToolOverlay) closeModalTool(true);
+    });
+
+    // 브라우저 뒤로가기 버튼으로 모달 닫기
+    window.addEventListener('popstate', (event) => {
+        if (!event.state?.modal && modalToolOverlay.style.display === 'flex') {
+            closeModalTool(false);
+        }
+    });
+
+    // 초기 화면에서 콘텐츠 영역 클릭 시 사이드바 열기
+    contentArea.addEventListener('click', () => {
+        const h1 = contentArea.querySelector('h1');
         if (h1 && h1.textContent === '툴을 선택해주세요') {
             toggleSidebar(true);
         }
     });
+
+    // --- 데이터 로딩 및 동적 UI 생성 ---
+
+    fetch(toolIndexUrl)
+        .then(res => res.json())
+        .then(data => {
+            // 활성화된 툴만 필터링 (플랫폼 조건 포함)
+            const enabledTools = data.tools.filter(tool => {
+                if (tool.enable === false) return false;
+                if (tool.mobileOnly === true && !isMobile) return false;
+                if (tool.desktopOnly === true && isMobile) return false;
+                return true;
+            });
+
+            // 1. ModalTool 버튼 생성
+            const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
+            modalTools.forEach(tool => {
+                const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
+                const displayName = tool.modalIcon || tool.name;
+                modalToolDisplayNameMap[fullUrl] = displayName; // 아이콘/텍스트 정보 저장
+
+                const button = document.createElement('button');
+                button.className = 'btn modal-tool-button';
+                button.textContent = displayName;
+                button.dataset.modalUrl = fullUrl;
+                button.title = tool.name;
+                if (tool.modalIconColor) {
+                    button.style.backgroundColor = tool.modalIconColor;
+                }
+
+                button.onclick = () => {
+                    toggleUiExpansion(true); // 버튼 클릭 시 확장 메뉴는 닫기
+                    openModalTool(fullUrl, tool);
+                };
+                
+                fixedButtonsContainer.appendChild(button);
+            });
+            
+            // 2. EmbeddedTool 및 기타 툴 목록 (사이드바) 생성
+            const toolsByParent = enabledTools.reduce((acc, tool) => {
+                const parent = tool.parent || "기타";
+                if (!acc[parent]) acc[parent] = [];
+                acc[parent].push(tool);
+                return acc;
+            }, {});
+
+            Object.keys(toolsByParent).forEach(parent => {
+                const parentLi = document.createElement("li");
+                parentLi.className = "nav-item";
+                parentLi.innerHTML = `
+                    <a href="#collapse-${parent.replace(/\s/g, '')}" class="nav-link link-dark" data-bs-toggle="collapse" aria-expanded="true">
+                        <i class="bi bi-folder me-2"></i>${parent}
+                        <span class="ms-auto flex-shrink-0"><i class="bi bi-chevron-down collapse-icon"></i></span>
+                    </a>
+                `;
+                
+                const subUl = document.createElement("ul");
+                subUl.id = `collapse-${parent.replace(/\s/g, '')}`;
+                subUl.className = "nav nav-pills flex-column ms-3 collapse show";
+                
+                toolsByParent[parent].forEach(tool => {
+                    const item = document.createElement("li");
+                    item.className = "nav-item";
+                    
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.className = 'nav-link link-dark';
+                    link.innerHTML = `<i class="bi ${getIconForTool(tool)} me-2"></i>${tool.name}`;
+                    
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        clearActiveModalToolButtonState(); // 다른 툴 선택 시 ModalTool 활성 상태 해제
+                        clearActiveListSelection(); // 기존 선택 해제
+                        link.classList.add('active-tool'); // 현재 툴 활성
+                        renderEmbeddedTool(tool); // EmbeddedTool 렌더링
+                    };
+
+                    item.appendChild(link);
+                    subUl.appendChild(item);
+                });
+
+                if (toolsByParent[parent].length > 0) {
+                    parentLi.appendChild(subUl);
+                    toolListContainer.appendChild(parentLi);
+                }
+            });
+        });
 </script>
 </body>
 </html>
