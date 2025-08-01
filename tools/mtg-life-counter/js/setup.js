@@ -25,12 +25,7 @@ export function initializePlayers(count) {
 	if (parseInt(window.dataSpace.settings.playerCount, 10) !== parseInt(count, 10)) {
         lifeData = {};
         rotationData = {};
-        // if (parseInt(count, 10) === 2) rotationData['player-1'] = 180; // <- 여기서 삭제
-    }
-
-    // 2인용일 경우, Player 1의 회전값을 180으로 설정하는 로직을 밖으로 이동
-    if (parseInt(count, 10) === 2) {
-        rotationData['player-1'] = 180;
+        themeData = {};
     }
 
 	window.localSettings.playerCount = count;
@@ -69,13 +64,19 @@ export function initializePlayers(count) {
 	} else {
 		// 2인 / 4인
 		for (let i = 0; i < count; i++) {
-			const playerId = `player-${i + 1}`;
-			const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotationData[playerId] ?? 0, themeData[playerId] ?? i);
+            const playerId = `player-${i + 1}`;
+            let rotation = rotationData[playerId] ?? 0;
+            if (count === 2) {
+                if (i === 0) rotation = 180;
+                if (i === 1) rotation = 0;
+            }
+			const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotation, themeData[playerId] ?? i);
 			player.elements.area.classList.add(`player-count-${count}`);
 			window.players.push(player);
 			window.gameContainer.appendChild(player.elements.area);
 		}
 	}
+    window.players.forEach(p => p.updateRotationClass());
 }
 
 
@@ -155,9 +156,16 @@ export function setupEventListeners() {
             hideAllOverlays();
         });
 
-        showMenu(window.settingsMenu, '설정', ['플레이어 수', '시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
-            if (selection === '플레이어 수') { hideAllOverlays(); showPlayerCountMenu(); }
-            else if (selection === '시작 라이프') showLifeMenu();
+        // showMenu(window.settingsMenu, '설정', ['플레이어 수', '시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
+        //     if (selection === '플레이어 수') { hideAllOverlays(); showPlayerCountMenu(); }
+        //     else if (selection === '시작 라이프') showLifeMenu();
+        //     else if (selection === '폰트 크기') showFontMenu();
+        //     else if (selection === '주사위 면 수') showDiceSidesMenu();
+        //     else if (selection === '라이프 조절 방향') showAdjustDirectionMenu();
+        // });
+
+		showMenu(window.settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
+            if (selection === '시작 라이프') showLifeMenu();
             else if (selection === '폰트 크기') showFontMenu();
             else if (selection === '주사위 면 수') showDiceSidesMenu();
             else if (selection === '라이프 조절 방향') showAdjustDirectionMenu();
