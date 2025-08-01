@@ -80,7 +80,12 @@ export function setupEventListeners() {
         const btn = e.currentTarget;
 
 		if (btn.classList.contains('confirm-animation')) {
-			window.players.forEach(p => p.setLife(window.localSettings.lifeMax));
+	
+			window.players.forEach(p => {
+				p.setLife(window.localSettings.lifeMax);
+				p.playIntroAnimation?.();  // 등장 애니메이션 재생
+			});
+			
 			btn.textContent = '라이프 초기화';
 			btn.classList.remove('confirm-animation');
 			hideAllOverlays();

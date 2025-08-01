@@ -63,7 +63,6 @@
             font-weight: bold;
             transition: font-size 0.3s ease, opacity 0.3s ease;
             z-index: 1;
-            transform: rotate(0deg) !important;
         }
         .player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
 
@@ -72,6 +71,21 @@
         .font-size-large { --life-font-size: 22vh; }
         .font-size-xlarge { --life-font-size: 26vh; }
         .life-total { font-size: var(--life-font-size); }
+
+		@keyframes lifeIntro {
+			from {
+				transform: rotate(0deg) scale(1.4);
+				opacity: 0;
+			}
+			to {
+				transform: rotate(0deg) scale(1);
+				opacity: 1;
+			}
+		}
+
+		.life-total.animate-intro {
+			animation: lifeIntro 0.3s ease-out;
+		}
 
 		.life-hint {
 			position: absolute;

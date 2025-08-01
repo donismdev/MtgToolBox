@@ -108,6 +108,13 @@ export class Player {
         this.updateDisplay();
     }
 
+	playIntroAnimation() {
+		const el = this.elements.lifeTotal;
+		el.classList.remove('animate-intro');   // 재생 위해 제거
+		void el.offsetWidth;                    // 강제 리플로우
+		el.classList.add('animate-intro');      // 재추가로 애니메이션 발동
+	}
+
     rotateArea() {
         this.rotation = (this.rotation + 90) % 360;
         this.updateRotationClass();
