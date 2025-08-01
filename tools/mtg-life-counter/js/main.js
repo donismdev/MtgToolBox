@@ -40,6 +40,8 @@ import { themes } from './themes.js';
     window.fontSizeMenu = document.getElementById('fontSizeMenu');
     window.diceSidesMenu = document.getElementById('diceSidesMenu');
     window.threePlayerLayoutButtonsContainer = document.getElementById('three-player-layout-buttons');
+    window.toggleButton = document.getElementById('toggle-button');
+    window.closeButton = document.getElementById('close-button');
     
     window.activeUI = null;
     window.players = []; 
@@ -81,6 +83,20 @@ import { themes } from './themes.js';
 		}
     }
 
+    window.toggleButton.addEventListener('click', () => {
+        const centerButtons = document.getElementById('center-buttons');
+        const toggleButtonContainer = document.getElementById('toggle-button-container');
+        centerButtons.style.display = 'flex';
+        toggleButtonContainer.style.display = 'none';
+    });
+
+    window.closeButton.addEventListener('click', () => {
+        const centerButtons = document.getElementById('center-buttons');
+        const toggleButtonContainer = document.getElementById('toggle-button-container');
+        centerButtons.style.display = 'none';
+        toggleButtonContainer.style.display = 'block';
+    });
+
     setupEventListeners();
     
     // Initial Load
@@ -92,9 +108,10 @@ import { themes } from './themes.js';
     };
 
     window.openInitiativeDungeon = (playerIndex) => {
-        const dungeonOverlay = document.getElementById('dungeon-overlay');
-        dungeonOverlay.innerHTML = `Player ${playerIndex + 1} has the initiative!`;
-        dungeonOverlay.style.display = 'flex';
+		// TODO: 추후, 던전 구현
+        // const dungeonOverlay = document.getElementById('dungeon-overlay');
+        // dungeonOverlay.innerHTML = `Player ${playerIndex + 1} has the initiative!`;
+        // dungeonOverlay.style.display = 'flex';
     };
 
 	// 던전 암막. 임시일 수 있음
