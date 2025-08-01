@@ -81,6 +81,7 @@ export class Player {
 			const relativeX = event.clientX - rect.left;
 			const relativeY = event.clientY - rect.top;
 			this.showLifeFeedback(amount, relativeX, relativeY);
+			this.showAreaRipple(amount, event);
 		});
 
         const rotateButton = document.createElement('button');
@@ -135,6 +136,25 @@ export class Player {
 		setTimeout(() => {
 			feedback.remove();
 		}, 600);
+	}
+
+	showAreaRipple(amount, event) {
+		const ripple = document.createElement('div');
+		ripple.className = 'life-ripple';
+		if (amount < 0) {
+			ripple.classList.add('minus');
+		}
+
+		const rect = this.elements.area.getBoundingClientRect();
+		const x = (event?.clientX || rect.width / 2) - rect.left;
+		const y = (event?.clientY || rect.height / 2) - rect.top;
+
+		ripple.style.left = `${x - 50}px`; // 반지름 offset
+		ripple.style.top = `${y - 50}px`;
+
+		this.elements.area.appendChild(ripple);
+
+		setTimeout(() => ripple.remove(), 600);
 	}
 
 	updateHint() {

@@ -23,9 +23,10 @@
             position: relative;
             background-color: #2c3e50;
             color: white;
-            overflow: hidden;
+			overflow: hidden;
             border: 1px solid rgba(0,0,0,0.1);
             box-sizing: border-box;
+
         }
 
         /* Layouts */
@@ -90,7 +91,6 @@
 			animation: feedbackPop 0.6s ease-out forwards;
 			z-index: 5;
 		}
-
 		@keyframes feedbackPop {
 			0% {
 				opacity: 1;
@@ -103,6 +103,33 @@
 			100% {
 				opacity: 0;
 				transform: scale(1) translateY(-40px);
+			}
+		}
+
+		.life-ripple {
+			position: absolute;
+			width: 100px;
+			height: 100px;
+			border-radius: 50%;
+			background-color: rgba(0, 255, 255, 0.4); /* +면 파란색 */
+			transform: scale(0);
+			animation: rippleExpand 0.6s ease-out forwards;
+			pointer-events: none;
+			z-index: 1000;
+		}
+
+		.life-ripple.minus {
+			background-color: rgba(255, 80, 80, 0.4); /* -면 빨간색 */
+		}
+
+		@keyframes rippleExpand {
+			0% {
+				transform: scale(0);
+				opacity: 0.8;
+			}
+			100% {
+				transform: scale(5);
+				opacity: 0;
 			}
 		}
 
