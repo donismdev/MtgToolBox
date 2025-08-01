@@ -173,11 +173,10 @@ export function setupEventListeners() {
         //     else if (selection === '라이프 조절 방향') showAdjustDirectionMenu();
         // });
 
-		showMenu(window.settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
+		showMenu(window.settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수'], (selection) => {
             if (selection === '시작 라이프') showLifeMenu();
             else if (selection === '폰트 크기') showFontMenu();
             else if (selection === '주사위 면 수') showDiceSidesMenu();
-            else if (selection === '라이프 조절 방향') showAdjustDirectionMenu();
         });
     });
 }
