@@ -121,15 +121,16 @@
 			@keyframes feedbackPop {
 				0% {
 					opacity: 1;
-					transform: scale(1) translateY(0);
+					/* JS에서 전달받은 --feedback-rotation 변수를 사용해 회전 값을 적용합니다. */
+					transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1) translateY(0);
 				}
 				50% {
 					opacity: 0.9;
-					transform: scale(1.2) translateY(-20px);
+					transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1.2) translateY(-20px);
 				}
 				100% {
 					opacity: 0;
-					transform: scale(1) translateY(-40px);
+					transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1) translateY(-40px);
 				}
 			}
 
@@ -151,8 +152,12 @@
 			}
 
 			.life-feedback.immediate {
-				font-size: 1.5rem; /* 기본 2.5rem보다 작게 설정 */
-				text-shadow: 0 0 4px rgba(0, 0, 0, 0.8); /* 작은 글씨에 맞게 그림자 약하게 */
+				animation: none;
+
+				/*
+				font-size: 1.5rem;
+				text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+				*/
 			}
 
 			@keyframes rippleExpand {
@@ -176,7 +181,7 @@
 				top: 50%; left: 50%;
 				transform: translate(-50%, -50%);
 				width: 90%; 
-				max-width: 480px;
+				max-width: 340px;
 				z-index: 1010;
 				transition: top 0.3s ease;
 			}
@@ -199,17 +204,17 @@
 			body.buttons-raised.font-size-xlarge #center-buttons { top: 28%; }
 
 			#center-buttons button {
-				flex-grow: 1;
-				flex-basis: 0;
-				height: 50px; 
-				font-size: 0.9rem;
+				flex-grow: 1;       /* 남는 공간을 나눠 갖도록 설정 */
+				flex-basis: auto;   /* 내용(텍스트)에 따라 기본 너비가 결정되도록 변경 */
+				height: 35px;
+				font-size: 0.8rem; 
 				border: 1px solid #ccc; background-color: white;
 				border-radius: 0.5rem; cursor: pointer;
 				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-				padding: 0 0.5rem;
+				padding: 0 0.7rem;    /* 좌우 패딩을 조정해 공간 확보 */
 				white-space: nowrap;
-				min-width: 100px;
 				text-align: center;
+				/* min-width: 70px; <-- 이 속성을 삭제하여 너비가 유연하게 변하도록 함 */
 			}
 			#center-buttons button.confirm-animation {
 				color: #e74c3c;
@@ -306,7 +311,7 @@
 
 			.player-header-buttons {
 				position: absolute;
-				top: 10px;
+				bottom: 10px;
 				left: 10px; /* 왼쪽 가장자리에서 10px 위치에 고정 */
 				/* transform: translateX(-50%);  <-- 이 줄을 삭제하거나 주석 처리 */
 				display: flex;
@@ -450,8 +455,8 @@
 	}
 
 	#toggle-button {
-		width: 60px;
-		height: 60px;
+		width: 42px;
+		height: 42px;
 		cursor: pointer;
 		border-radius: 50%;
 		box-shadow: 0 4px 8px rgba(0,0,0,0.3);
@@ -500,3 +505,212 @@
     opacity: 1;
 }
 
+/* css/style.css 에 추가할 내용 */
+
+.dungeon-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: none; /* JS로 제어 */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.dungeon-modal {
+    background-color: #1f2937; /* bg-gray-800 */
+    width: 100%;
+    max-width: 80rem; /* 1280px */
+    height: 90vh;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column; /* Mobile first */
+    overflow: hidden;
+    border: 1px solid #4b5563; /* gray-600 */
+}
+
+@media (min-width: 768px) { /* md breakpoint */
+    .dungeon-modal {
+        flex-direction: row;
+    }
+}
+
+.dungeon-map-panel {
+    flex: 3;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.dungeon-info-panel {
+    flex: 2;
+    background-color: #111827; /* bg-gray-900 */
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.dungeon-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f3f4f6; /* gray-200 */
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.dungeon-map-container {
+    position: relative;
+    width: 100%;
+    min-height: 60vh;
+}
+
+.dungeon-floor {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 4rem; /* 64px */
+}
+
+.dungeon-room {
+    position: relative;
+    border: 2px solid #4b5563; /* gray-600 */
+    background-color: #374151; /* gray-700 */
+    transition: all 0.2s ease-in-out;
+    width: 8rem; /* 128px */
+    height: 6rem; /* 96px */
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #d1d5db; /* gray-300 */
+}
+
+.room-name {
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.room-floor {
+    font-size: 0.75rem;
+    color: #9ca3af; /* gray-400 */
+    margin-top: 0.25rem;
+}
+
+.player-marker {
+    position: absolute;
+    bottom: -0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: white;
+    border: 1px solid #111827;
+}
+
+.marker-p1 { background-color: #3b82f6; } /* blue-500 */
+.marker-p2 { background-color: #ef4444; } /* red-500 */
+.marker-p3 { background-color: #22c55e; } /* green-500 */
+.marker-p4 { background-color: #eab308; } /* yellow-500 */
+.marker-p5 { background-color: #8b5cf6; } /* violet-500 */
+.marker-p6 { background-color: #ec4899; } /* pink-500 */
+
+.current-p1 { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+.current-p2 { border-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+/* ... 다른 플레이어 색상도 추가 가능 ... */
+
+.next-choice {
+    border-color: #10b981; /* emerald-500 */
+    background-color: #059669;
+    cursor: pointer;
+    transform: scale(1.05);
+    color: white;
+}
+
+.next-choice:hover {
+    background-color: #10b981;
+    border-color: #6ee7b7;
+}
+
+#dungeon-room-info {
+    flex-grow: 1;
+}
+
+.room-info-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f59e0b; /* amber-500 */
+    margin-bottom: 0.5rem;
+}
+
+.room-info-meta {
+    font-size: 0.875rem;
+    color: #9ca3af; /* gray-400 */
+    margin-bottom: 1rem;
+}
+
+.room-info-ability {
+    background-color: #1f2937; /* gray-800 */
+    padding: 1rem;
+    border-radius: 0.5rem;
+    color: #d1d5db; /* gray-300 */
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.room-info-prompt {
+    margin-top: 1.5rem;
+    color: #34d399; /* emerald-400 */
+    font-weight: 600;
+    text-align: center;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.room-info-complete {
+    margin-top: 1.5rem;
+    color: #f59e0b; /* amber-500 */
+    font-weight: 600;
+    text-align: center;
+}
+
+.dungeon-close-button {
+    width: 100%;
+    background-color: #4b5563; /* gray-600 */
+    color: white;
+    font-weight: bold;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    transition: background-color 0.2s;
+}
+
+.dungeon-close-button:hover {
+    background-color: #6b7280; /* gray-500 */
+}
+
+.current-selection {
+    border-color: #f59e0b; /* amber-500 */
+    box-shadow: 0 0 15px #f59e0b;
+}
+
+.dungeon-action-button {
+    width: 100%;
+    background-color: #10b981; /* emerald-500 */
+    color: white;
+    font-weight: bold;
+    padding: 0.875rem 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1.5rem;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.dungeon-action-button:hover {
+    background-color: #059669; /* emerald-600 */
+}

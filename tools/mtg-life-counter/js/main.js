@@ -92,9 +92,12 @@ import { themes } from './themes.js';
 
     window.closeButton.addEventListener('click', () => {
         const centerButtons = document.getElementById('center-buttons');
-        const toggleButtonContainer = document.getElementById('toggle-button-container');
-        centerButtons.style.display = 'none';
-        toggleButtonContainer.style.display = 'block';
+		const toggleButtonContainer = document.getElementById('toggle-button-container');
+
+		centerButtons.style.display = 'none';
+		toggleButtonContainer.style.display = 'block';
+
+		window.overlay.style.display = 'none'; 
     });
 
     setupEventListeners();
