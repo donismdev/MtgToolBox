@@ -3,61 +3,75 @@ import { showMenu, hideAllOverlays, applyLifeFontSize } from './ui.js';
 import { rollDiceVisual } from './dice.js';
 
 export function initializePlayers(count) {
-    window.gameContainer.innerHTML = '';
-    document.body.classList.remove('buttons-raised');
-    window.gameContainer.classList.remove('game-layout-3-top', 'game-layout-3-bottom');
-    
-    window.players = [];
-    
-    let lifeData = window.dataSpace.lifeCounter;
-    let rotationData = window.dataSpace.playerRotations;
-    
-    if (parseInt(window.dataSpace.settings.playerCount, 10) !== parseInt(count, 10)) {
-        lifeData = {};
-        rotationData = {};
-        if (parseInt(count, 10) === 2) rotationData['player-1'] = 180;
-    }
-    
-    window.localSettings.playerCount = count;
+	window.gameContainer.innerHTML = '';
 
-    if (count === 3) {
-        const layout = window.localSettings.threePlayerLayout;
-        if (layout === 'left' || layout === 'right') document.body.classList.add('buttons-raised');
+	// 초기화: 관련 클래스 모두 제거
+	document.body.classList.remove(
+		'buttons-raised',
+		'buttons-left',
+		'buttons-right'
+	);
+	window.gameContainer.classList.remove(
+		'game-layout-3-top',
+		'game-layout-3-bottom'
+	);
 
-        const p1 = new Player('player-1', lifeData['player-1'] ?? window.localSettings.lifeMax, rotationData['player-1'] ?? 0);
-        const p2 = new Player('player-2', lifeData['player-2'] ?? window.localSettings.lifeMax, rotationData['player-2'] ?? 0);
-        const p3 = new Player('player-3', lifeData['player-3'] ?? window.localSettings.lifeMax, rotationData['player-3'] ?? 0);
-        window.players.push(p1, p2, p3);
+	window.players = [];
 
-        if (layout === 'left' || layout === 'right') {
-            const column = document.createElement('div');
-            column.style.cssText = 'display:flex; flex-direction:column; width:50%; height:100%;';
-            p2.elements.area.style.cssText = 'height:50%; width:100%;';
-            p3.elements.area.style.cssText = 'height:50%; width:100%;';
-            column.appendChild(p2.elements.area);
-            column.appendChild(p3.elements.area);
-            p1.elements.area.style.cssText = 'width:50%; height:100%;';
-            if (layout === 'left') {
-                window.gameContainer.appendChild(p1.elements.area);
-                window.gameContainer.appendChild(column);
-            } else {
-                window.gameContainer.appendChild(column);
-                window.gameContainer.appendChild(p1.elements.area);
-            }
-        } else {
-            window.gameContainer.classList.add(`game-layout-3-${layout}`);
-            window.players.forEach(p => window.gameContainer.appendChild(p.elements.area));
-        }
-    } else {
-        for (let i = 0; i < count; i++) {
-            const playerId = `player-${i + 1}`;
-            const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotationData[playerId] ?? 0);
-            player.elements.area.classList.add(`player-count-${count}`);
-            window.players.push(player);
-            window.gameContainer.appendChild(player.elements.area);
-        }
-    }
+	let lifeData = window.dataSpace.lifeCounter;
+	let rotationData = window.dataSpace.playerRotations;
+
+	if (parseInt(window.dataSpace.settings.playerCount, 10) !== parseInt(count, 10)) {
+		lifeData = {};
+		rotationData = {};
+		if (parseInt(count, 10) === 2) rotationData['player-1'] = 180;
+	}
+
+	window.localSettings.playerCount = count;
+
+	if (count === 3) {
+		const layout = window.localSettings.threePlayerLayout;
+
+		const p1 = new Player('player-1', lifeData['player-1'] ?? window.localSettings.lifeMax, rotationData['player-1'] ?? 0);
+		const p2 = new Player('player-2', lifeData['player-2'] ?? window.localSettings.lifeMax, rotationData['player-2'] ?? 0);
+		const p3 = new Player('player-3', lifeData['player-3'] ?? window.localSettings.lifeMax, rotationData['player-3'] ?? 0);
+		window.players.push(p1, p2, p3);
+
+		if (layout === 'left' || layout === 'right') {
+			document.body.classList.add(layout === 'left' ? 'buttons-right' : 'buttons-left');
+
+			const column = document.createElement('div');
+			column.style.cssText = 'display:flex; flex-direction:column; width:50%; height:100%;';
+			p2.elements.area.style.cssText = 'height:50%; width:100%;';
+			p3.elements.area.style.cssText = 'height:50%; width:100%;';
+			column.appendChild(p2.elements.area);
+			column.appendChild(p3.elements.area);
+			p1.elements.area.style.cssText = 'width:50%; height:100%;';
+
+			if (layout === 'left') {
+				window.gameContainer.appendChild(p1.elements.area);
+				window.gameContainer.appendChild(column);
+			} else {
+				window.gameContainer.appendChild(column);
+				window.gameContainer.appendChild(p1.elements.area);
+			}
+		} else {
+			// top 또는 bottom
+			window.gameContainer.classList.add(`game-layout-3-${layout}`);
+			window.players.forEach(p => window.gameContainer.appendChild(p.elements.area));
+		}
+	} else {
+		// 2인 / 4인
+		for (let i = 0; i < count; i++) {
+			const playerId = `player-${i + 1}`;
+			const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotationData[playerId] ?? 0);
+			player.elements.area.classList.add(`player-count-${count}`);
+			window.players.push(player);
+			window.gameContainer.appendChild(player.elements.area);
+		}
+	}
 }
+
 
 export function setupEventListeners() {
     window.overlay.addEventListener('click', hideAllOverlays);

@@ -94,6 +94,18 @@
             transition: top 0.3s ease;
         }
 
+		body.buttons-left #center-buttons {
+			left: 25%;
+			top: 50%;	
+			transform: translate(-50%, -50%);
+		}
+
+		body.buttons-right #center-buttons {
+			left: 75%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+		}
+
         body.buttons-raised #center-buttons { top: 40%; }
         body.buttons-raised.font-size-medium #center-buttons { top: 35%; }
         body.buttons-raised.font-size-large #center-buttons { top: 32%; }
