@@ -79,6 +79,33 @@
 		.life-hint.decrease {
 		}
 
+		.life-feedback {
+			position: absolute;
+			font-size: 2.5rem;
+			font-weight: bold;
+			color: #fff;
+			text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+			pointer-events: none;
+			user-select: none;
+			animation: feedbackPop 0.6s ease-out forwards;
+			z-index: 5;
+		}
+
+		@keyframes feedbackPop {
+			0% {
+				opacity: 1;
+				transform: scale(1) translateY(0);
+			}
+			50% {
+				opacity: 0.9;
+				transform: scale(1.2) translateY(-20px);
+			}
+			100% {
+				opacity: 0;
+				transform: scale(1) translateY(-40px);
+			}
+		}
+
         /* Center Buttons */
         #center-buttons {
             display: flex;

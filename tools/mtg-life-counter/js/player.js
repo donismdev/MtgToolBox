@@ -76,6 +76,11 @@ export class Player {
 			}
 
 			this.changeLife(amount);
+
+			// 새로 추가
+			const relativeX = event.clientX - rect.left;
+			const relativeY = event.clientY - rect.top;
+			this.showLifeFeedback(amount, relativeX, relativeY);
 		});
 
         const rotateButton = document.createElement('button');
@@ -114,6 +119,23 @@ export class Player {
 
 		this.updateHint();
     }
+
+	showLifeFeedback(amount, x, y) {
+		const feedback = document.createElement('div');
+		feedback.className = 'life-feedback';
+		feedback.textContent = (amount > 0) ? `+${amount}` : `${amount}`;
+
+		// 클릭 위치 기준 상대 좌표 배치
+		feedback.style.left = `${x}px`;
+		feedback.style.top = `${y}px`;
+
+		this.elements.area.appendChild(feedback);
+
+		// 제거 타이머
+		setTimeout(() => {
+			feedback.remove();
+		}, 600);
+	}
 
 	updateHint() {
 		const adjustMode = window.localSettings.lifeAdjustDirection;
