@@ -107,25 +107,29 @@
         
         /* 전체를 감싸고 위치를 고정하는 래퍼 */
         #fixed-ui-wrapper {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1200;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
+			position: fixed;
+			top: 15px;
+			right: 5px;
+			z-index: 1200;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 10px;
+			pointer-events: none;
         }
+
+
 
         /* 움직이는 버튼들을 담는 컨테이너 */
         #fixed-buttons-container {
             position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-end;
-            transition: transform 0.35s ease-in-out;
-            will-change: transform;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			align-items: flex-end;
+			transition: transform 0.35s ease-in-out;
+			will-change: transform;
+			margin-right: -10px;
         }
 
         /* 컨테이너를 오른쪽으로 숨기는 클래스 */
@@ -215,6 +219,10 @@
             margin-left: 6px;
             color: white;
         }
+
+		#toggleButtonsVisibilityBtn, #toggleSidebarBtn, .modal-tool-button {
+			pointer-events: auto; /* ⭐️ 버튼 자체는 터치가 가능하도록 복원 */
+		}
     </style>
 </head>
 <body>
