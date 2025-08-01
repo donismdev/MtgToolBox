@@ -1,4 +1,5 @@
 	import { themes } from './themes.js';
+	import { renderLifeLogChart } from './logChart.js';
 
 	export class Player {
 		constructor(id, initialLife, initialRotation, themeIndex) {
@@ -74,6 +75,15 @@
 				window.updateAllPlayerIcons();
 			});
 
+			// 라이프 로그 버튼
+			this.elements.logButton = document.createElement('button');
+			this.elements.logButton.className = 'header-button';
+			this.elements.logButton.style.backgroundImage = 'url(./assets/lifelog.png)';
+			this.elements.logButton.addEventListener('click', (e) => {
+				e.stopPropagation();
+				this.showLifeLog(); // 로그 창을 여는 함수 호출
+			});
+
 			// 테마 버튼
 			this.elements.themeButton = document.createElement('button');
 			this.elements.themeButton.className = 'header-button';
@@ -85,6 +95,7 @@
 
 			headerContainer.appendChild(this.elements.initiativeButton);
 			headerContainer.appendChild(this.elements.monarchButton);
+			headerContainer.appendChild(this.elements.logButton);
 			headerContainer.appendChild(this.elements.themeButton);
 
 			// --- 2. 테마 선택창 생성 ---
@@ -172,6 +183,39 @@
 			});
 			this.elements.area.appendChild(rotateButton);
 			*/
+
+			this.elements.logOverlay = document.createElement('div');
+			this.elements.logOverlay.className = 'life-log-overlay';
+			
+			const logModal = document.createElement('div');
+			logModal.className = 'life-log-modal';
+
+			const closeModalBtn = document.createElement('button');
+			closeModalBtn.className = 'close-button';
+			closeModalBtn.innerHTML = '&times;';
+			
+			const canvas = document.createElement('canvas');
+			this.elements.logCanvas = canvas; // 캔버스 요소 저장
+
+			logModal.appendChild(closeModalBtn);
+			logModal.appendChild(canvas);
+			this.elements.logOverlay.appendChild(logModal);
+			this.elements.area.appendChild(this.elements.logOverlay);
+
+			// 오버레이 클릭 시 또는 닫기 버튼 클릭 시 모달 닫기
+			const hideLog = () => this.elements.logOverlay.style.display = 'none';
+			// [핵심] 오버레이(배경)에서 pointerdown 이벤트를 차단해 라이프 변경을 원천 방지
+			this.elements.logOverlay.addEventListener('pointerdown', e => e.stopPropagation());
+			
+			// 배경 클릭 시 창 닫는 기능은 그대로 유지
+			this.elements.logOverlay.addEventListener('click', e => {
+				if (e.target === this.elements.logOverlay) hideLog();
+			});
+
+			// 모달(콘텐츠 창) 내부에서도 pointerdown 이벤트 차단
+			logModal.addEventListener('pointerdown', e => e.stopPropagation());
+
+			closeModalBtn.addEventListener('click', hideLog);
 
 			this.updateRotationClass();
 		}
@@ -277,8 +321,8 @@
 					});
 				}
 
-				// [기존 로직] 합산된 변화량이 +/- 1이 아닐 때만 최종 피드백 표시
-				if (this.lifeChangeAmount !== 0 && this.lifeChangeAmount !== 1 && this.lifeChangeAmount !== -1) {
+				// [기존 로직] 합산된 변화량이 0이 아닐 때만 최종 피드백 표시
+				if (this.lifeChangeAmount !== 0) {
 					const lastPosition = this.lifeChangePositions.length > 0
 						? this.lifeChangePositions[this.lifeChangePositions.length - 1]
 						: undefined;
@@ -330,20 +374,26 @@
 			feedback.textContent = (amount > 0) ? `+${amount}` : `${amount}`;
 
 			if (isCumulative) {
-				// [합산 피드백] - 크고, 테마 색상 적용, 중앙에 고정
+				// [합산 피드백]
 				const theme = themes[this.themeIndex % themes.length];
 				if (theme) {
 					feedback.style.color = amount > 0 ? theme.plusColor : theme.minusColor;
 				}
 				feedback.style.fontSize = '4rem';
-				feedback.style.left = '50%';
-				feedback.style.top = '50%';
+
+				// --- 여기를 수정 ---
+				// 중앙('50%') 대신 전달받은 마지막 클릭 위치(position)를 사용합니다.
+				feedback.style.left = `${position.x}px`;
+				feedback.style.top = `${position.y}px`;
+				// --- 여기까지 ---
+
+				// translate는 텍스트를 클릭 위치의 정중앙에 오도록 보정하고, 플레이어 방향에 맞게 회전시킵니다.
 				feedback.style.transform = `translate(-50%, -50%) rotate(${this.rotation}deg)`;
 
 			} else {
-				// [즉시 피드백] - 작고, 흰색, 클릭 위치에 표시
-				feedback.classList.add('immediate'); // 위에서 만든 CSS 클래스 추가
-				feedback.style.color = '#FFFFFF';    // 색상을 흰색으로 고정
+				// [즉시 피드백] - (기존 코드 유지)
+				feedback.classList.add('immediate');
+				feedback.style.color = '#FFFFFF';
 				feedback.style.left = `${position.x}px`;
 				feedback.style.top = `${position.y}px`;
 			}
@@ -437,6 +487,14 @@
 
 			// 개발자 도구에서 쉽게 확인하기 위해 콘솔에도 출력 (선택 사항)
 			console.log(`Log for ${this.id}:`, logEntry);
+		}
+
+		showLifeLog() {
+			this.elements.logOverlay.style.display = 'flex';
+			const theme = themes[this.themeIndex % themes.length];
+			
+			// 캔버스에 로그 데이터를 이용해 차트 렌더링
+			renderLifeLogChart(this.elements.logCanvas, this.lifeLog, theme);
 		}
 
 	}
