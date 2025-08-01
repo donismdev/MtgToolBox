@@ -253,6 +253,38 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+		/* ======================================= */
+		/* == iOS 기기 전용 유사 전체화면 스타일 == */
+		/* ======================================= */
+		/* JavaScript에 의해 body에 'iOS'와 'pseudo-fullscreen' 클래스가 모두 있을 때만 동작합니다. */
+
+		/* iOS 유사 전체화면 모드에서 플로팅 UI 버튼과 사이드바를 모두 숨깁니다. */
+		body.iOS.pseudo-fullscreen #fixed-ui-wrapper,
+		body.iOS.pseudo-fullscreen #sidebar,
+		body.iOS.pseudo-fullscreen #sidebar-overlay {
+			display: none !important;
+		}
+
+		/* iOS 유사 전체화면 모드에서 메인 콘텐츠 영역의 여백을 없애고 화면에 꽉 채웁니다. */
+		body.iOS.pseudo-fullscreen #content {
+			padding: 0;
+			margin: 0;
+			height: 100vh;
+			width: 100vw;
+		}
+
+		/* iOS 유사 전체화면 모드에서 툴 제목(H1 태그)을 숨깁니다. */
+		body.iOS.pseudo-fullscreen #content > h1 {
+			display: none;
+		}
+
+		/* iOS 유사 전체화면 모드에서 내부 iframe의 크기를 100%로 확장하고 테두리를 제거합니다. */
+		body.iOS.pseudo-fullscreen #content #embedded-tool-iframe {
+			height: 100%;
+			width: 100%;
+			border-radius: 0;
+		}
     </style>
 </head>
 <body>
@@ -346,6 +378,11 @@
     // --- 초기화 ---
     history.replaceState({ modal: false }, '', location.href);
     toggleSidebar(true); // 페이지 로드 시 사이드바를 기본으로 표시
+
+	// 페이지 로드 시 기기를 감지하여 iOS일 경우 body에 'iOS' 클래스를 추가합니다.
+	if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+		document.body.classList.add('iOS');
+	}
 
     // ===================================================================================
     // ✨ 리팩토링 핵심 개념 ✨
@@ -559,15 +596,29 @@
 
     // --- 전체화면 관리 ---
     function toggleFullScreen() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
-            });
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen();
-        }
-        toggleUiExpansion(true); // 기능 실행 후 확장 메뉴 닫기
-    }
+		// body에 'iOS' 클래스가 있는지 확인하여 아이폰 계열 기기인지 판단
+		const isIOSDevice = document.body.classList.contains('iOS');
+		const fullscreenIcon = fullscreenBtn.querySelector('i');
+
+		// iOS 기기일 경우: CSS 클래스를 이용한 유사 전체화면 모드 토글
+		if (isIOSDevice) {
+			const isPseudoFullscreen = document.body.classList.toggle('pseudo-fullscreen');
+			
+			// 아이콘 상태를 직접 업데이트
+			fullscreenIcon.classList.toggle('bi-arrows-fullscreen', !isPseudoFullscreen);
+			fullscreenIcon.classList.toggle('bi-arrows-angle-contract', isPseudoFullscreen);
+
+		} else { // 그 외 기기(안드로이드, PC)일 경우: 표준 전체화면 API 사용
+			if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen().catch(err => {
+					alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
+				});
+			} else {
+				if (document.exitFullscreen) document.exitFullscreen();
+			}
+		}
+		toggleUiExpansion(true); // 기능 실행 후 확장 메뉴 닫기
+	}
 
     // --- 이벤트 리스너 설정 ---
 
@@ -593,11 +644,11 @@
     // 전체화면 버튼
     fullscreenBtn.addEventListener('click', toggleFullScreen);
     document.addEventListener('fullscreenchange', () => {
-        const isFullscreen = !!document.fullscreenElement;
-        const fullscreenIcon = fullscreenBtn.querySelector('i');
-        fullscreenIcon.classList.toggle('bi-arrows-fullscreen', !isFullscreen);
-        fullscreenIcon.classList.toggle('bi-arrows-angle-contract', isFullscreen);
-    });
+		const isFullscreen = !!document.fullscreenElement;
+		const fullscreenIcon = fullscreenBtn.querySelector('i');
+		fullscreenIcon.classList.toggle('bi-arrows-fullscreen', !isFullscreen);
+		fullscreenIcon.classList.toggle('bi-arrows-angle-contract', isFullscreen);
+	});
 
     // 모달 오버레이 클릭 시 닫기
     modalToolOverlay.addEventListener('click', (event) => {

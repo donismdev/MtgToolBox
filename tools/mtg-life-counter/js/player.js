@@ -79,6 +79,10 @@
 			this.elements.logButton = document.createElement('button');
 			this.elements.logButton.className = 'header-button';
 			this.elements.logButton.style.backgroundImage = 'url(./assets/lifelog.png)';
+
+			// TODO: 리소스에 따라 크기가 달라질 수 있음. 이 이미지만 이렇게 수정
+			this.elements.logButton.style.backgroundSize = '90%';
+
 			this.elements.logButton.addEventListener('click', (e) => {
 				e.stopPropagation();
 				this.showLifeLog(); // 로그 창을 여는 함수 호출
@@ -109,7 +113,7 @@
 					this.hideThemeSelector();
 				}
 			});
-			
+
 			const themeContainer = document.createElement('div');
 			themeContainer.className = 'theme-selector-container';
 			themeContainer.addEventListener('click', (e) => e.stopPropagation());
