@@ -7,127 +7,212 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="assets/style.css" />
-    <style>
-        body {
-            overflow-x: hidden;
-			touch-action: manipulation;
-        }
-        #sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100vh;
-            background-color: #f8f9fa;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
-            z-index: 1050;
-            box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-        }
-        #sidebar.show {
-            transform: translateX(0);
-        }
-        #sidebar .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            border: none;
-            background: transparent;
-            font-size: 1.5rem;
-            color: #333;
-        }
-        #sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.3);
-            z-index: 1040;
-            display: none;
-        }
-        #sidebar-overlay.active {
-            display: block;
-        }
-        #content {
-            padding: 2rem;
-            margin-left: 0;
-			background-color: #121212; /* var(--background-color)와 맞춰서 지정 */
-			min-height: 100vh;
-        }
-		body.modal-open {
-			overflow: hidden;
-			touch-action: none;
-		}
-        #modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none; /* Initially hidden */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        #modal-content {
-            background-color: white;
-            padding: 0;
-            border-radius: 5px;
-            position: relative;
-            width: 95vw;
-            height: 95vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        #modal-close {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 1001;
-            color: #ccc;
-            text-shadow: 0 0 3px rgba(0,0,0,0.5);
-        }
-        #modal-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            flex-grow: 1;
-        }
-        #fixed-buttons-container {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1200;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-end;
-        }
-        .modal-tool-button {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border: none;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        #toggleSidebarBtn {
-            position: static;
-        }
-        #toggleSidebarBtn .bi-list {
-            font-size: 1.8rem !important;
-        }
-    </style>
+<style>
+            /* --- 기본 레이아웃 --- */
+            body {
+                overflow-x: hidden;
+                touch-action: manipulation;
+                background-color: #121212;
+            }
+            body.modal-open {
+                overflow: hidden;
+                touch-action: none;
+            }
+            #content {
+                padding: 2rem;
+                margin-left: 0;
+                min-height: 100vh;
+            }
+
+            /* --- 사이드바 --- */
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                height: 100vh;
+                background-color: #f8f9fa;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                z-index: 1050;
+                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
+                padding: 1rem;
+            }
+            #sidebar.show {
+                transform: translateX(0);
+            }
+            #sidebar .close-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                border: none;
+                background: transparent;
+                font-size: 1.5rem;
+                color: #333;
+            }
+            #sidebar-overlay {
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.3);
+                z-index: 1040;
+                display: none;
+            }
+            #sidebar-overlay.active {
+                display: block;
+            }
+
+            /* --- 모달 --- */
+            #modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+            #modal-content {
+                background-color: white;
+                padding: 0;
+                border-radius: 5px;
+                position: relative;
+                width: 95vw;
+                height: 95vh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            #modal-close {
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                z-index: 1001;
+                color: #ccc;
+                text-shadow: 0 0 3px rgba(0,0,0,0.5);
+            }
+            #modal-iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                flex-grow: 1;
+            }
+
+            /* --- 오른쪽 고정 UI 버튼 --- */
+            
+            /* 전체를 감싸고 위치를 고정하는 래퍼 */
+            #fixed-ui-wrapper {
+                position: fixed;
+                top: 15px;
+                right: 15px;
+                z-index: 1200;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 10px;
+            }
+
+            /* 움직이는 버튼들을 담는 컨테이너 */
+            #fixed-buttons-container {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-end;
+                transition: transform 0.35s ease-in-out;
+            }
+
+            /* 컨테이너를 오른쪽으로 숨기는 클래스 */
+            #fixed-buttons-container.hidden-to-right {
+                transform: translateX(150%);
+            }
+
+            /* 모달/목록 버튼 공통 스타일 */
+            .modal-tool-button, #toggleSidebarBtn {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                border: none;
+                cursor: pointer;
+                flex-shrink: 0;
+                /* 크기 및 애니메이션 효과 */
+                transform: scale(0.85); /* 기본적으로 약간 작게 */
+                transition: transform 0.2s ease-in-out, background-color 0.2s ease, opacity 0.2s ease;
+            }
+
+            /* 모달 버튼 개별 스타일 */
+            .modal-tool-button {
+                font-size: 1.2rem;
+                color: white;
+            }
+
+            /* 목록 버튼 아이콘 스타일 */
+            #toggleSidebarBtn .bi-list {
+                font-size: 1.8rem !important;
+            }
+
+            /* [상태] 마우스 올리면 원래 크기로 */
+            .modal-tool-button:hover,
+            #toggleSidebarBtn:hover {
+                transform: scale(1);
+            }
+
+            /* [상태] 활성화된 모달 버튼 */
+            .modal-tool-button.active-modal {
+                transform: scale(1); /* 원래 크기 */
+                box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(0, 0, 0, 0.3); /* 강조 효과 */
+                font-weight: bold;
+            }
+
+            /* [상태] 모달이 열렸을 때의 목록 버튼 */
+            #toggleSidebarBtn.inactive-when-modal {
+                transform: scale(0.85); /* 작은 크기 유지 */
+                background-color: #6c757d;
+                border-color: #6c757d;
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+
+            /* [상태] 비활성화된 목록 버튼은 마우스 올려도 커지지 않음 */
+            #toggleSidebarBtn.inactive-when-modal:hover {
+                transform: scale(0.85);
+            }
+            
+            /* 숨기기/표시 버튼 스타일 */
+            #toggleButtonsVisibilityBtn {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                cursor: pointer;
+            }
+            #toggleButtonsVisibilityBtn i {
+                 font-size: 1.5rem;
+            }
+
+            /* --- 사이드바 내부 툴 목록 --- */
+            .nav-link.active-tool {
+                background-color: var(--bs-primary);
+                color: white !important;
+                font-weight: bold;
+            }
+            .nav-link.active-tool::after {
+                content: " ✓";
+                margin-left: 6px;
+                color: white;
+            }
+        </style>
 </head>
 <body>
     <div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
@@ -155,10 +240,15 @@
 		<p class="lead text-light">왼쪽 목차를 열어 툴을 선택하세요.</p>
     </div>
 
-    <div id="fixed-buttons-container">
-        <div id="modal-button-container"></div>
-        <button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
-            <i class="bi bi-list fs-4"></i>
+	<div id="fixed-ui-wrapper">
+        <div id="fixed-buttons-container">
+            <div id="modal-button-container"></div>
+            <button id="toggleSidebarBtn" class="btn btn-primary rounded-circle shadow">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+        </div>
+        <button id="toggleButtonsVisibilityBtn" class="btn btn-light rounded-circle shadow">
+            <i class="bi bi-box-arrow-right"></i>
         </button>
     </div>
 
@@ -170,233 +260,261 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-		window.session_data = {};
-        const toolIndexUrl = "tool_index.json";
-        const toolList = document.getElementById("tool-list");
-        const content = document.getElementById("content");
-        const modalOverlay = document.getElementById('modal-overlay');
-        const modalClose = document.getElementById('modal-close');
-        const modalIframe = document.getElementById('modal-iframe');
-        const sidebar = document.getElementById("sidebar");
-        const sidebarOverlay = document.getElementById("sidebar-overlay");
-        const toggleBtn = document.getElementById("toggleSidebarBtn");
-        const modalButtonContainer = document.getElementById("fixed-buttons-container").querySelector("#modal-button-container");
-        
-        let currentOpenModalUrl = null;
+<script>
+    window.session_data = {};
+    const toolIndexUrl = "tool_index.json";
+    const toolList = document.getElementById("tool-list");
+    const content = document.getElementById("content");
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalClose = document.getElementById('modal-close');
+    const modalIframe = document.getElementById('modal-iframe');
+    const sidebar = document.getElementById("sidebar");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const toggleBtn = document.getElementById("toggleSidebarBtn");
+    const modalButtonContainer = document.getElementById("modal-button-container");
 
-		history.replaceState({ modal: false }, '', location.href);
+    // ⭐️ 새로 추가된 요소
+    const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
+    const toggleButtonsVisibilityBtn = document.getElementById('toggleButtonsVisibilityBtn');
+    
+    let currentOpenModalUrl = null;
+    const modalToolDisplayNameMap = {};
 
-        function isMobileDevice() {
-            return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    history.replaceState({ modal: false }, '', location.href);
+
+    function isMobileDevice() {
+        return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    const isMobile = isMobileDevice();
+
+    function toggleSidebar(show) {
+        if (show) {
+            sidebar.classList.add("show");
+            sidebarOverlay.classList.add("active");
+            toggleBtn.style.display = "none";
+        } else {
+            sidebar.classList.remove("show");
+            sidebarOverlay.classList.remove("active");
+            toggleBtn.style.display = "flex"; // flex로 변경
         }
+    }
 
-        const isMobile = isMobileDevice();
+    toggleSidebar(true);
 
-        function toggleSidebar(show) {
-            if (show) {
-                sidebar.classList.add("show");
-                sidebarOverlay.classList.add("active");
-                toggleBtn.style.display = "none";
+    toggleBtn.addEventListener("click", () => toggleSidebar(true));
+
+    function getIconForTool(tool) {
+        if (tool.tags?.includes("mtg")) return "bi-box-seam";
+        if (tool.tags?.includes("csv")) return "bi-file-earmark-spreadsheet";
+        if (tool.tags?.includes("json")) return "bi-file-earmark-code";
+        if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) return "bi-file-earmark-play";
+        return "bi-tools";
+    }
+    
+    function clearActiveModalState() {
+        document.querySelectorAll('.modal-tool-button').forEach(btn => {
+            btn.classList.remove('active-modal');
+            btn.textContent = modalToolDisplayNameMap[btn.dataset.modalUrl];
+        });
+    }
+    
+    function updateModalButtonStates(activeUrl) {
+        document.querySelectorAll('.modal-tool-button').forEach(btn => {
+            const originalText = modalToolDisplayNameMap[btn.dataset.modalUrl];
+            if (btn.dataset.modalUrl === activeUrl) {
+                btn.classList.add('active-modal');
+                btn.textContent = '✓';
             } else {
-                sidebar.classList.remove("show");
-                sidebarOverlay.classList.remove("active");
-                toggleBtn.style.display = "block";
-            }
-        }
-
-        toggleSidebar(true);
-
-        toggleBtn.addEventListener("click", () => toggleSidebar(true));
-
-        function getIconForTool(tool) {
-            if (tool.tags?.includes("mtg")) return "bi-box-seam";
-            if (tool.tags?.includes("csv")) return "bi-file-earmark-spreadsheet";
-            if (tool.tags?.includes("json")) return "bi-file-earmark-code";
-            if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) return "bi-file-earmark-play";
-            return "bi-tools";
-        }
-
-        function renderTool(tool) {
-			if (modalOverlay.style.display === 'flex') {
-				closeModal(false);
-			}
-
-            let html = ``;
-            if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
-                const htmlPath = `${tool.path}${tool.name}.html`;
-                html += `<iframe src="${htmlPath}" class="w-100" style="height: 80vh; border: none;"></iframe>`;
-            } else {
-                html += `<form id="toolForm">`;
-                if (tool.inputs && Array.isArray(tool.inputs)) {
-                    tool.inputs.forEach(input => {
-                        html += `
-                            <div class="mb-3">
-                                <label for="${input.id}" class="form-label">${input.label}</label>
-                                <input type="${input.type}" class="form-control" id="${input.id}"
-                                    ${input.accept ? `accept="${input.accept}"` : ""}
-                                    ${input.default ? `value="${input.default}"` : ""}
-                                >
-                            </div>
-                        `;
-                    });
-                }
-                html += `</form>`;
-                if (tool.path && tool.name && tool.download) {
-                    const zipPath = `${tool.path}${tool.name}.zip`;
-                    html += `<a href="${zipPath}" class="btn btn-primary" download>
-                                <i class="bi bi-download"></i> 다운로드 (.zip)
-                            </a>`;
-                }
-            }
-            content.innerHTML = html;
-            toggleSidebar(false);
-
-			setTimeout(() => {
-				window.scrollTo(0, 0); // 스크롤 상단으로 이동
-				document.body.offsetHeight; // 강제 리플로우
-			}, 10);
-        }
-
-        fetch(toolIndexUrl)
-            .then(res => res.json())
-            .then(data => {
-                const enabledTools = data.tools.filter(tool => {
-                    if (tool.enable === false) return false;
-                    if (tool.mobileOnly === true && !isMobile) return false;
-                    if (tool.desktopOnly === true && isMobile) return false;
-                    return true;
-                });
-
-                const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
-
-                modalTools.forEach(tool => {
-                    const button = document.createElement('button');
-                    button.className = 'btn modal-tool-button';
-                    button.innerHTML = tool.modalIcon || tool.name.charAt(0).toUpperCase();
-                    button.title = tool.name;
-                    button.dataset.modalUrl = `${tool.path}${tool.name}.html?modal=true`; 
-                    
-                    if (tool.modalIconColor) {
-                        button.style.backgroundColor = tool.modalIconColor;
-                    }
-
-                    button.onclick = () => {
-                        const targetUrl = button.dataset.modalUrl;
-                        if (modalOverlay.style.display === 'flex' && currentOpenModalUrl === targetUrl) {
-							closeModal();
-						} else {
-							modalIframe.src = targetUrl;
-							modalOverlay.style.display = 'flex';
-							document.body.classList.add('modal-open');
-							currentOpenModalUrl = targetUrl;
-							history.pushState({ modal: true }, '', '');
-						}
-                    };
-                    modalButtonContainer.appendChild(button);
-                });
-
-                const toolsByParent = enabledTools.reduce((acc, tool) => {
-                    const parent = tool.parent || "기타";
-                    if (!acc[parent]) acc[parent] = [];
-                    acc[parent].push(tool);
-                    return acc;
-                }, {});
-
-                Object.keys(toolsByParent).forEach(parent => {
-                    const parentLi = document.createElement("li");
-                    parentLi.className = "nav-item";
-                    const parentLink = document.createElement("a");
-                    parentLink.href = `#collapse-${parent.replace(/\s/g, '')}`;
-                    parentLink.className = "nav-link link-dark";
-                    parentLink.setAttribute("data-bs-toggle", "collapse");
-                    parentLink.setAttribute("aria-expanded", "true");
-                    parentLink.innerHTML = `<i class="bi bi-folder me-2"></i>${parent}<span class="ms-auto flex-shrink-0"><i class="bi bi-chevron-down collapse-icon"></i></span>`;
-                    parentLi.appendChild(parentLink);
-                    const subUl = document.createElement("ul");
-                    subUl.id = `collapse-${parent.replace(/\s/g, '')}`;
-                    subUl.className = "nav nav-pills flex-column ms-3 collapse show";
-                    subUl.addEventListener('show.bs.collapse', () => {
-                        parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
-                    });
-                    subUl.addEventListener('hide.bs.collapse', () => {
-                        parentLink.querySelector('.collapse-icon').classList.replace('bi-chevron-up', 'bi-chevron-down');
-                    });
-
-                    toolsByParent[parent].forEach(tool => {
-                        const item = document.createElement("li");
-                        item.className = "nav-item";
-                        const icon = getIconForTool(tool);
-                        const link = document.createElement('a');
-                        link.href = '#';
-                        link.className = 'nav-link link-dark';
-                        link.innerHTML = `<i class="bi ${icon} me-2"></i>${tool.name}`;
-                        item.appendChild(link);
-                        link.onclick = (e) => {
-                            e.preventDefault();
-                            const currentActive = document.querySelector('.nav-link.active-tool');
-                            if (currentActive) currentActive.classList.remove('active-tool');
-                            link.classList.add('active-tool');
-                            renderTool(tool);
-                        };
-                        subUl.appendChild(item);
-                    });
-
-                    if (toolsByParent[parent].length > 0) {
-                        parentLi.appendChild(subUl);
-                        toolList.appendChild(parentLi);
-                    }
-                });
-            });
-        
-        // [핵심 수정] 모달 iframe의 로딩 완료 이벤트를 감지
-        modalIframe.onload = () => {
-            try {
-                const iframeWindow = modalIframe.contentWindow;
-                if (iframeWindow && typeof iframeWindow.onModalOpen === 'function') {
-                    iframeWindow.onModalOpen(); // 툴에 열렸음을 알림
-                }
-            } catch (e) {
-                console.error("Iframe 접근 오류:", e);
-            }
-        };
-
-        function closeModal(pushStateBack = true) {
-			try {
-				const iframeWindow = modalIframe.contentWindow;
-				if (iframeWindow && typeof iframeWindow.onModalClose === 'function') {
-					iframeWindow.onModalClose();
-				}
-			} catch(e) {
-				console.error("Iframe 접근 오류:", e);
-			}
-
-			modalOverlay.style.display = 'none';
-			document.body.classList.remove('modal-open');
-			modalIframe.src = 'about:blank';
-			currentOpenModalUrl = null;
-
-			// 모달 닫을 때 pushState(false)를 트리거
-			if (pushStateBack) {
-				history.back();
-			}
-		}
-
-        modalClose.addEventListener('click', closeModal);
-
-        modalOverlay.addEventListener('click', (event) => {
-            if (event.target === modalOverlay) {
-                closeModal();
+                btn.classList.remove('active-modal');
+                btn.textContent = originalText;
             }
         });
+    }
 
-		// popstate 이벤트 처리
-		window.addEventListener('popstate', (event) => {
-			if (event.state?.modal) {
-				closeModal(false); // history.back()으로 인한 닫기일 땐 다시 push하지 않음
-			}
-		});
+    function clearActiveListSelection() {
+        const currentActive = document.querySelector('.nav-link.active-tool');
+        if (currentActive) currentActive.classList.remove('active-tool');
+    }
 
-    </script>
+    function renderTool(tool) {
+        if (modalOverlay.style.display === 'flex') {
+            closeModal(false); 
+        }
+
+        let html = `<h1 class="display-5 text-light mb-4">${tool.name}</h1>`;
+        if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
+            const htmlPath = `${tool.path}${tool.name}.html`;
+            html += `<iframe src="${htmlPath}" class="w-100" style="height: 80vh; border: none; border-radius: 8px;"></iframe>`;
+        }
+        content.innerHTML = html;
+        toggleSidebar(false);
+
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.body.offsetHeight;
+        }, 10);
+    }
+
+    fetch(toolIndexUrl)
+        .then(res => res.json())
+        .then(data => {
+            const enabledTools = data.tools.filter(tool => {
+                if (tool.enable === false) return false;
+                if (tool.mobileOnly === true && !isMobile) return false;
+                if (tool.desktopOnly === true && isMobile) return false;
+                return true;
+            });
+
+            const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
+
+            modalTools.forEach(tool => {
+                const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
+                const displayName = tool.modalIcon || tool.name;
+                modalToolDisplayNameMap[fullUrl] = displayName;
+
+                const button = document.createElement('button');
+                button.className = 'btn modal-tool-button';
+                button.textContent = displayName;
+                button.dataset.modalUrl = fullUrl;
+                button.title = tool.name; // 툴팁을 위한 title 속성
+
+                if (tool.modalIconColor) {
+                    button.style.backgroundColor = tool.modalIconColor;
+                }
+
+                button.onclick = () => {
+                    const isSame = (modalOverlay.style.display === 'flex' && currentOpenModalUrl === fullUrl);
+
+                    if (isSame) {
+                        closeModal();
+                    } else {
+                        toggleSidebar(false);
+                        toggleBtn.classList.add('inactive-when-modal');
+
+                        modalIframe.src = fullUrl;
+                        modalOverlay.style.display = 'flex';
+                        document.body.classList.add('modal-open');
+                        currentOpenModalUrl = fullUrl;
+                        
+                        if(!history.state?.modal) {
+                            history.pushState({ modal: true }, '', '');
+                        }
+                        
+                        updateModalButtonStates(fullUrl);
+                    }
+                };
+                modalButtonContainer.appendChild(button);
+            });
+            
+            const toolsByParent = enabledTools.reduce((acc, tool) => {
+                const parent = tool.parent || "기타";
+                if (!acc[parent]) acc[parent] = [];
+                acc[parent].push(tool);
+                return acc;
+            }, {});
+
+            Object.keys(toolsByParent).forEach(parent => {
+                const parentLi = document.createElement("li");
+                // ... (이하 toolsByParent 렌더링 코드는 기존과 동일)
+                parentLi.className = "nav-item";
+                const parentLink = document.createElement("a");
+                parentLink.href = `#collapse-${parent.replace(/\s/g, '')}`;
+                parentLink.className = "nav-link link-dark";
+                parentLink.setAttribute("data-bs-toggle", "collapse");
+                parentLink.setAttribute("aria-expanded", "true");
+                parentLink.innerHTML = `<i class="bi bi-folder me-2"></i>${parent}<span class="ms-auto flex-shrink-0"><i class="bi bi-chevron-down collapse-icon"></i></span>`;
+                parentLi.appendChild(parentLink);
+                const subUl = document.createElement("ul");
+                subUl.id = `collapse-${parent.replace(/\s/g, '')}`;
+                subUl.className = "nav nav-pills flex-column ms-3 collapse show";
+                
+                toolsByParent[parent].forEach(tool => {
+                    const item = document.createElement("li");
+                    item.className = "nav-item";
+                    const icon = getIconForTool(tool);
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.className = 'nav-link link-dark';
+                    link.innerHTML = `<i class="bi ${icon} me-2"></i>${tool.name}`;
+                    item.appendChild(link);
+                    
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        clearActiveModalState(); 
+                        clearActiveListSelection();
+                        link.classList.add('active-tool');
+                        renderTool(tool);
+                    };
+                    subUl.appendChild(item);
+                });
+
+                if (toolsByParent[parent].length > 0) {
+                    parentLi.appendChild(subUl);
+                    toolList.appendChild(parentLi);
+                }
+            });
+        });
+    
+    modalIframe.onload = () => {
+        try {
+            const iframeWindow = modalIframe.contentWindow;
+            if (iframeWindow && typeof iframeWindow.onModalOpen === 'function') {
+                iframeWindow.onModalOpen();
+            }
+        } catch (e) {
+            console.error("Iframe 접근 오류:", e);
+        }
+    };
+
+    function closeModal(pushStateBack = true) {
+        try {
+            const iframeWindow = modalIframe.contentWindow;
+            if (iframeWindow && typeof iframeWindow.onModalClose === 'function') {
+                iframeWindow.onModalClose();
+            }
+        } catch (e) {
+            console.error("Iframe 접근 오류:", e);
+        }
+
+        toggleBtn.classList.remove('inactive-when-modal');
+        modalOverlay.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        modalIframe.src = 'about:blank';
+        clearActiveModalState();
+        currentOpenModalUrl = null;
+
+        if (pushStateBack && history.state?.modal) {
+            history.back();
+        }
+    }
+
+    modalClose.addEventListener('click', () => closeModal(true));
+    modalOverlay.addEventListener('click', (event) => {
+        if (event.target === modalOverlay) {
+            closeModal(true);
+        }
+    });
+
+    window.addEventListener('popstate', (event) => {
+        if (!event.state?.modal && modalOverlay.style.display === 'flex') {
+            closeModal(false);
+        }
+    });
+
+    // ⭐️ 버튼 그룹 숨기기/표시 이벤트 리스너
+    toggleButtonsVisibilityBtn.addEventListener('click', () => {
+        const icon = toggleButtonsVisibilityBtn.querySelector('i');
+        const isHidden = fixedButtonsContainer.classList.toggle('hidden-to-right');
+        
+        if (isHidden) {
+            icon.classList.remove('bi-box-arrow-right');
+            icon.classList.add('bi-box-arrow-left');
+        } else {
+            icon.classList.remove('bi-box-arrow-left');
+            icon.classList.add('bi-box-arrow-right');
+        }
+    });
+</script>
 </body>
 </html>
