@@ -101,7 +101,15 @@
 			// --- 2. 테마 선택창 생성 ---
 			this.elements.themeSelector = document.createElement('div');
 			this.elements.themeSelector.className = 'theme-selector-overlay';
-			this.elements.themeSelector.addEventListener('click', () => this.hideThemeSelector());
+			this.elements.themeSelector.addEventListener('pointerdown', e => e.stopPropagation());
+
+			this.elements.themeSelector.addEventListener('click', (e) => {
+				// 배경을 클릭했을 때만 닫히도록 수정 (더 안전한 방법)
+				if (e.target === this.elements.themeSelector) {
+					this.hideThemeSelector();
+				}
+			});
+			
 			const themeContainer = document.createElement('div');
 			themeContainer.className = 'theme-selector-container';
 			themeContainer.addEventListener('click', (e) => e.stopPropagation());
