@@ -1,5 +1,6 @@
 import { initializePlayers, setupEventListeners } from './setup.js';
 import { applyLifeFontSize } from './ui.js';
+import { themes } from './themes.js';
 
 	document.addEventListener('DOMContentLoaded', () => {
 		// [수정] 상위 창의 session_data 객체에 안정적으로 연결하고, 없으면 생성합니다.
@@ -15,6 +16,8 @@ import { applyLifeFontSize } from './ui.js';
 				lifeMax: 20,
 				diceSides: 6,
 				playerCount: 2,
+				initiativeIndex: -1,
+				monarchIndex: -1,
 				threePlayerLayout: 'top',
 				lifeFontSize: 'large',
 				lifeAdjustDirection: 'horizontal'
@@ -22,6 +25,9 @@ import { applyLifeFontSize } from './ui.js';
 		}
     if (!window.dataSpace.lifeCounter) window.dataSpace.lifeCounter = {};
     if (!window.dataSpace.playerRotations) window.dataSpace.playerRotations = {};
+    if (!window.dataSpace.themeData) window.dataSpace.themeData = {};
+
+	document.body.classList.add('player-count-2');
 
     window.body = document.body;
     window.gameContainer = document.getElementById('game-container');
@@ -42,12 +48,15 @@ import { applyLifeFontSize } from './ui.js';
     window.saveLifeTotals = () => {
         const lifeTotalsToSave = {};
         const rotationsToSave = {};
+		const themesToSave = {};
         window.players.forEach(p => {
             lifeTotalsToSave[p.id] = p.life;
             rotationsToSave[p.id] = p.rotation;
+			themesToSave[p.id] = p.themeIndex;
         });
         window.dataSpace.lifeCounter = lifeTotalsToSave;
         window.dataSpace.playerRotations = rotationsToSave;
+        window.dataSpace.themeData = themesToSave;
         window.dataSpace.settings = window.localSettings;
     };
 
@@ -62,9 +71,43 @@ import { applyLifeFontSize } from './ui.js';
         console.log('라이프 카운터 모달이 열렸습니다.');
     }
 
+	window.onEmbeddedOpen = () => {
+        console.log('라이프 카운터 임베디드 모드가 열렸습니다.');
+    }
+
+	window.onEmbeddedClose = () => {
+		if (window.saveLifeTotals) {
+			window.saveLifeTotals();
+		}
+    }
+
     setupEventListeners();
     
     // Initial Load
     applyLifeFontSize(window.localSettings.lifeFontSize);
     initializePlayers(window.localSettings.playerCount);
+
+    window.updateAllPlayerIcons = () => {
+        window.players.forEach(p => p.updateIcons());
+    };
+
+    window.openInitiativeDungeon = (playerIndex) => {
+        const dungeonOverlay = document.getElementById('dungeon-overlay');
+        dungeonOverlay.innerHTML = `Player ${playerIndex + 1} has the initiative!`;
+        dungeonOverlay.style.display = 'flex';
+    };
+
+	// 던전 암막. 임시일 수 있음
+	// 암막(Dungeon Overlay) 요소를 가져옵니다.
+	const dungeonOverlay = document.getElementById('dungeon-overlay');
+
+	// 암막에 클릭 이벤트 리스너를 추가합니다.
+	dungeonOverlay.addEventListener('click', () => {
+		// 클릭 시 암막을 숨깁니다.
+		dungeonOverlay.style.display = 'none';
+	});
+
+    // Initial icon state
+    window.updateAllPlayerIcons();
+	
 });

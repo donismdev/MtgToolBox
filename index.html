@@ -427,6 +427,10 @@
             // iframe 로드가 완료되면 로딩 오버레이를 숨깁니다.
             embeddedToolIframe.onload = () => {
                 loaderOverlay.style.display = 'none';
+
+				if (iframeWindow && typeof iframeWindow.onEmbeddedOpen === 'function') {
+                    iframeWindow.onEmbeddedOpen();
+                }
             };
             // 안전장치: 8초 후에도 로딩이 완료되지 않으면 강제로 로더를 숨깁니다.
             setTimeout(() => {

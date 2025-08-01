@@ -20,21 +20,27 @@ export function initializePlayers(count) {
 
 	let lifeData = window.dataSpace.lifeCounter;
 	let rotationData = window.dataSpace.playerRotations;
+	let themeData = window.dataSpace.themeData;
 
 	if (parseInt(window.dataSpace.settings.playerCount, 10) !== parseInt(count, 10)) {
-		lifeData = {};
-		rotationData = {};
-		if (parseInt(count, 10) === 2) rotationData['player-1'] = 180;
-	}
+        lifeData = {};
+        rotationData = {};
+        // if (parseInt(count, 10) === 2) rotationData['player-1'] = 180; // <- 여기서 삭제
+    }
+
+    // 2인용일 경우, Player 1의 회전값을 180으로 설정하는 로직을 밖으로 이동
+    if (parseInt(count, 10) === 2) {
+        rotationData['player-1'] = 180;
+    }
 
 	window.localSettings.playerCount = count;
 
 	if (count === 3) {
 		const layout = window.localSettings.threePlayerLayout;
 
-		const p1 = new Player('player-1', lifeData['player-1'] ?? window.localSettings.lifeMax, rotationData['player-1'] ?? 0);
-		const p2 = new Player('player-2', lifeData['player-2'] ?? window.localSettings.lifeMax, rotationData['player-2'] ?? 0);
-		const p3 = new Player('player-3', lifeData['player-3'] ?? window.localSettings.lifeMax, rotationData['player-3'] ?? 0);
+		const p1 = new Player('player-1', lifeData['player-1'] ?? window.localSettings.lifeMax, rotationData['player-1'] ?? 0, themeData['player-1'] ?? 0);
+		const p2 = new Player('player-2', lifeData['player-2'] ?? window.localSettings.lifeMax, rotationData['player-2'] ?? 0, themeData['player-2'] ?? 1);
+		const p3 = new Player('player-3', lifeData['player-3'] ?? window.localSettings.lifeMax, rotationData['player-3'] ?? 0, themeData['player-3'] ?? 2);
 		window.players.push(p1, p2, p3);
 
 		if (layout === 'left' || layout === 'right') {
@@ -64,7 +70,7 @@ export function initializePlayers(count) {
 		// 2인 / 4인
 		for (let i = 0; i < count; i++) {
 			const playerId = `player-${i + 1}`;
-			const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotationData[playerId] ?? 0);
+			const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotationData[playerId] ?? 0, themeData[playerId] ?? i);
 			player.elements.area.classList.add(`player-count-${count}`);
 			window.players.push(player);
 			window.gameContainer.appendChild(player.elements.area);
