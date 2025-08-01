@@ -9,7 +9,7 @@ init(autoreset=True)
 # ====== 경로 설정 ======
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESOURCE_DIR = os.path.join(BASE_DIR, "resources")
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+OUTPUT_DIR = os.path.join(BASE_DIR, "assets")
 
 ABILITY_JSON_PATH = os.path.join(RESOURCE_DIR, "abilities.json")
 OUTPUT_JSON_PATH = os.path.join(OUTPUT_DIR, "ability_data.json")

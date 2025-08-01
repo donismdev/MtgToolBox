@@ -168,7 +168,7 @@ abilityInput.parentNode.appendChild(suggestionBox);
 let abilities = {};
 window.mtgData = {};
 
-fetch("./output/ability_data.json")
+fetch("./assets/ability_data.json")
     .then(res => res.json())
     .then(data => {
         window.mtgData = data;
