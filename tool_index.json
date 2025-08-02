@@ -94,6 +94,14 @@
 			"enable": true,
 			"modalIcon": "D",
 			"modalIconColor": "#17a2b8"
+		},
+		{
+			"name": "misc-modal-timer",
+			"type": "html_modal",
+			"path": "tools/misc-modal-timer/",
+			"modalIcon": "⏱️",
+			"modalIconColor": "#28a745",
+			"enable": true
 		}
 	]
 }
