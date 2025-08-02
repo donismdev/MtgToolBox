@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>스위스 라운드 매칭 도우미 v7.0</title>
+    <title>스위스 라운드 매칭 도우미 v7.1 (타이머 추가)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         /* --- 🎨 1. 전체 테마 및 레이아웃 개선 --- */
@@ -18,7 +18,7 @@
         body {
             background-color: var(--background-color);
             color: var(--text-color);
-            font-family: 'Pretendard', sans-serif; /* 더 깔끔한 폰트 (선택 사항) */
+            font-family: 'Pretendard', sans-serif;
         }
 
         .container-main {
@@ -35,12 +35,12 @@
             color: #fff;
         }
 
-        .form-control, .form-select {
+        .form-control, .form-select, .form-range {
             background-color: var(--surface-color);
             color: var(--text-color);
             border-color: var(--border-color);
         }
-        .form-control:focus, .form-select:focus {
+        .form-control:focus, .form-select:focus, .form-range:focus {
             background-color: #333;
             color: var(--text-color);
             border-color: var(--primary-color);
@@ -56,7 +56,7 @@
             will-change: opacity, transform;
         }
         .hidden {
-            display: block !important; /* display:none 대신 사용 */
+            display: block !important;
             opacity: 0;
             transform: translateY(10px);
             pointer-events: none;
@@ -198,6 +198,26 @@
             50%{transform: scale(1.25) rotate(5deg);}
             100%{transform: scale(1);}
         }
+
+        /* --- ⏰ 4. 타이머 UI 스타일 --- */
+        #timerDisplay {
+            font-family: 'monospace', 'Pretendard';
+            font-size: 2rem;
+            font-weight: bold;
+            color: #0d6efd;
+            transition: color 0.5s;
+        }
+        #timerDisplay.ending {
+            color: #dc3545;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+        .timer-settings {
+            width: 150px;
+        }
+
     </style>
 </head>
 <body>
@@ -227,17 +247,30 @@
             <button class="btn btn-primary btn-lg w-100" id="startBtn">게임 시작</button>
         </div>
 
-        <div id="gameView" class="view hidden">
-            <h2>라운드 <span id="roundNum">1</span> / <span id="totalRounds"></span></h2>
-            <div id="pairings"></div>
-            <div class="mt-4 d-flex justify-content-between">
-                <button class="btn btn-secondary" id="backBtn">뒤로가기</button>
-                <div>
-                    <button class="btn btn-success me-2" id="nextRoundBtn">다음 라운드</button>
-                    <button class="btn btn-warning" id="viewResultBtn" disabled>결과 보기</button>
-                </div>
-            </div>
-        </div>
+       <div id="gameView" class="view hidden">
+		<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+			<h2>라운드 <span id="roundNum">1</span> / <span id="totalRounds"></span></h2>
+			<div class="d-flex align-items-center gap-4 flex-wrap">
+				<button class="btn btn-outline-light" id="timerStartBtn">타이머 시작</button>
+				<div id="timerDisplay">00:00</div>
+				<div class="timer-settings">
+					<label for="timerSlider" class="form-label mb-0">타이머: <span id="timerValueLabel">60</span>분</label>
+					<input type="range" class="form-range" min="1" max="90" step="5" value="60" id="timerSlider">
+				</div>
+			</div>
+		</div>
+
+		<!-- 여기서 타이머 하단에 match-card UI 자동 렌더링 -->
+		<div id="pairings"></div>
+		
+		<div class="mt-4 d-flex justify-content-between">
+			<button class="btn btn-secondary" id="backBtn">뒤로가기</button>
+			<div>
+				<button class="btn btn-success me-2" id="nextRoundBtn">다음 라운드</button>
+				<button class="btn btn-warning" id="viewResultBtn" disabled>결과 보기</button>
+			</div>
+		</div>
+	</div>
         
         <div id="resultView" class="view hidden">
             <h2>최종 결과</h2>
@@ -250,7 +283,26 @@
         </div>
     </div>
 
+	<div id="timerOverlay" style="
+		position: fixed;
+		top: 0; left: 0;
+		width: 100vw; height: 100vh;
+		background-color: rgba(0, 0, 0, 0.8);
+		display: none;
+		justify-content: center;
+		align-items: center;
+		z-index: 99999;
+		color: white;
+		font-size: 2rem;
+		flex-direction: column;
+	">
+		<button class="btn btn-danger mt-3" id="overlayResetBtn">타이머 초기화</button>
+	</div>
+
     <script>
+
+		let isTimerRunning = false;
+
         const setupView = document.getElementById("setupView");
         const gameView = document.getElementById("gameView");
         const resultView = document.getElementById("resultView");
@@ -261,6 +313,51 @@
         const viewResultBtn = document.getElementById("viewResultBtn");
         const resultSummary = document.getElementById("resultSummary");
 
+        // 타이머 관련 DOM 요소
+        const timerDisplay = document.getElementById("timerDisplay");
+        const timerSlider = document.getElementById("timerSlider");
+        const timerValueLabel = document.getElementById("timerValueLabel");
+		const timerBtn = document.getElementById("timerStartBtn");
+
+		timerBtn.addEventListener("click", () => {
+			if (isTimerRunning === false) {
+				// 시작
+				const duration = parseInt(timerSlider.value);
+				startTimer(duration);
+				isTimerRunning = true;
+
+				// 버튼 텍스트 바꾸기
+				timerBtn.textContent = "타이머 초기화";
+
+				// 버튼들 비활성화
+				document.getElementById("nextRoundBtn").disabled = true;
+				document.getElementById("viewResultBtn").disabled = true;
+				document.getElementById("backBtn").disabled = true;
+			} else {
+				// 초기화
+				stopTimer();
+				isTimerRunning = false;
+
+				timerBtn.textContent = "타이머 시작";
+				timerSlider.value = 60;
+				timerValueLabel.textContent = "60";
+
+				// 버튼들 다시 활성화
+				document.getElementById("nextRoundBtn").disabled = false;
+				document.getElementById("viewResultBtn").disabled = false;
+				document.getElementById("backBtn").disabled = false;
+			}
+		});
+
+		["nextRoundBtn", "viewResultBtn", "backBtn"].forEach(id => {
+			document.getElementById(id).addEventListener("click", (e) => {
+				if (isTimerRunning === true) {
+					e.preventDefault();
+					showToast("타이머 실행 중에는 사용할 수 없습니다.");
+				}
+			});
+		});
+
         let players = [];
         let matchFormat = 2;
         let maxRounds = 3;
@@ -269,10 +366,160 @@
         let matchResults = [];
         let matchHistory = new Map();
         
+        // 타이머 관련 변수
+        let timerInterval = null;
+        let audioCtx = null; // 오디오 컨텍스트
+        
+        // --- ⏰ 타이머 및 알람 관련 함수 ---
+        
+        // 오디오 컨텍스트 초기화 (사용자 상호작용 시 호출 필요)
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+		function updateDisplay(seconds) {
+			timerDisplay.textContent = formatTime(seconds);
+
+			// 종료 60초 이하일 때 스타일 변경
+			if (seconds <= 60) {
+				timerDisplay.classList.add('ending');
+			} else {
+				timerDisplay.classList.remove('ending');
+			}
+		}
+        
+        // 알람 소리 재생 (외부 파일 없이 순수 JS로 구현)
+        function playAlarmSound() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.type = 'sine'; // 'sine', 'square', 'sawtooth', 'triangle'
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // '라' 음
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+
+            // 삐- 삐- 삐- 소리 패턴
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.15);
+            
+            setTimeout(() => {
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.type = 'sine';
+                o.frequency.setValueAtTime(880, audioCtx.currentTime);
+                g.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                o.start(audioCtx.currentTime);
+                o.stop(audioCtx.currentTime + 0.15);
+            }, 300);
+
+            setTimeout(() => {
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.type = 'sine';
+                o.frequency.setValueAtTime(880, audioCtx.currentTime);
+                g.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                o.start(audioCtx.currentTime);
+                o.stop(audioCtx.currentTime + 0.15);
+            }, 600);
+        }
+        
+        // 초를 MM:SS 형식으로 변환
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+        
+        // 타이머 정지
+        function stopTimer() {
+            if (timerInterval !== null) {
+				clearInterval(timerInterval);
+				timerInterval = null;
+			}
+			timerDisplay.classList.remove('ending');
+        }
+
+        // 타이머 시작
+		function startTimer(minutes) {
+			// 기존 타이머 있으면 정지
+			if (timerInterval !== null) {
+				clearInterval(timerInterval);
+			}
+
+			let remaining = minutes * 60;
+			updateDisplay(remaining);
+
+			timerInterval = setInterval(() => {
+				remaining--;
+				updateDisplay(remaining);
+
+				if (remaining <= 0) {
+					clearInterval(timerInterval);
+					timerInterval = null;
+					playAlarmSound();
+					document.getElementById("timerOverlay").style.display = "flex";
+				}
+			}, 1000);
+		}
+        
+        // 타이머 슬라이더 값 변경 시 라벨 업데이트
+        timerSlider.addEventListener('input', (e) => {
+            timerValueLabel.textContent = e.target.value;
+        });
+
+		function showToast(msg) {
+			const toast = document.createElement("div");
+			toast.textContent = msg;
+			toast.style.cssText = `
+				position: fixed;
+				bottom: 2rem;
+				left: 50%;
+				transform: translateX(-50%);
+				background: #333;
+				color: white;
+				padding: 0.75rem 1.5rem;
+				border-radius: 0.5rem;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+				z-index: 9999;
+				font-weight: bold;
+			`;
+			document.body.appendChild(toast);
+			setTimeout(() => toast.remove(), 2000);
+		}
+
+		function resetTimerUI() {
+			stopTimer();
+			isTimerRunning = false;
+
+			document.getElementById("timerStartBtn").textContent = "타이머 시작";
+			document.getElementById("timerSlider").disabled = false;
+			document.getElementById("timerSlider").value = 60;
+			document.getElementById("timerValueLabel").textContent = "60";
+
+			document.getElementById("nextRoundBtn").disabled = false;
+			document.getElementById("viewResultBtn").disabled = false;
+			document.getElementById("backBtn").disabled = false;
+
+			// 암막 제거
+			document.getElementById("timerOverlay").style.display = "none";
+		}
+
+		document.getElementById("overlayResetBtn").addEventListener("click", resetTimerUI);
+		document.getElementById("timerOverlay").addEventListener("click", resetTimerUI);
+
+
         // --- 🎬 화면 전환 함수 ---
         function switchView(hideView, showView) {
             hideView.classList.add('hidden');
-            // fade-out 애니메이션이 끝난 후 fade-in
             setTimeout(() => {
                 showView.classList.remove('hidden');
             }, 300);
@@ -282,8 +529,8 @@
         function isValidName(name) {
             const trimmed = name.trim();
             if (trimmed === '') return false;
-            if (/^[\uAC00-\uD7A3]{1,5}$/.test(trimmed)) return true; // 한글 1~5자
-            if (/^[a-zA-Z0-9 ]{1,16}$/.test(trimmed)) return true;   // 영문+숫자 최대 16자
+            if (/^[\uAC00-\uD7A3]{1,5}$/.test(trimmed)) return true;
+            if (/^[a-zA-Z0-9 ]{1,16}$/.test(trimmed)) return true;
             return false;
         }
 
@@ -325,6 +572,7 @@
             roundNum.textContent = currentRound;
             switchView(resultView, gameView);
             renderPairings(allPairings[currentRound - 1], currentRound - 1);
+            stopTimer(); // 타이머 정지
         };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -333,6 +581,8 @@
                 document.getElementById('playersInput').value = saved;
                 validatePlayerInput();
             }
+            // 초기 슬라이더 값 라벨에 반영
+            timerValueLabel.textContent = timerSlider.value;
         });
 
         function hasPlayed(p1, p2) {
@@ -438,11 +688,14 @@
             allPairings = [];
             matchResults = [];
             matchHistory = new Map();
+            
+            initAudio(); // 오디오 컨텍스트 초기화
+            stopTimer(); // 혹시 모를 타이머 정지
 
             totalRounds.textContent = maxRounds;
             roundNum.textContent = currentRound;
             switchView(setupView, gameView);
-
+            
             const pairings = generatePairings();
             allPairings.push(pairings);
             matchResults.push([]);
@@ -450,6 +703,7 @@
         };
 
         document.getElementById("backBtn").onclick = () => {
+            stopTimer(); // 뒤로 갈 때 타이머 정지
             if (resultView.classList.contains("hidden") === false) {
                 switchView(resultView, gameView);
             } else if (currentRound === 1) {
@@ -479,6 +733,7 @@
 
             currentRound++;
             roundNum.textContent = currentRound;
+
             const pairings = generatePairings();
             allPairings.push(pairings);
             matchResults.push([]);
@@ -501,6 +756,7 @@
             }
             matchResults[currentRound - 1] = currentResults;
 
+            stopTimer(); // 결과 보기 시 타이머 정지
             switchView(gameView, resultView);
             renderFinalResults();
         };
@@ -586,6 +842,7 @@
         }
 
         document.getElementById("resetBtn").onclick = () => {
+            stopTimer(); // 타이머 정지
             switchView(resultView, setupView);
         };
 
@@ -596,6 +853,7 @@
             matchHistory = new Map();
             totalRounds.textContent = maxRounds;
             roundNum.textContent = currentRound;
+                        
             switchView(resultView, gameView);
 
             const pairings = generatePairings();
