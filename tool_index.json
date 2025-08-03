@@ -102,6 +102,14 @@
 			"modalIcon": "⏱️",
 			"modalIconColor": "#28a745",
 			"enable": true
+		},
+		{
+			"name": "swiss-round-tool",
+			"type": "html_modal",
+			"path": "tools/swiss-round-tool/",
+			"modalIcon": "🔄",
+			"modalIconColor": "#ffc107",
+			"enable": true
 		}
 	]
 }
