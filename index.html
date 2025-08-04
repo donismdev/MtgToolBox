@@ -14,14 +14,22 @@
 			--vh: 1vh;
 		}
 
-		body {
+		html, body {
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			width: 100%;
+			box-sizing: border-box;
 			background-color: #121212;
-			color: #ffffff;
-			font-family: 'Segoe UI', sans-serif;
-			padding: 2rem;
-			padding-bottom: 0; /* ⬅️ 추가됨 */
 			overflow-x: hidden;
 			touch-action: manipulation;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		* {
+			box-sizing: inherit;
 		}
 
 		/* ⬇️ 추가: 모바일 safe-area 대응 */
@@ -277,6 +285,7 @@
 		.modal-content {
 			height: calc(var(--vh, 1vh) * 100);
 			overflow-y: auto;
+			background-color: #121212; /* 모달 배경도 명시! */
 		}
 
 		.fullscreen,
