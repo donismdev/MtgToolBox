@@ -191,6 +191,15 @@ export class Player {
 			this.showAreaRipple(amount, event);
 		});
 
+		let lastTouchEnd = 0;
+		document.addEventListener('touchend', function (event) {
+			const now = new Date().getTime();
+			if (now - lastTouchEnd <= 300) {
+				event.preventDefault();
+			}
+			lastTouchEnd = now;
+		}, false);
+
 		/*
 		const rotateButton = document.createElement('button');
 		rotateButton.className = 'rotate-button';
