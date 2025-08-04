@@ -648,7 +648,17 @@
     transition: all 0.2s ease-in-out;
     box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
-.dungeon-room .room-name { color: #f0f0f0; }
+
+.dungeon-room .room-name {
+    color: #f0f0f0;
+    font-weight: bold;
+    width: 95%; /* 너비 제한을 주어야 text-overflow가 작동함 */
+
+    /* [추가] 텍스트가 길면 ...으로 표시하는 3종 세트 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .dungeon-room .room-floor { color: #999; }
 
 /* --- Room States --- */
@@ -735,6 +745,10 @@
 
 /* --- 좁은 화면 대응 (최종 수정) --- */
 @media (max-width: 800px) {
+	.dungeon-floor {
+        gap: 8px;
+        margin-bottom: 20px;
+    }
     .dungeon-modal {
         flex-direction: column;
         width: 95vw;
@@ -756,9 +770,9 @@
         padding-top: 45px;
     }
     .dungeon-room {
-        width: 90px;
-        height: 60px;
-        font-size: 0.8rem;
+        width: 80px;
+        height: 55px;
+        font-size: 0.75rem;
     }
     .dungeon-info-panel {
         flex-basis: auto;

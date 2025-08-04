@@ -59,6 +59,7 @@ function hideDungeon() {
         activePlayerId = null;
     }
 }
+
 function renderMapOnce(container) {
     const elements = {};
     const floors = undercity.rooms.reduce((acc, room) => {
@@ -72,7 +73,7 @@ function renderMapOnce(container) {
             roomEl.id = `dungeon-room-${room.index}`;
             roomEl.className = 'dungeon-room';
             roomEl.dataset.roomIndex = room.index;
-            roomEl.innerHTML = `<div class="room-name">${room.name}</div><div class="room-floor">Floor ${room.floor}</div>`;
+            roomEl.innerHTML = `<div class="room-name">${room.name}</div><div class="room-floor">F${room.floor}</div>`;
             floorDiv.appendChild(roomEl);
             elements[room.index] = roomEl;
         });
