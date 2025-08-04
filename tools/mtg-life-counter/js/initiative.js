@@ -23,11 +23,11 @@ const undercity = {
     ],
 };
 
+// --- State and DOM Elements ---
 let dungeonOverlay, roomElements, infoContainer, enterButton, backButton, mapContainer;
 let isInitialized = false;
 let activePlayerId = null;
 let initialHistoryState = {};
-let positionHandler = null;
 
 function getPlayerDungeonData(playerId) {
     if (!window.dataSpace.dungeonState[playerId]) {
@@ -84,8 +84,13 @@ function renderMapOnce(container) {
 
 function updateDungeonView(player) {
     const pData = getPlayerDungeonData(player.id);
-    const history = pData.history;
+    const fullHistory = pData.history; // 전체 기록
     const allHistories = window.dataSpace.dungeonState;
+
+    // [신규] 현재 진행중인 기록만 잘라내기
+    const lastRunStartIndex = fullHistory.lastIndexOf(0);
+    const currentRunHistory = lastRunStartIndex === -1 ? fullHistory : fullHistory.slice(lastRunStartIndex);
+
     let selectedRoomIndex = parseInt(document.querySelector('.current-selection')?.dataset.roomIndex, 10);
     if (isNaN(selectedRoomIndex)) {
         selectedRoomIndex = getCurrentRoomIndex(pData) ?? 0;
@@ -93,10 +98,14 @@ function updateDungeonView(player) {
 
     document.querySelectorAll('.next-choice').forEach(el => el.classList.remove('next-choice'));
 
+    // 1. 방 상태 클래스 업데이트 (현재 진행 기록 기준)
     for (const index in roomElements) {
         const roomEl = roomElements[index];
         roomEl.classList.remove('visited', 'current-player-location');
-        if (history.includes(parseInt(index, 10))) roomEl.classList.add('visited');
+        // [수정] currentRunHistory를 사용해 '지나온 길' 표시
+        if (currentRunHistory.includes(parseInt(index, 10))) {
+            roomEl.classList.add('visited');
+        }
     }
 
     const currentRoomIndex = getCurrentRoomIndex(pData);
@@ -116,8 +125,7 @@ function updateDungeonView(player) {
         }
     }
     
-
-	if(roomElements[selectedRoomIndex]) {
+    if(roomElements[selectedRoomIndex]) {
         document.querySelectorAll('.current-selection').forEach(el => el.classList.remove('current-selection'));
         roomElements[selectedRoomIndex].classList.add('current-selection');
     }
