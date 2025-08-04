@@ -50,9 +50,6 @@ export class Player {
 		this.elements.initiativeButton.style.backgroundImage = 'url(./assets/initiative.png)';
 		this.elements.initiativeButton.addEventListener('click', (e) => {
 			e.stopPropagation();
-			const playerIndex = this.getPlayerIndex();
-			window.dataSpace.settings.initiativeIndex = playerIndex;
-			window.updateAllPlayerIcons();
 			initiativeManager.showDungeon(this.id); 
 		});
 
