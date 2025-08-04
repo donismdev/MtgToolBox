@@ -212,7 +212,6 @@ export const initiativeManager = {
 		activePlayerId = playerId;
 		const pData = getPlayerDungeonData(playerId);
 		initialHistoryState[playerId] = [...pData.history];
-		if (pData.history.length === 0) pData.history.push(0);
 
 		if (!isInitialized) {
 			isInitialized = true;

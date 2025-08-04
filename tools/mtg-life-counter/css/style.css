@@ -555,24 +555,21 @@
     flex-shrink: 0;
     position: relative;
 }
-
 .dungeon-title {
     position: absolute;
-    top: 10px;      /* [수정] 위로 이동 */
-    left: 25px;     /* [수정] 오른쪽으로 이동 */
-    font-size: 2.2rem; /* [수정] 크기 증가 */
+    top: 10px;
+    left: 25px;
+    font-size: 2.2rem;
     font-weight: bold;
     color: #ffd700;
     text-shadow: 0 0 8px #ffd700;
-    opacity: 0.3;   /* 배경처럼 보이도록 투명도 조절 */
+    opacity: 0.3;
 }
-
 .dungeon-map-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding-top: 70px; /* [수정] 타이틀과 겹치지 않도록 여백 증가 */
+    padding-top: 70px;
 }
-
 .dungeon-floor {
     display: flex;
     justify-content: center;
@@ -592,13 +589,11 @@
     flex-shrink: 0;
     box-sizing: border-box;
 }
-
 #info-scroll-wrapper {
     flex-grow: 1;
     overflow-y: auto;
     min-height: 0;
 }
-
 .button-group {
     flex-shrink: 0;
     padding-top: 15px;
@@ -694,8 +689,8 @@
 }
 
 .dungeon-room.current-selection {
-    border-color: #e5e7eb; /* tailwind gray-200 */
-    box-shadow: 0 0 15px #e5e7eb;
+    border-color: #ffd700; /* tailwind gray-200 */
+    box-shadow: 0 0 15px #ffd700;
 }
 
 .dungeon-action-button {
@@ -761,11 +756,13 @@
         padding-top: 45px;
     }
     .dungeon-room {
-        height: 65px;
+        width: 90px;
+        height: 60px;
+        font-size: 0.8rem;
     }
     .dungeon-info-panel {
         flex-basis: auto;
-        height: 50%; /* [수정] 맵/정보 패널 50:50 비율로 조정 */
+        height: 50%;
         padding: 15px;
     }
     #info-scroll-wrapper {
@@ -776,19 +773,9 @@
         padding-top: 10px;
     }
 
-	.room-info-header {
-        flex-direction: row;
-        align-items: baseline;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-    
-    .room-info-title {
-        font-size: 1.4rem;
-    }
-    .room-info-meta {
-        font-size: 0.85rem;
-    }
+	.room-info-header { flex-direction: row; align-items: baseline; gap: 10px; margin-bottom: 15px; }
+    .room-info-title { font-size: 1.2rem; }
+    .room-info-meta { font-size: 0.8rem; }
 }
 
 		/* --- Player Markers --- */
