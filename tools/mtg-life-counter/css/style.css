@@ -504,11 +504,11 @@
 			display: none;
 		}
 
-		/* ==================================================
-		Dungeon Room Styles
-		================================================== */
+/* ==================================================
+   Dungeon / Initiative UI Styles (진짜 최종 완성 버전)
+   ================================================== */
 
-		.dungeon-modal {
+.dungeon-modal {
     width: 90vw;
     max-width: 1200px;
     height: 85vh;
@@ -518,87 +518,110 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     display: flex;
     overflow: hidden;
+	position: relative; 
+}
+
+.dungeon-modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 50%;
+    font-family: sans-serif; /* 폰트가 깨지지 않도록 */
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 32px; /* '×' 기호를 수직 중앙 정렬 */
+    text-align: center;
+    cursor: pointer;
+    z-index: 10; /* 다른 컨텐츠 위에 오도록 설정 */
+    transition: background-color 0.2s ease;
+}
+.dungeon-modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* --- Left Panel: Map --- */
 .dungeon-map-panel {
-    flex-basis: 55%;
+    flex-basis: 60%;
     padding: 20px;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #444;
-    flex-shrink: 0; /* [수정] 너비가 줄어들지 않도록 고정 */
+    flex-shrink: 0;
+    position: relative;
 }
 
 .dungeon-title {
-    text-align: center;
-    margin: 0 0 20px 0;
-    font-size: 1.5rem;
+    position: absolute;
+    top: 10px;      /* [수정] 위로 이동 */
+    left: 25px;     /* [수정] 오른쪽으로 이동 */
+    font-size: 2.2rem; /* [수정] 크기 증가 */
+    font-weight: bold;
     color: #ffd700;
-    text-shadow: 0 0 5px #ffd700;
+    text-shadow: 0 0 8px #ffd700;
+    opacity: 0.3;   /* 배경처럼 보이도록 투명도 조절 */
 }
 
 .dungeon-map-container {
-	position: relative;
     flex-grow: 1;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 50px; 
-    padding: 20px 10px;
-}
-
-.dungeon-arrow-svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* 화살표가 클릭을 방해하지 않도록 함 */
-    z-index: -1; /* 방(room)들보다 아래에 위치 */
+    padding-top: 70px; /* [수정] 타이틀과 겹치지 않도록 여백 증가 */
 }
 
 .dungeon-floor {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    position: relative;
-    width: 100%;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
 }
 
-		/* --- Right Panel: Room Info --- */
-		.dungeon-info-panel {
-    flex-basis: 45%;
+/* --- Right Panel: Room Info --- */
+.dungeon-info-panel {
+    flex-basis: 40%;
     padding: 25px;
     display: flex;
     flex-direction: column;
     background-color: #2a2a2a;
-    flex-shrink: 0; /* [수정] 너비가 줄어들지 않도록 고정 */
-    box-sizing: border-box; /* 패딩이 너비에 영향을 주지 않도록 설정 */
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
-.info-content-wrapper {
-    flex-grow: 1; 
+#info-scroll-wrapper {
+    flex-grow: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
-#dungeon-room-info { }
+.button-group {
+    flex-shrink: 0;
+    padding-top: 15px;
+}
 
+.room-info-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 15px;
+}
 .room-info-title {
-    font-size: 1.8rem;
-    margin-top: 0;
-    margin-bottom: 5px;
+    font-size: 2rem; /* 넓은 화면에 맞게 제목을 다시 살짝 키웁니다 */
     color: #ffffff;
-    word-break: break-word; 
+    word-break: break-word;
+    font-weight: bold;
 }
-
 .room-info-meta {
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: #aaa;
-    margin-bottom: 20px;
     font-style: italic;
+    flex-shrink: 0;
 }
 
 .room-info-ability {
@@ -606,136 +629,167 @@
     border-left: 3px solid #ffd700;
     padding: 15px;
     border-radius: 4px;
-    margin-bottom: 20px;
 }
-.room-info-ability p {
-    margin: 0;
-    line-height: 1.6;
-}
+.room-info-ability p { margin: 0; line-height: 1.6; }
 
-.room-info-prompt, .room-info-complete {
-    font-size: 1.1rem;
-    color: #ddd;
-    line-height: 1.5;
-}
 
-.room-info-complete {
-    color: #28a745;
-    font-weight: bold;
+/* ==================================================
+   Dungeon Room & Animation Styles
+   ================================================== */
+
+.dungeon-room {
+    width: 125px;
+    height: 75px;
+    background-color: #333;
+    border: 2px solid #555;
+    border-radius: 8px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.dungeon-room .room-name { color: #f0f0f0; }
+.dungeon-room .room-floor { color: #999; }
+
+/* --- Room States --- */
+.dungeon-room.visited {
+    background-color: #4a4a4a;
+    border-color: #007bff;
+}
+.dungeon-room.visited .room-name { color: #aaa; }
+.dungeon-room.visited .room-floor { color: #777; }
+
+/* [신규] 현재 위치한 방 강조 애니메이션 */
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 15px #28a745; }
+    50% { box-shadow: 0 0 25px #34d399; }
+    100% { box-shadow: 0 0 15px #28a745; }
+}
+.dungeon-room.current-player-location {
+    background-color: #2a3a2e;
+    border-color: #28a745;
+    animation: pulse-green 2s infinite;
+}
+.dungeon-room.current-player-location .room-name,
+.dungeon-room.current-player-location .room-floor {
+    color: #f0f0f0;
 }
 
-		/* --- Dungeon Buttons (정리된 최종 버전) --- */
-		.dungeon-info-panel .button-group {
-			display: flex;
-			gap: 10px;
-			margin-top: 20px;
-		}
+/* [신규] 다음 선택 가능 방 클릭 유도 애니메이션 */
+@keyframes bobbing-hint {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
+.dungeon-room.next-choice {
+    cursor: pointer;
+    border-color: #17a2b8;
+    box-shadow: 0 0 15px #17a2b8;
+    animation: bobbing-hint 1.5s infinite ease-in-out;
+}
 
-		.dungeon-action-button {
-			padding: 15px;
-			font-size: 1.2rem;
-			font-weight: bold;
-			border: 2px solid transparent; /* 테두리 공간 확보 */
-			border-radius: 8px;
-			cursor: pointer;
-			transition: all 0.2s ease-in-out;
-			background-color: #007bff;
-			color: white;
-			flex: 1 1 65%; /* [정리] 너비 비율 설정 (65%) */
-		}
-		.dungeon-action-button:hover:not(:disabled) {
-			background-color: #0056b3;
-		}
+.dungeon-room.current-selection {
+    border-color: #e5e7eb; /* tailwind gray-200 */
+    box-shadow: 0 0 15px #e5e7eb;
+}
 
-		.dungeon-back-button {
-			padding: 15px;
-			font-size: 1.2rem;
-			font-weight: bold;
-			border-radius: 8px;
-			cursor: pointer;
-			transition: all 0.2s ease-in-out;
-			flex: 1 1 35%; /* [정리] 너비 비율 설정 (35%) */
-			background-color: #842029;
-			border: 2px solid transparent;
-			color: white;
-		}
-		.dungeon-back-button:hover:not(:disabled) {
-			background-color: #842029;
-			color: white;
-			border-color: #842029;
-		}
+.dungeon-action-button {
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-color: #007bff;
+    color: white;
+    flex: 1 1 65%;
+}
+.dungeon-action-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+.dungeon-back-button {
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    flex: 1 1 35%;
+    background-color: transparent;
+    border: 2px solid #842029;
+    color: #842029;
+}
+.dungeon-back-button:hover:not(:disabled) {
+    background-color: #842029;
+    color: white;
+    border-color: #842029;
+}
+.dungeon-action-button:disabled, .dungeon-back-button:disabled {
+    background-color: #3a3a3a;
+    color: #777;
+    cursor: not-allowed;
+    box-shadow: none;
+    border-color: transparent;
+}
 
-		.dungeon-action-button:disabled, .dungeon-back-button:disabled {
-			background-color: #3a3a3a;
-			color: #777;
-			cursor: not-allowed;
-			box-shadow: none;
-			border-color: transparent;
-		}
+/* --- 좁은 화면 대응 (최종 수정) --- */
+@media (max-width: 800px) {
+    .dungeon-modal {
+        flex-direction: column;
+        width: 95vw;
+        height: 90vh;
+    }
+    .dungeon-map-panel {
+        flex-basis: auto;
+        height: 50%; /* [수정] 맵/정보 패널 50:50 비율로 조정 */
+        border-right: none;
+        border-bottom: 1px solid #444;
+        padding: 10px;
+    }
+    .dungeon-title {
+        font-size: 1.5rem;
+        top: 10px;
+        left: 15px;
+    }
+    .dungeon-map-container {
+        padding-top: 45px;
+    }
+    .dungeon-room {
+        height: 65px;
+    }
+    .dungeon-info-panel {
+        flex-basis: auto;
+        height: 50%; /* [수정] 맵/정보 패널 50:50 비율로 조정 */
+        padding: 15px;
+    }
+    #info-scroll-wrapper {
+        padding-right: 5px;
+        margin-right: -5px;
+    }
+    .button-group {
+        padding-top: 10px;
+    }
 
-
-		.dungeon-room {
-			width: 120px;
-			height: 80px;
-			background-color: #333;
-			border: 2px solid #555;
-			border-radius: 8px;
-			padding: 5px;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-			text-align: center;
-			position: relative;
-			transition: all 0.2s ease-in-out;
-			box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-		}
-
-		.dungeon-room .room-name { color: #f0f0f0; }
-		.dungeon-room .room-floor { color: #999; }
-
-		/* --- Room States --- */
-
-		/* State: Visited by the current player */
-		.dungeon-room.visited {
-			background-color: #4a4a4a; /* 배경을 더 어둡게 */
-			border-color: #007bff;
-		}
-
-		/* State: Current location of the active player */
-		.dungeon-room.current-player-location {
-			background-color: #004d99; /* 현재 위치는 밝은 배경 유지 */
-			border-color: #00aaff;
-			box-shadow: 0 0 15px #00aaff;
-		}
-
-		.dungeon-room.visited .room-name { color: #aaa; }
-		.dungeon-room.visited .room-floor { color: #777; }
-
-		.dungeon-room.current-player-location .room-name,
-		.dungeon-room.current-player-location .room-floor {
-			color: #f0f0f0;
-		}
-
-		/* State: A clickable next choice */
-		.dungeon-room.next-choice {
-			cursor: pointer;
-			border-color: #17a2b8;
-			box-shadow: 0 0 15px #17a2b8;
-		}
-		.dungeon-room.next-choice:hover {
-			transform: translateY(-3px);
-			background-color: #495057;
-		}
-
-		/* State: The room currently selected for confirmation */
-		.dungeon-room.current-selection {
-			border-color: #28a745;
-			background-color: #2a3a2e;
-			box-shadow: 0 0 15px #28a745;
-		}
-
+	.room-info-header {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .room-info-title {
+        font-size: 1.4rem;
+    }
+    .room-info-meta {
+        font-size: 0.85rem;
+    }
+}
 
 		/* --- Player Markers --- */
 		.player-marker {
@@ -794,5 +848,3 @@
 		.occupant-count-6 .marker-pos-3 { bottom: -8px; left: -8px; top: auto; right: auto; }
 		.occupant-count-6 .marker-pos-4 { bottom: -8px; right: -8px; top: auto; }
 		.occupant-count-6 .marker-pos-5 { bottom: -8px; left: 50%; transform: translateX(-50%); top: auto; right: auto; }
-		
-

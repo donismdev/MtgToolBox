@@ -1,6 +1,7 @@
 import { Player } from './player.js';
 import { showMenu, hideAllOverlays, applyLifeFontSize } from './ui.js';
 import { rollDiceVisual } from './dice.js';
+import { initiativeManager } from './initiative.js';
 
 export function initializePlayers(count) {
     window.gameContainer.innerHTML = '';
@@ -96,6 +97,12 @@ export function setupEventListeners() {
         const btn = e.currentTarget;
 
 		if (btn.classList.contains('confirm-animation')) {
+
+			initiativeManager.resetAll();
+
+			window.dataSpace.settings.initiativeIndex = -1;
+			window.dataSpace.settings.monarchIndex = -1;
+			window.updateAllPlayerIcons();
 	
 			window.players.forEach(p => {
 				p.setLife(window.localSettings.lifeMax, true);
