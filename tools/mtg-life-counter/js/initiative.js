@@ -28,6 +28,7 @@ let dungeonOverlay, roomElements, infoContainer, enterButton, backButton, mapCon
 let isInitialized = false;
 let activePlayerId = null;
 let initialHistoryState = {};
+let positionHandler = null;
 
 function getPlayerDungeonData(playerId) {
     if (!window.dataSpace.dungeonState[playerId]) {
