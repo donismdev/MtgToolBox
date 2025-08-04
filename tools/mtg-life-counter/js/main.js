@@ -117,17 +117,6 @@ import { themes } from './themes.js';
         // dungeonOverlay.style.display = 'flex';
     };
 
-	// 던전 암막. 임시일 수 있음
-	// 암막(Dungeon Overlay) 요소를 가져옵니다.
-	const dungeonOverlay = document.getElementById('dungeon-overlay');
-
-	// 암막에 클릭 이벤트 리스너를 추가합니다.
-	dungeonOverlay.addEventListener('click', () => {
-		// 클릭 시 암막을 숨깁니다.
-		dungeonOverlay.style.display = 'none';
-	});
-
     // Initial icon state
     window.updateAllPlayerIcons();
-	
 });

@@ -1,715 +1,798 @@
 
-			#game-container {
-				display: flex;
-				flex: 1;
-				flex-direction: row;
-				flex-wrap: wrap;
-				position: relative;
-				touch-action: manipulation;
-			}
+					#game-container {
+						display: flex;
+						flex: 1;
+						flex-direction: row;
+						flex-wrap: wrap;
+						position: relative;
+						touch-action: manipulation;
+					}
 
 
 
-			.player-area {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				position: relative;
-				background-color: #2c3e50;
-				color: white;
-				overflow: hidden;
-				border: 1px solid rgba(0,0,0,0.1);
-				box-sizing: border-box;
+					.player-area {
+						display: flex;
+						justify-content: center;
+						align-items: center;
+						position: relative;
+						background-color: #2c3e50;
+						color: white;
+						overflow: hidden;
+						border: 1px solid rgba(0,0,0,0.1);
+						box-sizing: border-box;
 
-			}
+					}
 
-			.user-select-none {
-				user-select: none;
-				-webkit-user-select: none; /* Safari */
-				-ms-user-select: none;     /* IE10+ */
-			}
+					.user-select-none {
+						user-select: none;
+						-webkit-user-select: none; /* Safari */
+						-ms-user-select: none;     /* IE10+ */
+					}
 
-			/* Layouts */
-			.player-area.player-count-2 { width: 100%; height: 50%; }
-			.player-area.player-count-3 { /* JS에서 제어 */ }
-			.player-area.player-count-4 { width: 50%; height: 50%; }
+					/* Layouts */
+					.player-area.player-count-2 { width: 100%; height: 50%; }
+					.player-area.player-count-3 { /* JS에서 제어 */ }
+					.player-area.player-count-4 { width: 50%; height: 50%; }
 
-			.game-layout-3-top #player-1-area { width: 100%; height: 50%; order: 0; }
-			.game-layout-3-top #player-2-area,
-			.game-layout-3-top #player-3-area { width: 50%; height: 50%; order: 1; }
+					.game-layout-3-top #player-1-area { width: 100%; height: 50%; order: 0; }
+					.game-layout-3-top #player-2-area,
+					.game-layout-3-top #player-3-area { width: 50%; height: 50%; order: 1; }
 
-			.game-layout-3-bottom #player-1-area { width: 100%; height: 50%; order: 1; }
-			.game-layout-3-bottom #player-2-area,
-			.game-layout-3-bottom #player-3-area { width: 50%; height: 50%; order: 0; }
-			
-			/* Player Content */
-			.player-content-wrapper {
-				position: absolute; top: 0; left: 0;
-				width: 100%; height: 100%;
-				display: flex; justify-content: center; align-items: center;
-				transform-origin: center center;
-				z-index: 1;;
-			}
-			.player-content-wrapper.rotation-90 { transform: rotate(90deg); }
-			.player-content-wrapper.rotation-180 { transform: rotate(180deg); }
-			.player-content-wrapper.rotation-270 { transform: rotate(270deg); }
+					.game-layout-3-bottom #player-1-area { width: 100%; height: 50%; order: 1; }
+					.game-layout-3-bottom #player-2-area,
+					.game-layout-3-bottom #player-3-area { width: 50%; height: 50%; order: 0; }
+					
+					/* Player Content */
+					.player-content-wrapper {
+						position: absolute; top: 0; left: 0;
+						width: 100%; height: 100%;
+						display: flex; justify-content: center; align-items: center;
+						transform-origin: center center;
+						z-index: 1;;
+					}
+					.player-content-wrapper.rotation-90 { transform: rotate(90deg); }
+					.player-content-wrapper.rotation-180 { transform: rotate(180deg); }
+					.player-content-wrapper.rotation-270 { transform: rotate(270deg); }
 
-			.life-total {
-				font-weight: bold;
-				transition: font-size 0.3s ease, opacity 0.3s ease;
-				z-index: 5;
-			}
-			.player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
+					.life-total {
+						font-weight: bold;
+						transition: font-size 0.3s ease, opacity 0.3s ease;
+						z-index: 5;
+					}
+					.player-area.dice-rolling .life-total { font-size: 5vh; opacity: 0.2; }
 
-			.font-size-small { --life-font-size: 12vh; }
-			.font-size-medium { --life-font-size: 18vh; }
-			.font-size-large { --life-font-size: 22vh; }
-			.font-size-xlarge { --life-font-size: 26vh; }
-			.life-total { font-size: var(--life-font-size); }
+					.font-size-small { --life-font-size: 12vh; }
+					.font-size-medium { --life-font-size: 18vh; }
+					.font-size-large { --life-font-size: 22vh; }
+					.font-size-xlarge { --life-font-size: 26vh; }
+					.life-total { font-size: var(--life-font-size); }
 
-			@keyframes lifeIntro {
-				from {
-					transform: rotate(0deg) scale(1.4);
-					opacity: 0;
+					@keyframes lifeIntro {
+						from {
+							transform: rotate(0deg) scale(1.4);
+							opacity: 0;
+						}
+						to {
+							transform: rotate(0deg) scale(1);
+							opacity: 1;
+						}
+					}
+
+					.life-total.animate-intro {
+						animation: lifeIntro 0.3s ease-out;
+					}
+
+					.life-hint {
+						position: absolute;
+						font-size: 2.5rem;
+						font-weight: 700;
+						color: white;
+						text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+						opacity: 1;
+						pointer-events: none;
+						transition: opacity 0.2s ease, transform 0.2s ease;
+
+						user-select: none;
+						-webkit-user-select: none; /* Safari */
+						-ms-user-select: none;     /* IE10+ */
+					}
+					.life-hint.increase {
+					}
+					.life-hint.decrease {
+					}
+
+					.life-feedback {
+						position: absolute;
+						font-size: 2.5rem;
+						font-weight: bold;
+						color: #fff;
+						text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+						pointer-events: none;
+						user-select: none;
+						animation: feedbackPop 0.6s ease-out forwards;
+						z-index: 5;
+					}
+					@keyframes feedbackPop {
+						0% {
+							opacity: 1;
+							/* JS에서 전달받은 --feedback-rotation 변수를 사용해 회전 값을 적용합니다. */
+							transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1) translateY(0);
+						}
+						50% {
+							opacity: 0.9;
+							transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1.2) translateY(-20px);
+						}
+						100% {
+							opacity: 0;
+							transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1) translateY(-40px);
+						}
+					}
+
+					.life-ripple {
+						position: absolute;
+						width: 100px;
+						height: 100px;
+						border-radius: 50%;
+						/* background-color 속성을 여기서 제거합니다. */
+						transform: scale(0);
+						animation: rippleExpand 0.6s ease-out forwards;
+						pointer-events: none;
+						z-index: 1000;
+					}
+
+					.life-ripple.minus {
+						/* 이 규칙은 이제 비어있거나, 색상 외 다른 효과가 필요하면 사용합니다. */
+						/* 혹은 규칙 자체를 삭제해도 괜찮습니다. */
+					}
+
+					.life-feedback.immediate {
+						animation: none;
+
+						/*
+						font-size: 1.5rem;
+						text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+						*/
+					}
+
+					@keyframes rippleExpand {
+						0% {
+							transform: scale(0);
+							opacity: 0.8;
+						}
+						100% {
+							transform: scale(5);
+							opacity: 0;
+						}
+					}
+
+					/* Center Buttons */
+					#center-buttons {
+						display: flex;
+						flex-wrap: nowrap; 
+						justify-content: center;
+						gap: 0.5rem; 
+						position: absolute;
+						top: 50%; left: 50%;
+						transform: translate(-50%, -50%);
+						width: 90%; 
+						max-width: 340px;
+						z-index: 1010;
+						transition: top 0.3s ease;
+					}
+
+					body.buttons-left #center-buttons {
+						left: 25%;
+						top: 50%;	
+						transform: translate(-50%, -50%);
+					}
+
+					body.buttons-right #center-buttons {
+						left: 75%;
+						top: 50%;
+						transform: translate(-50%, -50%);
+					}
+
+					body.buttons-raised #center-buttons { top: 40%; }
+					body.buttons-raised.font-size-medium #center-buttons { top: 35%; }
+					body.buttons-raised.font-size-large #center-buttons { top: 32%; }
+					body.buttons-raised.font-size-xlarge #center-buttons { top: 28%; }
+
+					#center-buttons button {
+						flex-grow: 1;       /* 남는 공간을 나눠 갖도록 설정 */
+						flex-basis: auto;   /* 내용(텍스트)에 따라 기본 너비가 결정되도록 변경 */
+						height: 35px;
+						font-size: 1rem; 
+						border: 1px solid #ccc; background-color: white;
+						border-radius: 0.5rem; cursor: pointer;
+						box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+						padding: 0 0.7rem;    /* 좌우 패딩을 조정해 공간 확보 */
+						white-space: nowrap;
+						text-align: center;
+						/* min-width: 70px; <-- 이 속성을 삭제하여 너비가 유연하게 변하도록 함 */
+					}
+					#center-buttons button.confirm-animation {
+						color: #e74c3c;
+						background-color: #ffe0e0;
+						border: 2px solid #e74c3c;
+						animation: buttonPulse 1s infinite alternate;
+						transform-origin: center center;
+					}
+					@keyframes buttonPulse {
+						from { box-shadow: 0 0 0px rgba(231, 76, 60, 0.3); }
+						to   { box-shadow: 0 0 15px rgba(231, 76, 60, 1); }
+					}
+
+					/* Dice & Menus */
+					.dice-container {
+						position: absolute; top: 50%; left: 50%;
+						transform: translate(-50%, -50%);
+						width: 90%; display: none; justify-content: center;
+						align-items: center; gap: 1rem;
+						z-index: 950;
+					}
+					.dice-container.pushed-up { top: 40%; }
+					.dice-container.pushed-down { top: 60%; }
+
+					.individual-dice-wrapper {
+						display: flex; gap: 0.5rem; overflow-x: auto;
+						justify-content: center; flex-wrap: wrap;
+						max-height: 12rem;
+						scrollbar-width: none;
+					}
+					.individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
+					.dice {
+						flex-shrink: 0; min-width: 3rem; height: 3rem;
+						font-size: 1.8rem; font-weight: bold;
+						background-color: #34495e; color: white;
+						border-radius: 0.5rem; display: flex;
+						justify-content: center; align-items: center;
+						box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+						transform: rotate(0deg) !important;
+					}
+					.dice.rolling { animation: diceRollAnimation 0.1s infinite alternate; }
+					@keyframes diceRollAnimation { from { transform: scale(1); } to { transform: scale(1.02); } }
+					.dice.finalized {
+						background-color: #2ecc71;
+						animation: diceFinalizeAnimation 0.5s ease-out forwards;
+					}
+					@keyframes diceFinalizeAnimation { from { transform: scale(0.8); } to { transform: scale(1); } }
+					.dice-sum-display {
+						flex-shrink: 0; width: 4rem; height: 4rem;
+						font-size: 2.5rem; font-weight: bold;
+						color: white; background-color: #e74c3c;
+						border-radius: 0.5rem; display: flex;
+						justify-content: center; align-items: center;
+						box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+						transition: opacity 0.3s ease, transform 0.3s ease;
+						opacity: 0; transform: scale(0.8);
+					}
+					.dice-sum-display.show { opacity: 1; transform: scale(1); }
+
+					.overlay {
+						position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+						background: rgba(0,0,0,0.8); /* 80% 불투명도로 변경하여 훨씬 어둡게 */
+						z-index: 900; display: none;
+					}
+					.dice-menu {
+						position: absolute; background: rgba(0, 0, 0, 0.85);
+						color: white; padding: 1rem; border-radius: 0.5rem;
+						display: none; z-index: 1000; width: 95%; max-width: 600px;
+						box-sizing: border-box; flex-direction: column;
+						align-items: center; left: 50%; transform: translateX(-50%);
+					}
+					.dice-menu-label { margin-bottom: 0.8rem; font-weight: bold; font-size: 1.1rem; }
+					.dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
+					.dice-option {
+						min-width: 40px; padding: 0.5rem 0.8rem;
+						font-size: 1rem; background: #444;
+						border-radius: 0.3rem; cursor: pointer; text-align: center;
+					}
+					#three-player-layout-buttons { display: none; }
+
+					/* Rotate Button */
+					.rotate-button {
+						position: absolute; background: rgba(0,0,0,0.5); color: white;
+						border: none; border-radius: 50%;
+						width: 30px; height: 30px; font-size: 1rem;
+						display: flex; justify-content: center; align-items: center;
+						cursor: pointer; z-index: 100; opacity: 0.7;
+						transition: all 0.2s ease;
+					}
+					.player-area.player-pos-top-left .rotate-button { bottom: 10px; left: 10px; }
+					.player-area.player-pos-top-right .rotate-button { bottom: 10px; right: 10px; }
+					.player-area.player-pos-bottom-left .rotate-button { top: 10px; left: 10px; }
+					.player-area.player-pos-bottom-right .rotate-button { top: 10px; right: 10px; }
+
+					.player-header-buttons {
+						position: absolute;
+						bottom: 10px;
+						left: 10px; /* 왼쪽 가장자리에서 10px 위치에 고정 */
+						/* transform: translateX(-50%);  <-- 이 줄을 삭제하거나 주석 처리 */
+						display: flex;
+						gap: 10px;
+						z-index: 20;
+					}
+
+
+					.header-button {
+						width: 60px;
+						height: 60px;
+						/* background-color: rgba(0, 0, 0, 0.4); <-- 기존 색상 대신 변수 사용 */
+						background-color: var(--button-bg-color);
+						border: 2px solid transparent;
+						border-radius: 20%; /* 요청하신대로 수정 */
+						cursor: pointer;
+						background-size: 85%;
+						background-position: center;
+						background-repeat: no-repeat;
+						transition: all 0.2s ease;
+					}
+
+					.header-button:hover {
+						/* background-color: rgba(0, 0, 0, 0.6); <-- 기존 색상 대신 변수 사용 */
+						background-color: var(--button-hover-bg-color);
+					}
+
+
+					.theme-selector-overlay {
+						position: absolute;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						background-color: rgba(0, 0, 0, 0.7);
+						display: none; /* Initially hidden */
+						justify-content: center;
+						align-items: center;
+						z-index: 1050;
+					}
+
+					.theme-selector-container {
+						display: flex;
+						/* flex-wrap: nowrap; 아이템을 한 줄로만 표시하도록 변경 */
+						/* 또는 flex-direction을 row로 명시하면 기본값이 nowrap입니다. */
+						flex-direction: row; 
+						gap: 10px;
+						padding: 20px;
+						background-color: #2c3e50;
+						border-radius: 10px;
+						max-width: 80%;
+						/* max-height는 이제 필요 없으므로 제거합니다. */
+						overflow-x: auto; /* 가로 스크롤을 자동으로 표시 */
+					}
+
+					/* 스크롤바 전체 - 가로 스크롤이므로 높이(height)를 조절 */
+					.theme-selector-container::-webkit-scrollbar {
+					height: 8px;
+					}
+
+					/* 스크롤바 트랙(배경) */
+					.theme-selector-container::-webkit-scrollbar-track {
+					background: rgba(0, 0, 0, 0.2);
+					border-radius: 4px;
+					}
+
+					/* 스크롤바 핸들(움직이는 막대) */
+					.theme-selector-container::-webkit-scrollbar-thumb {
+					background: rgba(255, 255, 255, 0.4);
+					border-radius: 4px;
+					}
+
+					.theme-selector-container::-webkit-scrollbar-thumb:hover {
+					background: rgba(255, 255, 255, 0.6);
+					}
+
+					.theme-swatch {
+						width: 50px;
+						height: 50px;
+						border-radius: 5px;
+						cursor: pointer;
+						border: 2px solid #fff;
+						transition: transform 0.1s ease;
+						flex-shrink: 0; 
+					}
+
+					.theme-swatch:hover {
+						transform: scale(1.1);
+					}
+
+					.theme-swatch.disabled {
+						cursor: not-allowed;
+						opacity: 0.5;
+						border-color: #666;
+					}
+
+					.dungeon-overlay {
+						position: fixed;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						background-color: rgba(0, 0, 0, 0.8);
+						justify-content: center;
+						align-items: center;
+						z-index: 2000; /* 다른 모달보다 확실히 위에 오도록 z-index 유지 */
+						color: #f0f0f0;
+						font-family: sans-serif;
+						display: none;
+					}
+
+				@keyframes colorShift {
+					from {
+						filter: hue-rotate(0deg) brightness(1.2);
+					}
+					to {
+						filter: hue-rotate(45deg) brightness(1.2);
+					}
 				}
-				to {
-					transform: rotate(0deg) scale(1);
-					opacity: 1;
+
+				.header-button.active {
+					box-shadow: 
+					/* 바깥 글로우: blur-radius를 15px -> 18px로 키워 살짝 넓게 */
+					0 0 15px var(--highlight-color, transparent),
+					/* 안쪽 글로우: spread-radius를 2px -> 0px로 바꿔 훨씬 부드럽고 은은하게 */
+					inset 0 0 6px 0px var(--highlight-color, transparent);
+
+					border-color: var(--highlight-color, transparent);
 				}
-			}
 
-			.life-total.animate-intro {
-				animation: lifeIntro 0.3s ease-out;
-			}
+				.header-button.is-animating {
+					animation: colorShift 2s infinite alternate ease-in-out;
+				}
 
-			.life-hint {
+			#toggle-button-container {
 				position: absolute;
-				font-size: 2.5rem;
-				font-weight: 700;
-				color: white;
-				text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-				opacity: 1;
-				pointer-events: none;
-				transition: opacity 0.2s ease, transform 0.2s ease;
-
-				user-select: none;
-				-webkit-user-select: none; /* Safari */
-				-ms-user-select: none;     /* IE10+ */
-			}
-			.life-hint.increase {
-			}
-			.life-hint.decrease {
-			}
-
-			.life-feedback {
-				position: absolute;
-				font-size: 2.5rem;
-				font-weight: bold;
-				color: #fff;
-				text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
-				pointer-events: none;
-				user-select: none;
-				animation: feedbackPop 0.6s ease-out forwards;
-				z-index: 5;
-			}
-			@keyframes feedbackPop {
-				0% {
-					opacity: 1;
-					/* JS에서 전달받은 --feedback-rotation 변수를 사용해 회전 값을 적용합니다. */
-					transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1) translateY(0);
-				}
-				50% {
-					opacity: 0.9;
-					transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1.2) translateY(-20px);
-				}
-				100% {
-					opacity: 0;
-					transform: translate(-50%, -50%) rotate(var(--feedback-rotation, 0deg)) scale(1) translateY(-40px);
-				}
-			}
-
-			.life-ripple {
-				position: absolute;
-				width: 100px;
-				height: 100px;
-				border-radius: 50%;
-				/* background-color 속성을 여기서 제거합니다. */
-				transform: scale(0);
-				animation: rippleExpand 0.6s ease-out forwards;
-				pointer-events: none;
-				z-index: 1000;
-			}
-
-			.life-ripple.minus {
-				/* 이 규칙은 이제 비어있거나, 색상 외 다른 효과가 필요하면 사용합니다. */
-				/* 혹은 규칙 자체를 삭제해도 괜찮습니다. */
-			}
-
-			.life-feedback.immediate {
-				animation: none;
-
-				/*
-				font-size: 1.5rem;
-				text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
-				*/
-			}
-
-			@keyframes rippleExpand {
-				0% {
-					transform: scale(0);
-					opacity: 0.8;
-				}
-				100% {
-					transform: scale(5);
-					opacity: 0;
-				}
-			}
-
-			/* Center Buttons */
-			#center-buttons {
-				display: flex;
-				flex-wrap: nowrap; 
-				justify-content: center;
-				gap: 0.5rem; 
-				position: absolute;
-				top: 50%; left: 50%;
-				transform: translate(-50%, -50%);
-				width: 90%; 
-				max-width: 340px;
-				z-index: 1010;
-				transition: top 0.3s ease;
-			}
-
-			body.buttons-left #center-buttons {
-				left: 25%;
-				top: 50%;	
-				transform: translate(-50%, -50%);
-			}
-
-			body.buttons-right #center-buttons {
-				left: 75%;
 				top: 50%;
+				left: 50%;
 				transform: translate(-50%, -50%);
+				z-index: 1020;
 			}
 
-			body.buttons-raised #center-buttons { top: 40%; }
-			body.buttons-raised.font-size-medium #center-buttons { top: 35%; }
-			body.buttons-raised.font-size-large #center-buttons { top: 32%; }
-			body.buttons-raised.font-size-xlarge #center-buttons { top: 28%; }
-
-			#center-buttons button {
-				flex-grow: 1;       /* 남는 공간을 나눠 갖도록 설정 */
-				flex-basis: auto;   /* 내용(텍스트)에 따라 기본 너비가 결정되도록 변경 */
-				height: 35px;
-				font-size: 1rem; 
-				border: 1px solid #ccc; background-color: white;
-				border-radius: 0.5rem; cursor: pointer;
-				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-				padding: 0 0.7rem;    /* 좌우 패딩을 조정해 공간 확보 */
-				white-space: nowrap;
-				text-align: center;
-				/* min-width: 70px; <-- 이 속성을 삭제하여 너비가 유연하게 변하도록 함 */
-			}
-			#center-buttons button.confirm-animation {
-				color: #e74c3c;
-				background-color: #ffe0e0;
-				border: 2px solid #e74c3c;
-				animation: buttonPulse 1s infinite alternate;
-				transform-origin: center center;
-			}
-			@keyframes buttonPulse {
-				from { box-shadow: 0 0 0px rgba(231, 76, 60, 0.3); }
-				to   { box-shadow: 0 0 15px rgba(231, 76, 60, 1); }
-			}
-
-			/* Dice & Menus */
-			.dice-container {
-				position: absolute; top: 50%; left: 50%;
-				transform: translate(-50%, -50%);
-				width: 90%; display: none; justify-content: center;
-				align-items: center; gap: 1rem;
-				z-index: 950;
-			}
-			.dice-container.pushed-up { top: 40%; }
-			.dice-container.pushed-down { top: 60%; }
-
-			.individual-dice-wrapper {
-				display: flex; gap: 0.5rem; overflow-x: auto;
-				justify-content: center; flex-wrap: wrap;
-				max-height: 12rem;
-				scrollbar-width: none;
-			}
-			.individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
-			.dice {
-				flex-shrink: 0; min-width: 3rem; height: 3rem;
-				font-size: 1.8rem; font-weight: bold;
-				background-color: #34495e; color: white;
-				border-radius: 0.5rem; display: flex;
-				justify-content: center; align-items: center;
+			#toggle-button {
+				width: 42px;
+				height: 42px;
+				cursor: pointer;
+				border-radius: 50%;
 				box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-				transform: rotate(0deg) !important;
-			}
-			.dice.rolling { animation: diceRollAnimation 0.1s infinite alternate; }
-			@keyframes diceRollAnimation { from { transform: scale(1); } to { transform: scale(1.02); } }
-			.dice.finalized {
-				background-color: #2ecc71;
-				animation: diceFinalizeAnimation 0.5s ease-out forwards;
-			}
-			@keyframes diceFinalizeAnimation { from { transform: scale(0.8); } to { transform: scale(1); } }
-			.dice-sum-display {
-				flex-shrink: 0; width: 4rem; height: 4rem;
-				font-size: 2.5rem; font-weight: bold;
-				color: white; background-color: #e74c3c;
-				border-radius: 0.5rem; display: flex;
-				justify-content: center; align-items: center;
-				box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-				transition: opacity 0.3s ease, transform 0.3s ease;
-				opacity: 0; transform: scale(0.8);
-			}
-			.dice-sum-display.show { opacity: 1; transform: scale(1); }
-
-			.overlay {
-				position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-				background: rgba(0,0,0,0.8); /* 80% 불투명도로 변경하여 훨씬 어둡게 */
-				z-index: 900; display: none;
-			}
-			.dice-menu {
-				position: absolute; background: rgba(0, 0, 0, 0.85);
-				color: white; padding: 1rem; border-radius: 0.5rem;
-				display: none; z-index: 1000; width: 95%; max-width: 600px;
-				box-sizing: border-box; flex-direction: column;
-				align-items: center; left: 50%; transform: translateX(-50%);
-			}
-			.dice-menu-label { margin-bottom: 0.8rem; font-weight: bold; font-size: 1.1rem; }
-			.dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
-			.dice-option {
-				min-width: 40px; padding: 0.5rem 0.8rem;
-				font-size: 1rem; background: #444;
-				border-radius: 0.3rem; cursor: pointer; text-align: center;
-			}
-			#three-player-layout-buttons { display: none; }
-
-			/* Rotate Button */
-			.rotate-button {
-				position: absolute; background: rgba(0,0,0,0.5); color: white;
-				border: none; border-radius: 50%;
-				width: 30px; height: 30px; font-size: 1rem;
-				display: flex; justify-content: center; align-items: center;
-				cursor: pointer; z-index: 100; opacity: 0.7;
-				transition: all 0.2s ease;
-			}
-			.player-area.player-pos-top-left .rotate-button { bottom: 10px; left: 10px; }
-			.player-area.player-pos-top-right .rotate-button { bottom: 10px; right: 10px; }
-			.player-area.player-pos-bottom-left .rotate-button { top: 10px; left: 10px; }
-			.player-area.player-pos-bottom-right .rotate-button { top: 10px; right: 10px; }
-
-			.player-header-buttons {
-				position: absolute;
-				bottom: 10px;
-				left: 10px; /* 왼쪽 가장자리에서 10px 위치에 고정 */
-				/* transform: translateX(-50%);  <-- 이 줄을 삭제하거나 주석 처리 */
-				display: flex;
-				gap: 10px;
-				z-index: 20;
 			}
 
-
-			.header-button {
-				width: 60px;
-				height: 60px;
-				/* background-color: rgba(0, 0, 0, 0.4); <-- 기존 색상 대신 변수 사용 */
-				background-color: var(--button-bg-color);
-				border: 2px solid transparent;
-				border-radius: 20%; /* 요청하신대로 수정 */
-				cursor: pointer;
-				background-size: 85%;
-				background-position: center;
-				background-repeat: no-repeat;
-				transition: all 0.2s ease;
-			}
-
-			.header-button:hover {
-				/* background-color: rgba(0, 0, 0, 0.6); <-- 기존 색상 대신 변수 사용 */
-				background-color: var(--button-hover-bg-color);
-			}
-
-
-			.theme-selector-overlay {
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				background-color: rgba(0, 0, 0, 0.7);
-				display: none; /* Initially hidden */
-				justify-content: center;
-				align-items: center;
-				z-index: 1050;
-			}
-
-			.theme-selector-container {
-				display: flex;
-				/* flex-wrap: nowrap; 아이템을 한 줄로만 표시하도록 변경 */
-				/* 또는 flex-direction을 row로 명시하면 기본값이 nowrap입니다. */
-				flex-direction: row; 
-				gap: 10px;
-				padding: 20px;
-				background-color: #2c3e50;
-				border-radius: 10px;
-				max-width: 80%;
-				/* max-height는 이제 필요 없으므로 제거합니다. */
-				overflow-x: auto; /* 가로 스크롤을 자동으로 표시 */
-			}
-
-			/* 스크롤바 전체 - 가로 스크롤이므로 높이(height)를 조절 */
-			.theme-selector-container::-webkit-scrollbar {
-			height: 8px;
-			}
-
-			/* 스크롤바 트랙(배경) */
-			.theme-selector-container::-webkit-scrollbar-track {
-			background: rgba(0, 0, 0, 0.2);
-			border-radius: 4px;
-			}
-
-			/* 스크롤바 핸들(움직이는 막대) */
-			.theme-selector-container::-webkit-scrollbar-thumb {
-			background: rgba(255, 255, 255, 0.4);
-			border-radius: 4px;
-			}
-
-			.theme-selector-container::-webkit-scrollbar-thumb:hover {
-			background: rgba(255, 255, 255, 0.6);
-			}
-
-			.theme-swatch {
-				width: 50px;
-				height: 50px;
-				border-radius: 5px;
-				cursor: pointer;
-				border: 2px solid #fff;
-				transition: transform 0.1s ease;
-				flex-shrink: 0; 
-			}
-
-			.theme-swatch:hover {
-				transform: scale(1.1);
-			}
-
-			.theme-swatch.disabled {
-				cursor: not-allowed;
-				opacity: 0.5;
-				border-color: #666;
-			}
-
-			.dungeon-overlay {
-				position: fixed;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				background-color: rgba(0, 0, 0, 0.8);
-				z-index: 2000;
-				display: none; /* Initially hidden */
-				justify-content: center;
-				align-items: center;
-				color: white;
-				font-size: 2rem;
-			}
-
-		@keyframes colorShift {
-			from {
-				filter: hue-rotate(0deg) brightness(1.2);
-			}
-			to {
-				filter: hue-rotate(45deg) brightness(1.2);
-			}
+			.life-log-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.6);
+			display: none; /* 평소엔 숨김 */
+			justify-content: center;
+			align-items: center;
+			z-index: 1100;
+			backdrop-filter: blur(5px);
 		}
 
-		.header-button.active {
-			box-shadow: 
-			/* 바깥 글로우: blur-radius를 15px -> 18px로 키워 살짝 넓게 */
-			0 0 15px var(--highlight-color, transparent),
-			/* 안쪽 글로우: spread-radius를 2px -> 0px로 바꿔 훨씬 부드럽고 은은하게 */
-			inset 0 0 6px 0px var(--highlight-color, transparent);
-
-			border-color: var(--highlight-color, transparent);
+		.life-log-modal {
+			background-color: #343a40;
+			padding: 20px;
+			border-radius: 10px;
+			width: 90%;
+			height: 70%;
+			max-width: 800px;
+			box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+			position: relative;
+			display: flex;
+			flex-direction: column;
 		}
 
-		.header-button.is-animating {
-			animation: colorShift 2s infinite alternate ease-in-out;
+		.life-log-modal .close-button {
+			position: absolute;
+			top: 10px;
+			right: 15px;
+			background: transparent;
+			border: none;
+			color: white;
+			font-size: 2rem;
+			line-height: 1;
+			cursor: pointer;
+			opacity: 0.7;
+		}
+		.life-log-modal .close-button:hover {
+			opacity: 1;
 		}
 
-	#toggle-button-container {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 1020;
-	}
+		/* iOS 기기일 때만 전체화면 버튼을 숨깁니다 */
+		body.iOS #fullscreenBtn {
+			display: none;
+		}
 
-	#toggle-button {
-		width: 42px;
-		height: 42px;
-		cursor: pointer;
-		border-radius: 50%;
-		box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-	}
+		/* ==================================================
+		Dungeon Room Styles
+		================================================== */
 
-	.life-log-overlay {
+		.dungeon-modal {
+    width: 90vw;
+    max-width: 1200px;
+    height: 85vh;
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    overflow: hidden;
+}
+
+/* --- Left Panel: Map --- */
+.dungeon-map-panel {
+    flex-basis: 55%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #444;
+    flex-shrink: 0; /* [수정] 너비가 줄어들지 않도록 고정 */
+}
+
+.dungeon-title {
+    text-align: center;
+    margin: 0 0 20px 0;
+    font-size: 1.5rem;
+    color: #ffd700;
+    text-shadow: 0 0 5px #ffd700;
+}
+
+.dungeon-map-container {
+	position: relative;
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px; 
+    padding: 20px 10px;
+}
+
+.dungeon-arrow-svg {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: none; /* 평소엔 숨김 */
-    justify-content: center;
-    align-items: center;
-    z-index: 1100;
-    backdrop-filter: blur(5px);
-}
-
-.life-log-modal {
-    background-color: #343a40;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    height: 70%;
-    max-width: 800px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
-
-.life-log-modal .close-button {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 2rem;
-    line-height: 1;
-    cursor: pointer;
-    opacity: 0.7;
-}
-.life-log-modal .close-button:hover {
-    opacity: 1;
-}
-
-/* css/style.css 에 추가할 내용 */
-
-.dungeon-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.75);
-    display: none; /* JS로 제어 */
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
-}
-
-.dungeon-modal {
-    background-color: #1f2937; /* bg-gray-800 */
-    width: 100%;
-    max-width: 80rem; /* 1280px */
-    height: 90vh;
-    border-radius: 1rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    display: flex;
-    flex-direction: column; /* Mobile first */
-    overflow: hidden;
-    border: 1px solid #4b5563; /* gray-600 */
-}
-
-@media (min-width: 768px) { /* md breakpoint */
-    .dungeon-modal {
-        flex-direction: row;
-    }
-}
-
-.dungeon-map-panel {
-    flex: 3;
-    padding: 1.5rem;
-    overflow-y: auto;
-}
-
-.dungeon-info-panel {
-    flex: 2;
-    background-color: #111827; /* bg-gray-900 */
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.dungeon-title {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #f3f4f6; /* gray-200 */
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.dungeon-map-container {
-    position: relative;
-    width: 100%;
-    min-height: 60vh;
+    pointer-events: none; /* 화살표가 클릭을 방해하지 않도록 함 */
+    z-index: -1; /* 방(room)들보다 아래에 위치 */
 }
 
 .dungeon-floor {
     display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin-bottom: 4rem; /* 64px */
-}
-
-.dungeon-room {
-    position: relative;
-    border: 2px solid #4b5563; /* gray-600 */
-    background-color: #374151; /* gray-700 */
-    transition: all 0.2s ease-in-out;
-    width: 8rem; /* 128px */
-    height: 6rem; /* 96px */
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    color: #d1d5db; /* gray-300 */
+    gap: 20px;
+    position: relative;
+    width: 100%;
 }
 
-.room-name {
-    font-weight: bold;
-    font-size: 0.875rem;
+		/* --- Right Panel: Room Info --- */
+		.dungeon-info-panel {
+    flex-basis: 45%;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    background-color: #2a2a2a;
+    flex-shrink: 0; /* [수정] 너비가 줄어들지 않도록 고정 */
+    box-sizing: border-box; /* 패딩이 너비에 영향을 주지 않도록 설정 */
 }
 
-.room-floor {
-    font-size: 0.75rem;
-    color: #9ca3af; /* gray-400 */
-    margin-top: 0.25rem;
+.info-content-wrapper {
+    flex-grow: 1; 
+    overflow-y: auto;
 }
 
-.player-marker {
-    position: absolute;
-    bottom: -0.75rem;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 2px 8px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: white;
-    border: 1px solid #111827;
-}
-
-.marker-p1 { background-color: #3b82f6; } /* blue-500 */
-.marker-p2 { background-color: #ef4444; } /* red-500 */
-.marker-p3 { background-color: #22c55e; } /* green-500 */
-.marker-p4 { background-color: #eab308; } /* yellow-500 */
-.marker-p5 { background-color: #8b5cf6; } /* violet-500 */
-.marker-p6 { background-color: #ec4899; } /* pink-500 */
-
-.current-p1 { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
-.current-p2 { border-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
-/* ... 다른 플레이어 색상도 추가 가능 ... */
-
-.next-choice {
-    border-color: #10b981; /* emerald-500 */
-    background-color: #059669;
-    cursor: pointer;
-    transform: scale(1.05);
-    color: white;
-}
-
-.next-choice:hover {
-    background-color: #10b981;
-    border-color: #6ee7b7;
-}
-
-#dungeon-room-info {
-    flex-grow: 1;
-}
+#dungeon-room-info { }
 
 .room-info-title {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #f59e0b; /* amber-500 */
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #ffffff;
+    word-break: break-word; 
 }
 
 .room-info-meta {
-    font-size: 0.875rem;
-    color: #9ca3af; /* gray-400 */
-    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 20px;
+    font-style: italic;
 }
 
 .room-info-ability {
-    background-color: #1f2937; /* gray-800 */
-    padding: 1rem;
-    border-radius: 0.5rem;
-    color: #d1d5db; /* gray-300 */
-    font-size: 1rem;
+    background-color: #111;
+    border-left: 3px solid #ffd700;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+.room-info-ability p {
+    margin: 0;
     line-height: 1.6;
 }
 
-.room-info-prompt {
-    margin-top: 1.5rem;
-    color: #34d399; /* emerald-400 */
-    font-weight: 600;
-    text-align: center;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.room-info-prompt, .room-info-complete {
+    font-size: 1.1rem;
+    color: #ddd;
+    line-height: 1.5;
 }
 
 .room-info-complete {
-    margin-top: 1.5rem;
-    color: #f59e0b; /* amber-500 */
-    font-weight: 600;
+    color: #28a745;
+    font-weight: bold;
     text-align: center;
 }
 
-.dungeon-close-button {
-    width: 100%;
-    background-color: #4b5563; /* gray-600 */
-    color: white;
-    font-weight: bold;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    margin-top: 1rem;
-    transition: background-color 0.2s;
-}
+		/* --- Dungeon Buttons (정리된 최종 버전) --- */
+		.dungeon-info-panel .button-group {
+			display: flex;
+			gap: 10px;
+			margin-top: 20px;
+		}
 
-.dungeon-close-button:hover {
-    background-color: #6b7280; /* gray-500 */
-}
+		.dungeon-action-button {
+			padding: 15px;
+			font-size: 1.2rem;
+			font-weight: bold;
+			border: 2px solid transparent; /* 테두리 공간 확보 */
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.2s ease-in-out;
+			background-color: #007bff;
+			color: white;
+			flex: 1 1 65%; /* [정리] 너비 비율 설정 (65%) */
+		}
+		.dungeon-action-button:hover:not(:disabled) {
+			background-color: #0056b3;
+		}
 
-.current-selection {
-    border-color: #f59e0b; /* amber-500 */
-    box-shadow: 0 0 15px #f59e0b;
-}
+		.dungeon-back-button {
+			padding: 15px;
+			font-size: 1.2rem;
+			font-weight: bold;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.2s ease-in-out;
+			flex: 1 1 35%; /* [정리] 너비 비율 설정 (35%) */
+			background-color: #842029;
+			border: 2px solid transparent;
+			color: white;
+		}
+		.dungeon-back-button:hover:not(:disabled) {
+			background-color: #842029;
+			color: white;
+			border-color: #842029;
+		}
 
-.dungeon-action-button {
-    width: 100%;
-    background-color: #10b981; /* emerald-500 */
-    color: white;
-    font-weight: bold;
-    padding: 0.875rem 1rem;
-    border-radius: 0.5rem;
-    margin-top: 1.5rem;
-    transition: background-color 0.2s;
-    border: none;
-    cursor: pointer;
-}
+		.dungeon-action-button:disabled, .dungeon-back-button:disabled {
+			background-color: #3a3a3a;
+			color: #777;
+			cursor: not-allowed;
+			box-shadow: none;
+			border-color: transparent;
+		}
 
-.dungeon-action-button:hover {
-    background-color: #059669; /* emerald-600 */
-}
 
-/* iOS 기기일 때만 전체화면 버튼을 숨깁니다 */
-body.iOS #fullscreenBtn {
-    display: none;
-}
+		.dungeon-room {
+			width: 120px;
+			height: 80px;
+			background-color: #333;
+			border: 2px solid #555;
+			border-radius: 8px;
+			padding: 5px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			position: relative;
+			transition: all 0.2s ease-in-out;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+		}
+
+		.dungeon-room .room-name { color: #f0f0f0; }
+		.dungeon-room .room-floor { color: #999; }
+
+		/* --- Room States --- */
+
+		/* State: Visited by the current player */
+		.dungeon-room.visited {
+			background-color: #4a4a4a; /* 배경을 더 어둡게 */
+			border-color: #007bff;
+		}
+
+		/* State: Current location of the active player */
+		.dungeon-room.current-player-location {
+			background-color: #004d99; /* 현재 위치는 밝은 배경 유지 */
+			border-color: #00aaff;
+			box-shadow: 0 0 15px #00aaff;
+		}
+
+		.dungeon-room.visited .room-name { color: #aaa; }
+		.dungeon-room.visited .room-floor { color: #777; }
+
+		.dungeon-room.current-player-location .room-name,
+		.dungeon-room.current-player-location .room-floor {
+			color: #f0f0f0;
+		}
+
+		/* State: A clickable next choice */
+		.dungeon-room.next-choice {
+			cursor: pointer;
+			border-color: #17a2b8;
+			box-shadow: 0 0 15px #17a2b8;
+		}
+		.dungeon-room.next-choice:hover {
+			transform: translateY(-3px);
+			background-color: #495057;
+		}
+
+		/* State: The room currently selected for confirmation */
+		.dungeon-room.current-selection {
+			border-color: #28a745;
+			background-color: #2a3a2e;
+			box-shadow: 0 0 15px #28a745;
+		}
+
+
+		/* --- Player Markers --- */
+		.player-marker {
+			position: absolute;
+			top: -8px;
+			right: -8px;
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 0.8rem;
+			font-weight: bold;
+			color: white;
+			box-shadow: 0 0 5px black;
+			border: 1px solid rgba(255,255,255,0.5);
+		}
+
+		.marker-p1 { background-color: #3b82f6; } /* blue-500 */
+		.marker-p2 { background-color: #ef4444; } /* red-500 */
+		.marker-p3 { background-color: #22c55e; } /* green-500 */
+		.marker-p4 { background-color: #eab308; } /* yellow-500 */
+		.marker-p5 { background-color: #8b5cf6; } /* violet-500 */
+		.marker-p6 { background-color: #ec4899; } /* pink-500 */
+
+		.current-p1 { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+		.current-p2 { border-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+		/* 2명일 때 */
+		.occupant-count-2 .marker-pos-0 { top: -8px; left: -8px; right: auto; }
+		.occupant-count-2 .marker-pos-1 { top: -8px; right: -8px; }
+
+		/* 3명일 때 */
+		.occupant-count-3 .marker-pos-0 { top: -8px; left: -8px; right: auto; }
+		.occupant-count-3 .marker-pos-1 { top: -8px; right: -8px; }
+		.occupant-count-3 .marker-pos-2 { bottom: -8px; left: -8px; top: auto; right: auto; }
+
+		/* 4명일 때 */
+		.occupant-count-4 .marker-pos-0 { top: -8px; left: -8px; right: auto; }
+		.occupant-count-4 .marker-pos-1 { top: -8px; right: -8px; }
+		.occupant-count-4 .marker-pos-2 { bottom: -8px; left: -8px; top: auto; right: auto; }
+		.occupant-count-4 .marker-pos-3 { bottom: -8px; right: -8px; top: auto; }
+
+		/* 5명일 때 */
+		.occupant-count-5 .marker-pos-0 { top: -8px; left: -8px; right: auto; }
+		.occupant-count-5 .marker-pos-1 { top: -8px; right: -8px; }
+		.occupant-count-5 .marker-pos-2 { top: -8px; left: 50%; transform: translateX(-50%); right: auto; }
+		.occupant-count-5 .marker-pos-3 { bottom: -8px; left: -8px; top: auto; right: auto; }
+		.occupant-count-5 .marker-pos-4 { bottom: -8px; right: -8px; top: auto; }
+
+		/* 6명일 때 */
+		.occupant-count-6 .marker-pos-0 { top: -8px; left: -8px; right: auto; }
+		.occupant-count-6 .marker-pos-1 { top: -8px; right: -8px; }
+		.occupant-count-6 .marker-pos-2 { top: -8px; left: 50%; transform: translateX(-50%); right: auto; }
+		.occupant-count-6 .marker-pos-3 { bottom: -8px; left: -8px; top: auto; right: auto; }
+		.occupant-count-6 .marker-pos-4 { bottom: -8px; right: -8px; top: auto; }
+		.occupant-count-6 .marker-pos-5 { bottom: -8px; left: 50%; transform: translateX(-50%); top: auto; right: auto; }
+		
+
