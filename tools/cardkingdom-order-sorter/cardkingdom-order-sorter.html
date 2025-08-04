@@ -1,474 +1,637 @@
-<!DOCTYPE html>
-        <html>
-        <head>
-            <title>Card List Parser</title>
-        <style>
-            #toastMessage {
-                visibility: hidden;
-                min-width: 250px;
-                margin-left: -125px;
-                background-color: #333;
-                color: #fff;
-                text-align: center;
-                border-radius: 2px;
-                padding: 16px;
-                position: fixed;
-                z-index: 1;
-                left: 50%;
-                bottom: 30px;
-                font-size: 30px;
-            }
-        </style>
-        </head>
-
-            <select id="listSelector">
-            <input type="text" id="customListName" placeholder="Enter new list name">
-            <button id="addListButton">Add List</button>
-                
-            <label><input type="checkbox" id="toggleEditor"> Hide Text Editor</label><br>
-            <textarea id="textInput" rows="10" cols="50"></textarea><br>
-            <button id="applyButton">Apply</button>
-            <button id="resetButton">Reset</button>
-
-            <input type="file" id="fileInput" />
-            <label><input type="checkbox" id="toggleInfo"> Show card names only</label>
-            <button id="copyToClipboard">Copy to Clipboard</button>
-            <button id="copyToClipboardSum">Sum to Clipboard</button>
-            <div id="toastMessage">클립보드에 현재 리스트가 저장되었습니다.</div>
-            <div id="cardListOutput"></div>
-
-            <script>
-
-            document.getElementById('listSelector').addEventListener('change', function() {
-                const selectedList = this.value;
-                let displayList;
-
-                switch (selectedList) {
-                    case 'parsedList':
-                        let parsedList = getParsedList();
-                        sortCards(parsedList)
-                        currentDisplayList = parsedList;
-                        listType = 'parsedList';
-                        break;
-                    case 'addedList':
-                        let addedList = getAddedList();
-                        sortCards(addedList);
-                        currentDisplayList = addedList;
-                        listType = 'addedList';
-                        break;
-                    case 'removedList':
-                        let removedList = getRemoveList();
-                        sortCards(removedList);
-                        currentDisplayList = removedList;
-                        listType = 'removedList';
-                        break;
-                    default: // 커스텀 리스트
-                        if (selectedList in cardListPool.customLists) {
-                            sortCards(cardListPool.customLists[selectedList]);
-                            currentDisplayList = cardListPool.customLists[selectedList];
-                            listType = selectedList; // 사용자 정의 리스트 이름을 listType으로 사용
-                        } 
-                        break;
-                }
-
-                displayCards(currentDisplayList, false, listType);
-            });
-
-            document.getElementById('toggleEditor').addEventListener('change', function() {
-                const isHidden = this.checked;
-                const editorElements = [document.getElementById('textInput'), 
-                                        document.getElementById('applyButton'), 
-                                        document.getElementById('resetButton')];
-
-                editorElements.forEach(element => {
-                    element.style.display = isHidden ? 'none' : 'block';
-                });
-            });
-
-            document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
-            document.getElementById('toggleInfo').addEventListener('change', handleToggleChange, false);
-
-            document.getElementById('applyButton').addEventListener('click', function() {
-                const textInput = document.getElementById('textInput').value;
-
-                applyText(textInput);                
-            });
-
-            document.getElementById('resetButton').addEventListener('click', function() {
-                document.getElementById('textInput').value = '';
-                document.getElementById('cardListOutput').innerHTML = '';
-            });
-
-            document.getElementById('addListButton').addEventListener('click', function() {
-                const listName = document.getElementById('customListName').value.trim();
-
-                if (listName) {
-                    addCustomList(listName);
-                    document.getElementById('customListName').value = '';
-                } else {
-                    alert('Please enter a valid list name.');
-                }
-            });
-
-            document.getElementById('copyToClipboard').addEventListener('click', function() {
-
-                const cardNames = currentDisplayList.map(card => card.name).join('\n');
-                
-                navigator.clipboard.writeText(cardNames).then(() => {
-                    const toast = document.getElementById('toastMessage');
-                    toast.style.visibility = 'visible';
-                    setTimeout(() => toast.style.visibility = 'hidden', 2500);
-                }).catch(err => {
-                    console.error('클립보드 복사 실패:', err);
-                });
-            });
-
-            document.getElementById('copyToClipboardSum').addEventListener('click', function() {
-                let totalQuantity = 0;
-                let totalPrice = 0.0;
-
-                let finalText = "";
-
-                if (listType != 'parsedList' && listType != 'addedList' && listType != 'removedList')
-                {
-                    finalText = `List: ${listType}\n`;
-                }
-
-                const cardInfo = currentDisplayList.map(card => {
-                    const cardTotalPrice = card.quantity * card.price;
-                    totalQuantity += card.quantity;
-                    totalPrice += cardTotalPrice;
-
-                    const priceFormatted = `$${cardTotalPrice.toFixed(2)}`.padEnd(10, ' ');
-                    const quantityFormatted = `${card.quantity}장`.padEnd(6, ' ');
-                    const nameFormatted = card.name.padEnd(30, ' ');
-
-                    return `${priceFormatted}${quantityFormatted}${nameFormatted}`;
-                }).join('\n');
-
-                const summary = `총 계 ${totalQuantity}장, $${totalPrice.toFixed(2)}`;
-                finalText += cardInfo;
-                finalText += '\n--------------------------------------------------------------------------------------------\n'
-                finalText += summary;
-
-                navigator.clipboard.writeText(finalText).then(() => {
-                    const toast = document.getElementById('toastMessage');
-                    toast.style.visibility = 'visible';
-                    setTimeout(() => toast.style.visibility = 'hidden', 2500);
-                }).catch(err => {
-                    console.error('클립보드 복사 실패:', err);
-                });
-            });
-
-            let cardListPool = {
-                parsedList: [],
-                addedList: [],
-                removedList: [],
-                customLists: {}
-            };
-
-            let currentDisplayList = getParsedList();
-            let listType = "parsedList";
-
-            function applyText(text)
-            {
-                clearCardList();
-
-                var defaultParsedList = getParsedList();
-
-                parseCardList(defaultParsedList, text);
-                sortCards(defaultParsedList);
-                displayCards(defaultParsedList, false, listType);
-            }
-
-            function getParsedList()
-            {
-                return cardListPool.parsedList;
-            }
-
-            function getAddedList()
-            {
-                return cardListPool.addedList;
-            }
-
-            function getRemoveList()
-            {
-                return cardListPool.removedList;
-            }
-
-            function getCustomList(listName)
-            {
-                if (listName in cardListPool.customLists)
-                {
-                    return cardListPool.customLists[listName];
-                }
-                else
-                {
-                    console.warn(`List '${listName}' does not exist.`);
-                    return null;
-                }
-            }
-
-            function clearCardList()
-            {
-                getParsedList().length = 0;
-                getRemoveList().length = 0;
-                getAddedList().length = 0;
-
-                Object.keys(cardListPool.customLists).forEach(listName => {
-                    cardListPool.customLists[listName].length = 0;
-                });
-            }
-
-            function addCustomList(listName) {
-                if (cardListPool.customLists[listName]) {
-                    console.warn(`List '${listName}' already exists.`);
-                    return;
-                }
-
-                cardListPool.customLists[listName] = [];
-
-                const listSelector = document.getElementById('listSelector');
-                const newOption = document.createElement('option');
-                newOption.value = listName;
-                newOption.textContent = listName;
-                listSelector.appendChild(newOption);
-            }
-
-            function initializeComboBox() {
-                const listSelector = document.getElementById('listSelector');
-                ['parsedList', 'addedList', 'removedList'].forEach(listName => {
-                    const option = document.createElement('option');
-                    option.value = listName;
-                    option.textContent = listName;
-                    listSelector.appendChild(option);
-                });
-            }
-
-            // 페이지 로드 시 초기화
-            window.onload = initializeComboBox;
-
-            function handleFileSelect(event) {
-                const file = event.target.files[0];
-                if (!file) {
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(fileEvent) {
-                    const text = fileEvent.target.result;
-                    applyText(text);
-                };
-                reader.readAsText(file);
-            }
-
-            function handleToggleChange() {
-                const isChecked = document.getElementById('toggleInfo').checked;
-                displayCards(currentDisplayList, isChecked, listType);
-            }
-
-            function displayCards(displayList, showNamesOnly, listType) {
-                const outputDiv = document.getElementById('cardListOutput');
-                outputDiv.innerHTML = '';
-
-                // 장수별 컬러
-                const quantityColorMap = {
-                    2: 'blue',
-                    3: 'green',
-                    4: 'orange',
-                    5: 'red'
-                };
-
-                displayList.forEach((card, index) => {
-                    let color = quantityColorMap[card.quantity] || 'black'; 
-
-                    // 카드 정보 표시
-                    const cardElement = document.createElement('div');
-
-                    if (listType == "parsedList")
-                    {
-                        // add 버튼
-                        const addButton = document.createElement('button');
-                        addButton.textContent = 'Add';
-                        addButton.onclick = function() {
-                            if (card.quantity > 1) {
-                                card.quantity -= 1;
-                                getAddedList().push({...card, quantity: 1});
-                            } else {
-                                getAddedList().push(card);
-                                displayList.splice(index, 1);
-                            }
-                            displayCards(displayList, showNamesOnly, listType);
-                        };
-                        cardElement.appendChild(addButton);
-
-                        // remove 버튼
-                        const removeButton = document.createElement('button');
-                        removeButton.textContent = 'Remove';
-                        removeButton.onclick = function() {
-                            if (card.quantity > 1) {
-                                card.quantity -= 1;
-                                getRemoveList().push({...card, quantity: 1});
-                            } else {
-                                getRemoveList().push(card);
-                                displayList.splice(index, 1);
-                            }
-                            displayCards(displayList, showNamesOnly, listType);
-                        };
-                        cardElement.appendChild(removeButton);
-
-                        // 커스텀 리스트 UI
-                        if (Object.keys(cardListPool.customLists).length > 0)
-                        {
-                            const listSelector = document.createElement('select');
-                            Object.keys(cardListPool.customLists).forEach(listName => {
-                                const option = document.createElement('option');
-                                option.value = listName;
-                                option.textContent = listName;
-                                listSelector.appendChild(option);
-                            });
-
-                            const addToCustomListButton = document.createElement('button');
-                            addToCustomListButton.textContent = 'Add to Custom List';
-                            addToCustomListButton.onclick = function() {
-                                const selectedList = listSelector.value;
-
-                                let list = getCustomList(listSelector.value);
-
-                                if (list)
-                                {
-                                    if (card.quantity > 1) {
-                                    card.quantity -= 1;
-                                    list.push({...card, quantity: 1});
-                                    } else {
-                                        list.push(card);
-                                        displayList.splice(index, 1);
-                                    }
-                                }
-                                else
-                                {
-                                    console.warn('no exist custom list error');
-                                }
-                                
-                                displayCards(displayList, showNamesOnly, listType);
-                            };
-
-                            cardElement.appendChild(listSelector);
-                            cardElement.appendChild(addToCustomListButton);
-                        }
-                    }
-                    else
-                    {
-                        // 복구 버튼
-                        const restoreButton = document.createElement('button');
-                        restoreButton.textContent = '복구';
-                        restoreButton.onclick = function() {
-                            displayList.splice(index, 1);
-                            const existingCardIndex = getParsedList().findIndex(c =>
-                                c.name === card.name && c.edition === card.edition
-                            );
-
-                            if (existingCardIndex !== -1) {
-                                getParsedList()[existingCardIndex].quantity += card.quantity;
-                            } else {
-                                getParsedList().push({...card});
-                            }
-                                
-                            displayCards(displayList, showNamesOnly, listType);
-                        };
-                        cardElement.appendChild(restoreButton);
-                    }
-
-                    // 카드 정보 구성
-                    const cardInfoElement = document.createElement('span');
-                    
-                    if (!showNamesOnly) {
-                        cardInfoElement.innerHTML = `<br>${card.edition} (${card.condition}, Quantity: ${card.quantity}, Price: $${card.price.toFixed(2)}, Total: $${(card.quantity * card.price).toFixed(2)})</br>`;
-                    }
-                    cardInfoElement.innerHTML += `<strong style="color: ${color};">${card.name}</strong>`;
-
-                    cardElement.appendChild(cardInfoElement);
-
-
-                    // 클릭 시, 바뀌는 배경 컬러
-                    const bgColors = ['white', '#add8e6', '#90ee90'];
-                    let currentColorIndex = 0;
-
-                    // 클릭시 배경 변경
-                    cardElement.style.cursor = 'pointer';
-                    cardElement.onclick = function() {
-                        currentColorIndex = (currentColorIndex + 1) % bgColors.length;
-                        this.style.backgroundColor = bgColors[currentColorIndex];
-                    };
-
-                    outputDiv.appendChild(cardElement);
-                });
-            }
-
-            function parseCardList(_cards, cardListText) 
-            {
-                const lines = cardListText.split('\n');
-
-                let currentCondition = '';
-
-                lines.forEach(line => {
-
-                    if ((/^\s*$/.test(line)) || (/SINGLES\s*$/.test(line)) || (/Description\s*/.test(line))) {
-                        return;
-                    }
-
-                    const firstColonIndex = line.indexOf(':');
-                    if (firstColonIndex === -1) return; // 카드명, 판본 분리, ':'가 없으면 유효 X
-
-                    const name = line.substring(0, firstColonIndex).trim();
-                    const restLine = line.substring(firstColonIndex + 1).trim();
-
-                    const parts = restLine.split('\t'); // 나머지 분리
-
-                    if (parts.length >= 4) {
-
-                        const edition = parts[0].trim();
-                        const condition = parts[1].trim();
-                        const quantity = parseInt(parts[2]);
-                        const price = parseFloat(parts[3].substring(1));
-                        const total = parseFloat(parts[4].substring(1));
-
-                        _cards.push({
-                            name,
-                            edition,
-                            condition,
-                            quantity,
-                            price,
-                            total
-                        });
-                    }
-                });
-
-                return _cards;
-            }
-
-            function sortCards(_cards) {
-
-                const conditionOrder = {
-                    'NM': 1,
-                    'EX': 2,
-                    'G': 3,
-                    'VG': 4
-                };
-
-                // 상태 / 판본 / 이름 순 정렬
-                return _cards.sort((a, b) => {
-
-                    const conditionCompare = (conditionOrder[a.condition] || 5) - (conditionOrder[b.condition] || 5);
-                    if (conditionCompare !== 0) return conditionCompare;
-
-                    const editionCompare = a.edition.localeCompare(b.edition);
-                    if (editionCompare !== 0) return editionCompare;
-
-                    return a.name.localeCompare(b.name);
-                });
-            }
-            
-            </script>
-        </body>
-        </html>
+	<!DOCTYPE html>
+	<html lang="ko">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Card List Parser</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+		<style>
+			body {
+				background-color: #121212;
+				color: #f1f1f1;
+				font-family: 'Segoe UI', sans-serif;
+				padding: 2rem;
+			}
+
+			.container {
+				max-width: 900px;
+				margin: auto;
+				background-color: #1e1e1e;
+				padding: 2rem;
+				border-radius: 10px;
+				box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+			}
+
+
+			textarea,
+			input[type="text"] {
+				background-color: #2c2c2c;
+				color: #f1f1f1;
+				border: 1px solid #444;
+				border-radius: 5px;
+				padding: 0.5rem;
+				width: 100%;
+				margin-bottom: 1rem;
+			}
+
+			button,
+			select {
+				margin: 0.25rem;
+			}
+
+			#toastMessage {
+				visibility: hidden;
+				min-width: 250px;
+				background-color: #333;
+				color: #fff;
+				text-align: center;
+				border-radius: 5px;
+				padding: 16px;
+				position: fixed;
+				z-index: 1000;
+				left: 50%;
+				bottom: 30px;
+				font-size: 1.2rem;
+				transform: translateX(-50%);
+			}
+
+			.card-entry {
+				padding: 0.75rem;
+				border-bottom: 1px solid #444;
+			}
+
+			.card-entry:hover {
+				background-color: #2a2a2a;
+			}
+
+			.card-entry strong {
+				font-weight: bold;
+				color: white;
+			}
+
+			.card-entry span {
+					color: white;
+			}
+
+			.custom-list-button {
+				min-width: 6em;
+				max-width: 10em;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container">
+			<h2 class="mb-4">🧾 Card List Parser</h2>
+			<div class="mb-3">
+				<select id="listSelector" class="form-select d-inline w-auto"></select>
+				<input type="text" id="customListName" placeholder="New list name" class="form-control d-inline w-auto">
+				<button id="addListButton" class="btn btn-secondary">+ List</button>
+			</div>
+			<div class="form-check mb-2">
+				<input type="checkbox" class="form-check-input" id="toggleEditor">
+				<label class="form-check-label" for="toggleEditor">Hide Text Editor</label>
+			</div>
+			<textarea id="textInput" rows="10" placeholder="💡 카드킹덤 주문 리스트 페이지에서 전체 복사 (Ctrl + A → Ctrl + C) 한 내용을 여기에 붙여넣으세요."></textarea>
+			<div class="mb-3">
+				<button id="applyButton" class="btn btn-success">Apply</button>
+				<button id="resetButton" class="btn btn-warning">Reset</button>
+			</div>
+			<div class="mb-3">
+				<input type="file" id="fileInput" class="form-control">
+			</div>
+			<div class="form-check mb-3">
+				<input type="checkbox" class="form-check-input" id="toggleInfo">
+				<label class="form-check-label" for="toggleInfo">Show card names only</label>
+			</div>
+			<div class="mb-3">
+				<button id="copyToClipboard" class="btn btn-outline-light">📋 Copy Names</button>
+				<button id="copyToClipboardSum" class="btn btn-outline-info">📊 Copy Summary</button>
+				<div id="customListButtons" class="mb-3"></div>
+			</div>
+			<div id="cardListOutput"></div>
+		</div>
+		<div id="toastMessage">✅ 클립보드에 저장되었습니다.</div>
+
+		<script>
+
+
+			document.getElementById('listSelector').addEventListener('change', function () {
+				const selectedList = this.value;
+				let displayList;
+
+				switch (selectedList) {
+					case 'parsedList':
+						let parsedList = getParsedList();
+						sortCards(parsedList)
+						currentDisplayList = parsedList;
+						listType = 'parsedList';
+						break;
+					case 'addedList':
+						let addedList = getAddedList();
+						sortCards(addedList);
+						currentDisplayList = addedList;
+						listType = 'addedList';
+						break;
+					case 'removedList':
+						let removedList = getRemoveList();
+						sortCards(removedList);
+						currentDisplayList = removedList;
+						listType = 'removedList';
+						break;
+					default: // 커스텀 리스트
+						if (selectedList in cardListPool.customLists) {
+							sortCards(cardListPool.customLists[selectedList]);
+							currentDisplayList = cardListPool.customLists[selectedList];
+							listType = selectedList; // 사용자 정의 리스트 이름을 listType으로 사용
+						}
+						break;
+				}
+
+				displayCards(currentDisplayList, false, listType);
+			});
+
+			document.getElementById('toggleEditor').addEventListener('change', function () {
+				const isHidden = this.checked;
+				const editorElements = [document.getElementById('textInput'),
+				document.getElementById('applyButton'),
+				document.getElementById('resetButton')];
+
+				editorElements.forEach(element => {
+					element.style.display = isHidden ? 'none' : 'block';
+				});
+			});
+
+			document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+			document.getElementById('toggleInfo').addEventListener('change', handleToggleChange, false);
+
+			document.getElementById('applyButton').addEventListener('click', function () {
+				const textInput = document.getElementById('textInput').value;
+
+				applyText(textInput);
+			});
+
+			document.getElementById('resetButton').addEventListener('click', function () {
+				document.getElementById('textInput').value = '';
+				document.getElementById('cardListOutput').innerHTML = '';
+
+				cardListPool.parsedList = [];
+				cardListPool.addedList = [];
+				cardListPool.removedList = [];
+				cardListPool.customLists = {}; // ✅ 사람 이름 등 초기화
+
+				updateCustomListUI(); // ✅ UI 동기화
+			});
+
+			document.getElementById('addListButton').addEventListener('click', function () {
+				const listName = document.getElementById('customListName').value.trim();
+
+				if (listName) {
+					addCustomList(listName);
+					document.getElementById('customListName').value = '';
+				} else {
+					alert('Please enter a valid list name.');
+				}
+			});
+
+			document.getElementById('copyToClipboard').addEventListener('click', function () {
+
+				const cardNames = currentDisplayList.map(card => card.name).join('\n');
+
+				navigator.clipboard.writeText(cardNames).then(() => {
+					const toast = document.getElementById('toastMessage');
+					toast.style.visibility = 'visible';
+					setTimeout(() => toast.style.visibility = 'hidden', 2500);
+				}).catch(err => {
+					console.error('클립보드 복사 실패:', err);
+				});
+			});
+
+			document.getElementById('copyToClipboardSum').addEventListener('click', function () {
+				let totalQuantity = 0;
+				let totalPrice = 0.0;
+
+				let finalText = "";
+
+				if (listType != 'parsedList' && listType != 'addedList' && listType != 'removedList') {
+					finalText = `List: ${listType}\n`;
+				}
+
+				const cardInfo = currentDisplayList.map(card => {
+					const cardTotalPrice = card.quantity * card.price;
+					totalQuantity += card.quantity;
+					totalPrice += cardTotalPrice;
+
+					const priceFormatted = `$${cardTotalPrice.toFixed(2)}`.padEnd(10, ' ');
+					const quantityFormatted = `${card.quantity}장`.padEnd(6, ' ');
+					const nameFormatted = card.name.padEnd(30, ' ');
+
+					return `${priceFormatted}${quantityFormatted}${nameFormatted}`;
+				}).join('\n');
+
+				const summary = `총 계 ${totalQuantity}장, $${totalPrice.toFixed(2)}`;
+				finalText += cardInfo;
+				finalText += '\n--------------------------------------------------------------------------------------------\n'
+				finalText += summary;
+
+				navigator.clipboard.writeText(finalText).then(() => {
+					const toast = document.getElementById('toastMessage');
+					toast.style.visibility = 'visible';
+					setTimeout(() => toast.style.visibility = 'hidden', 2500);
+				}).catch(err => {
+					console.error('클립보드 복사 실패:', err);
+				});
+			});
+
+			let cardListPool = {
+				parsedList: [],
+				addedList: [],
+				removedList: [],
+				customLists: {}
+			};
+
+			let currentDisplayList = getParsedList();
+			let listType = "parsedList";
+
+			function applyText2(text) {
+				clearCardList();
+
+				var defaultParsedList = getParsedList();
+
+				parseCardList(defaultParsedList, text);
+				sortCards(defaultParsedList);
+				displayCards(defaultParsedList, false, listType);
+			}
+
+			function parseCardListFromFullPage(text) {
+				const lines = text.split('\n');
+
+				const cards = [];
+				const regex = /^(.+?):\s*(.+?)\t(NM|EX|G|VG)\t(\d+)\t\$(\d+\.\d{2})\t\$(\d+\.\d{2})$/;
+
+				lines.forEach(line => {
+					const match = line.match(regex);
+					if (match) {
+						const name = match[1].trim();
+						const edition = match[2].trim();
+						const condition = match[3].trim();
+						const quantity = parseInt(match[4], 10);
+						const price = parseFloat(match[5]);
+						const total = parseFloat(match[6]);
+
+						cards.push({
+							name,
+							edition,
+							condition,
+							quantity,
+							price,
+							total
+						});
+					}
+				});
+
+				return cards;
+			}
+
+			function applyText(text) {
+				clearCardList();
+				const defaultParsedList = getParsedList();
+
+				const parsed = parseCardListFromFullPage(text);
+				defaultParsedList.push(...parsed);
+
+				sortCards(defaultParsedList);
+				displayCards(defaultParsedList, false, listType);
+			}
+
+			function switchToCustomList(name) {
+				const list = getCustomList(name);
+				if (list) {
+					sortCards(list);
+					currentDisplayList = list;
+					listType = name;
+					displayCards(currentDisplayList, document.getElementById('toggleInfo').checked, listType);
+				}
+			}
+
+			function getParsedList() {
+				return cardListPool.parsedList;
+			}
+
+			function getAddedList() {
+				return cardListPool.addedList;
+			}
+
+			function getRemoveList() {
+				return cardListPool.removedList;
+			}
+
+			function getCustomList(listName) {
+				if (listName in cardListPool.customLists) {
+					return cardListPool.customLists[listName];
+				}
+				else {
+					console.warn(`List '${listName}' does not exist.`);
+					return null;
+				}
+			}
+
+			function clearCardList() {
+				getParsedList().length = 0;
+				getRemoveList().length = 0;
+				getAddedList().length = 0;
+
+				Object.keys(cardListPool.customLists).forEach(listName => {
+					cardListPool.customLists[listName].length = 0;
+				});
+			}
+
+			function updateCustomListUI() {
+				const container = document.getElementById('customListButtons');
+				container.innerHTML = '';
+
+				const names = Object.keys(cardListPool.customLists);
+
+				// 기본 리스트 3개 항상 상단 표시
+				const baseLists = ['parsedList', 'addedList', 'removedList'];
+				baseLists.forEach(type => {
+					const count = cardListPool[type].reduce((sum, card) => sum + card.quantity, 0);
+					const btn = document.createElement('button');
+					btn.textContent = `${type} (${count})`;
+					btn.className = 'btn btn-outline-light custom-list-button';
+					btn.onclick = () => {
+						sortCards(cardListPool[type]);
+						currentDisplayList = cardListPool[type];
+						listType = type;
+						displayCards(currentDisplayList, document.getElementById('toggleInfo').checked, listType);
+					};
+					container.appendChild(btn);
+				});
+
+				// 커스텀 리스트 (5명 이하까지는 버튼)
+				if (names.length <= 5) {
+					names.forEach(name => {
+						const total = cardListPool.customLists[name].reduce((sum, card) => sum + card.quantity, 0);
+						const btn = document.createElement('button');
+						btn.textContent = `${name.length > 4 ? name.slice(0, 4) + '…' : name} (${total})`;
+						btn.title = name;
+						btn.className = 'btn btn-outline-primary custom-list-button';
+						btn.onclick = () => switchToCustomList(name);
+						container.appendChild(btn);
+					});
+				} else {
+					// 드롭다운 + 버튼
+					const select = document.createElement('select');
+					select.className = 'form-select d-inline w-auto me-1';
+					names.forEach(name => {
+						const option = document.createElement('option');
+						option.value = name;
+						option.textContent = name;
+						select.appendChild(option);
+					});
+
+					const total = cardListPool.customLists[select.value]?.reduce((sum, card) => sum + card.quantity, 0) || 0;
+
+					const addBtn = document.createElement('button');
+					addBtn.className = 'btn btn-outline-primary custom-list-button';
+					addBtn.textContent = `Go (${total})`;
+					addBtn.onclick = () => switchToCustomList(select.value);
+
+					container.appendChild(select);
+					container.appendChild(addBtn);
+				}
+			}
+
+			function addCustomList(name) {
+				if (!cardListPool.customLists[name]) {
+					cardListPool.customLists[name] = [];
+					updateCustomListUI();
+
+					// 리스트 바로 리렌더
+					if (currentDisplayList.length > 0) {
+						displayCards(currentDisplayList, document.getElementById('toggleInfo').checked, listType);
+					}
+				}
+			}
+
+			function addAllButtonsToCards(listName) {
+				displayCards(currentDisplayList, document.getElementById('toggleInfo').checked, listType);
+			}
+			function initializeComboBox() {
+				const listSelector = document.getElementById('listSelector');
+				['parsedList', 'addedList', 'removedList'].forEach(listName => {
+					const option = document.createElement('option');
+					option.value = listName;
+					option.textContent = listName;
+					listSelector.appendChild(option);
+				});
+			}
+
+			// 페이지 로드 시 초기화
+			window.onload = initializeComboBox;
+
+			function handleFileSelect(event) {
+				const file = event.target.files[0];
+				if (!file) {
+					return;
+				}
+
+				const reader = new FileReader();
+				reader.onload = function (fileEvent) {
+					const text = fileEvent.target.result;
+					applyText(text);
+				};
+				reader.readAsText(file);
+			}
+
+			function handleToggleChange() {
+				const isChecked = document.getElementById('toggleInfo').checked;
+				displayCards(currentDisplayList, isChecked, listType);
+			}
+
+			function displayCards(cards, showNamesOnly, currentListType) {
+				const output = document.getElementById('cardListOutput');
+				output.innerHTML = '';
+
+				cards.forEach((card, index) => {
+					const cardElement = document.createElement('div');
+					cardElement.className = 'card-entry';
+
+					// 색상 구분
+					const quantityColorMap = {
+						1: 'white',
+						2: 'blue',
+						3: 'green',
+						4: 'orange',
+						5: 'red'
+					};
+					let color = quantityColorMap[card.quantity] || 'white';
+
+					// 카드 텍스트 구성
+					if (showNamesOnly) {
+						cardElement.textContent = `${card.name} (${card.quantity})`;
+					} else {
+						const nameLine = `<strong style="color:${color}">${card.name}</strong> <span style="color: white;">(${card.quantity})</span>`;
+						const detailLine = `<small style="color: white;">${card.edition} | ${card.condition} | $${card.price.toFixed(2)} x ${card.quantity} = $${card.total.toFixed(2)}</small>`;
+
+						cardElement.innerHTML = `
+							${nameLine}<br>
+							${detailLine}
+						`;
+					}
+
+					// 버튼 그룹 생성
+					const buttonGroup = document.createElement('div');
+					buttonGroup.className = 'mt-2';
+
+					// 기본 버튼: Add, Remove
+					const addBtn = document.createElement('button');
+					addBtn.className = 'btn btn-sm btn-outline-success me-1';
+					addBtn.textContent = 'Add';
+					addBtn.onclick = () => {
+						const target = getAddedList();
+						const existing = target.find(c =>
+							c.name === card.name &&
+							c.edition === card.edition &&
+							c.condition === card.condition
+						);
+						if (existing) {
+							existing.quantity += card.quantity;
+						} else {
+							target.push({ ...card });
+						}
+						cardListPool[currentListType].splice(index, 1);
+						updateCustomListUI();
+						displayCards(cardListPool[currentListType], showNamesOnly, currentListType);
+					};
+					buttonGroup.appendChild(addBtn);
+
+					const removeBtn = document.createElement('button');
+					removeBtn.className = 'btn btn-sm btn-outline-danger me-1';
+					removeBtn.textContent = 'Remove';
+					removeBtn.onclick = () => {
+						const target = getRemoveList();
+						const existing = target.find(c =>
+							c.name === card.name &&
+							c.edition === card.edition &&
+							c.condition === card.condition
+						);
+						if (existing) {
+							existing.quantity += card.quantity;
+						} else {
+							target.push({ ...card });
+						}
+						cardListPool[currentListType].splice(index, 1);
+						updateCustomListUI();
+						displayCards(cardListPool[currentListType], showNamesOnly, currentListType);
+					};
+					buttonGroup.appendChild(removeBtn);
+
+					// 커스텀 리스트 이동 버튼 (parsedList, addedList에서만 표시)
+					if (currentListType === 'parsedList' || currentListType === 'addedList') {
+						const customNames = Object.keys(cardListPool.customLists);
+						customNames.forEach(name => {
+							const btn = document.createElement('button');
+							btn.textContent = `→ ${name.length > 4 ? name.slice(0, 4) + '…' : name}`;
+							btn.title = name;
+							btn.className = 'btn btn-sm btn-outline-info custom-list-button me-1';
+							btn.onclick = () => {
+								const list = getCustomList(name);
+								const existing = list.find(c =>
+									c.name === card.name &&
+									c.edition === card.edition &&
+									c.condition === card.condition
+								);
+								if (existing) {
+									existing.quantity += card.quantity;
+								} else {
+									list.push({ ...card });
+								}
+								cardListPool[currentListType].splice(index, 1);
+								updateCustomListUI();
+								displayCards(cardListPool[currentListType], showNamesOnly, currentListType);
+							};
+							buttonGroup.appendChild(btn);
+						});
+					}
+
+					cardElement.appendChild(buttonGroup);
+					output.appendChild(cardElement);
+				});
+			}
+
+
+
+
+
+			function parseCardList(_cards, cardListText) {
+				const lines = cardListText.split('\n');
+
+				let currentCondition = '';
+
+				lines.forEach(line => {
+
+					if ((/^\s*$/.test(line)) || (/SINGLES\s*$/.test(line)) || (/Description\s*/.test(line))) {
+						return;
+					}
+
+					const firstColonIndex = line.indexOf(':');
+					if (firstColonIndex === -1) return; // 카드명, 판본 분리, ':'가 없으면 유효 X
+
+					const name = line.substring(0, firstColonIndex).trim();
+					const restLine = line.substring(firstColonIndex + 1).trim();
+
+					const parts = restLine.split('\t'); // 나머지 분리
+
+					if (parts.length >= 4) {
+
+						const edition = parts[0].trim();
+						const condition = parts[1].trim();
+						const quantity = parseInt(parts[2]);
+						const price = parseFloat(parts[3].substring(1));
+						const total = parseFloat(parts[4].substring(1));
+
+						_cards.push({
+							name,
+							edition,
+							condition,
+							quantity,
+							price,
+							total
+						});
+					}
+				});
+
+				return _cards;
+			}
+
+			function sortCards(_cards) {
+
+				const conditionOrder = {
+					'NM': 1,
+					'EX': 2,
+					'G': 3,
+					'VG': 4
+				};
+
+				// 상태 / 판본 / 이름 순 정렬
+				return _cards.sort((a, b) => {
+
+					const conditionCompare = (conditionOrder[a.condition] || 5) - (conditionOrder[b.condition] || 5);
+					if (conditionCompare !== 0) return conditionCompare;
+
+					const editionCompare = a.edition.localeCompare(b.edition);
+					if (editionCompare !== 0) return editionCompare;
+
+					return a.name.localeCompare(b.name);
+				});
+			}
+
+		</script>
+	</body>
+
+	</html>

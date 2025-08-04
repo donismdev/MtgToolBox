@@ -101,7 +101,7 @@
 			"path": "tools/misc-modal-timer/",
 			"modalIcon": "⏱️",
 			"modalIconColor": "#28a745",
-			"enable": true
+			"enable": false
 		},
 		{
 			"name": "swiss-round-tool",
@@ -109,6 +109,14 @@
 			"path": "tools/swiss-round-tool/",
 			"modalIcon": "🔄",
 			"modalIconColor": "#ffc107",
+			"enable": false
+		},
+		{
+			"name": "마이티 보조 툴",
+			"path": "tools/",
+			"type": "html_modal",
+			"modalIcon": "🃏",
+			"tags": ["game", "mighty", "card"],
 			"enable": true
 		}
 	]
