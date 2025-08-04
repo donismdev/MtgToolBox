@@ -112,11 +112,19 @@
 			"enable": false
 		},
 		{
-			"name": "mighty-helper",
-			"path": "tools/mighty-helper/",
+			"name": "etc-mighty-helper",
+			"path": "tools/etc-mighty-helper/",
 			"type": "html_modal",
 			"modalIcon": "🃏",
 			"tags": ["game", "mighty", "card"],
+			"enable": true
+		},
+		{
+			"name": "etc-thegang-helper",
+			"path": "tools/etc-thegang-helper/",
+			"type": "html_modal",
+			"modalIcon": "G",
+			"tags": ["game", "thegang", "card"],
 			"enable": true
 		}
 	]

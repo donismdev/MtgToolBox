@@ -42,22 +42,22 @@
 		<ul>
 			<li>마이티: 보통 스페이드 A (단, 스페이드 기루 시 다이아 A)</li>
 			<li>조커콜: 보통 클로버 3 (단, 클로버 기루 시 스페이드 3)</li>
-			<li>20 비딩 시: 풀 (x1.5)</li>
+			<li>20 공약 시: 풀 (x1.5)</li>
 			<li>문양 없음 선택 시: 노기루 (x2)</li>
 		</ul>
 	</details>
 
 	<div class="mb-3">
-		<label for="bidNumber">비딩 (A~G):</label>
+		<label for="bidNumber">공약 (숫자):</label>
 		<select id="bidNumber" class="form-select">
-			<option value="13">A (13)</option>
-			<option value="14">B (14)</option>
-			<option value="15">C (15)</option>
-			<option value="16">D (16)</option>
-			<option value="17">E (17)</option>
-			<option value="18">F (18)</option>
-			<option value="19">G (19)</option>
-			<option value="20">G+ (20)</option>
+			<option value="13">13</option>
+			<option value="14">14</option>
+			<option value="15">15</option>
+			<option value="16">16</option>
+			<option value="17">17</option>
+			<option value="18">18</option>
+			<option value="19">19</option>
+			<option value="20">20</option>
 		</select>
 	</div>
 	<div class="mb-3">
@@ -84,7 +84,7 @@
 			let jokerCall = '클로버 3';
 			let jokerNick = '3끌';
 			let suitLabel = '노기루';
-			let extra = '';
+			let extras = [];
 
 			switch (suit) {
 				case 'spade':
@@ -111,20 +111,20 @@
 					break;
 				case 'none':
 					suitLabel = '🚫 노기루';
-					extra = '💥 <strong>노기루 (x2)</strong>';
+					extras.push('💥 <strong>노기루 (x2)</strong>');
 					break;
 			}
 
-			if (bid === 20 && suit !== 'none') {
-				extra = '🔥 <strong>풀 (x1.5)</strong>';
+			if (bid === 20 && suit !== '') {
+				extras.push('🔥 <strong>풀 (x1.5)</strong>');
 			}
 
 			document.getElementById('result').innerHTML = `
 				<p><strong>기루:</strong> ${suitLabel}</p>
-				<p><strong>비딩:</strong> ${bid}</p>
+				<p><strong>공약:</strong> ${bid}</p>
 				<p><strong>마이티:</strong> ${mighty} <span class="text-muted">(${mightyNick})</span></p>
 				<p><strong>조커콜:</strong> ${jokerCall} <span class="text-muted">(${jokerNick})</span></p>
-				<p>${extra}</p>
+				${extras.map(e => `<p>${e}</p>`).join('')}
 			`;
 		}
 	</script>
