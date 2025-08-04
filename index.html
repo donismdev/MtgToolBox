@@ -444,7 +444,10 @@
             closeModalTool(false);
         }
 
-        let html = `<h1 class="display-5 text-light mb-4">${tool.name}</h1>`;
+        let html = "";
+		if (tool.hide_header !== true) {
+			html += `<h1 class="display-5 text-light mb-4">${tool.name}</h1>`;
+		}
         let isIframe = false;
 
         // 툴 타입이 'html' (EmbeddedTool)인 경우 iframe으로 렌더링합니다.
@@ -770,7 +773,7 @@
 			const vh = window.innerHeight * 0.01;
 			document.documentElement.style.setProperty('--vh', `${vh}px`);
 		}
-		
+
 		window.addEventListener('resize', updateModalHeight);
 		window.addEventListener('load', updateModalHeight);
 </script>
