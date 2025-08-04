@@ -1,100 +1,100 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	<title>더 갱 툴</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 	<style>
 		body {
 			background-color: #121212;
-			color: #fff;
-			padding: 1rem;
+			color: #ffffff;
 			font-family: 'Segoe UI', sans-serif;
+			padding: 2rem;
 		}
-		.card-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-		.card-tag {
-			background-color: #222;
-			padding: 0.5rem 0.75rem;
+		.card-grid {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+		.card-box {
+			background-color: #1e1e1e;
+			border: 1px solid #444;
 			border-radius: 0.5rem;
-			border: 1px solid #555;
+			padding: 0.5rem 1rem;
 			cursor: pointer;
 			position: relative;
 		}
-		.card-tag.penalty { border-color: #dc3545; }
-		.card-tag.advantage { border-color: #0d6efd; }
-		.card-tag .remove-btn {
+		.card-box .remove {
 			position: absolute;
-			top: -8px;
-			right: -8px;
-			background: #ff4d4d;
-			border: none;
-			color: white;
-			border-radius: 50%;
-			width: 20px;
-			height: 20px;
-			font-size: 12px;
-			line-height: 20px;
-			text-align: center;
-			padding: 0;
+			top: 4px;
+			right: 6px;
 			cursor: pointer;
+			color: #bbb;
+		}
+		.modal-body pre {
+			white-space: pre-wrap;
+			color: #ddd;
 		}
 	</style>
 </head>
 <body>
-	<h2 class="mb-4">💼 더 갱 게임 툴</h2>
+	<h2 class="mb-4">🎴 더 갱 툴</h2>
 
 	<div class="mb-3">
-		<h4>📊 작전 성공/실패 상태</h4>
-		<div class="form-check form-switch">
-			<input class="form-check-input" type="checkbox" id="scoreModeToggle" onchange="toggleScoreMode()">
-			<label class="form-check-label" for="scoreModeToggle">점수제 모드 사용</label>
-		</div>
-		<div id="tokenMode">
-			<p>금고 카드: <span id="safeCount">0</span> / 3</p>
-			<p>경보 카드: <span id="alertCount">0</span> / 3</p>
-			<button class="btn btn-success btn-sm" onclick="addSafe()">+ 금고</button>
-			<button class="btn btn-danger btn-sm" onclick="addAlert()">+ 경보</button>
-		</div>
-		<div id="scoreMode" style="display:none">
-			<p>점수: <span id="score">0</span></p>
-			<button class="btn btn-primary btn-sm" onclick="addScore(1)">+1 성공</button>
-			<button class="btn btn-warning btn-sm" onclick="addScore(-1)">-1 실패</button>
-		</div>
-		<button class="btn btn-outline-light btn-sm mt-2" onclick="resetStatus()">초기화</button>
-	</div>
-
-	<div class="mb-4">
-		<h4>❗ 패널티 카드</h4>
-		<select id="penaltySelect" class="form-select mb-2">
+		<label class="form-label">점수 모드:</label>
+		<select class="form-select" id="scoreMode" onchange="toggleScoreMode()">
+			<option value="counter">금고/경보 (3장)</option>
+			<option value="points">점수제 (+1 / -1)</option>
 		</select>
-		<div class="d-flex gap-2">
-			<button class="btn btn-outline-danger btn-sm" onclick="addRandomCard('penalty')">랜덤 추가</button>
-			<button class="btn btn-danger btn-sm" onclick="addSelectedCard('penalty')">선택 추가</button>
-		</div>
-		<div class="card-list mt-2" id="penaltyList"></div>
 	</div>
 
-	<div class="mb-4">
-		<h4>🎁 어드밴티지 카드</h4>
-		<select id="advantageSelect" class="form-select mb-2">
-		</select>
-		<div class="d-flex gap-2">
-			<button class="btn btn-outline-primary btn-sm" onclick="addRandomCard('advantage')">랜덤 추가</button>
-			<button class="btn btn-primary btn-sm" onclick="addSelectedCard('advantage')">선택 추가</button>
-		</div>
-		<div class="card-list mt-2" id="advantageList"></div>
+	<div id="counterMode">
+		<p>금고: <span id="safeCount">0</span> / 3</p>
+		<p>경보: <span id="alarmCount">0</span> / 3</p>
+		<button class="btn btn-success" onclick="addCount('safe')">금고 +1</button>
+		<button class="btn btn-danger" onclick="addCount('alarm')">경보 +1</button>
+	</div>
+	<div id="pointsMode" style="display: none;">
+		<p>점수: <span id="score">0</span></p>
+		<button class="btn btn-primary" onclick="changeScore(1)">+1</button>
+		<button class="btn btn-warning" onclick="changeScore(-1)">-1</button>
 	</div>
 
-	<div class="modal fade" id="cardModal" tabindex="-1">
-		<div class="modal-dialog">
+	<hr>
+	<h4>🛠️ 패널티 카드</h4>
+	<div class="mb-2">
+		<select id="penaltySelect" class="form-select"></select>
+		<button class="btn btn-outline-light mt-2" onclick="addCard('penalty', false)">➕ 수동 추가</button>
+		<button class="btn btn-outline-secondary mt-1" onclick="addCard('penalty', true)">🎲 랜덤 추가</button>
+		<button class="btn btn-info mt-2 ms-2" onclick="showDescriptions('penalty')">📘 설명 보기</button>
+	</div>
+	<div class="card-grid" id="penaltyCards"></div>
+
+	<hr>
+	<h4>🛠️ 어드밴티지 카드</h4>
+	<div class="mb-2">
+		<select id="advantageSelect" class="form-select"></select>
+		<button class="btn btn-outline-light mt-2" onclick="addCard('advantage', false)">➕ 수동 추가</button>
+		<button class="btn btn-outline-secondary mt-1" onclick="addCard('advantage', true)">🎲 랜덤 추가</button>
+		<button class="btn btn-info mt-2 ms-2" onclick="showDescriptions('advantage')">📘 설명 보기</button>
+	</div>
+	<div class="card-grid" id="advantageCards"></div>
+
+	<hr>
+	<button class="btn btn-danger" onclick="resetAll()">초기화</button>
+	<button class="btn btn-light ms-2" onclick="showAllDescriptions()">📘 전체 설명 보기</button>
+
+	<!-- Modal -->
+	<div class="modal fade" id="descModal" tabindex="-1">
+		<div class="modal-dialog modal-lg">
 			<div class="modal-content bg-dark text-white">
 				<div class="modal-header">
-					<h5 class="modal-title">카드 상세 보기</h5>
-					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+					<h5 class="modal-title">카드 설명</h5>
+					<button type="button" class="btn-close btn-close-white" onclick="closeModalSafely()"></button>
 				</div>
 				<div class="modal-body">
-					<p id="cardDetail"></p>
+					<pre id="descContent"></pre>
 				</div>
 			</div>
 		</div>
@@ -102,78 +102,138 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
-		const penaltyCards = [
-			{ id: 1, name: '불운의 예감', text: '작전 성공 시 카드가 2장 추가된다.' },
-			{ id: 2, name: '도청기 발견', text: '최종 라운드에서 공개 순서가 바뀐다.' },
-			{ id: 3, name: '헛다리', text: '추측 등수를 바꿀 수 없다.' },
-			{ id: 4, name: '의심의 눈초리', text: '이전 라운드 정보를 공유할 수 없다.' },
-			{ id: 5, name: '함정 카드', text: '작전 성공 시에도 어드밴티지 카드가 추가된다.' },
-			{ id: 6, name: '경보음', text: '공개 시 1명을 제외하고 순위를 바꿔야 한다.' },
-			{ id: 7, name: '금고함 오류', text: '금고 카드 1장이 무효가 된다.' },
-			{ id: 8, name: '뒤바뀐 위치', text: '예상한 등수와 반대의 등수가 된다.' },
-			{ id: 9, name: '기밀 노출', text: '모든 어드밴티지 카드의 효과가 무효화된다.' },
-			{ id: 10, name: '추가 경보', text: '경보 카드가 1장 즉시 추가된다.' }
-		];
-		const advantageCards = [
-			{ id: 1, name: '작전회의', text: '모든 플레이어는 예상 등수를 1명씩 공유할 수 있다.' },
-			{ id: 2, name: '운명의 동전', text: '추측 등수를 한 번 다시 바꿀 수 있다.' },
-			{ id: 3, name: '힌트 획득', text: '특정 플레이어의 순위를 힌트로 받는다.' },
-			{ id: 4, name: '팀워크', text: '2명 이상 성공 시 금고 카드가 2장 추가된다.' },
-			{ id: 5, name: '정신집중', text: '자신의 예상 등수를 재검토할 수 있다.' },
-			{ id: 6, name: '정보 공유', text: '플랍 이후 힌트를 추가로 공개한다.' },
-			{ id: 7, name: '보안 강화', text: '경보 카드 효과가 1회 무효화된다.' },
-			{ id: 8, name: '도움의 손길', text: '한 명의 예상 등수를 대신 정해줄 수 있다.' },
-			{ id: 9, name: '시간 벌기', text: '라운드 타이머를 30초 연장한다.' },
-			{ id: 10, name: '의외의 행운', text: '작전 실패 시에도 금고 카드 1장을 획득한다.' }
-		];
+		const cards = {
+			penalty: [
+				["빠른 진입", "이번 작전 동안 하얀색 칩은 따로 치워둡니다. 1라운드에 포켓 카드를 나눠 받은 다음 바로 2라운드로 넘어갑니다."],
+				["소음 경보기", "1, 2, 3라운드에 사용하는 별 1개 칩을 어두운 면으로 뒤집습니다. 가져가면 소유자 변경 불가."],
+				["동작 감지기", "2라운드 커뮤니티 카드 중 J, Q, K가 1장이라도 있다면, 1라운드에 칩을 가져온 사람은 포켓 카드를 교체합니다."],
+				["홍채 인식기", "작전 성공 요건 추가: 가장 많은 빨간색 칩을 가진 사람의 포켓 카드 중 한 장의 가치를 맞춰야 함."],
+				["급박한 도주", "3라운드에 주황색 칩을 가져오지 않습니다. 4라운드로 바로 넘어갑니다."],
+				["환풍구", "1, 2, 3라운드의 가장 많은 칩을 어두운 면으로 뒤집습니다. 가져가면 소유자 변경 불가."],
+				["레이저 경보기", "2라운드 커뮤니티 카드에 J, Q, K가 없다면, 칩을 가져온 사람은 포켓 카드 교체."],
+				["정전", "각 라운드 시작 시 이전 라운드에서 가져온 칩을 버립니다. 기억력 필요!"],
+				["지문 인식기", "작전 성공 요건 추가: 가장 많은 빨간 칩을 가진 사람의 조합을 맞춰야 함."],
+				["보안 카메라", "포켓 카드를 3장 받고, 그 중 2장으로 조합. 8장 중 5장을 선택!"]
+			],
+			advantage: [
+				["정보원", "여러분 중 1명은 다른 1명에게 자기 포켓 카드 중 1장을 보여줍니다."],
+				["도주 차량 운전수", "여러분 중 1명은 커뮤니티 카드와 자기 포켓 카드를 보고 현재 자기 조합이 무엇인지 모두에게 밝힙니다."],
+				["투자자", "포켓 카드를 나눠 받은 후 즉시: 각자 자기 포켓 카드 중 '페이스 카드'(J, Q, K)가 몇 장 있는지 모두에게 밝힙니다."],
+				["작전 기획자", "가치 하나를 정합니다(2부터 A까지). 여러분 중 1명은 자신이 그 가치인 카드를 몇 장 갖고 있는지 모두에게 밝힙니다."],
+				["해커", "여러분 중 1명은 카드 더미에서 추가 포켓 카드 1장을 가져옵니다. 그런 다음, 자기 포켓 카드 중 1장을 골라 카드 더미 옆에 뒷면으로 버립니다."],
+				["코디네이터", "포켓 카드를 나눠 받은 후 즉시: 각자 자기 포켓 카드 중 1장을 선택한 다음, 이를 모두 동시에 자신의 왼쪽 사람에게 넘깁니다."],
+				["잭", "여러분 중 1명은 이 카드를 자기 포켓 카드로 가져옵니다. 그런 다음, 자기 포켓 카드 중 1장을 카드 더미 옆에 뒷면으로 버립니다. 잭은 무늬가 없는 J로 취급합니다."],
+				["수학쟁이", "포켓 카드를 나눠 받은 후 즉시: 각자 자기 포켓 카드들의 숫자를 더한 값을 공개합니다. J, Q, K는 10, A는 11로 계산합니다."],
+				["사기꾼", "포켓 카드를 나눠 받은 후 즉시: 각자 자기 카드를 확인한 뒤, 모든 사람의 포켓 카드를 모아서 뒷면으로 섞은 다음 다시 각자 나눠 받습니다."],
+				["어깨", "쇼다운 때, 이 카드를 가진 사람은 같은 조합이라면 항상 더 강한 것으로 간주됩니다."]
+			]
+		};
+
+		const state = { penalty: [], advantage: [], score: 0, safe: 0, alarm: 0 };
+		const modalInstance = new bootstrap.Modal(document.getElementById("descModal"));
+
+		function closeModalSafely() {
+			if (modalInstance._isShown) {
+				modalInstance.hide();
+			}
+		}
+
+		function showDescriptions(type) {
+			let text = `--- ${type === 'penalty' ? '패널티 카드' : '어드밴티지 카드'} ---\n`;
+			cards[type].forEach((c, i) => text += `${i + 1}. ${c[0]}\n${c[1]}\n\n`);
+			document.getElementById("descContent").textContent = text;
+			modalInstance.show();
+		}
+
+		function showAllDescriptions() {
+			let text = "--- 패널티 카드 ---\n";
+			cards.penalty.forEach((c, i) => text += `${i + 1}. ${c[0]}\n${c[1]}\n\n`);
+			text += "--- 어드밴티지 카드 ---\n";
+			cards.advantage.forEach((c, i) => text += `${i + 1}. ${c[0]}\n${c[1]}\n\n`);
+			document.getElementById("descContent").textContent = text;
+			modalInstance.show();
+		}
+
+		function toggleScoreMode() {
+			document.getElementById("counterMode").style.display = scoreMode.value === "counter" ? "block" : "none";
+			document.getElementById("pointsMode").style.display = scoreMode.value === "points" ? "block" : "none";
+		}
 
 		function populateSelects() {
-			const makeOptions = (arr) => arr.map(card => `<option value="${card.id}">#${card.id} ${card.name}</option>`).join('');
-			document.getElementById('penaltySelect').innerHTML = makeOptions(penaltyCards);
-			document.getElementById('advantageSelect').innerHTML = makeOptions(advantageCards);
+			["penalty", "advantage"].forEach(type => {
+				const select = document.getElementById(`${type}Select`);
+				cards[type].forEach((c, i) => {
+					const opt = document.createElement("option");
+					opt.value = i;
+					opt.textContent = `${i + 1}. ${c[0]}`;
+					select.appendChild(opt);
+				});
+			});
 		}
 
-		let safe = 0, alert = 0, score = 0;
-		function addSafe() { if (safe < 3) document.getElementById('safeCount').textContent = ++safe; }
-		function addAlert() { if (alert < 3) document.getElementById('alertCount').textContent = ++alert; }
-		function addScore(delta) { score += delta; document.getElementById('score').textContent = score; }
-		function toggleScoreMode() {
-			const scoreMode = document.getElementById('scoreModeToggle').checked;
-			document.getElementById('scoreMode').style.display = scoreMode ? 'block' : 'none';
-			document.getElementById('tokenMode').style.display = scoreMode ? 'none' : 'block';
+		function renderCards() {
+			["penalty", "advantage"].forEach(type => {
+				const container = document.getElementById(`${type}Cards`);
+				container.innerHTML = "";
+				state[type].forEach(i => {
+					const div = document.createElement("div");
+					div.className = "card-box";
+					div.innerHTML = `<span class="remove" onclick="removeCard('${type}', ${i})">✖</span><strong>${i + 1}. ${cards[type][i][0]}</strong>`;
+					div.onclick = () => showCard(type, i);
+					container.appendChild(div);
+				});
+			});
 		}
-		function resetStatus() {
-			safe = alert = score = 0;
-			document.getElementById('safeCount').textContent = safe;
-			document.getElementById('alertCount').textContent = alert;
-			document.getElementById('score').textContent = score;
-			document.getElementById('penaltyList').innerHTML = '';
-			document.getElementById('advantageList').innerHTML = '';
+
+		function addCard(type, random = false) {
+			const index = random ? getRandomCard(type) : parseInt(document.getElementById(`${type}Select`).value);
+			if (!state[type].includes(index)) {
+				state[type].push(index);
+				renderCards();
+			}
 		}
-		function addRandomCard(type) {
-			const arr = (type === 'penalty') ? penaltyCards : advantageCards;
-			const card = arr[Math.floor(Math.random() * arr.length)];
-			addCardToUI(type, card);
+
+		function removeCard(type, index) {
+			state[type] = state[type].filter(i => i !== index);
+			renderCards();
 		}
-		function addSelectedCard(type) {
-			const select = document.getElementById(type + 'Select');
-			const id = parseInt(select.value);
-			const card = (type === 'penalty' ? penaltyCards : advantageCards).find(c => c.id === id);
-			if (card) addCardToUI(type, card);
+
+		function getRandomCard(type) {
+			const candidates = cards[type].map((_, i) => i).filter(i => !state[type].includes(i));
+			return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : -1;
 		}
-		function addCardToUI(type, card) {
-			const tag = document.createElement('div');
-			tag.className = `card-tag ${type}`;
-			tag.innerHTML = `#${card.id} ${card.name} 🔍 <button class="remove-btn" onclick="this.parentNode.remove(); event.stopPropagation();">×</button>`;
-			tag.onclick = () => showCardDetail(card);
-			document.getElementById(type + 'List').appendChild(tag);
+
+		function showCard(type, index) {
+			document.getElementById("descContent").textContent = `${index + 1}. ${cards[type][index][0]}\n\n${cards[type][index][1]}`;
+			modalInstance.show();
 		}
-		function showCardDetail(card) {
-			document.getElementById('cardDetail').textContent = `#${card.id} ${card.name} - ${card.text}`;
-			const modal = new bootstrap.Modal(document.getElementById('cardModal'));
-			modal.show();
+
+		function resetAll() {
+			state.penalty = [];
+			state.advantage = [];
+			state.score = 0;
+			state.safe = 0;
+			state.alarm = 0;
+			document.getElementById("score").textContent = 0;
+			document.getElementById("safeCount").textContent = 0;
+			document.getElementById("alarmCount").textContent = 0;
+			renderCards();
 		}
-		document.addEventListener('DOMContentLoaded', populateSelects);
+
+		function changeScore(val) {
+			state.score += val;
+			document.getElementById("score").textContent = state.score;
+		}
+
+		function addCount(which) {
+			if (which === "safe" && state.safe < 3) state.safe++;
+			if (which === "alarm" && state.alarm < 3) state.alarm++;
+			document.getElementById("safeCount").textContent = state.safe;
+			document.getElementById("alarmCount").textContent = state.alarm;
+		}
+
+		populateSelects();
+		renderCards();
 	</script>
 </body>
 </html>
