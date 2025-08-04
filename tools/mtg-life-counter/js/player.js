@@ -127,10 +127,35 @@ export class Player {
 		this.elements.diceContainer = document.createElement('div');
 		this.elements.diceContainer.className = 'dice-container';
 		this.elements.area.appendChild(this.elements.diceContainer);
+
+		this.lastTapTime = 0; // 마지막 탭 시간을 기록, 더블 탭 줌 방지용
 		
 		this.elements.area.addEventListener('pointerdown', (event) => {
-			if (window.activeUI !== null || event.target.closest('.rotate-button') || event.target.closest('.header-button')) return;
 
+			// ==================================================
+			// 1. 더블탭 줌(Zoom) 방지 로직
+			// ==================================================
+			const now = new Date().getTime();
+
+			// 마지막 탭 이후 300ms 이내에 다시 탭된 경우, 브라우저의 기본 동작(줌)을 막습니다.
+			if (now - this.lastTapTime <= 300) {
+				event.preventDefault();
+			}
+
+			// 현재 탭 시간을 기록하여 다음 탭에서 비교할 수 있도록 합니다.
+			this.lastTapTime = now;
+
+
+			// ==================================================
+			// 2. 기존 라이프(Life) 변경 로직
+			// ==================================================
+
+			// 버튼 등 다른 UI 요소가 활성화 상태이거나, 특정 버튼을 눌렀을 때는 작동하지 않도록 함
+			if (window.activeUI !== null || event.target.closest('.rotate-button') || event.target.closest('.header-button')) {
+				return;
+			}
+
+			// 탭된 위치를 계산
 			const rect = this.elements.area.getBoundingClientRect();
 			const pointerX = event.clientX - rect.left;
 			const pointerY = event.clientY - rect.top;
@@ -140,21 +165,24 @@ export class Player {
 			const isRight = pointerX > rect.width / 2;
 			const isBottom = pointerY > rect.height / 2;
 
+			// 설정과 화면 회전 상태에 따라 라이프 증감 방향을 결정
 			if (adjustMode === 'horizontal') {
 				switch (this.rotation) {
-					case 0: amount = isRight ? +1 : -1; break;
+					case 0:   amount = isRight ? +1 : -1; break;
 					case 180: amount = isRight ? -1 : +1; break;
-					case 90: amount = isBottom ? +1 : -1; break;
+					case 90:  amount = isBottom ? +1 : -1; break;
 					case 270: amount = isBottom ? -1 : +1; break;
 				}
-			} else {
+			} else { // 'vertical' 모드
 				switch (this.rotation) {
-					case 0: amount = isBottom ? -1 : +1; break;
+					case 0:   amount = isBottom ? -1 : +1; break;
 					case 180: amount = isBottom ? +1 : -1; break;
-					case 90: amount = isRight ? +1 : -1; break;
+					case 90:  amount = isRight ? +1 : -1; break;
 					case 270: amount = isRight ? -1 : +1; break;
 				}
 			}
+
+			// 탭한 위치에 피드백 효과를 주고 라이프를 변경
 			const relativeX = event.clientX - rect.left;
 			const relativeY = event.clientY - rect.top;
 

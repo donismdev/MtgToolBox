@@ -20,6 +20,16 @@
 			color: #ffffff !important;
 		}
 
+		.no-select {
+			-webkit-user-select: none; /* Safari */
+			-ms-user-select: none;    /* IE 10+ */
+			user-select: none;        /* Standard */
+
+			/* iOS, Android에서 탭했을 때 하이라이트되는 배경색 없애기 */
+			-webkit-tap-highlight-color: transparent;
+			-webkit-touch-callout: none; /* iOS Safari */
+		}
+
 		body {
 			margin: 0;
 			padding: 0;

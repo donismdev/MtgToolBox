@@ -1,16 +1,4 @@
 
-			body, html {
-				margin: 0; padding: 0;
-				width: 100%; height: 100%;
-				overflow: hidden;
-				font-family: sans-serif;
-				background-color: #f4f4f4;
-				display: flex;
-				flex-direction: column;
-				color-scheme: light;
-				forced-color-adjust: none;
-			}
-			
 			#game-container {
 				display: flex;
 				flex: 1;
@@ -19,6 +7,16 @@
 				position: relative;
 				touch-action: manipulation;
 			}
+
+			.no-select {
+			-webkit-user-select: none; /* Safari */
+			-ms-user-select: none;    /* IE 10+ */
+			user-select: none;        /* Standard */
+
+			/* iOS, Android에서 탭했을 때 하이라이트되는 배경색 없애기 */
+			-webkit-tap-highlight-color: transparent;
+			}
+
 			.player-area {
 				display: flex;
 				justify-content: center;
