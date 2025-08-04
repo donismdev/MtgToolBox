@@ -1,13 +1,13 @@
-import { themes } from './themes.js';
+import { allThemes } from './themes.js';
 import { renderLifeLogChart } from './logChart.js';
 import { initiativeManager } from './initiative.js';
 
 export class Player {
-	constructor(id, initialLife, initialRotation, themeIndex) {
+	constructor(id, initialLife, initialRotation, themeName) {
 		this.id = id;
 		this.life = initialLife;
 		this.rotation = initialRotation;
-		this.themeIndex = themeIndex;
+		this.themeName = themeName;
 		this.elements = {};
 		this.lifeChangeTimeout = null;
 		this.lifeChangeAmount = 0;
@@ -18,24 +18,32 @@ export class Player {
 		this.updateDisplay();
 	}
 
-	// ... (applyTheme, createDOM, getPlayerIndex, updateIcons, showThemeSelector, hideThemeSelector 등 다른 함수는 이전과 동일합니다) ...
-	
+	_getThemeByName(name) {
+        let theme = allThemes.light.find(t => t.name === name);
+        if (!theme) {
+            theme = allThemes.dark.find(t => t.name === name);
+        }
+
+        return theme || allThemes.dark[0]; 
+    }
+
 	applyTheme() {
-		const theme = themes[this.themeIndex % themes.length];
-		if (theme) {
-			this.elements.area.style.background = theme.background;
-			this.elements.area.style.setProperty('--button-bg-color', theme.buttonBgColor || 'rgba(0,0,0,0.4)');
-			this.elements.area.style.setProperty('--button-hover-bg-color', theme.buttonHoverBgColor || 'rgba(0,0,0,0.6)');
-			const lifeTotalEl = this.elements.lifeTotal;
-			lifeTotalEl.style.color = theme.lifeTextColor || '#FFFFFF';
-			if (theme.lifeTextShadowColor && theme.lifeTextShadowOffset) {
-				lifeTotalEl.style.textShadow = `${theme.lifeTextShadowOffset} ${theme.lifeTextShadowColor}`;
-			} else {
-				lifeTotalEl.style.textShadow = 'none';
-			}
-			this.updateHint();
-		}
-	}
+
+        const theme = this._getThemeByName(this.themeName);
+        if (theme) {
+            this.elements.area.style.background = theme.background;
+            this.elements.area.style.setProperty('--button-bg-color', theme.buttonBgColor || 'rgba(0,0,0,0.4)');
+            this.elements.area.style.setProperty('--button-hover-bg-color', theme.buttonHoverBgColor || 'rgba(0,0,0,0.6)');
+            const lifeTotalEl = this.elements.lifeTotal;
+            lifeTotalEl.style.color = theme.lifeTextColor || '#FFFFFF';
+            if (theme.lifeTextShadowColor && theme.lifeTextShadowOffset) {
+                lifeTotalEl.style.textShadow = `${theme.lifeTextShadowOffset} ${theme.lifeTextShadowColor}`;
+            } else {
+                lifeTotalEl.style.textShadow = 'none';
+            }
+            this.updateHint();
+        }
+    }
 	
 	createDOM() {
 		this.elements.area = document.createElement('div');
@@ -235,7 +243,7 @@ export class Player {
 
 	updateIcons() {
 		const playerIndex = this.getPlayerIndex();
-		const theme = themes[this.themeIndex % themes.length];
+		const theme = this._getThemeByName(this.themeName);
 		const highlightColor = theme.highlightColor || '#FFD700';
 		const initiativeButton = this.elements.initiativeButton;
 		const monarchButton = this.elements.monarchButton;
@@ -268,30 +276,53 @@ export class Player {
 		}
 	}
 
-	showThemeSelector() {
-		const themeContainer = this.elements.themeSelector.querySelector('.theme-selector-container');
-		themeContainer.innerHTML = '';
-		const usedThemeIndexes = window.players
+    showThemeSelector() {
+        const themeContainer = this.elements.themeSelector.querySelector('.theme-selector-container');
+		themeContainer.innerHTML = ''; 
+
+		const usedThemeNames = window.players
 			.filter(p => p.id !== this.id)
-			.map(p => p.themeIndex);
-		themes.forEach((theme, index) => {
-			const swatch = document.createElement('div');
-			swatch.className = 'theme-swatch';
-			swatch.style.background = theme.background;
-			if (usedThemeIndexes.includes(index)) {
-				swatch.classList.add('disabled');
-			} else {
-				swatch.addEventListener('click', () => {
-					this.themeIndex = index;
-					this.applyTheme();
-					window.saveLifeTotals();
-					this.hideThemeSelector();
-				});
-			}
-			themeContainer.appendChild(swatch);
-		});
+			.map(p => p.themeName);
+
+		// 테마 그룹(한 줄)을 생성하는 헬퍼 함수
+		const createThemeGroup = (title, themeList) => {
+			const group = document.createElement('div');
+			group.className = 'theme-group'; // <- 이 클래스가 한 줄을 담당
+
+			const groupTitle = document.createElement('div');
+			groupTitle.className = 'theme-group-title';
+			groupTitle.textContent = title;
+			group.appendChild(groupTitle);
+			
+			const swatchesContainer = document.createElement('div');
+			swatchesContainer.className = 'theme-swatches-container'; // <- 스와치들을 감싸는 컨테이너
+			group.appendChild(swatchesContainer);
+
+			themeList.forEach(theme => {
+				const swatch = document.createElement('div');
+				swatch.className = 'theme-swatch';
+				swatch.style.background = theme.background;
+				
+				if (usedThemeNames.includes(theme.name)) {
+					swatch.classList.add('disabled');
+				} else {
+					swatch.addEventListener('click', () => {
+						this.themeName = theme.name;
+						this.applyTheme();
+						window.saveLifeTotals();
+						this.hideThemeSelector();
+					});
+				}
+				swatchesContainer.appendChild(swatch);
+			});
+			return group;
+		};
+
+		themeContainer.appendChild(createThemeGroup('Light Themes', allThemes.light));
+		themeContainer.appendChild(createThemeGroup('Dark Themes', allThemes.dark));
+
 		this.elements.themeSelector.style.display = 'flex';
-	}
+    }
 
 	hideThemeSelector() {
 		this.elements.themeSelector.style.display = 'none';
@@ -365,7 +396,7 @@ export class Player {
 	
 		if (isCumulative) {
 			// 합산 피드백 (중앙에 표시)
-			const theme = themes[this.themeIndex % themes.length];
+			const theme = this._getThemeByName(this.themeName);
 			if (theme) {
 				feedback.style.color = amount > 0 ? theme.plusColor : theme.minusColor;
 			}
@@ -391,7 +422,7 @@ export class Player {
 	showAreaRipple(amount, event) {
 		const ripple = document.createElement('div');
 		ripple.className = 'life-ripple';
-		const theme = themes[this.themeIndex % themes.length];
+		const theme = this._getThemeByName(this.themeName);
 		if (amount > 0) {
 			ripple.style.backgroundColor = theme.ripplePlusColor || 'rgba(0, 255, 255, 0.4)';
 		} else {
@@ -411,7 +442,7 @@ export class Player {
 		const spacing = '7rem';
 		const inc = this.elements.hintInc;
 		const dec = this.elements.hintDec;
-		const theme = themes[this.themeIndex % themes.length];
+		const theme = this._getThemeByName(this.themeName);
 		inc.textContent = '+';
 		dec.textContent = '-';
 		if(theme) {
@@ -452,7 +483,7 @@ export class Player {
 
 	showLifeLog() {
 		this.elements.logOverlay.style.display = 'flex';
-		const theme = themes[this.themeIndex % themes.length];
+		const theme = this._getThemeByName(this.themeName);
 		renderLifeLogChart(this.elements.logCanvas, this.lifeLog, theme);
 	}
 }

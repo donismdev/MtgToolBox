@@ -1,6 +1,5 @@
 import { initializePlayers, setupEventListeners } from './setup.js';
 import { applyLifeFontSize } from './ui.js';
-import { themes } from './themes.js';
 
 	document.addEventListener('DOMContentLoaded', () => {
 		// [수정] 상위 창의 session_data 객체에 안정적으로 연결하고, 없으면 생성합니다.
@@ -54,7 +53,7 @@ import { themes } from './themes.js';
         window.players.forEach(p => {
             lifeTotalsToSave[p.id] = p.life;
             rotationsToSave[p.id] = p.rotation;
-			themesToSave[p.id] = p.themeIndex;
+			themesToSave[p.id] = p.themeName;
         });
         window.dataSpace.lifeCounter = lifeTotalsToSave;
         window.dataSpace.playerRotations = rotationsToSave;
@@ -70,11 +69,9 @@ import { themes } from './themes.js';
     }
     
     window.onModalOpen = () => {
-        console.log('라이프 카운터 모달이 열렸습니다.');
     }
 
 	window.onEmbeddedOpen = () => {
-        console.log('라이프 카운터 임베디드 모드가 열렸습니다.');
     }
 
 	window.onEmbeddedClose = () => {
@@ -108,13 +105,6 @@ import { themes } from './themes.js';
 
     window.updateAllPlayerIcons = () => {
         window.players.forEach(p => p.updateIcons());
-    };
-
-    window.openInitiativeDungeon = (playerIndex) => {
-		// TODO: 추후, 던전 구현
-        // const dungeonOverlay = document.getElementById('dungeon-overlay');
-        // dungeonOverlay.innerHTML = `Player ${playerIndex + 1} has the initiative!`;
-        // dungeonOverlay.style.display = 'flex';
     };
 
     // Initial icon state

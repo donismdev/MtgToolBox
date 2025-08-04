@@ -2,6 +2,7 @@ import { Player } from './player.js';
 import { showMenu, hideAllOverlays, applyLifeFontSize } from './ui.js';
 import { rollDiceVisual } from './dice.js';
 import { initiativeManager } from './initiative.js';
+import { allThemes } from './themes.js';
 
 export function initializePlayers(count) {
     window.gameContainer.innerHTML = '';
@@ -18,6 +19,13 @@ export function initializePlayers(count) {
     );
 
     window.players = [];
+
+	const defaultThemeNames = [
+		allThemes.dark[0].name,
+		allThemes.light[0].name,
+		allThemes.dark[1].name,
+		allThemes.light[1].name
+    ];
 
     let lifeData = window.dataSpace.lifeCounter;
     let rotationData = window.dataSpace.playerRotations;
@@ -77,7 +85,7 @@ export function initializePlayers(count) {
                 if (i === 0) rotation = 180;
                 if (i === 1) rotation = 0;
             }
-            const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotation, themeData[playerId] ?? i);
+            const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotation, defaultThemeNames[i] ?? i);
             
             // [추가] 생성 직후 'start' 로그 기록
             player.logEvent('start', { lifeAfter: player.life });

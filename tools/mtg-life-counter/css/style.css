@@ -349,16 +349,53 @@
 
 					.theme-selector-container {
 						display: flex;
-						/* flex-wrap: nowrap; 아이템을 한 줄로만 표시하도록 변경 */
-						/* 또는 flex-direction을 row로 명시하면 기본값이 nowrap입니다. */
-						flex-direction: row; 
-						gap: 10px;
+						flex-direction: column; /* 그룹을 세로로 쌓음 (윗줄, 아랫줄) */
+						gap: 15px; /* 줄 사이의 간격 */
 						padding: 20px;
 						background-color: #2c3e50;
 						border-radius: 10px;
-						max-width: 80%;
-						/* max-height는 이제 필요 없으므로 제거합니다. */
-						overflow-x: auto; /* 가로 스크롤을 자동으로 표시 */
+						max-width: 90%;
+						width: 500px; /* 적절한 너비 지정 */
+						box-sizing: border-box;
+					}
+
+					/* 각 테마 그룹 (한 줄을 의미) */
+					.theme-group {
+						display: flex;
+						flex-direction: column;
+						gap: 10px;
+					}
+
+					.theme-group-title {
+						color: #ecf0f1;
+						font-size: 1rem;
+						font-weight: bold;
+					}
+
+					/* 테마 스와치들을 담는 컨테이너 (가로 스크롤 영역) */
+					.theme-swatches-container {
+						display: flex;
+						flex-direction: row; /* 스와치를 가로로 나열 */
+						flex-wrap: nowrap;   /* !!! 절대로 줄바꿈하지 않음 !!! */
+						overflow-x: auto;    /* !!! 내용이 넘치면 가로 스크롤바 생성 !!! */
+						gap: 10px;
+						padding-bottom: 10px; /* 스크롤바와 스와치 사이의 여백 확보 */
+					}
+
+					/* 가로 스크롤바 스타일링 */
+					.theme-swatches-container::-webkit-scrollbar {
+						height: 8px;
+					}
+					.theme-swatches-container::-webkit-scrollbar-track {
+						background: rgba(0, 0, 0, 0.2);
+						border-radius: 4px;
+					}
+					.theme-swatches-container::-webkit-scrollbar-thumb {
+						background: rgba(255, 255, 255, 0.4);
+						border-radius: 4px;
+					}
+					.theme-swatches-container::-webkit-scrollbar-thumb:hover {
+						background: rgba(255, 255, 255, 0.6);
 					}
 
 					/* 스크롤바 전체 - 가로 스크롤이므로 높이(height)를 조절 */
@@ -400,6 +437,19 @@
 						cursor: not-allowed;
 						opacity: 0.5;
 						border-color: #666;
+						position: relative;
+					}
+
+					.theme-swatch.disabled::after {
+						content: '×';
+						position: absolute;
+						top: 50%;
+						left: 50%;
+						transform: translate(-50%, -50%);
+						color: white;
+						font-size: 3rem;
+						font-weight: bold;
+						text-shadow: 0 0 5px black;
 					}
 
 					.dungeon-overlay {
