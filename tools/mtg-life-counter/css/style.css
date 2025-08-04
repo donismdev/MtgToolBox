@@ -8,14 +8,7 @@
 				touch-action: manipulation;
 			}
 
-			.no-select {
-			-webkit-user-select: none; /* Safari */
-			-ms-user-select: none;    /* IE 10+ */
-			user-select: none;        /* Standard */
 
-			/* iOS, Android에서 탭했을 때 하이라이트되는 배경색 없애기 */
-			-webkit-tap-highlight-color: transparent;
-			}
 
 			.player-area {
 				display: flex;
@@ -208,7 +201,7 @@
 				flex-grow: 1;       /* 남는 공간을 나눠 갖도록 설정 */
 				flex-basis: auto;   /* 내용(텍스트)에 따라 기본 너비가 결정되도록 변경 */
 				height: 35px;
-				font-size: 0.8rem; 
+				font-size: 1rem; 
 				border: 1px solid #ccc; background-color: white;
 				border-radius: 0.5rem; cursor: pointer;
 				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -291,7 +284,7 @@
 			.dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
 			.dice-option {
 				min-width: 40px; padding: 0.5rem 0.8rem;
-				font-size: 0.9rem; background: #444;
+				font-size: 1rem; background: #444;
 				border-radius: 0.3rem; cursor: pointer; text-align: center;
 			}
 			#three-player-layout-buttons { display: none; }
