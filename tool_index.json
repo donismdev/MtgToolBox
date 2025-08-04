@@ -112,8 +112,8 @@
 			"enable": false
 		},
 		{
-			"name": "마이티 보조 툴",
-			"path": "tools/",
+			"name": "mighty-helper",
+			"path": "tools/mighty-helper/",
 			"type": "html_modal",
 			"modalIcon": "🃏",
 			"tags": ["game", "mighty", "card"],
