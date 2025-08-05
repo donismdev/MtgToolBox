@@ -76,7 +76,7 @@ body {
     color: #6c757d; /* 설명 텍스트 색상 변경 */
 }
 
-iframe {
+#embedded-tool-iframe {
     min-height: 85vh;
 }
 
