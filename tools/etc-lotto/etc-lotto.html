@@ -1,380 +1,410 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>✨ 다이나믹 로또 생성기 ✨</title>
-	<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-	<style>
-		:root {
-			--bg-color: #1a1a2e;
-			--primary-color: #e94560;
-			--secondary-color: #16213e;
-			--ball-color1: #feca57;
-			--ball-color2: #ff9f43;
-			--text-color: #ffffff;
-			--shadow-color: rgba(0, 0, 0, 0.5);
-		}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>✨ 다이나믹 로또 생성기 ✨</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --primary-color: #e94560;
+            --secondary-color: #16213e;
+            --ball-color1: #feca57;
+            --ball-color2: #ff9f43;
+            --text-color: #ffffff;
+        }
 
-		body {
-			background-color: var(--bg-color);
-			color: var(--text-color);
-			font-family: 'Pretendard', sans-serif;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: flex-start;
-			min-height: 100dvh;
-			padding: 2rem;
-			box-sizing: border-box;
-			overflow-x: hidden;
-		}
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100dvh;
+            padding: 2rem;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
 
-		.header-container {
-			text-align: center;
-			margin-bottom: 2rem;
-		}
+        .header-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
 
-		h1 {
-			font-size: 2.5rem;
-			color: var(--text-color);
-			text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
-			margin-bottom: 1rem;
-		}
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            margin-bottom: 1rem;
+        }
 
-		.button-container {
-			display: flex;
-			gap: 1rem;
-			margin-bottom: 2rem;
-		}
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
 
-		button {
-			font-size: 1.2rem;
-			font-weight: bold;
-			padding: 0.8rem 1.5rem;
-			border: 2px solid var(--primary-color);
-			border-radius: 50px;
-			background: transparent;
-			color: var(--primary-color);
-			cursor: pointer;
-			transition: all 0.3s ease;
-			position: relative;
-			overflow: hidden;
-		}
-		button:hover {
-			background-color: var(--primary-color);
-			color: var(--text-color);
-			box-shadow: 0 0 20px var(--primary-color);
-			transform: translateY(-3px);
-		}
-		button:disabled {
-			cursor: not-allowed;
-			opacity: 0.5;
-			transform: none;
-			box-shadow: none;
-			background-color: transparent;
-			color: var(--primary-color);
-		}
+        button {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 0.8rem 1.5rem;
+            border: 2px solid var(--primary-color);
+            border-radius: 50px;
+            background: transparent;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        button:hover {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            box-shadow: 0 0 20px var(--primary-color);
+            transform: translateY(-3px);
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
 
+        #lotto-results {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            width: 100%;
+            max-width: 600px;
+        }
 
-		#lotto-results {
-			display: flex;
-			flex-direction: column;
-			gap: 1.2rem;
-			width: 100%;
-			max-width: 600px;
-		}
+        .lotto-set {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 16px;
+            background-color: var(--secondary-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .lotto-set.flash {
+            animation: row-flash 0.8s ease;
+        }
 
-		.lotto-set {
-			display: flex;
-			justify-content: center;
-			gap: 0.75rem;
-			padding: 1rem;
-			border-radius: 16px;
-			background-color: var(--secondary-color);
-			box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-			transition: all 0.3s ease-in-out;
-		}
-		
-		.lotto-set.flash {
-			animation: row-flash 0.8s ease;
-		}
+        @keyframes row-flash {
+            0%, 100% { box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+            50% { box-shadow: 0 0 25px var(--ball-color1); }
+        }
 
-		@keyframes row-flash {
-			0%, 100% { box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-			50% { box-shadow: 0 0 25px var(--ball-color1); }
-		}
+        .lotto-number {
+            background: radial-gradient(circle at 30% 30%, #fff, var(--ball-color1) 80%, var(--ball-color2) 100%);
+            color: #333;
+            font-weight: 900;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.4), 2px 2px 8px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+            transform-origin: center center;
+            transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .lotto-number.revealed {
+            animation: reveal-pop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes reveal-pop {
+            0% { transform: scale(0.8); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
 
-		.lotto-number {
-			background: radial-gradient(circle at 30% 30%, #fff, var(--ball-color1) 80%, var(--ball-color2) 100%);
-			color: #333;
-			font-weight: 900;
-			border-radius: 50%;
-			width: 50px;
-			height: 50px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 1.2rem;
-			box-shadow: inset -3px -3px 8px rgba(0,0,0,0.4), 2px 2px 8px rgba(0,0,0,0.6);
-			position: relative;
-			overflow: hidden;
-			transform-origin: center center;
-			transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-		}
-		.lotto-number.revealed {
-			animation: reveal-pop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-		}
-		@keyframes reveal-pop {
-			0% { transform: scale(0.8); }
-			70% { transform: scale(1.2); }
-			100% { transform: scale(1); }
-		}
+        .spinner {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 3000%;
+            animation: spin 0.1s linear infinite;
+            display: flex;
+            flex-direction: column;
+        }
+        .spinner span {
+            width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-		.spinner {
-			position: absolute;
-			top: 0;
-			width: 100%;
-			height: 3000%; /* Many numbers for scrolling effect */
-			animation: spin 0.1s linear infinite;
-			display: flex;
-			flex-direction: column;
-		}
-		.spinner span {
-			width: 100%;
-			height: 50px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
+        @keyframes spin {
+            from { transform: translateY(-2850px); }
+            to { transform: translateY(0); }
+        }
 
-		@keyframes spin {
-			from { transform: translateY(-2850px); } /* (3000 - 50) */
-			to { transform: translateY(0); }
-		}
+        .settings-container {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+        }
+        #toggleSettingsBtn { font-size: 1.1rem; padding: 0.8rem; border-radius: 50px; width: auto; }
 
-		/* 설정 패널 스타일 */
-		.settings-container {
-			position: absolute;
-			top: 1.5rem;
-			right: 1.5rem;
-		}
-		#toggleSettingsBtn { font-size: 1.5rem; padding: 0.5rem; width: 50px; height: 50px; border-radius: 50%; }
+        .settings {
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: 0;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: #1f1f1f;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            z-index: 10;
+            border: 1px solid #444;
+            width: 280px;
+        }
 
-		.settings {
-			display: none;
-			position: absolute;
-			top: 65px;
-			right: 0;
-			flex-direction: column;
-			gap: 0.8rem;
-			background-color: #1f1f1f;
-			padding: 1.5rem;
-			border-radius: 12px;
-			box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-			z-index: 10;
-			border: 1px solid #444;
-		}
-
-		.settings label { display: flex; align-items: center; justify-content: space-between; font-size: 0.95rem; }
-		.settings input { width: 60px; padding: 0.4rem; border-radius: 6px; border: 1px solid #555; background-color: #333; color: white; text-align: center; margin-left: 10px; }
-
-	</style>
+        .settings label { display: flex; align-items: center; justify-content: space-between; font-size: 0.95rem; }
+        .settings input[type="number"] { width: 60px; padding: 0.4rem; border-radius: 6px; border: 1px solid #555; background-color: #333; color: white; text-align: center; margin-left: 10px; }
+        .settings input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); }
+    </style>
 </head>
 <body>
-	<div class="header-container">
-		<h1>✨ 다이나믹 로또 생성기 ✨</h1>
-	</div>
+    <div class="header-container">
+        <h1>✨ 다이나믹 로또 생성기 ✨</h1>
+    </div>
 
-	<div class="button-container">
-		<button id="rollBtn">번호 생성</button>
-	</div>
+    <div class="button-container">
+        <button id="rollBtn">번호 생성</button>
+    </div>
+    
+    <div class="settings-container">
+        <button id="toggleSettingsBtn">⚙️ 설정</button>
+        <div class="settings" id="settingsPanel">
+            <label>범위: <input type="number" id="minVal" value="1"> ~ <input type="number" id="maxVal" value="45"></label>
+            <label>개수: <input type="number" id="countVal" value="6"></label>
+            <label>벌수: <input type="number" id="setsVal" value="5"></label>
+            <hr style="border-color: #444; width: 100%;">
+            <label><input type="checkbox" id="useDateSeed" checked>날짜 기반 시드 고정</label>
+            <label><input type="checkbox" id="useISOSeed">ISO 주차(Week) 사용</label>
+        </div>
+    </div>
 
-	<div id="lotto-results"></div>
+    <div id="lotto-results"></div>
 
-	<div class="settings-container">
-		<button id="toggleSettingsBtn">⚙️</button>
-		<div class="settings" id="settingsPanel">
-			<label>범위: <input type="number" id="minVal" value="1"> ~ <input type="number" id="maxVal" value="45"></label>
-			<label>개수: <input type="number" id="countVal" value="6"></label>
-			<label>벌수: <input type="number" id="setsVal" value="5"></label>
-		</div>
-	</div>
+    <script>
+        const rollBtn = document.getElementById("rollBtn");
+        const resultsContainer = document.getElementById("lotto-results");
+        const settingsPanel = document.getElementById("settingsPanel");
+        const toggleSettingsBtn = document.getElementById("toggleSettingsBtn");
 
-	<script>
-		const rollBtn = document.getElementById("rollBtn");
-		const resultsContainer = document.getElementById("lotto-results");
-		const settingsPanel = document.getElementById("settingsPanel");
-		const toggleSettingsBtn = document.getElementById("toggleSettingsBtn");
+        // --- 유틸리티 및 시드 생성 함수 ---
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-		// --- 유틸리티 함수 ---
-		const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-		
-		// --- 설정 제어 ---
-		toggleSettingsBtn.addEventListener("click", () => {
-			settingsPanel.style.display = settingsPanel.style.display === "flex" ? "none" : "flex";
-		});
-		
-		// --- 로또 번호 생성 로직 ---
-		function generateLottoNumbers(config) {
-			const resultSets = [];
-			for (let i = 0; i < config.sets; i++) {
-				const numbers = new Set();
-				while (numbers.size < config.count) {
-					const num = Math.floor(Math.random() * (config.max - config.min + 1)) + config.min;
-					numbers.add(num);
-				}
-				resultSets.push(Array.from(numbers));
-			}
-			return resultSets;
-		}
+        function getISOWeek(date) {
+            const target = new Date(date.valueOf());
+            const dayNr = (date.getDay() + 6) % 7;
+            target.setDate(target.getDate() - dayNr + 3);
+            const firstThursday = new Date(target.getFullYear(), 0, 4);
+            const weekNumber = 1 + Math.round(((target - firstThursday) / 86400000 - 3 + ((firstThursday.getDay() + 6) % 7)) / 7);
+            return weekNumber;
+        }
 
+        function getSeed(config) {
+            if (!document.getElementById("useDateSeed").checked) {
+                return `${Math.random()}-${config.max}-${new Date().getTime()}`;
+            }
+            const now = new Date();
+            const year = now.getFullYear();
+            let week;
+            if (document.getElementById("useISOSeed").checked) {
+                week = getISOWeek(now);
+            } else {
+                const month = now.getMonth() + 1;
+                week = `${month}-${Math.ceil(now.getDate() / 7)}`;
+            }
+            return `${year}-W${week}-${config.max}-${config.min}-${config.count}`;
+        }
 
-		// --- 메인 실행 함수 ---
-		rollBtn.addEventListener("click", async () => {
-			rollBtn.disabled = true;
-			toggleSettingsBtn.disabled = true;
+        function seededRandom(seed) {
+            let h = 1779033703 ^ seed.length;
+            for (let i = 0; i < seed.length; i++) {
+                h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+                h = h << 13 | h >>> 19;
+            }
+            return function() {
+                h = Math.imul(h ^ h >>> 16, 2246822507);
+                h = Math.imul(h ^ h >>> 13, 3266489909);
+                return ((h ^= h >>> 16) >>> 0) / 4294967296;
+            }
+        }
+        
+        // --- 로또 번호 생성 로직 (시드 기반) ---
+        function generateLottoNumbers(config) {
+            const seed = getSeed(config);
+            const rand = seededRandom(seed);
+            const resultSets = [];
+            for (let i = 0; i < config.sets; i++) {
+                const numbers = new Set();
+                // 각 세트마다 다른 결과를 위해 시드에 인덱스 추가
+                const setRand = seededRandom(seed + `-set${i}`);
+                while (numbers.size < config.count) {
+                    const num = Math.floor(setRand() * (config.max - config.min + 1)) + config.min;
+                    numbers.add(num);
+                }
+                resultSets.push(Array.from(numbers));
+            }
+            return resultSets;
+        }
+        
+        // --- 설정 패널 제어 ---
+        toggleSettingsBtn.addEventListener("click", () => {
+            settingsPanel.style.display = settingsPanel.style.display === "flex" ? "none" : "flex";
+        });
 
-			const config = {
-				min: parseInt(document.getElementById("minVal").value, 10),
-				max: parseInt(document.getElementById("maxVal").value, 10),
-				count: parseInt(document.getElementById("countVal").value, 10),
-				sets: parseInt(document.getElementById("setsVal").value, 10)
-			};
+        // --- 메인 실행 함수 ---
+        rollBtn.addEventListener("click", async () => {
+            rollBtn.disabled = true;
+            toggleSettingsBtn.disabled = true;
 
-			resultsContainer.innerHTML = "";
-			const allNumberSets = generateLottoNumbers(config);
+            const config = {
+                min: parseInt(document.getElementById("minVal").value, 10),
+                max: parseInt(document.getElementById("maxVal").value, 10),
+                count: parseInt(document.getElementById("countVal").value, 10),
+                sets: parseInt(document.getElementById("setsVal").value, 10)
+            };
 
-			for (const [setIndex, numberSet] of allNumberSets.entries()) {
-				const row = document.createElement("div");
-				row.className = "lotto-set";
-				resultsContainer.appendChild(row);
+            resultsContainer.innerHTML = "";
+            const allNumberSets = generateLottoNumbers(config);
 
-				const ballElements = [];
-				for (let i = 0; i < config.count; i++) {
-					const ball = createBallElement(config);
-					row.appendChild(ball);
-					ballElements.push(ball);
-				}
+            for (const [setIndex, numberSet] of allNumberSets.entries()) {
+                const row = document.createElement("div");
+                row.className = "lotto-set";
+                resultsContainer.appendChild(row);
 
-				await revealNumbersInRow(ballElements, numberSet, setIndex);
-				await sleep(200);
-				
-				row.classList.add('flash');
-				await sleep(800);
-				row.classList.remove('flash');
+                const ballElements = [];
+                for (let i = 0; i < config.count; i++) {
+                    const ball = createBallElement(config);
+                    row.appendChild(ball);
+                    ballElements.push(ball);
+                }
 
-				await sortBallsInRow(row, numberSet);
-			}
+                await revealNumbersInRow(ballElements, numberSet, setIndex);
+                await sleep(200);
+                
+                row.classList.add('flash');
+                await sleep(800);
+                row.classList.remove('flash');
 
-			// 피날레!
-			await launchConfetti();
+                await sortBallsInRow(row, numberSet);
+            }
 
-			rollBtn.disabled = false;
-			toggleSettingsBtn.disabled = false;
-		});
+            await launchConfetti();
 
-		
-		// --- 애니메이션 함수 ---
+            rollBtn.disabled = false;
+            toggleSettingsBtn.disabled = false;
+        });
 
-		function createBallElement(config) {
-			const ball = document.createElement("div");
-			ball.className = "lotto-number";
-			
-			const spinner = document.createElement("div");
-			spinner.className = "spinner";
-			for(let i = 0; i < 30; i++) {
-				const numSpan = document.createElement("span");
-				numSpan.textContent = String(Math.floor(Math.random() * (config.max - config.min + 1)) + config.min).padStart(2, '0');
-				spinner.appendChild(numSpan);
-			}
-			ball.appendChild(spinner);
-			return ball;
-		}
+        
+        // --- 애니메이션 함수 ---
+        function createBallElement(config) {
+            const ball = document.createElement("div");
+            ball.className = "lotto-number";
+            
+            const spinner = document.createElement("div");
+            spinner.className = "spinner";
+            for(let i = 0; i < 30; i++) {
+                const numSpan = document.createElement("span");
+                numSpan.textContent = String(Math.floor(Math.random() * (config.max - config.min + 1)) + config.min).padStart(2, '0');
+                spinner.appendChild(numSpan);
+            }
+            ball.appendChild(spinner);
+            return ball;
+        }
 
-		async function revealNumbersInRow(ballElements, numberSet, setIndex) {
-			const revealPromises = ballElements.map(async (ball, i) => {
-				const delay = (setIndex * 100) + (i * 150);
-				await sleep(delay);
+        async function revealNumbersInRow(ballElements, numberSet, setIndex) {
+            const revealPromises = ballElements.map(async (ball, i) => {
+                const delay = (setIndex * 100) + (i * 150);
+                await sleep(delay);
 
-				const finalNum = numberSet[i];
-				const spinner = ball.querySelector('.spinner');
+                const finalNum = numberSet[i];
+                const spinner = ball.querySelector('.spinner');
 
-				return new Promise(async resolve => {
-					await sleep(1500 + Math.random() * 500); // 스피닝 시간
-					
-					spinner.style.display = 'none';
-					ball.textContent = finalNum;
-					ball.classList.add('revealed');
-					
-					await sleep(400); // pop 애니메이션 시간
-					ball.classList.remove('revealed');
-					resolve();
-				});
-			});
-			await Promise.all(revealPromises);
-		}
-		
-		async function sortBallsInRow(row, numberSet) {
-			const sortedSet = [...numberSet].sort((a, b) => a - b);
-			const balls = Array.from(row.children);
-			
-			// 1. 현재 공들의 위치를 계산
-			const positions = balls.map(ball => ball.getBoundingClientRect());
+                return new Promise(async resolve => {
+                    await sleep(1500 + Math.random() * 500);
+                    
+                    spinner.style.display = 'none';
+                    ball.textContent = finalNum;
+                    ball.classList.add('revealed');
+                    
+                    await sleep(400);
+                    ball.classList.remove('revealed');
+                    resolve();
+                });
+            });
+            await Promise.all(revealPromises);
+        }
+        
+        async function sortBallsInRow(row, numberSet) {
+            const sortedSet = [...numberSet].sort((a, b) => a - b);
+            const balls = Array.from(row.children);
+            
+            const positions = balls.map(ball => ball.getBoundingClientRect());
 
-			// 2. DOM에서 공들을 정렬된 순서대로 재배치
-			const ballMap = new Map();
-			balls.forEach((ball, i) => {
-				ballMap.set(parseInt(ball.textContent), ball);
-			});
+            const ballMap = new Map();
+            balls.forEach((ball) => {
+                ballMap.set(parseInt(ball.textContent), ball);
+            });
 
-			row.innerHTML = ''; // 기존 공들 제거
-			sortedSet.forEach(num => {
-				row.appendChild(ballMap.get(num));
-			});
-			
-			const newBalls = Array.from(row.children);
-			
-			// 3. 재배치 후 새로운 위치를 계산
-			const newPositions = newBalls.map(ball => ball.getBoundingClientRect());
-			
-			// 4. 원래 위치로 되돌리기 위한 transform 값 계산 및 적용
-			newBalls.forEach((ball, i) => {
-				const originalBallIndex = numberSet.indexOf(parseInt(ball.textContent));
-				const dx = positions[originalBallIndex].left - newPositions[i].left;
-				
-				ball.style.transition = 'none';
-				ball.style.transform = `translateX(${dx}px)`;
-			});
-			
-			// 5. 다음 프레임에서 transform을 초기화하여 애니메이션 시작
-			await sleep(10); 
-			newBalls.forEach(ball => {
-				ball.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
-				ball.style.transform = 'translateX(0)';
-			});
+            row.innerHTML = '';
+            sortedSet.forEach(num => {
+                row.appendChild(ballMap.get(num));
+            });
+            
+            const newBalls = Array.from(row.children);
+            const newPositions = newBalls.map(ball => ball.getBoundingClientRect());
+            
+            newBalls.forEach((ball, i) => {
+                const originalBallIndex = numberSet.indexOf(parseInt(ball.textContent));
+                const dx = positions[originalBallIndex].left - newPositions[i].left;
+                
+                ball.style.transition = 'none';
+                ball.style.transform = `translateX(${dx}px)`;
+            });
+            
+            await sleep(10); 
+            newBalls.forEach(ball => {
+                ball.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+                ball.style.transform = 'translateX(0)';
+            });
 
-			await sleep(600); // 정렬 애니메이션 시간
-		}
+            await sleep(600);
+        }
 
-		async function launchConfetti() {
-			const duration = 2 * 1000;
-			const animationEnd = Date.now() + duration;
-			const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+        async function launchConfetti() {
+            const duration = 2 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
-			function randomInRange(min, max) {
-				return Math.random() * (max - min) + min;
-			}
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
 
-			const interval = setInterval(function() {
-				const timeLeft = animationEnd - Date.now();
-				if (timeLeft <= 0) return clearInterval(interval);
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
 
-				const particleCount = 50 * (timeLeft / duration);
-				confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-				confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-			}, 250);
-		}
-	</script>
+                const particleCount = 50 * (timeLeft / duration);
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
+        }
+    </script>
 </body>
 </html>
