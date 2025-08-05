@@ -145,7 +145,8 @@
 			"type": ["html", "html_modal"],
 			"modalIcon": "U",
 			"modalIconColor": "#007bff",
-			"enable": true
+			"enable": true,
+			"hide_header": true
 		},
 		{
 			"name": "mtg-dungeons",
