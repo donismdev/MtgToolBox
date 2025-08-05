@@ -115,6 +115,8 @@
             overflow: hidden;
             transform-origin: center center;
             transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            /* --- iOS 렌더링 버그 수정을 위한 코드 --- */
+            transform: translateZ(0);
         }
         .lotto-number.revealed {
             animation: reveal-pop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
@@ -252,7 +254,6 @@
             const resultSets = [];
             for (let i = 0; i < config.sets; i++) {
                 const numbers = new Set();
-                // 각 세트마다 다른 결과를 위해 시드에 인덱스 추가
                 const setRand = seededRandom(seed + `-set${i}`);
                 while (numbers.size < config.count) {
                     const num = Math.floor(setRand() * (config.max - config.min + 1)) + config.min;
