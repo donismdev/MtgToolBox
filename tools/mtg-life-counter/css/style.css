@@ -899,3 +899,14 @@
 		.occupant-count-6 .marker-pos-3 { bottom: -8px; left: -8px; top: auto; right: auto; }
 		.occupant-count-6 .marker-pos-4 { bottom: -8px; right: -8px; top: auto; }
 		.occupant-count-6 .marker-pos-5 { bottom: -8px; left: 50%; transform: translateX(-50%); top: auto; right: auto; }
+
+
+		/*모달 모드 예외처리 추가*/
+		body.modal-mode {
+			overflow: hidden !important; /* body 자체의 스크롤을 막습니다. */
+		}
+
+		body.modal-mode #game-container,
+		body.modal-mode .player-area {
+			overflow: hidden;
+		}

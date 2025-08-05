@@ -66,9 +66,12 @@ import { applyLifeFontSize } from './ui.js';
         if (window.saveLifeTotals) {
             window.saveLifeTotals();
         }
+
+		document.body.classList.remove('modal-mode');
     }
     
     window.onModalOpen = () => {
+		document.body.classList.add('modal-mode');
     }
 
 	window.onEmbeddedOpen = () => {
