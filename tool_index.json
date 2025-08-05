@@ -146,6 +146,15 @@
 			"modalIcon": "U",
 			"modalIconColor": "#007bff",
 			"enable": true
+		},
+		{
+			"name": "mtg-dungeons",
+			"path": "tools/mtg-dungeons/",
+			"parent": "MTG",
+			"type": ["html", "html_modal"],
+			"modalIcon": "D",
+			"modalIconColor": "#6f42c1",
+			"enable": true
 		}
 	]
 }
