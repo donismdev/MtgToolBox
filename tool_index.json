@@ -137,6 +137,15 @@
 			"hide_header": true,
 			"tags": ["lotto"],
 			"enable": true
+		},
+		{
+			"name": "mtg-urza-tool",
+			"path": "tools/mtg-urza-tool/",
+			"parent": "MTG",
+			"type": ["html", "html_modal"],
+			"modalIcon": "U",
+			"modalIconColor": "#007bff",
+			"enable": true
 		}
 	]
 }
