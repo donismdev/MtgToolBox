@@ -13,6 +13,8 @@ export class Player {
 		this.lifeChangeAmount = 0;
 		this.lifeChangePositions = [];
 		this.lifeLog = [];
+		this.cumulativeFeedbackEl = null;
+		this.feedbackFadeTimeout = null;
 		this.createDOM();
 		this.applyTheme();
 		this.updateDisplay();
@@ -184,12 +186,7 @@ export class Player {
 				}
 			}
 
-			// 탭한 위치에 피드백 효과를 주고 라이프를 변경
-			const relativeX = event.clientX - rect.left;
-			const relativeY = event.clientY - rect.top;
-
-			this.showLifeFeedback(amount, { x: relativeX, y: relativeY }, false);
-			this.changeLife(amount, { x: relativeX, y: relativeY });
+			this.changeLife(amount);
 			this.showAreaRipple(amount, event);
 		});
 
@@ -328,38 +325,92 @@ export class Player {
 		this.elements.themeSelector.style.display = 'none';
 	}
 
-	changeLife(amount, position) {
-		clearTimeout(this.lifeChangeTimeout);
-		this.lifeChangeAmount += amount;
-		if (position) {
-			this.lifeChangePositions.push(position);
-		}
-		this.life += amount;
-		this.updateDisplay();
+	changeLife(amount) {
+        clearTimeout(this.lifeChangeTimeout);
 
-		this.lifeChangeTimeout = setTimeout(() => {
-			if (this.lifeChangeAmount !== 0) {
-				this.logEvent('lifeChange', {
-					amount: this.lifeChangeAmount,
-					lifeAfter: this.life
-				});
-				this.showLifeFeedback(this.lifeChangeAmount);
-			}
-			this.lifeChangeAmount = 0;
-			this.lifeChangePositions = [];
-		}, 600);
-	}
+        this.lifeChangeAmount += amount;
+        this.life += amount;
+        
+        // HP 숫자에 '펄스' 애니메이션을 적용하며 업데이트
+        this.updateDisplay(true);
 
-	updateDisplay() { this.elements.lifeTotal.textContent = this.life; }
+        // ## 변경점 2 ##: 누적 변경량이 0이 아닐 때만 피드백을 표시하고 타이머를 설정합니다.
+        if (this.lifeChangeAmount !== 0) {
+            // 피드백 요소가 없으면 새로 생성
+            if (!this.cumulativeFeedbackEl) {
+                this.cumulativeFeedbackEl = document.createElement('div');
+                this.cumulativeFeedbackEl.className = 'life-feedback';
+                // ## 변경점 1 ##: 피드백 위치를 위로 조정 (40% -> 35%). 원하시면 값을 더 줄여서 올릴 수 있습니다.
+                this.cumulativeFeedbackEl.style.top = '25%';
+                this.cumulativeFeedbackEl.style.left = '50%';
+                this.cumulativeFeedbackEl.style.setProperty('--feedback-rotation', `${this.rotation}deg`);
+                this.elements.area.appendChild(this.cumulativeFeedbackEl);
+            }
+            
+            // 피드백 요소의 숫자와 스타일 업데이트
+            this.cumulativeFeedbackEl.style.opacity = '1'; 
+            const theme = this._getThemeByName(this.themeName);
+            const displayAmount = this.lifeChangeAmount > 0 ? `+${this.lifeChangeAmount}` : `${this.lifeChangeAmount}`;
+            this.cumulativeFeedbackEl.textContent = displayAmount;
+            if (theme) {
+                this.cumulativeFeedbackEl.style.color = this.lifeChangeAmount > 0 ? theme.plusColor : theme.minusColor;
+            }
+
+            // 새로운 '800ms 뒤에 끄기' 타이머 설정
+            this.lifeChangeTimeout = setTimeout(() => {
+                this.logEvent('lifeChange', {
+                    amount: this.lifeChangeAmount,
+                    lifeAfter: this.life
+                });
+
+                if (this.cumulativeFeedbackEl) {
+                    this.cumulativeFeedbackEl.style.transition = 'opacity 0.3s ease-out';
+                    this.cumulativeFeedbackEl.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        if(this.cumulativeFeedbackEl) this.cumulativeFeedbackEl.remove();
+                        this.cumulativeFeedbackEl = null;
+                    }, 300);
+                }
+                
+                this.lifeChangeAmount = 0;
+            }, 800);
+
+        } 
+        // ## 변경점 2 ##: 누적 변경량이 정확히 0이 된 경우의 처리
+        else {
+            // 기존에 표시되던 피드백이 있다면 즉시 제거합니다.
+            if (this.cumulativeFeedbackEl) {
+                this.cumulativeFeedbackEl.remove();
+                this.cumulativeFeedbackEl = null;
+            }
+            // 타이머는 함수 시작 시점에 이미 clear 되었으므로 추가 작업이 필요 없습니다.
+        }
+    }
+
+	updateDisplay(withAnimation = false) {
+        const el = this.elements.lifeTotal;
+        el.textContent = this.life;
+
+        if (withAnimation) {
+            el.classList.remove('life-total-animate');
+            void el.offsetWidth;
+            el.classList.add('life-total-animate');
+        }
+    }
 
 	setLife(newLife, isReset = false) {
-		this.life = newLife;
-		this.updateDisplay();
-		if (isReset) {
-			this.lifeLog = [];
-			this.logEvent('reset', { lifeAfter: this.life });
-		}
-	}
+        this.life = newLife;
+        if (isReset) {
+            this.lifeLog = [];
+            this.logEvent('reset', { lifeAfter: this.life });
+            // ## 변경점 2 ##: 리셋 시에는 인트로 애니메이션을 재생
+            this.playIntroAnimation();
+        } else {
+            // ## 변경점 2 ##: 일반적인 life 설정 시에는 펄스 애니메이션 재생
+            this.updateDisplay(true);
+        }
+    }
 
 	playIntroAnimation() {
 		const el = this.elements.lifeTotal;
@@ -379,44 +430,6 @@ export class Player {
 		if (this.rotation === 0) this.elements.diceContainer.classList.add('pushed-up');
 		if (this.rotation === 180) this.elements.diceContainer.classList.add('pushed-down');
 		this.updateHint();
-	}
-
-	/**
-	 * ## 핵심 수정 ##
-	 * 라이프 증감 피드백을 표시하는 함수입니다.
-	 * CSS 변수(--feedback-rotation)를 사용해 애니메이션이 플레이어의 회전 각도를 유지하도록 합니다.
-	 */
-	showLifeFeedback(amount, position = { x: '50%', y: '50%' }, isCumulative = true) {
-		const feedback = document.createElement('div');
-		feedback.className = 'life-feedback';
-		feedback.textContent = (amount > 0) ? `+${amount}` : `${amount}`;
-	
-		// CSS 애니메이션이 사용할 회전 각도를 변수로 전달합니다.
-		feedback.style.setProperty('--feedback-rotation', `${this.rotation}deg`);
-	
-		if (isCumulative) {
-			// 합산 피드백 (중앙에 표시)
-			const theme = this._getThemeByName(this.themeName);
-			if (theme) {
-				feedback.style.color = amount > 0 ? theme.plusColor : theme.minusColor;
-			}
-			feedback.style.fontSize = '4rem';
-			feedback.style.left = `50%`;
-			feedback.style.top = `50%`;
-			// 실제 transform은 CSS 애니메이션(@keyframes)에서 처리합니다.
-		} else {
-			// 즉시 피드백 (클릭 위치에 표시)
-			feedback.style.color = '#FFFFFF';
-			feedback.style.left = `${position.x}px`;
-			feedback.style.top = `${position.y}px`;
-			// // 애니메이션을 사용하지 않으므로 transform을 직접 설정합니다.
-			// feedback.style.transform = `translate(-50%, -50%) rotate(${this.rotation}deg)`;
-		}
-	
-		this.elements.area.appendChild(feedback);
-		setTimeout(() => {
-			feedback.remove();
-		}, 600);
 	}
 
 	showAreaRipple(amount, event) {
