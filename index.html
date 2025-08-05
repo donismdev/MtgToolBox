@@ -316,42 +316,6 @@
 			height: calc(var(--vh, 1vh) * 100);
 		}
 
-		/* ======================================= */
-		/* == iOS 기기 전용 유사 전체화면 스타일 == */
-		/* ======================================= */
-		/* JavaScript에 의해 body에 'iOS'와 'pseudo-fullscreen' 클래스가 모두 있을 때만 동작합니다. */
-
-		/* iOS 유사 전체화면 모드에서 플로팅 UI 버튼과 사이드바를 모두 숨깁니다. */
-		body.iOS.pseudo-fullscreen #fixed-ui-wrapper,
-		body.iOS.pseudo-fullscreen #sidebar,
-		body.iOS.pseudo-fullscreen #sidebar-overlay {
-			display: none !important;
-		}
-
-		/* iOS 유사 전체화면 모드에서 메인 콘텐츠 영역의 여백을 없애고 화면에 꽉 채웁니다. */
-		body.iOS.pseudo-fullscreen #content {
-			padding: 0;
-			margin: 0;
-			height: 100vh;
-			width: 100vw;
-		}
-
-		/* iOS 유사 전체화면 모드에서 툴 제목(H1 태그)을 숨깁니다. */
-		body.iOS.pseudo-fullscreen #content > h1 {
-			display: none;
-		}
-
-		/* iOS 유사 전체화면 모드에서 내부 iframe의 크기를 100%로 확장하고 테두리를 제거합니다. */
-		body.iOS.pseudo-fullscreen #content #embedded-tool-iframe {
-			height: 100%;
-			width: 100%;
-			border-radius: 0;
-		}
-
-		body.iOS #modal-tool-content {
-			/* env()를 지원하지 않는 구형 브라우저를 위해 fallback 값(20px)을 줄 수 있습니다. */
-			padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
-		}
     </style>
 </head>
 <body>
