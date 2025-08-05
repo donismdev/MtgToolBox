@@ -131,6 +131,7 @@
 		{
 			"name": "etc-lotto",
 			"path": "tools/etc-lotto/",
+			"parent": "ETC",
 			"type": ["html", "html_modal"],
 			"modalIcon": "L",
 			"hide_header": true,
