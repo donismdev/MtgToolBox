@@ -182,19 +182,12 @@
 	</style>
 </head>
 <body>
-	<audio id="click-sound" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-the-sound-pack-tree/tspt_generic_button_click_soft_001.mp3" preload="auto"></audio>
-	<audio id="reveal-sound" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-the-sound-pack-tree/tspt_ui_button_positive_001.mp3" preload="auto"></audio>
-	<audio id="sort-sound" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-sound-designer-essentials/sde_interface_button_journey_mode_11.mp3" preload="auto"></audio>
-	<audio id="win-sound" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-little-robot-sound-factory/lrsf_sfx_and_stings_win_01.mp3" preload="auto"></audio>
-
-
 	<div class="header-container">
 		<h1>✨ 다이나믹 로또 생성기 ✨</h1>
 	</div>
 
 	<div class="button-container">
 		<button id="rollBtn">번호 생성</button>
-		<button id="muteBtn">🔊</button>
 	</div>
 
 	<div id="lotto-results"></div>
@@ -213,37 +206,15 @@
 		const resultsContainer = document.getElementById("lotto-results");
 		const settingsPanel = document.getElementById("settingsPanel");
 		const toggleSettingsBtn = document.getElementById("toggleSettingsBtn");
-		const muteBtn = document.getElementById("muteBtn");
-
-		const sounds = {
-			click: document.getElementById("click-sound"),
-			reveal: document.getElementById("reveal-sound"),
-			sort: document.getElementById("sort-sound"),
-			win: document.getElementById("win-sound"),
-		};
-		let isMuted = false;
 
 		// --- 유틸리티 함수 ---
 		const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-		function playSound(sound) {
-			if (!isMuted) {
-				sound.currentTime = 0;
-				sound.play().catch(e => console.error("Sound play failed:", e));
-			}
-		}
 		
-		// --- 설정 및 사운드 제어 ---
+		// --- 설정 제어 ---
 		toggleSettingsBtn.addEventListener("click", () => {
 			settingsPanel.style.display = settingsPanel.style.display === "flex" ? "none" : "flex";
 		});
 		
-		muteBtn.addEventListener("click", () => {
-			isMuted = !isMuted;
-			muteBtn.textContent = isMuted ? '🔇' : '🔊';
-		});
-
-
 		// --- 로또 번호 생성 로직 ---
 		function generateLottoNumbers(config) {
 			const resultSets = [];
@@ -261,7 +232,6 @@
 
 		// --- 메인 실행 함수 ---
 		rollBtn.addEventListener("click", async () => {
-			playSound(sounds.click);
 			rollBtn.disabled = true;
 			toggleSettingsBtn.disabled = true;
 
@@ -298,7 +268,6 @@
 			}
 
 			// 피날레!
-			playSound(sounds.win);
 			await launchConfetti();
 
 			rollBtn.disabled = false;
@@ -334,7 +303,6 @@
 				return new Promise(async resolve => {
 					await sleep(1500 + Math.random() * 500); // 스피닝 시간
 					
-					playSound(sounds.reveal);
 					spinner.style.display = 'none';
 					ball.textContent = finalNum;
 					ball.classList.add('revealed');
@@ -348,7 +316,6 @@
 		}
 		
 		async function sortBallsInRow(row, numberSet) {
-			playSound(sounds.sort);
 			const sortedSet = [...numberSet].sort((a, b) => a - b);
 			const balls = Array.from(row.children);
 			
