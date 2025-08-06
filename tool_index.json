@@ -6,27 +6,13 @@
 			"description": "매직 더 개더링 JSON 카드 데이터를 150MB 단위로 분할 저장하는 툴입니다. Pyodide를 활용하여 브라우저에서도 실행됩니다.",
 			"path": "tools/mtg-json-splitter/",
 			"tags": ["json", "split", "mtg"],
-			"enable": true,
+			"enable": false,
 			"desktopOnly": true,
 			"inputs": [
 				{ "label": "파일 선택", "type": "file", "accept": ".json,.txt", "id": "fileInput" },
 				{ "label": "분할 용량 (MB)", "type": "number", "id": "sizeInput", "default": 150 },
 				{ "label": "출력 폴더명", "type": "text", "id": "folderInput", "default": "output" },
 				{ "label": "결과 파일명 접두어", "type": "text", "id": "prefixInput", "default": "split" }
-			]
-		},
-		{
-			"name": "csv-cleaner",
-			"parent": "CSV",
-			"description": "빈 줄 제거, 열 수 불일치 확인 등의 기능을 가진 CSV 정리 툴입니다.",
-			"path": "tools/csv-cleaner/",
-			"tags": ["csv", "clean"],
-			"enable": true,
-			"desktopOnly": true,
-			"inputs": [
-				{ "label": "CSV 파일 선택", "type": "file", "accept": ".csv", "id": "csvFile" },
-				{ "label": "헤더 유무", "type": "checkbox", "id": "hasHeader", "default": true },
-				{ "label": "출력 파일명", "type": "text", "id": "outputName", "default": "cleaned.csv" }
 			]
 		},
 		{

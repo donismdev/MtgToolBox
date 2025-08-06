@@ -115,8 +115,7 @@
             overflow: hidden;
             transform-origin: center center;
             transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            /* --- iOS 렌더링 버그 수정을 위한 코드 --- */
-            transform: translateZ(0);
+            transform: translateZ(0); /* --- iOS 렌더링 버그 수정을 위한 코드 --- */
         }
         .lotto-number.revealed {
             animation: reveal-pop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
@@ -206,6 +205,11 @@
         const settingsPanel = document.getElementById("settingsPanel");
         const toggleSettingsBtn = document.getElementById("toggleSettingsBtn");
 
+        // --- 상태 관리 변수 ---
+        let isAnimating = false;
+        let skipAnimation = false;
+        let confettiInterval = null;
+
         // --- 유틸리티 및 시드 생성 함수 ---
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -250,7 +254,6 @@
         // --- 로또 번호 생성 로직 (시드 기반) ---
         function generateLottoNumbers(config) {
             const seed = getSeed(config);
-            const rand = seededRandom(seed);
             const resultSets = [];
             for (let i = 0; i < config.sets; i++) {
                 const numbers = new Set();
@@ -266,12 +269,25 @@
         
         // --- 설정 패널 제어 ---
         toggleSettingsBtn.addEventListener("click", () => {
+            if (isAnimating) return;
             settingsPanel.style.display = settingsPanel.style.display === "flex" ? "none" : "flex";
         });
 
         // --- 메인 실행 함수 ---
-        rollBtn.addEventListener("click", async () => {
-            rollBtn.disabled = true;
+        rollBtn.addEventListener("click", () => {
+            // 애니메이션이 진행 중일 때 클릭하면, 스킵 플래그를 활성화
+            if (isAnimating) {
+                skipAnimation = true;
+                return;
+            }
+            // 애니메이션 시작
+            runAnimation();
+        });
+
+        async function runAnimation() {
+            isAnimating = true;
+            skipAnimation = false;
+            rollBtn.disabled = true; // 중복 실행 방지를 위해 잠시 비활성화
             toggleSettingsBtn.disabled = true;
 
             const config = {
@@ -283,8 +299,14 @@
 
             resultsContainer.innerHTML = "";
             const allNumberSets = generateLottoNumbers(config);
+            
+            // 스킵할 수 있도록 버튼을 다시 활성화
+            rollBtn.disabled = false;
+            rollBtn.textContent = "결과 바로보기";
 
             for (const [setIndex, numberSet] of allNumberSets.entries()) {
+                if (skipAnimation) break; // 스킵 체크
+
                 const row = document.createElement("div");
                 row.className = "lotto-set";
                 resultsContainer.appendChild(row);
@@ -297,23 +319,55 @@
                 }
 
                 await revealNumbersInRow(ballElements, numberSet, setIndex);
+                if (skipAnimation) break;
+
                 await sleep(200);
+                if (skipAnimation) break;
                 
                 row.classList.add('flash');
                 await sleep(800);
+                if (skipAnimation) break;
                 row.classList.remove('flash');
 
                 await sortBallsInRow(row, numberSet);
             }
 
-            await launchConfetti();
-
+            // 애니메이션이 스킵되었다면, 최종 결과를 즉시 렌더링
+            if (skipAnimation) {
+                renderFinalResults(allNumberSets, config);
+            } else {
+                await launchConfetti();
+            }
+            
+            // 모든 과정 종료 후 상태 초기화
+            isAnimating = false;
+            skipAnimation = false;
             rollBtn.disabled = false;
             toggleSettingsBtn.disabled = false;
-        });
-
+            rollBtn.textContent = "번호 생성";
+        }
         
-        // --- 애니메이션 함수 ---
+        // --- 애니메이션 스킵 시 최종 결과를 즉시 렌더링하는 함수 ---
+        function renderFinalResults(allNumberSets, config) {
+            resultsContainer.innerHTML = ""; // 기존 내용 초기화
+            if(confettiInterval) clearInterval(confettiInterval); // 폭죽 효과 중단
+
+            for (const numberSet of allNumberSets) {
+                const row = document.createElement("div");
+                row.className = "lotto-set";
+                const sortedSet = [...numberSet].sort((a, b) => a - b);
+                
+                for (const num of sortedSet) {
+                    const ball = document.createElement("div");
+                    ball.className = "lotto-number";
+                    ball.textContent = num;
+                    row.appendChild(ball);
+                }
+                resultsContainer.appendChild(row);
+            }
+        }
+        
+        // --- 애니메이션 관련 함수들 ---
         function createBallElement(config) {
             const ball = document.createElement("div");
             ball.className = "lotto-number";
@@ -331,28 +385,30 @@
 
         async function revealNumbersInRow(ballElements, numberSet, setIndex) {
             const revealPromises = ballElements.map(async (ball, i) => {
+                if (skipAnimation) return;
                 const delay = (setIndex * 100) + (i * 150);
                 await sleep(delay);
+                if (skipAnimation) return;
 
                 const finalNum = numberSet[i];
                 const spinner = ball.querySelector('.spinner');
 
-                return new Promise(async resolve => {
-                    await sleep(1500 + Math.random() * 500);
-                    
-                    spinner.style.display = 'none';
-                    ball.textContent = finalNum;
-                    ball.classList.add('revealed');
-                    
-                    await sleep(400);
-                    ball.classList.remove('revealed');
-                    resolve();
-                });
+                await sleep(1500 + Math.random() * 500);
+                if (skipAnimation) return;
+                
+                if (spinner) spinner.style.display = 'none';
+                ball.textContent = finalNum;
+                ball.classList.add('revealed');
+                
+                await sleep(400);
+                if (skipAnimation) return;
+                ball.classList.remove('revealed');
             });
             await Promise.all(revealPromises);
         }
         
         async function sortBallsInRow(row, numberSet) {
+            if (skipAnimation) return;
             const sortedSet = [...numberSet].sort((a, b) => a - b);
             const balls = Array.from(row.children);
             
@@ -365,7 +421,8 @@
 
             row.innerHTML = '';
             sortedSet.forEach(num => {
-                row.appendChild(ballMap.get(num));
+                const ball = ballMap.get(num);
+                if (ball) row.appendChild(ball);
             });
             
             const newBalls = Array.from(row.children);
@@ -373,13 +430,16 @@
             
             newBalls.forEach((ball, i) => {
                 const originalBallIndex = numberSet.indexOf(parseInt(ball.textContent));
+                if (originalBallIndex === -1 || !positions[originalBallIndex] || !newPositions[i]) return;
                 const dx = positions[originalBallIndex].left - newPositions[i].left;
                 
                 ball.style.transition = 'none';
                 ball.style.transform = `translateX(${dx}px)`;
             });
             
-            await sleep(10); 
+            await sleep(10);
+            if (skipAnimation) return;
+
             newBalls.forEach(ball => {
                 ball.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
                 ball.style.transform = 'translateX(0)';
@@ -389,6 +449,7 @@
         }
 
         async function launchConfetti() {
+            if (skipAnimation) return;
             const duration = 2 * 1000;
             const animationEnd = Date.now() + duration;
             const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
@@ -397,14 +458,20 @@
                 return Math.random() * (max - min) + min;
             }
 
-            const interval = setInterval(function() {
+            confettiInterval = setInterval(() => {
+                if (skipAnimation) {
+                    clearInterval(confettiInterval);
+                    return;
+                }
                 const timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
+                if (timeLeft <= 0) return clearInterval(confettiInterval);
 
                 const particleCount = 50 * (timeLeft / duration);
                 confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
                 confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
             }, 250);
+            
+            await sleep(duration);
         }
     </script>
 </body>
