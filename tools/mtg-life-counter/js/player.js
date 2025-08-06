@@ -165,11 +165,22 @@ export class Player {
 		// action이 null이면(라벨만 변경된 경우 등) 데이터 변경 없이 UI만 새로고침합니다.
 
 		// 2. targetElement가 있고(메인 버튼 클릭) 라벨이 존재하면 말풍선을 표시합니다.
-		if (targetElement && setting.label) {
-			let bubbleText = setting.label;
+		if (targetElement) {
+
+			let bubbleText = action;
+
+			if (bubbleText == null || bubbleText === '') 
+			{
+				bubbleText = "Counts Changed";
+			}
+			if (setting.label) {
+				bubbleText += `: ${setting.label}`;
+			}
+
 			if (action === 'reset') {
 				bubbleText += " reset!";
 			}
+			
 			this.showSpeechBubble(bubbleText, targetElement);
 		}
 
