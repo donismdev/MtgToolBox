@@ -17,11 +17,13 @@ export class Player {
 		this.feedbackFadeTimeout = null;
 
 		this.buttonSettings = [
-        { id: 'initiative', label: 'Initiative', enabled: false },
-        { id: 'monarch', label: 'Monarch', enabled: false },
-        { id: 'log', label: 'Life Log', enabled: false },
-        { id: 'theme', label: 'Theme', enabled: false },
-        { id: 'layout', label: 'HP Layout', enabled: false },
+			{ id: 'initiative',	label: 'Initiative',	enabled: false, backgroundSize: '85%' },
+			{ id: 'monarch',	label: 'Monarch',		enabled: false, backgroundSize: '85%' },
+			{ id: 'log',		label: 'Life Log',		enabled: false, backgroundSize: '95%' },
+			{ id: 'theme',		label: 'Theme',			enabled: false, backgroundSize: '85%' },
+			{ id: 'layout',		label: 'HP Layout',		enabled: false, backgroundSize: '95%' },
+			{ id: 'counter',	label: 'Counters',		enabled: false, backgroundSize: '85%' },
+			{ id: 'note',		label: 'Secret Notes',	enabled: false, backgroundSize: '85%' },
     	];
 
 		this.counterSettings = [
@@ -36,6 +38,25 @@ export class Player {
             { id: 'card',     imageName: 'card',     enabled: false, count : 0, label: '', backgroundSize: '85%' },
             { id: 'cross',    imageName: 'cross',    enabled: false, count : 0, label: '', backgroundSize: '100%' },
             { id: 'weapon',   imageName: 'weapon',   enabled: false, count : 0, label: '', backgroundSize: '85%' },
+        ];
+
+		this.genericCounters = [
+            { id: 'energy',   imageName: 'energy',   count: 0, label: '' },
+            { id: 'skull',    imageName: 'skull',    count: 0, label: '' },
+            { id: 'power',    imageName: 'power',    count: 0, label: '' },
+            { id: 'treasure', imageName: 'treasure', count: 0, label: '' },
+            { id: 'clue',     imageName: 'clue',     count: 0, label: '' },
+            { id: 'food',     imageName: 'food',     count: 0, label: '' },
+            { id: 'blood',    imageName: 'blood',    count: 0, label: '' },
+            { id: 'card',     imageName: 'card',     count: 0, label: '' },
+            { id: 'potion',   imageName: 'potion',   count: 0, label: '' },
+            { id: 'wizard',   imageName: 'wizard',   count: 0, label: '' },
+            { id: 'weapon',   imageName: 'weapon',   count: 0, label: '' },
+            { id: 'sun',      imageName: 'sun',      count: 0, label: '' },
+            { id: 'shield',   imageName: 'shield',   count: 0, label: '' },
+            { id: 'hood',     imageName: 'hood',     count: 0, label: '' },
+            { id: 'feather',  imageName: 'feather',  count: 0, label: '' },
+            { id: 'battle',   imageName: 'battle',   count: 0, label: '' },
         ];
 
 		this.createDOM();
@@ -123,28 +144,34 @@ export class Player {
 		// 초기 버튼 상태 렌더링
 		this.rebuildPlayerButtons();
 		this.updateRotationClass();
+		this.createCountersViewerModal();
 	}
 
 	updateCounterValue(setting, action, targetElement = null) {
-        if (action === 'increment') {
-            setting.count++;
-			if (targetElement && setting.label) {
-                this.showSpeechBubble(setting.label, targetElement);
-            }
-        } else if (action === 'reset') {
-            setting.count = 0;
-			if (targetElement && setting.label) {
-				this.showSpeechBubble(setting.label + " reset", targetElement);
-			}
-        }
+		// 1. action에 따라 데이터(count)를 변경합니다.
+		if (action === 'increment') {
+			setting.count++;
+		} else if (action === 'decrement') {
+			setting.count--;
+		} else if (action === 'reset') {
+			setting.count = 0;
+		}
+		// action이 null이면(라벨만 변경된 경우 등) 데이터 변경 없이 UI만 새로고침합니다.
 
-        // 데이터가 변경되었으니, 모든 UI를 최신 데이터로 다시 그립니다.
-        this.rebuildPlayerButtons(); // 메인 버튼 UI 새로고침
-        
-        // 옵션창이 열려있을 수 있으니, 옵션창 목록도 새로고침합니다.
-        if (this.elements.counterSettingsList) {
-            this.renderCounterSettingsList();
-        }
+		// 2. targetElement가 있고(메인 버튼 클릭) 라벨이 존재하면 말풍선을 표시합니다.
+		if (targetElement && setting.label) {
+			let bubbleText = setting.label;
+			if (action === 'reset') {
+				bubbleText += " reset!";
+			}
+			this.showSpeechBubble(bubbleText, targetElement);
+		}
+
+		// 3. 모든 UI를 최신 데이터로 새로고침하여 동기화합니다.
+		this.rebuildPlayerButtons();
+		if (this.elements.counterSettingsList) {
+			this.renderCounterSettingsList();
+		}
     }
 
 	showSpeechBubble(text, buttonElement) {
@@ -221,10 +248,10 @@ export class Player {
 		tabContainer.className = 'options-tab-container';
 		const counterTabBtn = document.createElement('button');
 		counterTabBtn.className = 'options-tab-button active';
-		counterTabBtn.textContent = 'Counter';
+		counterTabBtn.textContent = 'Counters';
 		const buttonsTabBtn = document.createElement('button');
 		buttonsTabBtn.className = 'options-tab-button';
-		buttonsTabBtn.textContent = 'Buttons';
+		buttonsTabBtn.textContent = 'Options';
 		
 		// 탭 콘텐츠
 		const contentContainer = document.createElement('div');
@@ -282,106 +309,76 @@ export class Player {
 
 		this.counterSettings.forEach(setting => {
 			const item = document.createElement('li');
-			item.className = 'button-setting-item';
+			// [수정] 새로운 CSS 클래스를 적용하여 UI를 통일합니다.
+			item.className = 'counter-item'; 
 			item.dataset.id = setting.id;
-	        item.draggable = true;
+			item.draggable = true;
 
-			const dragHandle = document.createElement('span');
-			dragHandle.className = 'drag-handle';
-			dragHandle.innerHTML = '&#x2630;';
-
-
+			// --- 1. 체크박스 (맨 앞에 위치) ---
 			const checkbox = document.createElement('input');
 			checkbox.type = 'checkbox';
+			checkbox.className = 'counter-item-checkbox'; // 스타일링을 위한 클래스
 			checkbox.checked = setting.enabled;
 			checkbox.id = `${this.id}-counter-check-${setting.id}`;
 			checkbox.onchange = () => {
-				const enabledCounters = this.counterSettings.filter(s => s.enabled).length;
-				const enabledNormalButtons = this.buttonSettings.filter(s => s.enabled && s.id !== 'initiative' && s.id !== 'monarch').length;
-				const totalNormalEnabled = enabledCounters + enabledNormalButtons;
-
-				if (checkbox.checked && totalNormalEnabled >= 4) {
+				const totalEnabled = this.counterSettings.filter(s => s.enabled).length +
+									this.buttonSettings.filter(s => s.enabled && s.id !== 'initiative' && s.id !== 'monarch').length;
+				if (checkbox.checked && totalEnabled >= 4) {
 					alert('일반 버튼과 카운터는 최대 4개까지만 선택할 수 있습니다.');
 					checkbox.checked = false;
 					return;
 				}
-
 				setting.enabled = checkbox.checked;
 				this.rebuildPlayerButtons();
 			};
 
-			const image = document.createElement('img');
-			image.src = `./assets/board_icon/${setting.imageName}.png`;
-			image.className = 'modal-counter-icon';
-			image.style.cssText = 'width: 24px; height: 24px; margin-right: 10px; vertical-align: middle;';
+			// --- 2. 나머지 UI 요소들은 카운터 뷰어와 동일 ---
+			const dragHandle = document.createElement('span');
+			dragHandle.className = 'drag-handle';
+			dragHandle.innerHTML = '&#x2630;';
 
-			const textContainer = document.createElement('div');
-			textContainer.className = 'counter-text-container';
+			const btnDecrease = document.createElement('button');
+			btnDecrease.className = 'counter-change-btn';
+			btnDecrease.textContent = '<';
+			btnDecrease.onclick = () => {
+				this.updateCounterValue(setting, 'decrement'); // UI 동기화
+			};
 
-			const labelSpan = document.createElement('span');
-			labelSpan.className = 'counter-label'; // 식별을 위해 클래스 이름은 유지
-			labelSpan.textContent = setting.label || '(라벨 수정)'; // 텍스트 변경
-			if (!setting.label) {
-				labelSpan.style.opacity = '0.5';
-			}
+			const iconArea = document.createElement('div');
+			iconArea.className = 'counter-icon-area';
+			iconArea.style.backgroundImage = `url(./assets/board_icon/${setting.imageName}.png)`;
+
+			const countText = document.createElement('span');
+			countText.className = 'counter-icon-count';
+			countText.textContent = setting.count;
+
+			const labelText = document.createElement('span');
+			labelText.className = 'counter-icon-label';
+			labelText.textContent = setting.label;
 			
-			const countSpan = document.createElement('span');
-			countSpan.className = 'modal-counter-value';
-			countSpan.textContent = `Counts : ${setting.count}`;
+			iconArea.append(countText, labelText);
 
-			textContainer.append(labelSpan, countSpan);
-			item.append(dragHandle, checkbox, image, textContainer);
+			const btnIncrease = document.createElement('button');
+			btnIncrease.className = 'counter-change-btn';
+			btnIncrease.textContent = '>';
+			btnIncrease.onclick = () => {
+				this.updateCounterValue(setting, 'increment'); // UI 동기화
+			};
+			
+			const btnSetLabel = document.createElement('button');
+			btnSetLabel.className = 'counter-label-btn';
+			btnSetLabel.textContent = 'Aa';
+			btnSetLabel.onclick = () => {
+				const newLabel = prompt('이 카운터의 라벨을 입력하세요:', setting.label);
+				if (newLabel !== null) {
+					setting.label = newLabel.trim();
+					this.updateCounterValue(setting); // UI 동기화
+				}
+			};
+
+			// [수정] 최종 조립 순서 변경
+			item.append(checkbox, dragHandle, btnDecrease, iconArea, btnIncrease, btnSetLabel);
 			list.appendChild(item);
-			
-			item.addEventListener('pointerdown', (e) => {
-				// 체크박스를 클릭한 경우는 어떤 동작도 하지 않음
-
-				console.log("PointerUp Event Triggered! Clicked down:", e.target);
-
-				if (e.target === checkbox) return;
-				e.stopPropagation();
-
-				this.isLongPress = false;
-				this.longPressTimer = setTimeout(() => {
-					this.isLongPress = true;
-					// 길게 누를 땐 대상이 무엇이든 항상 초기화
-					this.updateCounterValue(setting, 'reset');
-				}, 700);
-			});
-
-			item.addEventListener('pointerup', (e) => {
-
-				console.log("PointerUp Event Triggered! Clicked up:", e.target);
-
-				if (e.target === checkbox) return;
-				e.stopPropagation();
-				clearTimeout(this.longPressTimer);
-
-				if (this.isLongPress) {
-					// 긴 클릭이 방금 완료되었으므로, 아무것도 하지 않고 종료
-					return;
-				}
-
-				// 짧은 클릭이었을 경우, 클릭 대상을 확인
-				if (e.target.classList.contains('counter-label')) {
-					// 1. 만약 라벨을 클릭했다면 -> 수정 로직 실행
-					console.log("라벨 클릭됨:", setting.label);
-					const newLabel = prompt('카운터의 새 라벨을 입력하세요:', setting.label);
-					if (newLabel !== null) {
-						setting.label = newLabel.trim();
-						this.renderCounterSettingsList(); // 목록 UI 새로고침
-						this.rebuildPlayerButtons();    // 버튼 UI 새로고침
-					}
-				} else {
-					// 2. 그 외의 영역(이미지, 빈 공간 등)을 클릭했다면 -> 숫자 증가 로직 실행
-					this.updateCounterValue(setting, 'increment');
-				}
-			});
-
-			item.addEventListener('pointerleave', () => {
-				clearTimeout(this.longPressTimer);
-			});
-			// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 		});
 	}
 
@@ -481,6 +478,112 @@ export class Player {
 		});
 	}
 
+	createCountersViewerModal() {
+        this.elements.countersViewerOverlay = document.createElement('div');
+        this.elements.countersViewerOverlay.className = 'counters-viewer-overlay';
+
+        const modal = document.createElement('div');
+        modal.className = 'counters-viewer-modal';
+        modal.addEventListener('pointerdown', e => e.stopPropagation());
+
+        const title = document.createElement('h2');
+        title.className = 'counters-viewer-title';
+        title.textContent = 'Counters';
+
+        const closeModalBtn = document.createElement('button');
+        closeModalBtn.className = 'close-button';
+        closeModalBtn.innerHTML = '&times;';
+        closeModalBtn.onclick = () => this.hideCountersViewer();
+
+        const listContainer = document.createElement('ul');
+        listContainer.className = 'counters-list';
+        this.elements.countersList = listContainer; // 나중에 접근할 수 있도록 저장
+
+        modal.append(title, closeModalBtn, listContainer);
+        this.elements.countersViewerOverlay.appendChild(modal);
+        this.elements.area.appendChild(this.elements.countersViewerOverlay);
+
+        this.elements.countersViewerOverlay.addEventListener('click', (e) => {
+            if (e.target === this.elements.countersViewerOverlay) {
+                this.hideCountersViewer();
+            }
+        });
+    }
+
+	renderCountersViewer() {
+        const list = this.elements.countersList;
+        list.innerHTML = '';
+
+        this.genericCounters.forEach(setting => {
+            const item = document.createElement('li');
+            item.className = 'counter-item';
+            item.dataset.id = setting.id;
+            item.draggable = true;
+
+            const dragHandle = document.createElement('span');
+            dragHandle.className = 'drag-handle';
+            dragHandle.innerHTML = '&#x2630;';
+
+            const btnDecrease = document.createElement('button');
+            btnDecrease.className = 'counter-change-btn';
+            btnDecrease.textContent = '<';
+            btnDecrease.onclick = () => {
+                setting.count--;
+                this.renderCountersViewer(); // UI 새로고침
+            };
+
+            const iconArea = document.createElement('div');
+            iconArea.className = 'counter-icon-area';
+            iconArea.style.backgroundImage = `url(./assets/counter/${setting.imageName}.png)`;
+
+            const countText = document.createElement('span');
+            countText.className = 'counter-icon-count';
+            countText.textContent = setting.count;
+
+            const labelText = document.createElement('span');
+            labelText.className = 'counter-icon-label';
+            labelText.textContent = setting.label;
+            
+            iconArea.append(countText, labelText);
+
+            const btnIncrease = document.createElement('button');
+            btnIncrease.className = 'counter-change-btn';
+            btnIncrease.textContent = '>';
+            btnIncrease.onclick = () => {
+                setting.count++;
+                this.renderCountersViewer(); // UI 새로고침
+            };
+            
+            const btnSetLabel = document.createElement('button');
+            btnSetLabel.className = 'counter-label-btn';
+            btnSetLabel.textContent = 'Aa';
+            btnSetLabel.onclick = () => {
+                const newLabel = prompt('이 카운터의 라벨을 입력하세요:', setting.label);
+                if (newLabel !== null) {
+                    setting.label = newLabel.trim();
+                    this.renderCountersViewer(); // UI 새로고침
+                }
+            };
+
+            item.append(dragHandle, btnDecrease, iconArea, btnIncrease, btnSetLabel);
+            list.appendChild(item);
+        });
+        
+        // 드래그 앤 드롭 기능 적용
+        this.setupDragAndDrop(list, this.genericCounters);
+    }
+
+	showCountersViewer() {
+        this.renderCountersViewer(); // 모달을 열 때마다 최신 데이터로 렌더링
+        this.elements.countersViewerOverlay.style.display = 'flex';
+        window.activeUI = this;
+    }
+
+    hideCountersViewer() {
+        this.elements.countersViewerOverlay.style.display = 'none';
+        window.activeUI = null;
+    }
+
 	getDragAfterElement(container, y) {
 		const draggableElements = [...container.querySelectorAll('.button-setting-item:not(.dragging)')];
 		return draggableElements.reduce((closest, child) => {
@@ -525,6 +628,13 @@ export class Player {
 			case 'layout':
 				console.log(`HP Layout button created for player ${this.id}`);
 				break;
+			case 'counter':
+                this.showCountersViewer();
+                break;
+            case 'note':
+                // TODO: Secret Notes 기능은 추후 구현
+                console.log('Secret Notes clicked');
+                break;
 		}
 	}
 
@@ -612,7 +722,7 @@ export class Player {
 						button = document.createElement('button');
 						button.className = 'header-button';
 						button.style.backgroundImage = 'url(./assets/lifelog.png)';
-						button.style.backgroundSize = '90%';
+						
 						button.addEventListener('click', (e) => {
 							e.stopPropagation();
 							this.showLifeLog();
@@ -631,15 +741,27 @@ export class Player {
 						button = document.createElement('button');
 						button.className = 'header-button';
 						button.style.backgroundImage = 'url(./assets/layout.png)';
-						button.style.backgroundSize = '90%';
 						button.addEventListener('click', (e) => {
 							e.stopPropagation();
 							// HP 레이아웃 변경 로직 (향후 구현)
 							console.log('HP Layout button clicked');
 						});
 						break;
+					case 'counter':
+                        button = document.createElement('button');
+                        button.className = 'header-button';
+                        button.style.backgroundImage = 'url(./assets/counter.png)'; // 예시 아이콘
+                        button.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.showCountersViewer();
+                        });
+                        break;
+					case 'note':
+                        // TODO: Secret Notes 기능은 추후 구현
+                        break;
 				}
 				if (button) {
+					button.style.backgroundSize = setting.backgroundSize || '85%';
 					this.elements.actionButtonContainer.appendChild(button);
 				}
 			}
@@ -985,6 +1107,13 @@ export class Player {
         this.life = newLife;
         if (isReset) {
             this.lifeLog = [];
+
+			this.counterSettings.forEach(setting => {
+            	setting.count = 0;
+			});
+
+			this.rebuildPlayerButtons();
+
             this.logEvent('reset', { lifeAfter: this.life });
             // ## 변경점 2 ##: 리셋 시에는 인트로 애니메이션을 재생
             this.playIntroAnimation();
