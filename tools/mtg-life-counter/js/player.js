@@ -25,17 +25,17 @@ export class Player {
     	];
 
 		this.counterSettings = [
-            { id: 'plain',    imageName: 'plain',    enabled: false, count : 0 },
-            { id: 'island',   imageName: 'island',   enabled: false, count : 0 },
-            { id: 'swamp',    imageName: 'swamp',    enabled: false, count : 0 },
-            { id: 'mountain', imageName: 'mountain', enabled: false, count : 0 },
-            { id: 'forest',   imageName: 'forest',   enabled: false, count : 0 },
-            { id: 'tax',      imageName: 'tax',      enabled: false, count : 0 },
-            { id: 'mana',     imageName: 'mana',     enabled: false, count : 0 },
-            { id: 'book',     imageName: 'book',     enabled: false, count : 0 },
-            { id: 'card',     imageName: 'card',     enabled: false, count : 0 },
-            { id: 'cross',    imageName: 'cross',    enabled: false, count : 0 },
-            { id: 'weapon',   imageName: 'weapon',   enabled: false, count : 0 },
+            { id: 'plain',    imageName: 'plain',    enabled: false, count : 0, label: '' },
+            { id: 'island',   imageName: 'island',   enabled: false, count : 0, label: '' },
+            { id: 'swamp',    imageName: 'swamp',    enabled: false, count : 0, label: '' },
+            { id: 'mountain', imageName: 'mountain', enabled: false, count : 0, label: '' },
+            { id: 'forest',   imageName: 'forest',   enabled: false, count : 0, label: '' },
+            { id: 'tax',      imageName: 'tax',      enabled: false, count : 0, label: '' },
+            { id: 'mana',     imageName: 'mana',     enabled: false, count : 0, label: '' },
+            { id: 'book',     imageName: 'book',     enabled: false, count : 0, label: '' },
+            { id: 'card',     imageName: 'card',     enabled: false, count : 0, label: '' },
+            { id: 'cross',    imageName: 'cross',    enabled: false, count : 0, label: '' },
+            { id: 'weapon',   imageName: 'weapon',   enabled: false, count : 0, label: '' },
         ];
 
 		this.createDOM();
@@ -125,11 +125,17 @@ export class Player {
 		this.updateRotationClass();
 	}
 
-	updateCounterValue(setting, action) {
+	updateCounterValue(setting, action, targetElement = null) {
         if (action === 'increment') {
             setting.count++;
+			if (targetElement && setting.label) {
+                this.showSpeechBubble(setting.label, targetElement);
+            }
         } else if (action === 'reset') {
             setting.count = 0;
+			if (targetElement && setting.label) {
+				this.showSpeechBubble(setting.label + " reset", targetElement);
+			}
         }
 
         // 데이터가 변경되었으니, 모든 UI를 최신 데이터로 다시 그립니다.
@@ -140,6 +146,62 @@ export class Player {
             this.renderCounterSettingsList();
         }
     }
+
+	showSpeechBubble(text, buttonElement) {
+		const playerArea = buttonElement.closest('.player-area');
+		if (!playerArea) return;
+
+		const existingBubble = playerArea.querySelector('.speech-bubble');
+		if (existingBubble) {
+			existingBubble.remove();
+		}
+
+		const bubble = document.createElement('div');
+		bubble.className = 'speech-bubble';
+		bubble.textContent = text;
+		
+		bubble.style.visibility = 'hidden';
+		playerArea.appendChild(bubble);
+
+		const bubbleRect = bubble.getBoundingClientRect();
+		const buttonRect = buttonElement.getBoundingClientRect();
+		const areaRect = playerArea.getBoundingClientRect();
+		
+		// 1. 버튼의 가로 중앙 위치를 계산합니다.
+		const buttonCenterX = (buttonRect.left - areaRect.left) + (buttonRect.width / 2);
+		
+		// 2. 말풍선이 버튼 중앙에 오도록 초기 left 값을 계산합니다.
+		let bubbleLeftX = buttonCenterX - (bubbleRect.width / 2);
+		
+		// 3. 화면 가장자리 밖으로 나가는지 확인하고 보정합니다.
+		const PADDING = 10;
+		if (bubbleLeftX < PADDING) {
+			bubbleLeftX = PADDING;
+		}
+		if (bubbleLeftX + bubbleRect.width > areaRect.width - PADDING) {
+			bubbleLeftX = areaRect.width - bubbleRect.width - PADDING;
+		}
+
+		const buttonTopY = buttonRect.top - areaRect.top;
+		
+		// 4. 말풍선 몸체의 최종 위치를 적용합니다.
+		bubble.style.left = `${bubbleLeftX}px`;
+		bubble.style.top = `${buttonTopY}px`;
+		
+		// ▼▼▼ [핵심 추가] 꼬리 위치 계산 및 CSS 변수 설정 ▼▼▼
+		// 5. 보정된 말풍선 위치 안에서, 원래 버튼 중앙이 어디인지 계산합니다.
+		const tailLeft = buttonCenterX - bubbleLeftX;
+		
+		// 6. 계산된 꼬리 위치를 '--tail-left'라는 CSS 변수로 설정합니다.
+		bubble.style.setProperty('--tail-left', `${tailLeft}px`);
+		// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+		bubble.style.visibility = 'visible';
+		
+		// 사라지는 애니메이션 (기존과 동일)
+		setTimeout(() => { bubble.classList.add('fade-out'); }, 1500);
+		setTimeout(() => { if (bubble.parentElement) { bubble.remove(); } }, 2000);
+	}
 
 	createOptionsModal() {
 		this.elements.optionsModalOverlay = document.createElement('div');
@@ -219,13 +281,11 @@ export class Player {
 			const item = document.createElement('li');
 			item.className = 'button-setting-item';
 
-			// --- 체크박스 (버튼 활성화/비활성화) ---
 			const checkbox = document.createElement('input');
 			checkbox.type = 'checkbox';
 			checkbox.checked = setting.enabled;
 			checkbox.id = `${this.id}-counter-check-${setting.id}`;
 			checkbox.onchange = () => {
-				// 5개 제한 로직 (기존과 동일)
 				const totalEnabled = this.counterSettings.filter(s => s.enabled).length +
 									this.buttonSettings.filter(s => s.enabled).length;
 				if (checkbox.checked && totalEnabled >= 5) {
@@ -237,42 +297,72 @@ export class Player {
 				this.rebuildPlayerButtons();
 			};
 
-			// --- 아이콘 이미지 (기존과 동일) ---
 			const image = document.createElement('img');
 			image.src = `./assets/board_icon/${setting.imageName}.png`;
-			image.style.cssText = 'width: 24px; height: 24px; margin-right: 10px; vertical-align: middle;';
 			image.className = 'modal-counter-icon';
+			image.style.cssText = 'width: 24px; height: 24px; margin-right: 10px; vertical-align: middle;';
 
-			// ▼▼▼ [추가] 모달창 내에 현재 카운트를 표시할 span ▼▼▼
+			const textContainer = document.createElement('div');
+			textContainer.className = 'counter-text-container';
+
+			const labelSpan = document.createElement('span');
+			labelSpan.className = 'counter-label'; // 식별을 위해 클래스 이름은 유지
+			labelSpan.textContent = setting.label || '(라벨 수정)'; // 텍스트 변경
+			if (!setting.label) {
+				labelSpan.style.opacity = '0.5';
+			}
+			
 			const countSpan = document.createElement('span');
 			countSpan.className = 'modal-counter-value';
 			countSpan.textContent = `Counts : ${setting.count}`;
-			// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-			item.append(checkbox, image, countSpan);
+			textContainer.append(labelSpan, countSpan);
+			item.append(checkbox, image, textContainer);
 			list.appendChild(item);
 
-			// ▼▼▼ [추가] 목록 아이템(li) 자체에 클릭/길게누르기 이벤트 추가 ▼▼▼
+			// ▼▼▼ [핵심 수정] 모든 이벤트를 부모(li)에서 통합 관리 ▼▼▼
+			
 			item.addEventListener('pointerdown', (e) => {
-				// 체크박스 자체를 클릭한 경우는 이벤트를 무시
+				// 체크박스를 클릭한 경우는 어떤 동작도 하지 않음
+
+				console.log("PointerUp Event Triggered! Clicked down:", e.target);
+
 				if (e.target === checkbox) return;
 				e.stopPropagation();
 
 				this.isLongPress = false;
 				this.longPressTimer = setTimeout(() => {
-					// 길게 누르기 성공 (초기화)
 					this.isLongPress = true;
+					// 길게 누를 땐 대상이 무엇이든 항상 초기화
 					this.updateCounterValue(setting, 'reset');
-                }, 700);
+				}, 700);
 			});
 
 			item.addEventListener('pointerup', (e) => {
-				// 체크박스 자체를 클릭한 경우는 이벤트를 무시
+
+				console.log("PointerUp Event Triggered! Clicked up:", e.target);
+
 				if (e.target === checkbox) return;
 				e.stopPropagation();
-
 				clearTimeout(this.longPressTimer);
-				if (!this.isLongPress) {
+
+				if (this.isLongPress) {
+					// 긴 클릭이 방금 완료되었으므로, 아무것도 하지 않고 종료
+					return;
+				}
+
+				// 짧은 클릭이었을 경우, 클릭 대상을 확인
+				if (e.target.classList.contains('counter-label')) {
+					// 1. 만약 라벨을 클릭했다면 -> 수정 로직 실행
+					console.log("라벨 클릭됨:", setting.label);
+					const newLabel = prompt('카운터의 새 라벨을 입력하세요:', setting.label);
+					if (newLabel !== null) {
+						setting.label = newLabel.trim();
+						this.renderCounterSettingsList(); // 목록 UI 새로고침
+						this.rebuildPlayerButtons();    // 버튼 UI 새로고침
+					}
+				} else {
+					// 2. 그 외의 영역(이미지, 빈 공간 등)을 클릭했다면 -> 숫자 증가 로직 실행
 					this.updateCounterValue(setting, 'increment');
 				}
 			});
@@ -280,7 +370,7 @@ export class Player {
 			item.addEventListener('pointerleave', () => {
 				clearTimeout(this.longPressTimer);
 			});
-			// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+			// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 		});
 	}
 
@@ -436,7 +526,7 @@ export class Player {
                     this.longPressTimer = setTimeout(() => {
                         // 0.7초 이상 누르면 실행되는 코드 (초기화)
                         this.isLongPress = true; // 길게 누르기 성공!
-						this.updateCounterValue(setting, 'reset');
+						this.updateCounterValue(setting, 'reset', e.target);
                     }, 700); // 700ms = 0.7초
                 });
 
@@ -445,7 +535,7 @@ export class Player {
                     clearTimeout(this.longPressTimer); // 타이머 취소
 
                     if (!this.isLongPress) {
-						this.updateCounterValue(setting, 'increment');
+						this.updateCounterValue(setting, 'increment', e.target);
                     }
                 });
 

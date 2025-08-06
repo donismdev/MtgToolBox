@@ -990,6 +990,83 @@
     cursor: pointer;
 }
 
+/* 옵션창 카운터의 텍스트와 카운트 래퍼 */
+.counter-text-container {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* 남는 공간을 모두 차지 */
+}
+
+/* 옵션창 카운터 라벨 스타일 */
+.counter-label {
+    cursor: pointer;
+    color: #f0f0f0;
+    text-decoration: underline dashed 1px; /* 클릭 가능하다는 힌트 */
+}
+.counter-label:hover {
+    color: #3498db;
+}
+
+/* 옵션창 카운터 숫자 스타일 (기존과 동일) */
+.modal-counter-value {
+    margin-left: auto;
+    padding-left: 15px;
+    font-size: 0.9rem;
+    color: #aaa;
+    font-style: italic;
+}
+
+/* 말풍선 스타일 */
+.speech-bubble {
+    position: absolute;
+    transform: translateY(-110%); /* 자신의 높이(100%) + 10% 만큼 위로 이동 */
+    
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    z-index: 100;
+    width: max-content;
+    max-width: 200px;
+
+    opacity: 1;
+    animation: fadeInBubble 0.3s ease-out;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+.speech-bubble.fade-out {
+    opacity: 0;
+    transform: translateY(-150%); /* 사라질 때 살짝 더 위로 올라가도록 */
+}
+
+/* 말풍선 꼬리 */
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    
+    /* ▼▼▼ [핵심 수정] JavaScript 변수를 사용하도록 변경 ▼▼▼ */
+    left: var(--tail-left, 50%); /* JS에서 계산한 위치를 사용하고, 실패 시 중앙으로 fallback */
+    transform: translateX(-50%);   /* 꼬리의 정중앙이 left 위치에 오도록 보정 */
+    
+    border-width: 8px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.75) transparent transparent transparent;
+}
+
+@keyframes fadeInBubble {
+    from {
+        opacity: 0;
+        transform: translateY(-80%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-110%);
+    }
+}
+
 /* 탭 스타일 */
 .options-tab-container {
     display: flex;
