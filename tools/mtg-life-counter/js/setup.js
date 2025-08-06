@@ -79,13 +79,26 @@ export function initializePlayers(count) {
     } else {
         // 2인 / 4인
         for (let i = 0; i < count; i++) {
-            const playerId = `player-${i + 1}`;
-            let rotation = rotationData[playerId] ?? 0;
+           const playerId = `player-${i + 1}`;
+            
+            // --- 이 부분을 아래와 같이 수정합니다 ---
+            let rotation; // 변수를 미리 선언만 해둡니다.
+
+            // 플레이어 수에 따라 초기 회전값을 결정합니다.
+            // 2인 또는 4인 게임에서는 저장된 회전값(rotationData)을 무시하고
+            // 고정된 레이아웃을 우선 적용합니다.
             if (count === 2) {
-                if (i === 0) rotation = 180;
-                if (i === 1) rotation = 0;
+                rotation = (i === 0) ? 180 : 0;
+            } else if (count === 4) {
+                // 상단 두 명(인덱스 0, 1)은 180도, 하단 두 명(인덱스 2, 3)은 0도로 설정
+                rotation = (i < 2) ? 180 : 0;
+            } else {
+                // 그 외의 경우(예: 1인 모드)는 저장된 값을 사용합니다.
+                rotation = rotationData[playerId] ?? 0;
             }
-            const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotation, defaultThemeNames[i] ?? i);
+            // --- 수정 끝 ---
+
+			const player = new Player(playerId, lifeData[playerId] ?? window.localSettings.lifeMax, rotation, defaultThemeNames[i] ?? i);
             
             // [추가] 생성 직후 'start' 로그 기록
             player.logEvent('start', { lifeAfter: player.life });
@@ -95,7 +108,9 @@ export function initializePlayers(count) {
             window.gameContainer.appendChild(player.elements.area);
         }
     }
-    window.players.forEach(p => p.updateRotationClass());
+    requestAnimationFrame(() => {
+        window.players.forEach(p => p.updateRotationClass());
+    });
 }
 
 export function setupEventListeners() {

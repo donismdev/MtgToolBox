@@ -15,9 +15,20 @@ export class Player {
 		this.lifeLog = [];
 		this.cumulativeFeedbackEl = null;
 		this.feedbackFadeTimeout = null;
+
+		this.buttonSettings = [
+        { id: 'initiative', label: 'Initiative', enabled: false },
+        { id: 'monarch', label: 'Monarch', enabled: false },
+        { id: 'log', label: 'Life Log', enabled: false },
+        { id: 'theme', label: 'Theme', enabled: false },
+        { id: 'layout', label: 'HP Layout', enabled: false },
+    	];
+
 		this.createDOM();
 		this.applyTheme();
 		this.updateDisplay();
+
+		console.log(`Player ${this.id}가 rotation: ${this.rotation} 값으로 생성되었습니다.`);
 	}
 
 	_getThemeByName(name) {
@@ -48,74 +59,27 @@ export class Player {
     }
 	
 	createDOM() {
-		this.elements.area = document.createElement('div');
+
+		 this.elements.area = document.createElement('div');
 		this.elements.area.id = `${this.id}-area`;
-		this.elements.area.className = `player-area`;
+		this.elements.area.className = 'player-area';
 
-		const headerContainer = document.createElement('div');
-		headerContainer.className = 'player-header-buttons';
-
-		this.elements.initiativeButton = document.createElement('button');
-		this.elements.initiativeButton.className = 'header-button';
-		this.elements.initiativeButton.style.backgroundImage = 'url(./assets/initiative.png)';
-		this.elements.initiativeButton.addEventListener('click', (e) => {
+		// 1. 옵션 버튼 (우측 상단 고정)
+		this.elements.optionsButton = document.createElement('button');
+		this.elements.optionsButton.className = 'player-options-button header-button';
+		this.elements.optionsButton.style.backgroundImage = 'url(./assets/option.png)';
+		this.elements.optionsButton.addEventListener('click', (e) => {
 			e.stopPropagation();
-			initiativeManager.showDungeon(this.id); 
+			this.showOptionsModal();
 		});
 
-		this.elements.monarchButton = document.createElement('button');
-		this.elements.monarchButton.className = 'header-button';
-		this.elements.monarchButton.style.backgroundImage = 'url(./assets/monarch.png)';
-		this.elements.monarchButton.addEventListener('click', (e) => {
-			e.stopPropagation();
-			const playerIndex = this.getPlayerIndex();
-			if (window.dataSpace.settings.monarchIndex === playerIndex) {
-				window.dataSpace.settings.monarchIndex = -1;
-			} else {
-				window.dataSpace.settings.monarchIndex = playerIndex;
-			}
-			window.updateAllPlayerIcons();
-		});
+		// 2. 액션 버튼 컨테이너 (좌측 하단, 동적으로 버튼 추가/제거)
+		this.elements.actionButtonContainer = document.createElement('div');
+		this.elements.actionButtonContainer.className = 'player-header-buttons'; // 기존 클래스 재사용
 
-		this.elements.logButton = document.createElement('button');
-		this.elements.logButton.className = 'header-button';
-		this.elements.logButton.style.backgroundImage = 'url(./assets/lifelog.png)';
-		this.elements.logButton.style.backgroundSize = '90%';
-		this.elements.logButton.addEventListener('click', (e) => {
-			e.stopPropagation();
-			this.showLifeLog();
-		});
-
-		this.elements.themeButton = document.createElement('button');
-		this.elements.themeButton.className = 'header-button';
-		this.elements.themeButton.style.backgroundImage = 'url(./assets/theme.png)';
-		this.elements.themeButton.addEventListener('click', (e) => {
-			e.stopPropagation();
-			this.showThemeSelector();
-		});
-
-		headerContainer.appendChild(this.elements.initiativeButton);
-		headerContainer.appendChild(this.elements.monarchButton);
-		headerContainer.appendChild(this.elements.logButton);
-		headerContainer.appendChild(this.elements.themeButton);
-
-		this.elements.themeSelector = document.createElement('div');
-		this.elements.themeSelector.className = 'theme-selector-overlay';
-		this.elements.themeSelector.addEventListener('pointerdown', e => e.stopPropagation());
-		this.elements.themeSelector.addEventListener('click', (e) => {
-			if (e.target === this.elements.themeSelector) {
-				this.hideThemeSelector();
-			}
-		});
-		const themeContainer = document.createElement('div');
-		themeContainer.className = 'theme-selector-container';
-		themeContainer.addEventListener('click', (e) => e.stopPropagation());
-		this.elements.themeSelector.appendChild(themeContainer);
-		this.elements.area.appendChild(this.elements.themeSelector);
-
+		// --- 기본 라이프 카운터 및 래퍼 생성 ---
 		this.elements.contentWrapper = document.createElement('div');
 		this.elements.area.appendChild(this.elements.contentWrapper);
-		this.elements.contentWrapper.appendChild(headerContainer);
 
 		this.elements.lifeTotal = document.createElement('div');
 		this.elements.lifeTotal.className = 'life-total user-select-none';
@@ -128,14 +92,366 @@ export class Player {
 		this.elements.contentWrapper.appendChild(this.elements.hintDec);
 		this.elements.contentWrapper.appendChild(this.elements.lifeTotal);
 		
+		// --- 생성된 요소들을 player-area에 추가 ---
+		this.elements.area.appendChild(this.elements.optionsButton);
+		this.elements.area.appendChild(this.elements.actionButtonContainer);
+		
+		// 3. 옵션 모달 생성 (처음에는 숨겨져 있음)
+		this.createOptionsModal();
+		this.elements.area.appendChild(this.elements.optionsModalOverlay);
+		
+		// --- 기존의 다른 요소들 생성 (주사위, 로그 오버레이 등) ---
+		this.createDiceAndLogOverlays(); // 관련 코드를 별도 함수로 분리하여 가독성 향상
+
+		// --- 기존 이벤트 리스너들 ---
+		this.setupAreaEventListeners();
+
+		// 초기 버튼 상태 렌더링
+		this.rebuildActionButtons();
+		this.updateRotationClass();
+	}
+
+	createOptionsModal() {
+		this.elements.optionsModalOverlay = document.createElement('div');
+		this.elements.optionsModalOverlay.className = 'player-options-overlay';
+		
+		const modal = document.createElement('div');
+		modal.className = 'player-options-modal';
+		modal.addEventListener('pointerdown', e => e.stopPropagation()); // 이벤트 전파 방지
+
+		const closeModalBtn = document.createElement('button');
+		closeModalBtn.className = 'close-button';
+		closeModalBtn.innerHTML = '&times;';
+		closeModalBtn.onclick = () => this.hideOptionsModal();
+
+		// 탭 메뉴
+		const tabContainer = document.createElement('div');
+		tabContainer.className = 'options-tab-container';
+		const counterTabBtn = document.createElement('button');
+		counterTabBtn.className = 'options-tab-button active';
+		counterTabBtn.textContent = 'Counter';
+		const buttonsTabBtn = document.createElement('button');
+		buttonsTabBtn.className = 'options-tab-button';
+		buttonsTabBtn.textContent = 'Buttons';
+		
+		// 탭 콘텐츠
+		const contentContainer = document.createElement('div');
+		contentContainer.className = 'options-content-container';
+		
+		const counterContent = document.createElement('div');
+		counterContent.className = 'options-tab-content active';
+		counterContent.innerHTML = '<div>카운터 관련 설정 (추후 구현)</div>';
+
+		const buttonsContent = document.createElement('div');
+		buttonsContent.className = 'options-tab-content';
+		this.elements.buttonSettingsList = document.createElement('ul');
+		this.elements.buttonSettingsList.className = 'button-settings-list';
+		buttonsContent.appendChild(this.elements.buttonSettingsList);
+		
+		// 탭 전환 로직
+		counterTabBtn.onclick = () => {
+			counterTabBtn.classList.add('active');
+			buttonsTabBtn.classList.remove('active');
+			counterContent.classList.add('active');
+			buttonsContent.classList.remove('active');
+		};
+		buttonsTabBtn.onclick = () => {
+			buttonsTabBtn.classList.add('active');
+			counterTabBtn.classList.remove('active');
+			buttonsContent.classList.add('active');
+			counterContent.classList.remove('active');
+		};
+
+		tabContainer.append(counterTabBtn, buttonsTabBtn);
+		contentContainer.append(counterContent, buttonsContent);
+		modal.append(closeModalBtn, tabContainer, contentContainer);
+		this.elements.optionsModalOverlay.appendChild(modal);
+
+		// 오버레이 클릭 시 닫기
+		this.elements.optionsModalOverlay.addEventListener('click', (e) => {
+			if (e.target === this.elements.optionsModalOverlay) {
+				this.hideOptionsModal();
+			}
+		});
+
+		this.renderButtonSettingsList();
+	}
+
+	renderButtonSettingsList() {
+		const list = this.elements.buttonSettingsList;
+		list.innerHTML = ''; // 목록 초기화
+
+		this.buttonSettings.forEach(setting => {
+			const item = document.createElement('li');
+			item.className = 'button-setting-item';
+			item.dataset.id = setting.id;
+			item.draggable = true;
+
+			const dragHandle = document.createElement('span');
+			dragHandle.className = 'drag-handle';
+			dragHandle.innerHTML = '&#x2630;'; // 드래그 핸들 아이콘
+
+			const checkbox = document.createElement('input');
+			checkbox.type = 'checkbox';
+			checkbox.checked = setting.enabled;
+			checkbox.id = `${this.id}-btn-check-${setting.id}`;
+			checkbox.onchange = () => {
+				setting.enabled = checkbox.checked;
+				this.rebuildActionButtons(); // 체크 상태 변경 시 즉시 버튼 UI에 반영
+			};
+
+			const labelButton = document.createElement('button');
+			labelButton.className = 'label-button';
+			labelButton.textContent = setting.label;
+			labelButton.onclick = () => {
+				this.hideOptionsModal();
+				this.executeButtonAction(setting.id); // 레이블 버튼 클릭 시 즉시 액션 실행
+			};
+
+			item.append(dragHandle, checkbox, labelButton);
+			list.appendChild(item);
+		});
+
+		this.setupDragAndDrop();
+	}
+
+	setupDragAndDrop() {
+		const list = this.elements.buttonSettingsList;
+		let draggedItem = null;
+
+		list.addEventListener('dragstart', (e) => {
+			draggedItem = e.target;
+			setTimeout(() => e.target.classList.add('dragging'), 0);
+		});
+
+		list.addEventListener('dragend', (e) => {
+			e.target.classList.remove('dragging');
+		});
+
+		list.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			const afterElement = getDragAfterElement(list, e.clientY);
+			const currentDragged = document.querySelector('.dragging');
+			if (afterElement == null) {
+				list.appendChild(currentDragged);
+			} else {
+				list.insertBefore(currentDragged, afterElement);
+			}
+		});
+
+		list.addEventListener('drop', (e) => {
+			e.preventDefault();
+			// 1. 새로운 DOM 순서를 기반으로 데이터 배열(this.buttonSettings) 재정렬
+			const newOrderIds = [...list.querySelectorAll('.button-setting-item')].map(item => item.dataset.id);
+			this.buttonSettings.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+			
+			// 2. 재정렬된 데이터에 따라 액션 버튼 다시 빌드
+			this.rebuildActionButtons();
+		});
+
+		function getDragAfterElement(container, y) {
+			const draggableElements = [...container.querySelectorAll('.button-setting-item:not(.dragging)')];
+			return draggableElements.reduce((closest, child) => {
+				const box = child.getBoundingClientRect();
+				const offset = y - box.top - box.height / 2;
+				if (offset < 0 && offset > closest.offset) {
+					return { offset: offset, element: child };
+				} else {
+					return closest;
+				}
+			}, { offset: Number.NEGATIVE_INFINITY }).element;
+		}
+	}
+
+	executeButtonAction(buttonId) {
+		switch (buttonId) {
+			case 'initiative':
+				// 모든 플레이어에게 버튼을 생성하고 싶다면, window 또는 전역 manager를 통해 제어
+				window.players.forEach(p => p.enableAndCreateButton('initiative'));
+				initiativeManager.showDungeon(this.id);
+				break;
+			case 'monarch':
+				// 모든 플레이어에게 버튼 생성
+				window.players.forEach(p => p.enableAndCreateButton('monarch'));
+				const playerIndex = this.getPlayerIndex();
+				window.dataSpace.settings.monarchIndex = playerIndex;
+				window.updateAllPlayerIcons();
+				break;
+			case 'log':
+				this.enableAndCreateButton('log'); // 해당 플레이어만 생성
+				this.showLifeLog(); // 즉시 로그 창 열기
+				break;
+			case 'theme':
+				this.enableAndCreateButton('theme'); // 해당 플레이어만 생성
+				this.showThemeSelector(); // 즉시 테마 창 열기
+				break;
+			case 'layout':
+				this.enableAndCreateButton('layout'); // 해당 플레이어만 생성
+				// 아직 기능이 없으므로 버튼 생성만 함
+				console.log(`HP Layout button created for player ${this.id}`);
+				break;
+		}
+	}
+
+	rebuildActionButtons() {
+		this.elements.actionButtonContainer.innerHTML = ''; // 컨테이너 비우기
+
+        this.elements.initiativeButton = null;
+        this.elements.monarchButton = null;
+		
+		this.buttonSettings.forEach(setting => {
+			if (setting.enabled) {
+				let button;
+				switch(setting.id) {
+					case 'initiative':
+						button = document.createElement('button');
+						button.className = 'header-button';
+						button.style.backgroundImage = 'url(./assets/initiative.png)';
+						button.addEventListener('click', (e) => {
+							e.stopPropagation();
+							initiativeManager.showDungeon(this.id); 
+						});
+						this.elements.initiativeButton = button;
+						break;
+					case 'monarch':
+						button = document.createElement('button');
+						button.className = 'header-button';
+						button.style.backgroundImage = 'url(./assets/monarch.png)';
+						button.addEventListener('click', (e) => {
+							e.stopPropagation();
+							const playerIndex = this.getPlayerIndex();
+							if (window.dataSpace.settings.monarchIndex === playerIndex) {
+								window.dataSpace.settings.monarchIndex = -1;
+							} else {
+								window.dataSpace.settings.monarchIndex = playerIndex;
+							}
+							window.updateAllPlayerIcons();
+						});
+						this.elements.monarchButton = button;
+						break;
+					case 'log':
+						button = document.createElement('button');
+						button.className = 'header-button';
+						button.style.backgroundImage = 'url(./assets/lifelog.png)';
+						button.style.backgroundSize = '90%';
+						button.addEventListener('click', (e) => {
+							e.stopPropagation();
+							this.showLifeLog();
+						});
+						break;
+					case 'theme':
+						button = document.createElement('button');
+						button.className = 'header-button';
+						button.style.backgroundImage = 'url(./assets/theme.png)';
+						button.addEventListener('click', (e) => {
+							e.stopPropagation();
+							this.showThemeSelector();
+						});
+						break;
+					case 'layout':
+						button = document.createElement('button');
+						button.className = 'header-button';
+						button.style.backgroundImage = 'url(./assets/layout.png)';
+						button.style.backgroundSize = '90%';
+						button.addEventListener('click', (e) => {
+							e.stopPropagation();
+							// HP 레이아웃 변경 로직 (향후 구현)
+							console.log('HP Layout button clicked');
+						});
+						break;
+				}
+				if (button) {
+					this.elements.actionButtonContainer.appendChild(button);
+				}
+			}
+		});
+	}
+
+	showOptionsModal() {
+		this.renderButtonSettingsList(); // 모달을 열 때마다 최신 상태로 목록을 다시 렌더링
+		this.elements.optionsModalOverlay.style.display = 'flex';
+		window.activeUI = this; // 다른 UI와의 상호작용 방지
+	}
+
+	hideOptionsModal() {
+		this.elements.optionsModalOverlay.style.display = 'none';
+		window.activeUI = null;
+	}
+
+	// 기존 createDOM에 있던 다른 요소 생성 코드를 분리
+	createDiceAndLogOverlays() {
+		// Dice Container
 		this.elements.diceContainer = document.createElement('div');
 		this.elements.diceContainer.className = 'dice-container';
 		this.elements.area.appendChild(this.elements.diceContainer);
 
-		this.lastTapTime = 0; // 마지막 탭 시간을 기록, 더블 탭 줌 방지용
+		// Life Log Overlay
+		this.elements.logOverlay = document.createElement('div');
+		this.elements.logOverlay.className = 'life-log-overlay';
 		
-		this.elements.area.addEventListener('pointerdown', (event) => {
+		const logModal = document.createElement('div');
+		logModal.className = 'life-log-modal';
+		
+		const closeModalBtn = document.createElement('button');
+		closeModalBtn.className = 'close-button';
+		closeModalBtn.innerHTML = '&times;';
+		
+		const canvas = document.createElement('canvas');
+		this.elements.logCanvas = canvas;
+		
+		logModal.appendChild(closeModalBtn);
+		logModal.appendChild(canvas);
+		this.elements.logOverlay.appendChild(logModal);
+		this.elements.area.appendChild(this.elements.logOverlay);
 
+		const hideLog = () => {
+			this.elements.logOverlay.style.display = 'none';
+			window.activeUI = null;
+		}
+
+		this.elements.logOverlay.addEventListener('pointerdown', e => e.stopPropagation());
+		logModal.addEventListener('pointerdown', e => e.stopPropagation());
+
+		this.elements.logOverlay.addEventListener('click', e => {
+			if (e.target === this.elements.logOverlay) {
+				hideLog();
+			}
+		});
+
+		closeModalBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			hideLog();
+		});
+
+		// Theme Selector Overlay
+        this.elements.themeSelector = document.createElement('div');
+        this.elements.themeSelector.className = 'theme-selector-overlay';
+        
+        const themeContainer = document.createElement('div');
+        themeContainer.className = 'theme-selector-container'; // 기존 CSS 재사용
+        
+        this.elements.themeSelector.appendChild(themeContainer);
+        this.elements.area.appendChild(this.elements.themeSelector);
+
+        const hideThemeSelector = () => {
+            this.elements.themeSelector.style.display = 'none';
+            window.activeUI = null;
+        };
+
+        this.elements.themeSelector.addEventListener('pointerdown', e => e.stopPropagation());
+        themeContainer.addEventListener('pointerdown', e => e.stopPropagation());
+
+        this.elements.themeSelector.addEventListener('click', (e) => {
+            if (e.target === this.elements.themeSelector) {
+                hideThemeSelector();
+            }
+        });
+	}
+
+	setupAreaEventListeners() {
+		this.lastTapTime = 0; // 마지막 탭 시간을 기록, 더블 탭 줌 방지용
+
+		this.elements.area.addEventListener('pointerdown', (event) => {
 			// ==================================================
 			// 1. 더블탭 줌(Zoom) 방지 로직
 			// ==================================================
@@ -149,13 +465,12 @@ export class Player {
 			// 현재 탭 시간을 기록하여 다음 탭에서 비교할 수 있도록 합니다.
 			this.lastTapTime = now;
 
-
 			// ==================================================
-			// 2. 기존 라이프(Life) 변경 로직
+			// 2. 라이프(Life) 변경 로직
 			// ==================================================
 
 			// 버튼 등 다른 UI 요소가 활성화 상태이거나, 특정 버튼을 눌렀을 때는 작동하지 않도록 함
-			if (window.activeUI !== null || event.target.closest('.rotate-button') || event.target.closest('.header-button')) {
+			if (window.activeUI !== null || event.target.closest('.header-button') || event.target.closest('.player-options-button')) {
 				return;
 			}
 
@@ -190,6 +505,7 @@ export class Player {
 			this.showAreaRipple(amount, event);
 		});
 
+		// 일부 모바일 브라우저의 더블탭 줌을 막기 위한 추가 리스너
 		let lastTouchEnd = 0;
 		document.addEventListener('touchend', function (event) {
 			const now = new Date().getTime();
@@ -198,42 +514,14 @@ export class Player {
 			}
 			lastTouchEnd = now;
 		}, false);
+	}
 
-		/*
-		const rotateButton = document.createElement('button');
-		rotateButton.className = 'rotate-button';
-		rotateButton.innerHTML = '&#x21bb;';
-		rotateButton.addEventListener('click', (e) => {
-			e.stopPropagation();
-			this.rotateArea();
-		});
-		this.elements.area.appendChild(rotateButton);
-		*/
-
-		this.elements.logOverlay = document.createElement('div');
-		this.elements.logOverlay.className = 'life-log-overlay';
-		const logModal = document.createElement('div');
-		logModal.className = 'life-log-modal';
-		const closeModalBtn = document.createElement('button');
-		closeModalBtn.className = 'close-button';
-		closeModalBtn.innerHTML = '&times;';
-		const canvas = document.createElement('canvas');
-		this.elements.logCanvas = canvas;
-		logModal.appendChild(closeModalBtn);
-		logModal.appendChild(canvas);
-		this.elements.logOverlay.appendChild(logModal);
-		this.elements.area.appendChild(this.elements.logOverlay);
-
-		const hideLog = () => this.elements.logOverlay.style.display = 'none';
-		this.elements.logOverlay.addEventListener('pointerdown', e => e.stopPropagation());
-		this.elements.logOverlay.addEventListener('click', e => {
-			if (e.target === this.elements.logOverlay) hideLog();
-		});
-		logModal.addEventListener('pointerdown', (e) => { hideLog(); e.stopPropagation(); });
-		logModal.addEventListener('click', () => { hideLog(); });
-		closeModalBtn.addEventListener('click', hideLog);
-		
-		this.updateRotationClass();
+	enableAndCreateButton(buttonId) {
+		const setting = this.buttonSettings.find(s => s.id === buttonId);
+		if (setting) {
+			setting.enabled = true;
+			this.rebuildActionButtons(); // UI 업데이트
+		}
 	}
 
 	getPlayerIndex() {
@@ -258,10 +546,17 @@ export class Player {
 
 		const isInitiativeActive = (window.dataSpace.settings.initiativeIndex === playerIndex);
 		const isMonarchActive = (window.dataSpace.settings.monarchIndex === playerIndex);
-		setHighlight(initiativeButton, isInitiativeActive);
-		setHighlight(monarchButton, isMonarchActive);
+
+		if (this.elements.initiativeButton) {
+			setHighlight(this.elements.initiativeButton, isInitiativeActive);
+		}
+
+		if (this.elements.monarchButton) {
+			setHighlight(this.elements.monarchButton, isMonarchActive);
+		}
+		
 		const bothAreActive = isInitiativeActive && isMonarchActive;
-		if (bothAreActive) {
+		if (this.elements.initiativeButton && this.elements.monarchButton && bothAreActive) {
 			const restartAnimation = (el) => {
 				el.classList.remove('is-animating');
 				void el.offsetWidth;
@@ -270,8 +565,12 @@ export class Player {
 			restartAnimation(initiativeButton);
 			restartAnimation(monarchButton);
 		} else {
-			initiativeButton.classList.toggle('is-animating', isInitiativeActive);
-			monarchButton.classList.toggle('is-animating', isMonarchActive);
+			if (this.elements.initiativeButton) {
+                this.elements.initiativeButton.classList.toggle('is-animating', isInitiativeActive);
+            }
+            if (this.elements.monarchButton) {
+                this.elements.monarchButton.classList.toggle('is-animating', isMonarchActive);
+            }
 		}
 	}
 
@@ -321,10 +620,12 @@ export class Player {
 		themeContainer.appendChild(createThemeGroup('Dark Themes', allThemes.dark));
 
 		this.elements.themeSelector.style.display = 'flex';
+		window.activeUI = this;
     }
 
 	hideThemeSelector() {
 		this.elements.themeSelector.style.display = 'none';
+		window.activeUI = null;
 	}
 
 	changeLife(amount) {
@@ -345,7 +646,7 @@ export class Player {
                 // ## 변경점 1 ##: 피드백 위치를 위로 조정 (40% -> 35%). 원하시면 값을 더 줄여서 올릴 수 있습니다.
                 this.cumulativeFeedbackEl.style.top = '25%';
                 this.cumulativeFeedbackEl.style.left = '50%';
-                this.cumulativeFeedbackEl.style.setProperty('--feedback-rotation', `${this.rotation}deg`);
+
                 this.elements.area.appendChild(this.cumulativeFeedbackEl);
             }
             
@@ -427,27 +728,60 @@ export class Player {
 	}
 	
 	updateRotationClass() {
-		this.elements.contentWrapper.className = `player-content-wrapper rotation-${this.rotation}`;
-		this.elements.diceContainer.classList.remove('pushed-up', 'pushed-down');
-		if (this.rotation === 0) this.elements.diceContainer.classList.add('pushed-up');
-		if (this.rotation === 180) this.elements.diceContainer.classList.add('pushed-down');
-		this.updateHint();
+		// 기존에 붙어있을 수 있는 모든 회전 관련 클래스를 먼저 제거합니다.
+		this.elements.area.classList.remove('rotated-0', 'rotated-90', 'rotated-180', 'rotated-270');
+		
+		// 현재 회전 상태에 맞는 클래스를 player-area 요소에 직접 추가합니다. (이것으로 끝!)
+		this.elements.area.classList.add(`rotated-${this.rotation}`);
 	}
 
 	showAreaRipple(amount, event) {
+		// event가 없으면 함수를 바로 종료합니다.
+		if (!event) return;
+
 		const ripple = document.createElement('div');
 		ripple.className = 'life-ripple';
 		const theme = this._getThemeByName(this.themeName);
+
 		if (amount > 0) {
 			ripple.style.backgroundColor = theme.ripplePlusColor || 'rgba(0, 255, 255, 0.4)';
 		} else {
 			ripple.style.backgroundColor = theme.rippleMinusColor || 'rgba(255, 80, 80, 0.4)';
 		}
+
 		const rect = this.elements.area.getBoundingClientRect();
-		const x = (event?.clientX || rect.width / 2) - rect.left;
-		const y = (event?.clientY || rect.height / 2) - rect.top;
+
+		// ▼▼▼▼▼ 여기가 수정된 부분입니다 ▼▼▼▼▼
+
+		// 기존 변수명 'x', 'y'를 그대로 사용하되, 값을 변경해야 하므로 const 대신 let으로 선언합니다.
+		let x = event.clientX - rect.left;
+		let y = event.clientY - rect.top;
+
+		// 플레이어의 회전 상태에 따라 실제 클릭 좌표를 보정합니다.
+		switch (this.rotation) {
+			case 90: {
+				const tempX = x;
+				x = y;
+				y = rect.height - tempX;
+				break;
+			}
+			case 180: {
+				x = rect.width - x;
+				y = rect.height - y;
+				break;
+			}
+			case 270: {
+				const tempY = y;
+				y = x;
+				x = rect.width - tempY;
+				break;
+			}
+		}
+		// ▲▲▲▲▲ 여기까지가 수정된 부분입니다 ▲▲▲▲▲
+
 		ripple.style.left = `${x - 50}px`;
 		ripple.style.top = `${y - 50}px`;
+
 		this.elements.area.appendChild(ripple);
 		setTimeout(() => ripple.remove(), 600);
 	}
