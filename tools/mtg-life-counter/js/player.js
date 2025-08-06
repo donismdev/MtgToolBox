@@ -242,12 +242,20 @@ export class Player {
 		
 		const modal = document.createElement('div');
 		modal.className = 'player-options-modal';
-		modal.addEventListener('pointerdown', e => e.stopPropagation()); // 이벤트 전파 방지
+		modal.addEventListener('pointerdown', e => e.stopPropagation());
 
-		const closeModalBtn = document.createElement('button');
-		closeModalBtn.className = 'close-button';
-		closeModalBtn.innerHTML = '&times;';
-		closeModalBtn.onclick = () => this.hideOptionsModal();
+		// [수정] 헤더 구조를 제목과 텍스트 버튼으로 명확히 분리
+		const modalHeader = document.createElement('div');
+		modalHeader.className = 'modal-header-fixed';
+		
+		const playerIdNumber = this.id.split('-')[1];
+		modalHeader.innerHTML = `<h2 class="modal-title-fixed">Options (P${playerIdNumber})</h2>`;
+		
+		const closeButtonText = document.createElement('button');
+		closeButtonText.className = 'close-button-text'; // 새 클래스 적용
+		closeButtonText.textContent = 'Close';
+		closeButtonText.onclick = () => this.hideOptionsModal();
+		modalHeader.appendChild(closeButtonText);
 
 		// 탭 메뉴
 		const tabContainer = document.createElement('div');
@@ -256,11 +264,13 @@ export class Player {
 		const counterTabBtn = document.createElement('button');
 		counterTabBtn.className = 'options-tab-button'; // [수정] active 클래스 제거
 		counterTabBtn.textContent = 'Counters';
-		
-		const buttonsTabBtn = document.createElement('button');
-		buttonsTabBtn.className = 'options-tab-button active'; // [수정] active 클래스 추가
-		const playerIdNumber = this.id.split('-')[1]; 
-		buttonsTabBtn.textContent = `Options (P${playerIdNumber})`;
+
+		 const buttonsTabBtn = document.createElement('button');
+		buttonsTabBtn.className = 'options-tab-button active';
+		buttonsTabBtn.textContent = `Buttons`; // [수정] 누락되었던 탭 버튼 텍스트 추가
+
+		const modalContentWrapper = document.createElement('div');
+		modalContentWrapper.className = 'modal-content-scrollable';
 		
 		// 탭 콘텐츠
 		const contentContainer = document.createElement('div');
@@ -294,7 +304,10 @@ export class Player {
 
 		tabContainer.append(buttonsTabBtn, counterTabBtn);
 		contentContainer.append(counterContent, buttonsContent);
-		modal.append(closeModalBtn, tabContainer, contentContainer);
+
+		modalContentWrapper.append(tabContainer, contentContainer); // 탭과 콘텐츠를 스크롤 래퍼에 넣음
+	    modal.append(modalHeader, modalContentWrapper); // 헤더와 스크롤 래퍼를 최종 모달에 넣음
+	
 		this.elements.optionsModalOverlay.appendChild(modal);
 
 		// 오버레이 클릭 시 닫기
@@ -487,36 +500,46 @@ export class Player {
 	}
 
 	createCountersViewerModal() {
-        this.elements.countersViewerOverlay = document.createElement('div');
-        this.elements.countersViewerOverlay.className = 'counters-viewer-overlay';
+		this.elements.countersViewerOverlay = document.createElement('div');
+		this.elements.countersViewerOverlay.className = 'counters-viewer-overlay';
 
-        const modal = document.createElement('div');
-        modal.className = 'counters-viewer-modal';
-        modal.addEventListener('pointerdown', e => e.stopPropagation());
+		const modal = document.createElement('div');
+		modal.className = 'counters-viewer-modal'; // flexbox 레이아웃
 
-        const title = document.createElement('h2');
-        title.className = 'counters-viewer-title';
-        title.textContent = 'Counters';
+		modal.addEventListener('pointerdown', e => e.stopPropagation());
 
-        const closeModalBtn = document.createElement('button');
-        closeModalBtn.className = 'close-button';
-        closeModalBtn.innerHTML = '&times;';
-        closeModalBtn.onclick = () => this.hideCountersViewer();
+		// 헤더: 닫기 버튼 포함
+		const modalHeader = document.createElement('div');
+		modalHeader.className = 'modal-header-fixed';
+		modalHeader.innerHTML = `<h2 class="modal-title-fixed">Counters</h2>`;
 
-        const listContainer = document.createElement('ul');
-        listContainer.className = 'counters-list';
-        this.elements.countersList = listContainer; // 나중에 접근할 수 있도록 저장
+		const closeButtonText = document.createElement('button');
+		closeButtonText.className = 'close-button-text';
+		closeButtonText.textContent = 'Close';
+		closeButtonText.onclick = () => this.hideCountersViewer();
+		modalHeader.appendChild(closeButtonText);
 
-        modal.append(title, closeModalBtn, listContainer);
-        this.elements.countersViewerOverlay.appendChild(modal);
-        this.elements.area.appendChild(this.elements.countersViewerOverlay);
+		// 스크롤 콘텐츠 영역
+		const scrollContainer = document.createElement('div');
+		scrollContainer.className = 'modal-content-scrollable';
 
-        this.elements.countersViewerOverlay.addEventListener('click', (e) => {
-            if (e.target === this.elements.countersViewerOverlay) {
-                this.hideCountersViewer();
-            }
-        });
-    }
+		const listContainer = document.createElement('ul');
+		listContainer.className = 'counters-list';
+		this.elements.countersList = listContainer;
+
+		scrollContainer.appendChild(listContainer);
+
+		// 조립
+		modal.append(modalHeader, scrollContainer);
+		this.elements.countersViewerOverlay.appendChild(modal);
+		this.elements.area.appendChild(this.elements.countersViewerOverlay);
+
+		this.elements.countersViewerOverlay.addEventListener('click', (e) => {
+			if (e.target === this.elements.countersViewerOverlay) {
+				this.hideCountersViewer();
+			}
+		});
+	}
 
 	renderCountersViewer() {
         const list = this.elements.countersList;

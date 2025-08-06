@@ -968,27 +968,6 @@
 }
 
 /* 옵션 모달 창 */
-.player-options-modal {
-    background-color: #2c2c2c;
-    color: #f0f0f0;
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 350px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    position: relative;
-}
-
-.player-options-modal .close-button {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 24px;
-    cursor: pointer;
-}
 
 /* 옵션창 카운터의 텍스트와 카운트 래퍼 */
 .counter-text-container {
@@ -1763,4 +1742,104 @@ input[type="range"]::-moz-range-thumb {
 
 .parchment-content strong {
     color: #8a6a48;
+}
+
+/* =================================================== */
+/* 공용 모달 레이아웃 (진짜 최종 해결 버전)            */
+/* =================================================== */
+
+/* --- 모달 창 기본틀 (변경 없음) --- */
+.player-options-modal {
+    display: flex;
+	flex-direction: column;
+	position: absolute; /* ✅ 수정된 부분 */
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 90%;
+	max-width: 600px;
+	max-height: 80%;
+	background-color: #282828;
+	border-radius: 10px;
+	overflow: hidden;
+	z-index: 100;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.player-options-modal .close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-header-fixed {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background-color: #383838;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px 20px;
+	border-bottom: 1px solid #444;
+}
+
+.modal-content-scrollable {
+	flex-grow: 1;
+	overflow-y: auto;
+	min-height: 0;
+	padding: 15px 20px;
+}
+
+.modal-title-fixed {
+	margin: 0;
+	font-size: 1.2rem;
+}
+
+.close-button-text {
+	background-color: #555;
+	color: white;
+	border: none;
+	padding: 6px 14px;
+	border-radius: 5px;
+	cursor: pointer;
+}
+.close-button-text:hover {
+	background-color: #777;
+}
+
+
+/* --- Options 모달 내부 콘텐츠에 직접 패딩 적용 --- */
+.options-tab-container {
+    /* 2. 스크롤 영역의 첫 번째 자식인 탭 컨테이너에 위쪽 패딩을 줍니다. */
+    padding-top: 15px; 
+}
+
+.button-settings-list {
+    /* 3. 옵션 모달의 마지막 요소인 리스트에 아래쪽 패딩을 줍니다. */
+    padding-bottom: 15px;
+    overflow-y: visible; /* 부모가 스크롤하므로 자체 스크롤 기능은 끕니다. */
+}
+
+.counters-list {
+	padding: 15px 0;
+	list-style: none;
+	margin: 0;
+}
+
+/* 스크롤바 커스터마이징 */
+.modal-content-scrollable::-webkit-scrollbar {
+	width: 8px;
+}
+.modal-content-scrollable::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.2);
+}
+.modal-content-scrollable::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
 }
