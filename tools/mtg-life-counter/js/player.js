@@ -24,6 +24,20 @@ export class Player {
         { id: 'layout', label: 'HP Layout', enabled: false },
     	];
 
+		this.counterSettings = [
+            { id: 'plain',    imageName: 'plain',    enabled: false, count : 0 },
+            { id: 'island',   imageName: 'island',   enabled: false, count : 0 },
+            { id: 'swamp',    imageName: 'swamp',    enabled: false, count : 0 },
+            { id: 'mountain', imageName: 'mountain', enabled: false, count : 0 },
+            { id: 'forest',   imageName: 'forest',   enabled: false, count : 0 },
+            { id: 'tax',      imageName: 'tax',      enabled: false, count : 0 },
+            { id: 'mana',     imageName: 'mana',     enabled: false, count : 0 },
+            { id: 'book',     imageName: 'book',     enabled: false, count : 0 },
+            { id: 'card',     imageName: 'card',     enabled: false, count : 0 },
+            { id: 'cross',    imageName: 'cross',    enabled: false, count : 0 },
+            { id: 'weapon',   imageName: 'weapon',   enabled: false, count : 0 },
+        ];
+
 		this.createDOM();
 		this.applyTheme();
 		this.updateDisplay();
@@ -107,7 +121,7 @@ export class Player {
 		this.setupAreaEventListeners();
 
 		// 초기 버튼 상태 렌더링
-		this.rebuildActionButtons();
+		this.rebuildPlayerButtons();
 		this.updateRotationClass();
 	}
 
@@ -140,7 +154,10 @@ export class Player {
 		
 		const counterContent = document.createElement('div');
 		counterContent.className = 'options-tab-content active';
-		counterContent.innerHTML = '<div>카운터 관련 설정 (추후 구현)</div>';
+
+		this.elements.counterSettingsList = document.createElement('ul');
+        this.elements.counterSettingsList.className = 'button-settings-list'; // 기존 스타일 재사용
+        counterContent.appendChild(this.elements.counterSettingsList);
 
 		const buttonsContent = document.createElement('div');
 		buttonsContent.className = 'options-tab-content';
@@ -174,7 +191,86 @@ export class Player {
 			}
 		});
 
+		this.renderCounterSettingsList();
 		this.renderButtonSettingsList();
+	}
+
+	renderCounterSettingsList() {
+		const list = this.elements.counterSettingsList;
+		list.innerHTML = '';
+
+		this.counterSettings.forEach(setting => {
+			const item = document.createElement('li');
+			item.className = 'button-setting-item';
+
+			// --- 체크박스 (버튼 활성화/비활성화) ---
+			const checkbox = document.createElement('input');
+			checkbox.type = 'checkbox';
+			checkbox.checked = setting.enabled;
+			checkbox.id = `${this.id}-counter-check-${setting.id}`;
+			checkbox.onchange = () => {
+				// 5개 제한 로직 (기존과 동일)
+				const totalEnabled = this.counterSettings.filter(s => s.enabled).length +
+									this.buttonSettings.filter(s => s.enabled).length;
+				if (checkbox.checked && totalEnabled >= 5) {
+					alert('버튼은 최대 5개까지만 선택할 수 있습니다.');
+					checkbox.checked = false;
+					return;
+				}
+				setting.enabled = checkbox.checked;
+				this.rebuildPlayerButtons();
+			};
+
+			// --- 아이콘 이미지 (기존과 동일) ---
+			const image = document.createElement('img');
+			image.src = `./assets/board_icon/${setting.imageName}.png`;
+			image.style.cssText = 'width: 24px; height: 24px; margin-right: 10px; vertical-align: middle;';
+			image.className = 'modal-counter-icon';
+
+			// ▼▼▼ [추가] 모달창 내에 현재 카운트를 표시할 span ▼▼▼
+			const countSpan = document.createElement('span');
+			countSpan.className = 'modal-counter-value';
+			countSpan.textContent = `Counts : ${setting.count}`;
+			// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+			item.append(checkbox, image, countSpan);
+			list.appendChild(item);
+
+			// ▼▼▼ [추가] 목록 아이템(li) 자체에 클릭/길게누르기 이벤트 추가 ▼▼▼
+			item.addEventListener('pointerdown', (e) => {
+				// 체크박스 자체를 클릭한 경우는 이벤트를 무시
+				if (e.target === checkbox) return;
+				e.stopPropagation();
+
+				this.isLongPress = false;
+				this.longPressTimer = setTimeout(() => {
+					// 길게 누르기 성공 (초기화)
+					this.isLongPress = true;
+					setting.count = 0;
+					countSpan.textContent = `Counts : ${setting.count}`; // 모달 UI 업데이트
+					this.rebuildPlayerButtons(); // 메인 버튼 UI 업데이트
+				}, 700);
+			});
+
+			item.addEventListener('pointerup', (e) => {
+				// 체크박스 자체를 클릭한 경우는 이벤트를 무시
+				if (e.target === checkbox) return;
+				e.stopPropagation();
+
+				clearTimeout(this.longPressTimer);
+				if (!this.isLongPress) {
+					// 짧은 클릭 (증가)
+					setting.count++;
+					countSpan.textContent = `Counts : ${setting.count}`; // 모달 UI 업데이트
+					this.rebuildPlayerButtons(); // 메인 버튼 UI 업데이트
+				}
+			});
+
+			item.addEventListener('pointerleave', () => {
+				clearTimeout(this.longPressTimer);
+			});
+			// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+		});
 	}
 
 	renderButtonSettingsList() {
@@ -196,8 +292,18 @@ export class Player {
 			checkbox.checked = setting.enabled;
 			checkbox.id = `${this.id}-btn-check-${setting.id}`;
 			checkbox.onchange = () => {
+
+				const totalEnabled = this.counterSettings.filter(s => s.enabled).length +
+                                     this.buttonSettings.filter(s => s.enabled).length;
+
+				if (checkbox.checked && totalEnabled >= 5) {
+                    alert('버튼은 최대 5개까지만 선택할 수 있습니다.');
+                    checkbox.checked = false; // 선택 되돌리기
+                    return;
+                }
+
 				setting.enabled = checkbox.checked;
-				this.rebuildActionButtons(); // 체크 상태 변경 시 즉시 버튼 UI에 반영
+				this.rebuildPlayerButtons(); // 체크 상태 변경 시 즉시 버튼 UI에 반영
 			};
 
 			const labelButton = document.createElement('button');
@@ -246,7 +352,7 @@ export class Player {
 			this.buttonSettings.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
 			
 			// 2. 재정렬된 데이터에 따라 액션 버튼 다시 빌드
-			this.rebuildActionButtons();
+			this.rebuildPlayerButtons();
 		});
 
 		function getDragAfterElement(container, y) {
@@ -293,11 +399,56 @@ export class Player {
 		}
 	}
 
-	rebuildActionButtons() {
-		this.elements.actionButtonContainer.innerHTML = ''; // 컨테이너 비우기
+	rebuildPlayerButtons() {
+		const container = this.elements.actionButtonContainer;
+        container.innerHTML = ''; 
 
         this.elements.initiativeButton = null;
         this.elements.monarchButton = null;
+
+		this.counterSettings.forEach(setting => {
+            if (setting.enabled) {
+                const button = document.createElement('button');
+                button.className = 'header-button'; // 스타일 적용
+                button.style.backgroundImage = `url(./assets/board_icon/${setting.imageName}.png)`;
+                button.style.backgroundSize = '75%';
+
+				const valueSpan = document.createElement('span');
+                valueSpan.className = 'counter-value';
+                valueSpan.textContent = setting.count;
+                button.appendChild(valueSpan);
+
+                button.addEventListener('pointerdown', (e) => {
+                    e.stopPropagation();
+                    this.isLongPress = false; // 타이머 시작 시 플래그 초기화
+
+                    this.longPressTimer = setTimeout(() => {
+                        // 0.7초 이상 누르면 실행되는 코드 (초기화)
+                        this.isLongPress = true; // 길게 누르기 성공!
+                        setting.count = 0;
+                        valueSpan.textContent = setting.count;
+                    }, 700); // 700ms = 0.7초
+                });
+
+                button.addEventListener('pointerup', (e) => {
+                    e.stopPropagation();
+                    clearTimeout(this.longPressTimer); // 타이머 취소
+
+                    if (!this.isLongPress) {
+                        // 길게 누르기가 아니었다면, 짧은 클릭으로 간주 (증가)
+                        setting.count++;
+                        valueSpan.textContent = setting.count;
+                    }
+                });
+
+                // 마우스가 버튼 밖으로 나가도 타이머 취소
+                button.addEventListener('pointerleave', () => {
+                    clearTimeout(this.longPressTimer);
+                });
+
+                container.appendChild(button);
+            }
+        });
 		
 		this.buttonSettings.forEach(setting => {
 			if (setting.enabled) {
@@ -520,7 +671,7 @@ export class Player {
 		const setting = this.buttonSettings.find(s => s.id === buttonId);
 		if (setting) {
 			setting.enabled = true;
-			this.rebuildActionButtons(); // UI 업데이트
+			this.rebuildPlayerButtons(); // UI 업데이트
 		}
 	}
 
