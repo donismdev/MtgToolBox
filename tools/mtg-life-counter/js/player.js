@@ -229,8 +229,10 @@ export class Player {
 		this.elements.logOverlay.addEventListener('click', e => {
 			if (e.target === this.elements.logOverlay) hideLog();
 		});
-		logModal.addEventListener('pointerdown', e => e.stopPropagation());
+		logModal.addEventListener('pointerdown', (e) => { hideLog(); e.stopPropagation(); });
+		logModal.addEventListener('click', () => { hideLog(); });
 		closeModalBtn.addEventListener('click', hideLog);
+		
 		this.updateRotationClass();
 	}
 

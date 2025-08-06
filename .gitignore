@@ -76,7 +76,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # 툴에서 사용하는 임시 리소스
-*.jpg
+# *.jpg
 
 #############################
 # JavaScript / Web 무시 항목
