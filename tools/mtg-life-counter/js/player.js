@@ -255,7 +255,7 @@ export class Player {
 
 		const counterTabBtn = document.createElement('button');
 		counterTabBtn.className = 'options-tab-button'; // [수정] active 클래스 제거
-		counterTabBtn.textContent = 'Counters2';
+		counterTabBtn.textContent = 'Counters';
 		
 		const buttonsTabBtn = document.createElement('button');
 		buttonsTabBtn.className = 'options-tab-button active'; // [수정] active 클래스 추가

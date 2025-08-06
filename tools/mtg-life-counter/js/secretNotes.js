@@ -124,10 +124,6 @@ function renderSecretNoteEditor(player, noteIndex) {
             <button class="close-button">&times;</button>
         </div>
         <div class="note-editor-content"></div>
-        <div class="note-editor-actions">
-            <button class="note-editor-save">Save</button>
-            <button class="note-editor-cancel">Cancel</button>
-        </div>
     `;
 
     const contentArea = modal.querySelector('.note-editor-content');
@@ -169,17 +165,27 @@ function renderSecretNoteEditor(player, noteIndex) {
         contentArea.appendChild(categoryWrapper);
     }
 
+    const actionsWrapper = document.createElement('div');
+    actionsWrapper.className = 'note-editor-actions';
+    actionsWrapper.innerHTML = `
+        <input type="text" class="note-title-input" placeholder="Enter note title...">
+        <button class="note-editor-save">Save</button>
+        <button class="note-editor-cancel">Cancel</button>
+    `;
+    contentArea.appendChild(actionsWrapper);
+
     // --- [개선 2] 이벤트 위임을 사용하여 이벤트 핸들러 최적화 ---
 
 	modal.querySelector('.close-button').onclick = () => hideSecretNoteEditor(player);
-    modal.querySelector('.note-editor-cancel').onclick = () => hideSecretNoteEditor(player);
 
     modal.querySelector('.note-editor-save').onclick = () => {
+        const titleInput = modal.querySelector('.note-title-input');
+        player.secretNotes[noteIndex].title = titleInput.value;
         player.secretNotes[noteIndex].selections = tempSelections;
         const isDefault = Object.keys(noteCategories).every(key =>
             JSON.stringify(tempSelections[key]) === JSON.stringify(noteCategories[key].default)
         );
-        player.secretNotes[noteIndex].isFilled = !isDefault;
+        player.secretNotes[noteIndex].isFilled = !isDefault || titleInput.value.trim() !== '';
         hideSecretNoteEditor(player);
         renderSecretNotesHub(player);
     };
