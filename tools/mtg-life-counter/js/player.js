@@ -2,6 +2,8 @@ import { allThemes } from './themes.js';
 import { renderLifeLogChart } from './logChart.js';
 import { initiativeManager } from './initiative.js';
 
+import * as secretNotes from './secretNotes.js';
+
 export class Player {
 	constructor(id, initialLife, initialRotation, themeName) {
 		this.id = id;
@@ -58,6 +60,8 @@ export class Player {
             { id: 'feather',  imageName: 'feather',  count: 0, label: '' },
             { id: 'battle',   imageName: 'battle',   count: 0, label: '' },
         ];
+
+		this.secretNotes = Array(5).fill(null).map(() => secretNotes.createDefaultNote());
 
 		this.createDOM();
 		this.applyTheme();
@@ -145,6 +149,8 @@ export class Player {
 		this.rebuildPlayerButtons();
 		this.updateRotationClass();
 		this.createCountersViewerModal();
+
+		secretNotes.initialize(this);
 	}
 
 	updateCounterValue(setting, action, targetElement = null) {
@@ -246,26 +252,28 @@ export class Player {
 		// 탭 메뉴
 		const tabContainer = document.createElement('div');
 		tabContainer.className = 'options-tab-container';
+
 		const counterTabBtn = document.createElement('button');
-		counterTabBtn.className = 'options-tab-button active';
-		counterTabBtn.textContent = 'Counters';
+		counterTabBtn.className = 'options-tab-button'; // [수정] active 클래스 제거
+		counterTabBtn.textContent = 'Counters2';
+		
 		const buttonsTabBtn = document.createElement('button');
-		buttonsTabBtn.className = 'options-tab-button';
-		buttonsTabBtn.textContent = 'Options';
+		buttonsTabBtn.className = 'options-tab-button active'; // [수정] active 클래스 추가
+		const playerIdNumber = this.id.split('-')[1]; 
+		buttonsTabBtn.textContent = `Options (P${playerIdNumber})`;
 		
 		// 탭 콘텐츠
 		const contentContainer = document.createElement('div');
 		contentContainer.className = 'options-content-container';
 		
 		const counterContent = document.createElement('div');
-		counterContent.className = 'options-tab-content active';
-
+		counterContent.className = 'options-tab-content'; // [수정] active 클래스 제거
 		this.elements.counterSettingsList = document.createElement('ul');
-        this.elements.counterSettingsList.className = 'button-settings-list'; // 기존 스타일 재사용
-        counterContent.appendChild(this.elements.counterSettingsList);
+		this.elements.counterSettingsList.className = 'button-settings-list';
+		counterContent.appendChild(this.elements.counterSettingsList);
 
 		const buttonsContent = document.createElement('div');
-		buttonsContent.className = 'options-tab-content';
+		buttonsContent.className = 'options-tab-content active'; // [수정] active 클래스 추가
 		this.elements.buttonSettingsList = document.createElement('ul');
 		this.elements.buttonSettingsList.className = 'button-settings-list';
 		buttonsContent.appendChild(this.elements.buttonSettingsList);
@@ -284,7 +292,7 @@ export class Player {
 			counterContent.classList.remove('active');
 		};
 
-		tabContainer.append(counterTabBtn, buttonsTabBtn);
+		tabContainer.append(buttonsTabBtn, counterTabBtn);
 		contentContainer.append(counterContent, buttonsContent);
 		modal.append(closeModalBtn, tabContainer, contentContainer);
 		this.elements.optionsModalOverlay.appendChild(modal);
@@ -632,8 +640,7 @@ export class Player {
                 this.showCountersViewer();
                 break;
             case 'note':
-                // TODO: Secret Notes 기능은 추후 구현
-                console.log('Secret Notes clicked');
+				secretNotes.showHub(this);
                 break;
 		}
 	}
@@ -757,7 +764,13 @@ export class Player {
                         });
                         break;
 					case 'note':
-                        // TODO: Secret Notes 기능은 추후 구현
+                        button = document.createElement('button');
+                        button.className = 'header-button';
+                        button.style.backgroundImage = 'url(./assets/note.png)'; // 예시 아이콘
+                        button.addEventListener('click', (e) => {
+                            e.stopPropagation();
+							secretNotes.showHub(this);
+                        });
                         break;
 				}
 				if (button) {
