@@ -125,6 +125,22 @@ export class Player {
 		this.updateRotationClass();
 	}
 
+	updateCounterValue(setting, action) {
+        if (action === 'increment') {
+            setting.count++;
+        } else if (action === 'reset') {
+            setting.count = 0;
+        }
+
+        // 데이터가 변경되었으니, 모든 UI를 최신 데이터로 다시 그립니다.
+        this.rebuildPlayerButtons(); // 메인 버튼 UI 새로고침
+        
+        // 옵션창이 열려있을 수 있으니, 옵션창 목록도 새로고침합니다.
+        if (this.elements.counterSettingsList) {
+            this.renderCounterSettingsList();
+        }
+    }
+
 	createOptionsModal() {
 		this.elements.optionsModalOverlay = document.createElement('div');
 		this.elements.optionsModalOverlay.className = 'player-options-overlay';
@@ -246,10 +262,8 @@ export class Player {
 				this.longPressTimer = setTimeout(() => {
 					// 길게 누르기 성공 (초기화)
 					this.isLongPress = true;
-					setting.count = 0;
-					countSpan.textContent = `Counts : ${setting.count}`; // 모달 UI 업데이트
-					this.rebuildPlayerButtons(); // 메인 버튼 UI 업데이트
-				}, 700);
+					this.updateCounterValue(setting, 'reset');
+                }, 700);
 			});
 
 			item.addEventListener('pointerup', (e) => {
@@ -259,10 +273,7 @@ export class Player {
 
 				clearTimeout(this.longPressTimer);
 				if (!this.isLongPress) {
-					// 짧은 클릭 (증가)
-					setting.count++;
-					countSpan.textContent = `Counts : ${setting.count}`; // 모달 UI 업데이트
-					this.rebuildPlayerButtons(); // 메인 버튼 UI 업데이트
+					this.updateCounterValue(setting, 'increment');
 				}
 			});
 
@@ -425,8 +436,7 @@ export class Player {
                     this.longPressTimer = setTimeout(() => {
                         // 0.7초 이상 누르면 실행되는 코드 (초기화)
                         this.isLongPress = true; // 길게 누르기 성공!
-                        setting.count = 0;
-                        valueSpan.textContent = setting.count;
+						this.updateCounterValue(setting, 'reset');
                     }, 700); // 700ms = 0.7초
                 });
 
@@ -435,9 +445,7 @@ export class Player {
                     clearTimeout(this.longPressTimer); // 타이머 취소
 
                     if (!this.isLongPress) {
-                        // 길게 누르기가 아니었다면, 짧은 클릭으로 간주 (증가)
-                        setting.count++;
-                        valueSpan.textContent = setting.count;
+						this.updateCounterValue(setting, 'increment');
                     }
                 });
 
