@@ -121,7 +121,10 @@ function renderSecretNoteEditor(player, noteIndex) {
     modal.innerHTML = `
         <div class="note-editor-header">
             <h2 class="note-modal-title">Edit Note ${noteIndex + 1}</h2>
-            <button class="close-button">&times;</button>
+            <div class="note-editor-buttons">
+                <button class="note-editor-save btn">Save</button>
+                <button class="note-editor-cancel btn">Cancel</button>
+            </div>
         </div>
         <div class="note-editor-content"></div>
     `;
@@ -165,27 +168,16 @@ function renderSecretNoteEditor(player, noteIndex) {
         contentArea.appendChild(categoryWrapper);
     }
 
-    const actionsWrapper = document.createElement('div');
-    actionsWrapper.className = 'note-editor-actions';
-    actionsWrapper.innerHTML = `
-        <input type="text" class="note-title-input" placeholder="Enter note title...">
-        <button class="note-editor-save">Save</button>
-        <button class="note-editor-cancel">Cancel</button>
-    `;
-    contentArea.appendChild(actionsWrapper);
-
-    // --- [개선 2] 이벤트 위임을 사용하여 이벤트 핸들러 최적화 ---
-
-	modal.querySelector('.close-button').onclick = () => hideSecretNoteEditor(player);
+    // --- Event Handlers ---
+    modal.querySelector('.note-editor-cancel').onclick = () => hideSecretNoteEditor(player);
 
     modal.querySelector('.note-editor-save').onclick = () => {
-        const titleInput = modal.querySelector('.note-title-input');
-        player.secretNotes[noteIndex].title = titleInput.value;
+        player.secretNotes[noteIndex].title = ''; // Title field is removed
         player.secretNotes[noteIndex].selections = tempSelections;
         const isDefault = Object.keys(noteCategories).every(key =>
             JSON.stringify(tempSelections[key]) === JSON.stringify(noteCategories[key].default)
         );
-        player.secretNotes[noteIndex].isFilled = !isDefault || titleInput.value.trim() !== '';
+        player.secretNotes[noteIndex].isFilled = !isDefault;
         hideSecretNoteEditor(player);
         renderSecretNotesHub(player);
     };
@@ -283,20 +275,42 @@ export function showHub(player) {
 
 export function revealNote(player, noteIndex) {
     const note = player.secretNotes[noteIndex];
-    let contentString = `--- Note ${noteIndex + 1} Revealed ---\n\n`;
+    let contentString = ``;
     
     for (const [key, config] of Object.entries(noteCategories)) {
         const value = note.selections[key];
         const defaultValue = config.default;
         
-        // 값이 기본값과 다를 때만 공개 내용에 포함
         if (JSON.stringify(value) !== JSON.stringify(defaultValue)) {
              if (Array.isArray(value) && value.length > 0) {
-                 contentString += `${config.label}: ${value.join(', ')}\n`;
+                 contentString += `<li><strong>${config.label}:</strong> ${value.join(', ')}</li>`;
              } else if (!Array.isArray(value)) {
-                 contentString += `${config.label}: ${value}\n`;
+                 contentString += `<li><strong>${config.label}:</strong> ${value}</li>`;
              }
         }
     }
-    alert(contentString);
+
+    if (contentString === ``) {
+        contentString = '<li>(No specific information was noted.)</li>';
+    }
+
+    const revealOverlay = document.createElement('div');
+    revealOverlay.className = 'reveal-overlay';
+    revealOverlay.innerHTML = `
+        <div class="reveal-parchment">
+            <div class="parchment-header">Player ${player.id}'s Note</div>
+            <ul class="parchment-content">
+                ${contentString}
+            </ul>
+        </div>
+    `;
+
+    player.elements.area.appendChild(revealOverlay);
+
+    revealOverlay.addEventListener('click', () => {
+        revealOverlay.classList.add('fade-out');
+        revealOverlay.addEventListener('transitionend', () => {
+            revealOverlay.remove();
+        });
+    });
 }

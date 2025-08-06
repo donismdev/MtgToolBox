@@ -1490,12 +1490,34 @@
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    position: relative;
 }
 
-.note-editor-content {
-    overflow-y: auto;
-    flex: 1;
-    padding: 10px;
+.note-modal-title {
+    margin: 0;
+    font-size: 1.2em;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.note-editor-buttons {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.note-editor-buttons .btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #555;
+    color: white;
+}
+
+.note-editor-buttons .btn:hover {
+    background-color: #777;
 }
 
 .note-editor-actions {
@@ -1660,4 +1682,83 @@ input[type="range"]::-moz-range-thumb {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.reveal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.5s ease;
+}
+
+.reveal-overlay.fade-out {
+    opacity: 0;
+}
+
+.reveal-parchment {
+    width: 90%;
+    max-width: 500px;
+    background-color: #f5e8c8;
+    border: 10px solid #8a6a48;
+    border-radius: 5px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.2);
+    color: #4a3a2a;
+    font-family: 'Garamond', serif;
+    padding: 20px;
+    transform: scale(0.5) rotate(-5deg);
+    opacity: 0;
+    animation: parchment-unfurl 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+@keyframes parchment-unfurl {
+    to {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.parchment-header {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+    color: #6a4a28;
+    border-bottom: 2px solid #c8b898;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.parchment-content {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    animation: content-fade-in 0.5s 0.5s forwards;
+}
+
+@keyframes content-fade-in {
+    to {
+        opacity: 1;
+    }
+}
+
+.parchment-content li {
+    padding: 5px 0;
+    font-size: 1.2em;
+    border-bottom: 1px solid #d8c8a8;
+}
+
+.parchment-content li:last-child {
+    border-bottom: none;
+}
+
+.parchment-content strong {
+    color: #8a6a48;
 }
