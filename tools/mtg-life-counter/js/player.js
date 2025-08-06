@@ -25,17 +25,17 @@ export class Player {
     	];
 
 		this.counterSettings = [
-            { id: 'plain',    imageName: 'plain',    enabled: false, count : 0, label: '' },
-            { id: 'island',   imageName: 'island',   enabled: false, count : 0, label: '' },
-            { id: 'swamp',    imageName: 'swamp',    enabled: false, count : 0, label: '' },
-            { id: 'mountain', imageName: 'mountain', enabled: false, count : 0, label: '' },
-            { id: 'forest',   imageName: 'forest',   enabled: false, count : 0, label: '' },
-            { id: 'tax',      imageName: 'tax',      enabled: false, count : 0, label: '' },
-            { id: 'mana',     imageName: 'mana',     enabled: false, count : 0, label: '' },
-            { id: 'book',     imageName: 'book',     enabled: false, count : 0, label: '' },
-            { id: 'card',     imageName: 'card',     enabled: false, count : 0, label: '' },
-            { id: 'cross',    imageName: 'cross',    enabled: false, count : 0, label: '' },
-            { id: 'weapon',   imageName: 'weapon',   enabled: false, count : 0, label: '' },
+            { id: 'plain',    imageName: 'plain',    enabled: false, count : 0, label: '', backgroundSize: '120%' },
+            { id: 'island',   imageName: 'island',   enabled: false, count : 0, label: '', backgroundSize: '120%' },
+            { id: 'swamp',    imageName: 'swamp',    enabled: false, count : 0, label: '', backgroundSize: '120%' },
+            { id: 'mountain', imageName: 'mountain', enabled: false, count : 0, label: '', backgroundSize: '120%' },
+            { id: 'forest',   imageName: 'forest',   enabled: false, count : 0, label: '', backgroundSize: '120%' },
+            { id: 'tax',      imageName: 'tax',      enabled: false, count : 0, label: '', backgroundSize: '85%' },
+            { id: 'mana',     imageName: 'mana',     enabled: false, count : 0, label: '', backgroundSize: '100%' },
+            { id: 'book',     imageName: 'book',     enabled: false, count : 0, label: '', backgroundSize: '85%' },
+            { id: 'card',     imageName: 'card',     enabled: false, count : 0, label: '', backgroundSize: '85%' },
+            { id: 'cross',    imageName: 'cross',    enabled: false, count : 0, label: '', backgroundSize: '100%' },
+            { id: 'weapon',   imageName: 'weapon',   enabled: false, count : 0, label: '', backgroundSize: '85%' },
         ];
 
 		this.createDOM();
@@ -271,6 +271,9 @@ export class Player {
 
 		this.renderCounterSettingsList();
 		this.renderButtonSettingsList();
+
+		this.setupDragAndDrop(this.elements.counterSettingsList, this.counterSettings);
+	    this.setupDragAndDrop(this.elements.buttonSettingsList, this.buttonSettings);
 	}
 
 	renderCounterSettingsList() {
@@ -280,19 +283,29 @@ export class Player {
 		this.counterSettings.forEach(setting => {
 			const item = document.createElement('li');
 			item.className = 'button-setting-item';
+			item.dataset.id = setting.id;
+	        item.draggable = true;
+
+			const dragHandle = document.createElement('span');
+			dragHandle.className = 'drag-handle';
+			dragHandle.innerHTML = '&#x2630;';
+
 
 			const checkbox = document.createElement('input');
 			checkbox.type = 'checkbox';
 			checkbox.checked = setting.enabled;
 			checkbox.id = `${this.id}-counter-check-${setting.id}`;
 			checkbox.onchange = () => {
-				const totalEnabled = this.counterSettings.filter(s => s.enabled).length +
-									this.buttonSettings.filter(s => s.enabled).length;
-				if (checkbox.checked && totalEnabled >= 5) {
-					alert('버튼은 최대 5개까지만 선택할 수 있습니다.');
+				const enabledCounters = this.counterSettings.filter(s => s.enabled).length;
+				const enabledNormalButtons = this.buttonSettings.filter(s => s.enabled && s.id !== 'initiative' && s.id !== 'monarch').length;
+				const totalNormalEnabled = enabledCounters + enabledNormalButtons;
+
+				if (checkbox.checked && totalNormalEnabled >= 4) {
+					alert('일반 버튼과 카운터는 최대 4개까지만 선택할 수 있습니다.');
 					checkbox.checked = false;
 					return;
 				}
+
 				setting.enabled = checkbox.checked;
 				this.rebuildPlayerButtons();
 			};
@@ -317,10 +330,8 @@ export class Player {
 			countSpan.textContent = `Counts : ${setting.count}`;
 
 			textContainer.append(labelSpan, countSpan);
-			item.append(checkbox, image, textContainer);
+			item.append(dragHandle, checkbox, image, textContainer);
 			list.appendChild(item);
-
-			// ▼▼▼ [핵심 수정] 모든 이벤트를 부모(li)에서 통합 관리 ▼▼▼
 			
 			item.addEventListener('pointerdown', (e) => {
 				// 체크박스를 클릭한 경우는 어떤 동작도 하지 않음
@@ -394,14 +405,17 @@ export class Player {
 			checkbox.id = `${this.id}-btn-check-${setting.id}`;
 			checkbox.onchange = () => {
 
-				const totalEnabled = this.counterSettings.filter(s => s.enabled).length +
-                                     this.buttonSettings.filter(s => s.enabled).length;
+				if (setting.id !== 'initiative' && setting.id !== 'monarch') {
+					const enabledCounters = this.counterSettings.filter(s => s.enabled).length;
+					const enabledNormalButtons = this.buttonSettings.filter(s => s.enabled && s.id !== 'initiative' && s.id !== 'monarch').length;
+					const totalNormalEnabled = enabledCounters + enabledNormalButtons;
 
-				if (checkbox.checked && totalEnabled >= 5) {
-                    alert('버튼은 최대 5개까지만 선택할 수 있습니다.');
-                    checkbox.checked = false; // 선택 되돌리기
-                    return;
-                }
+					if (checkbox.checked && totalNormalEnabled >= 4) {
+						alert('일반 버튼과 카운터는 최대 4개까지만 선택할 수 있습니다.');
+						checkbox.checked = false;
+						return;
+					}
+				}
 
 				setting.enabled = checkbox.checked;
 				this.rebuildPlayerButtons(); // 체크 상태 변경 시 즉시 버튼 UI에 반영
@@ -412,61 +426,79 @@ export class Player {
 			labelButton.textContent = setting.label;
 			labelButton.onclick = () => {
 				this.hideOptionsModal();
-				this.executeButtonAction(setting.id); // 레이블 버튼 클릭 시 즉시 액션 실행
+	            this.executeButtonAction(setting.id);
 			};
 
 			item.append(dragHandle, checkbox, labelButton);
 			list.appendChild(item);
 		});
 
-		this.setupDragAndDrop();
+		this.setupDragAndDrop(list, this.buttonSettings);
 	}
 
-	setupDragAndDrop() {
-		const list = this.elements.buttonSettingsList;
+	setupDragAndDrop(list, settingsArray) {
 		let draggedItem = null;
 
 		list.addEventListener('dragstart', (e) => {
-			draggedItem = e.target;
-			setTimeout(() => e.target.classList.add('dragging'), 0);
+			// 드래그 시작 시 li 요소를 정확히 타겟팅합니다.
+			draggedItem = e.target.closest('.button-setting-item');
+			if (draggedItem) {
+				setTimeout(() => draggedItem.classList.add('dragging'), 0);
+			}
 		});
 
-		list.addEventListener('dragend', (e) => {
-			e.target.classList.remove('dragging');
+		list.addEventListener('dragend', () => {
+			if (draggedItem) {
+				draggedItem.classList.remove('dragging');
+				draggedItem = null;
+			}
 		});
 
 		list.addEventListener('dragover', (e) => {
 			e.preventDefault();
-			const afterElement = getDragAfterElement(list, e.clientY);
-			const currentDragged = document.querySelector('.dragging');
-			if (afterElement == null) {
-				list.appendChild(currentDragged);
-			} else {
-				list.insertBefore(currentDragged, afterElement);
+			const afterElement = this.getDragAfterElement(list, e.clientY);
+			if (draggedItem) {
+				if (afterElement == null) {
+					list.appendChild(draggedItem);
+				} else {
+					list.insertBefore(draggedItem, afterElement);
+				}
 			}
 		});
 
 		list.addEventListener('drop', (e) => {
 			e.preventDefault();
-			// 1. 새로운 DOM 순서를 기반으로 데이터 배열(this.buttonSettings) 재정렬
+			if (!draggedItem) return;
+
+			// 1. 화면에 보이는 순서대로 id 배열을 새로 만듭니다.
 			const newOrderIds = [...list.querySelectorAll('.button-setting-item')].map(item => item.dataset.id);
-			this.buttonSettings.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
 			
-			// 2. 재정렬된 데이터에 따라 액션 버튼 다시 빌드
+			// 2. 데이터 배열(settingsArray)을 화면 순서에 맞게 재정렬합니다.
+			settingsArray.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+			
+			// 3. 재정렬된 데이터에 따라 메인 화면 버튼을 다시 그립니다.
 			this.rebuildPlayerButtons();
 		});
+	}
 
-		function getDragAfterElement(container, y) {
-			const draggableElements = [...container.querySelectorAll('.button-setting-item:not(.dragging)')];
-			return draggableElements.reduce((closest, child) => {
-				const box = child.getBoundingClientRect();
-				const offset = y - box.top - box.height / 2;
-				if (offset < 0 && offset > closest.offset) {
-					return { offset: offset, element: child };
-				} else {
-					return closest;
-				}
-			}, { offset: Number.NEGATIVE_INFINITY }).element;
+	getDragAfterElement(container, y) {
+		const draggableElements = [...container.querySelectorAll('.button-setting-item:not(.dragging)')];
+		return draggableElements.reduce((closest, child) => {
+			const box = child.getBoundingClientRect();
+			const offset = y - box.top - box.height / 2;
+			if (offset < 0 && offset > closest.offset) {	
+				return { offset: offset, element: child };
+			} else {
+				return closest;
+			}
+		}, { offset: Number.NEGATIVE_INFINITY }).element;
+	}
+
+	enableAndCreateButton(buttonId) {
+		const setting = this.buttonSettings.find(s => s.id === buttonId);
+		if (setting && !setting.enabled) {
+			setting.enabled = true;
+			this.rebuildPlayerButtons(); // UI 업데이트
 		}
 	}
 
@@ -485,16 +517,12 @@ export class Player {
 				window.updateAllPlayerIcons();
 				break;
 			case 'log':
-				this.enableAndCreateButton('log'); // 해당 플레이어만 생성
 				this.showLifeLog(); // 즉시 로그 창 열기
 				break;
 			case 'theme':
-				this.enableAndCreateButton('theme'); // 해당 플레이어만 생성
 				this.showThemeSelector(); // 즉시 테마 창 열기
 				break;
 			case 'layout':
-				this.enableAndCreateButton('layout'); // 해당 플레이어만 생성
-				// 아직 기능이 없으므로 버튼 생성만 함
 				console.log(`HP Layout button created for player ${this.id}`);
 				break;
 		}
@@ -512,7 +540,7 @@ export class Player {
                 const button = document.createElement('button');
                 button.className = 'header-button'; // 스타일 적용
                 button.style.backgroundImage = `url(./assets/board_icon/${setting.imageName}.png)`;
-                button.style.backgroundSize = '75%';
+                button.style.backgroundSize = setting.backgroundSize || '75%';
 
 				const valueSpan = document.createElement('span');
                 valueSpan.className = 'counter-value';
@@ -558,6 +586,7 @@ export class Player {
 						button.style.backgroundImage = 'url(./assets/initiative.png)';
 						button.addEventListener('click', (e) => {
 							e.stopPropagation();
+							window.players.forEach(p => p.enableAndCreateButton('initiative'));
 							initiativeManager.showDungeon(this.id); 
 						});
 						this.elements.initiativeButton = button;
@@ -568,6 +597,7 @@ export class Player {
 						button.style.backgroundImage = 'url(./assets/monarch.png)';
 						button.addEventListener('click', (e) => {
 							e.stopPropagation();
+							window.players.forEach(p => p.enableAndCreateButton('monarch'));
 							const playerIndex = this.getPlayerIndex();
 							if (window.dataSpace.settings.monarchIndex === playerIndex) {
 								window.dataSpace.settings.monarchIndex = -1;
