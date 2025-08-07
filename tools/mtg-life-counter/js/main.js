@@ -105,13 +105,6 @@ import { applyLifeFontSize } from './ui.js';
     // Initial Load
     applyLifeFontSize(window.localSettings.lifeFontSize);
     initializePlayers(window.localSettings.playerCount);
-
-    window.updateAllPlayerIcons = () => {
-        window.players.forEach(p => p.updateIcons());
-    };
-
-    // Initial icon state
-    window.updateAllPlayerIcons();
 });
 
 // --- Start of new code for iOS WKWebView issues ---

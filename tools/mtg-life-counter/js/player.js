@@ -1,10 +1,21 @@
 import { allThemes } from './themes.js';
-import { renderLifeLogChart } from './logChart.js';
 import { initiativeManager } from './initiative.js';
-
 import * as secretNotes from './secretNotes.js';
 
+// Import new modules
+import { OptionsModal } from './OptionsModal.js';
+import { CountersViewerModal } from './CountersViewerModal.js';
+import { LifeLogOverlay } from './LifeLogOverlay.js';
+import { ThemeSelectorOverlay } from './ThemeSelectorOverlay.js';
+
 export class Player {
+
+    // Helper to update all player icons
+    static updateAllPlayerIcons() {
+        window.players.forEach(p => p.updateIcons());
+    }
+
+
 	constructor(id, initialLife, initialRotation, themeName) {
 		this.id = id;
 		this.life = initialLife;
@@ -62,6 +73,12 @@ export class Player {
         ];
 
 		this.secretNotes = Array(5).fill(null).map(() => secretNotes.createDefaultNote());
+
+        // Modals and Overlays (lazy loaded)
+        this.optionsModal = null;
+        this.countersViewerModal = null;
+        this.lifeLogOverlay = null;
+        this.themeSelectorOverlay = null;
 
 		this.createDOM();
 		this.applyTheme();
@@ -135,12 +152,10 @@ export class Player {
 		this.elements.area.appendChild(this.elements.optionsButton);
 		this.elements.area.appendChild(this.elements.actionButtonContainer);
 		
-		// 3. 옵션 모달 생성 (처음에는 숨겨져 있음)
-		this.createOptionsModal();
-		this.elements.area.appendChild(this.elements.optionsModalOverlay);
-		
-		// --- 기존의 다른 요소들 생성 (주사위, 로그 오버레이 등) ---
-		this.createDiceAndLogOverlays(); // 관련 코드를 별도 함수로 분리하여 가독성 향상
+		// Dice Container (moved from createDiceAndLogOverlays)
+		this.elements.diceContainer = document.createElement('div');
+		this.elements.diceContainer.className = 'dice-container';
+		this.elements.area.appendChild(this.elements.diceContainer);
 
 		// --- 기존 이벤트 리스너들 ---
 		this.setupAreaEventListeners();
@@ -148,9 +163,76 @@ export class Player {
 		// 초기 버튼 상태 렌더링
 		this.rebuildPlayerButtons();
 		this.updateRotationClass();
-		this.createCountersViewerModal();
 
 		secretNotes.initialize(this);
+	}
+
+	setupAreaEventListeners() {
+		this.lastTapTime = 0; // 마지막 탭 시간을 기록, 더블 탭 줌 방지용
+
+		this.elements.area.addEventListener('pointerdown', (event) => {
+			// ==================================================
+			// 1. 더블탭 줌(Zoom) 방지 로직
+			// ==================================================
+			const now = new Date().getTime();
+
+			// 마지막 탭 이후 300ms 이내에 다시 탭된 경우, 브라우저의 기본 동작(줌)을 막습니다.
+			if (now - this.lastTapTime <= 300) {
+				event.preventDefault();
+			}
+
+			// 현재 탭 시간을 기록하여 다음 탭에서 비교할 수 있도록 합니다.
+			this.lastTapTime = now;
+
+			// ==================================================
+			// 2. 라이프(Life) 변경 로직
+			// ==================================================
+
+			// 버튼 등 다른 UI 요소가 활성화 상태이거나, 특정 버튼을 눌렀을 때는 작동하지 않도록 함
+			if (window.activeUI !== null || event.target.closest('.header-button') || event.target.closest('.player-options-button')) {
+				return;
+			}
+
+			// 탭된 위치를 계산
+			const rect = this.elements.area.getBoundingClientRect();
+			const pointerX = event.clientX - rect.left;
+			const pointerY = event.clientY - rect.top;
+
+			let amount = 0;
+			const adjustMode = window.localSettings.lifeAdjustDirection;
+			const isRight = pointerX > rect.width / 2;
+			const isBottom = pointerY > rect.height / 2;
+
+			// 설정과 화면 회전 상태에 따라 라이프 증감 방향을 결정
+			if (adjustMode === 'horizontal') {
+				switch (this.rotation) {
+					case 0:   amount = isRight ? +1 : -1; break;
+					case 180: amount = isRight ? -1 : +1; break;
+					case 90:  amount = isBottom ? +1 : -1; break;
+					case 270: amount = isBottom ? -1 : +1; break;
+				}
+			} else { // 'vertical' 모드
+				switch (this.rotation) {
+					case 0:   amount = isBottom ? -1 : +1; break;
+					case 180: amount = isBottom ? +1 : -1; break;
+					case 90:  amount = isRight ? +1 : -1; break;
+					case 270: amount = isRight ? -1 : +1; break;
+				}
+			}
+
+			this.changeLife(amount);
+			this.showAreaRipple(amount, event);
+		});
+
+		// 일부 모바일 브라우저의 더블탭 줌을 막기 위한 추가 리스너
+		let lastTouchEnd = 0;
+		document.addEventListener('touchend', function (event) {
+			const now = new Date().getTime();
+			if (now - lastTouchEnd <= 300) {
+				event.preventDefault();
+			}
+			lastTouchEnd = now;
+		}, false);
 	}
 
 	updateCounterValue(setting, action, targetElement = null) {
@@ -186,9 +268,10 @@ export class Player {
 
 		// 3. 모든 UI를 최신 데이터로 새로고침하여 동기화합니다.
 		this.rebuildPlayerButtons();
-		if (this.elements.counterSettingsList) {
-			this.renderCounterSettingsList();
-		}
+        // OptionsModal이 열려있다면 카운터 설정 목록도 업데이트
+        if (this.optionsModal && this.optionsModal.elements.counterSettingsList) {
+            this.optionsModal.renderCounterSettingsList();
+        }
     }
 
 	showSpeechBubble(text, buttonElement) {
@@ -247,401 +330,9 @@ export class Player {
 		setTimeout(() => { if (bubble.parentElement) { bubble.remove(); } }, 2000);
 	}
 
-	createOptionsModal() {
-		this.elements.optionsModalOverlay = document.createElement('div');
-		this.elements.optionsModalOverlay.className = 'player-options-overlay';
-		
-		const modal = document.createElement('div');
-		modal.className = 'player-options-modal';
-		modal.addEventListener('pointerdown', e => e.stopPropagation());
-
-		// [수정] 헤더 구조를 제목과 텍스트 버튼으로 명확히 분리
-		const modalHeader = document.createElement('div');
-		modalHeader.className = 'modal-header-fixed';
-		
-		const playerIdNumber = this.id.split('-')[1];
-		modalHeader.innerHTML = `<h2 class="modal-title-fixed">Options (P${playerIdNumber})</h2>`;
-		
-		const closeButtonText = document.createElement('button');
-		closeButtonText.className = 'close-button-text'; // 새 클래스 적용
-		closeButtonText.textContent = 'Close';
-		closeButtonText.onclick = () => this.hideOptionsModal();
-		modalHeader.appendChild(closeButtonText);
-
-		// 탭 메뉴
-		const tabContainer = document.createElement('div');
-		tabContainer.className = 'options-tab-container';
-
-		const counterTabBtn = document.createElement('button');
-		counterTabBtn.className = 'options-tab-button'; // [수정] active 클래스 제거
-		counterTabBtn.textContent = 'Counters';
-
-		 const buttonsTabBtn = document.createElement('button');
-		buttonsTabBtn.className = 'options-tab-button active';
-		buttonsTabBtn.textContent = `Buttons`; // [수정] 누락되었던 탭 버튼 텍스트 추가
-
-		const modalContentWrapper = document.createElement('div');
-		modalContentWrapper.className = 'modal-content-scrollable';
-		
-		// 탭 콘텐츠
-		const contentContainer = document.createElement('div');
-		contentContainer.className = 'options-content-container';
-		
-		const counterContent = document.createElement('div');
-		counterContent.className = 'options-tab-content'; // [수정] active 클래스 제거
-		this.elements.counterSettingsList = document.createElement('ul');
-		this.elements.counterSettingsList.className = 'button-settings-list';
-		counterContent.appendChild(this.elements.counterSettingsList);
-
-		const buttonsContent = document.createElement('div');
-		buttonsContent.className = 'options-tab-content active'; // [수정] active 클래스 추가
-		this.elements.buttonSettingsList = document.createElement('ul');
-		this.elements.buttonSettingsList.className = 'button-settings-list';
-		buttonsContent.appendChild(this.elements.buttonSettingsList);
-		
-		// 탭 전환 로직
-		counterTabBtn.onclick = () => {
-			counterTabBtn.classList.add('active');
-			buttonsTabBtn.classList.remove('active');
-			counterContent.classList.add('active');
-			buttonsContent.classList.remove('active');
-		};
-		buttonsTabBtn.onclick = () => {
-			buttonsTabBtn.classList.add('active');
-			counterTabBtn.classList.remove('active');
-			buttonsContent.classList.add('active');
-			counterContent.classList.remove('active');
-		};
-
-		tabContainer.append(buttonsTabBtn, counterTabBtn);
-		contentContainer.append(counterContent, buttonsContent);
-
-		modalContentWrapper.append(tabContainer, contentContainer); // 탭과 콘텐츠를 스크롤 래퍼에 넣음
-	    modal.append(modalHeader, modalContentWrapper); // 헤더와 스크롤 래퍼를 최종 모달에 넣음
-	
-		this.elements.optionsModalOverlay.appendChild(modal);
-
-		// 오버레이 클릭 시 닫기
-		this.elements.optionsModalOverlay.addEventListener('click', (e) => {
-			if (e.target === this.elements.optionsModalOverlay) {
-				this.hideOptionsModal();
-			}
-		});
-
-		this.renderCounterSettingsList();
-		this.renderButtonSettingsList();
-
-		this.setupDragAndDrop(this.elements.counterSettingsList, this.counterSettings);
-	    this.setupDragAndDrop(this.elements.buttonSettingsList, this.buttonSettings);
-	}
-
-	renderCounterSettingsList() {
-		const list = this.elements.counterSettingsList;
-		list.innerHTML = '';
-
-		this.counterSettings.forEach(setting => {
-			const item = document.createElement('li');
-			// [수정] 새로운 CSS 클래스를 적용하여 UI를 통일합니다.
-			item.className = 'counter-item'; 
-			item.dataset.id = setting.id;
-			item.draggable = true;
-
-			// --- 1. 체크박스 (맨 앞에 위치) ---
-			const checkbox = document.createElement('input');
-			checkbox.type = 'checkbox';
-			checkbox.className = 'counter-item-checkbox'; // 스타일링을 위한 클래스
-			checkbox.checked = setting.enabled;
-			checkbox.id = `${this.id}-counter-check-${setting.id}`;
-			checkbox.onchange = () => {
-				const totalEnabled = this.counterSettings.filter(s => s.enabled).length +
-									this.buttonSettings.filter(s => s.enabled && s.id !== 'initiative' && s.id !== 'monarch').length;
-				if (checkbox.checked && totalEnabled >= 4) {
-					alert('일반 버튼과 카운터는 최대 4개까지만 선택할 수 있습니다.');
-					checkbox.checked = false;
-					return;
-				}
-				setting.enabled = checkbox.checked;
-				this.rebuildPlayerButtons();
-			};
-
-			// --- 2. 나머지 UI 요소들은 카운터 뷰어와 동일 ---
-			const dragHandle = document.createElement('span');
-			dragHandle.className = 'drag-handle';
-			dragHandle.innerHTML = '&#x2630;';
-
-			const btnDecrease = document.createElement('button');
-			btnDecrease.className = 'counter-change-btn';
-			btnDecrease.textContent = '<';
-			btnDecrease.onclick = () => {
-				this.updateCounterValue(setting, 'decrement'); // UI 동기화
-			};
-
-			const iconArea = document.createElement('div');
-			iconArea.className = 'counter-icon-area';
-			iconArea.style.backgroundImage = `url(./assets/board_icon/${setting.imageName}.png)`;
-
-			const countText = document.createElement('span');
-			countText.className = 'counter-icon-count';
-			countText.textContent = setting.count;
-
-			const labelText = document.createElement('span');
-			labelText.className = 'counter-icon-label';
-			labelText.textContent = setting.label;
-			
-			iconArea.append(countText, labelText);
-
-			const btnIncrease = document.createElement('button');
-			btnIncrease.className = 'counter-change-btn';
-			btnIncrease.textContent = '>';
-			btnIncrease.onclick = () => {
-				this.updateCounterValue(setting, 'increment'); // UI 동기화
-			};
-			
-			const btnSetLabel = document.createElement('button');
-			btnSetLabel.className = 'counter-label-btn';
-			btnSetLabel.textContent = 'Aa';
-			btnSetLabel.onclick = () => {
-				const newLabel = prompt('이 카운터의 라벨을 입력하세요:', setting.label);
-				if (newLabel !== null) {
-					setting.label = newLabel.trim();
-					this.updateCounterValue(setting); // UI 동기화
-				}
-			};
-
-			// [수정] 최종 조립 순서 변경
-			item.append(checkbox, dragHandle, btnDecrease, iconArea, btnIncrease, btnSetLabel);
-			list.appendChild(item);
-		});
-	}
-
-	renderButtonSettingsList() {
-		const list = this.elements.buttonSettingsList;
-		list.innerHTML = ''; // 목록 초기화
-
-		this.buttonSettings.forEach(setting => {
-			const item = document.createElement('li');
-			item.className = 'button-setting-item';
-			item.dataset.id = setting.id;
-			item.draggable = true;
-
-			const dragHandle = document.createElement('span');
-			dragHandle.className = 'drag-handle';
-			dragHandle.innerHTML = '&#x2630;'; // 드래그 핸들 아이콘
-
-			const checkbox = document.createElement('input');
-			checkbox.type = 'checkbox';
-			checkbox.checked = setting.enabled;
-			checkbox.id = `${this.id}-btn-check-${setting.id}`;
-			checkbox.onchange = () => {
-
-				if (setting.id !== 'initiative' && setting.id !== 'monarch') {
-					const enabledCounters = this.counterSettings.filter(s => s.enabled).length;
-					const enabledNormalButtons = this.buttonSettings.filter(s => s.enabled && s.id !== 'initiative' && s.id !== 'monarch').length;
-					const totalNormalEnabled = enabledCounters + enabledNormalButtons;
-
-					if (checkbox.checked && totalNormalEnabled >= 4) {
-						alert('일반 버튼과 카운터는 최대 4개까지만 선택할 수 있습니다.');
-						checkbox.checked = false;
-						return;
-					}
-				}
-
-				setting.enabled = checkbox.checked;
-				this.rebuildPlayerButtons(); // 체크 상태 변경 시 즉시 버튼 UI에 반영
-			};
-
-			const labelButton = document.createElement('button');
-			labelButton.className = 'label-button';
-			labelButton.textContent = setting.label;
-			labelButton.onclick = () => {
-				this.hideOptionsModal();
-	            this.executeButtonAction(setting.id);
-			};
-
-			item.append(dragHandle, checkbox, labelButton);
-			list.appendChild(item);
-		});
-
-		this.setupDragAndDrop(list, this.buttonSettings);
-	}
-
-	setupDragAndDrop(list, settingsArray) {
-		let draggedItem = null;
-
-		list.addEventListener('dragstart', (e) => {
-			// 드래그 시작 시 li 요소를 정확히 타겟팅합니다.
-			draggedItem = e.target.closest('.button-setting-item');
-			if (draggedItem) {
-				setTimeout(() => draggedItem.classList.add('dragging'), 0);
-			}
-		});
-
-		list.addEventListener('dragend', () => {
-			if (draggedItem) {
-				draggedItem.classList.remove('dragging');
-				draggedItem = null;
-			}
-		});
-
-		list.addEventListener('dragover', (e) => {
-			e.preventDefault();
-			const afterElement = this.getDragAfterElement(list, e.clientY);
-			if (draggedItem) {
-				if (afterElement == null) {
-					list.appendChild(draggedItem);
-				} else {
-					list.insertBefore(draggedItem, afterElement);
-				}
-			}
-		});
-
-		list.addEventListener('drop', (e) => {
-			e.preventDefault();
-			if (!draggedItem) return;
-
-			// 1. 화면에 보이는 순서대로 id 배열을 새로 만듭니다.
-			const newOrderIds = [...list.querySelectorAll('.button-setting-item')].map(item => item.dataset.id);
-			
-			// 2. 데이터 배열(settingsArray)을 화면 순서에 맞게 재정렬합니다.
-			settingsArray.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
-			
-			// 3. 재정렬된 데이터에 따라 메인 화면 버튼을 다시 그립니다.
-			this.rebuildPlayerButtons();
-		});
-	}
-
-	createCountersViewerModal() {
-		this.elements.countersViewerOverlay = document.createElement('div');
-		this.elements.countersViewerOverlay.className = 'counters-viewer-overlay';
-
-		const modal = document.createElement('div');
-		modal.className = 'counters-viewer-modal'; // flexbox 레이아웃
-
-		modal.addEventListener('pointerdown', e => e.stopPropagation());
-
-		// 헤더: 닫기 버튼 포함
-		const modalHeader = document.createElement('div');
-		modalHeader.className = 'modal-header-fixed';
-		modalHeader.innerHTML = `<h2 class="modal-title-fixed">Counters</h2>`;
-
-		const closeButtonText = document.createElement('button');
-		closeButtonText.className = 'close-button-text';
-		closeButtonText.textContent = 'Close';
-		closeButtonText.onclick = () => this.hideCountersViewer();
-		modalHeader.appendChild(closeButtonText);
-
-		// 스크롤 콘텐츠 영역
-		const scrollContainer = document.createElement('div');
-		scrollContainer.className = 'modal-content-scrollable';
-
-		const listContainer = document.createElement('ul');
-		listContainer.className = 'counters-list';
-		this.elements.countersList = listContainer;
-
-		scrollContainer.appendChild(listContainer);
-
-		// 조립
-		modal.append(modalHeader, scrollContainer);
-		this.elements.countersViewerOverlay.appendChild(modal);
-		this.elements.area.appendChild(this.elements.countersViewerOverlay);
-
-		this.elements.countersViewerOverlay.addEventListener('click', (e) => {
-			if (e.target === this.elements.countersViewerOverlay) {
-				this.hideCountersViewer();
-			}
-		});
-	}
-
-	renderCountersViewer() {
-        const list = this.elements.countersList;
-        list.innerHTML = '';
-
-        this.genericCounters.forEach(setting => {
-            const item = document.createElement('li');
-            item.className = 'counter-item';
-            item.dataset.id = setting.id;
-            item.draggable = true;
-
-            const dragHandle = document.createElement('span');
-            dragHandle.className = 'drag-handle';
-            dragHandle.innerHTML = '&#x2630;';
-
-            const btnDecrease = document.createElement('button');
-            btnDecrease.className = 'counter-change-btn';
-            btnDecrease.textContent = '<';
-            btnDecrease.onclick = () => {
-                setting.count--;
-                this.renderCountersViewer(); // UI 새로고침
-            };
-
-            const iconArea = document.createElement('div');
-            iconArea.className = 'counter-icon-area';
-            iconArea.style.backgroundImage = `url(./assets/counter/${setting.imageName}.png)`;
-
-            const countText = document.createElement('span');
-            countText.className = 'counter-icon-count';
-            countText.textContent = setting.count;
-
-            const labelText = document.createElement('span');
-            labelText.className = 'counter-icon-label';
-            labelText.textContent = setting.label;
-            
-            iconArea.append(countText, labelText);
-
-            const btnIncrease = document.createElement('button');
-            btnIncrease.className = 'counter-change-btn';
-            btnIncrease.textContent = '>';
-            btnIncrease.onclick = () => {
-                setting.count++;
-                this.renderCountersViewer(); // UI 새로고침
-            };
-            
-            const btnSetLabel = document.createElement('button');
-            btnSetLabel.className = 'counter-label-btn';
-            btnSetLabel.textContent = 'Aa';
-            btnSetLabel.onclick = () => {
-                const newLabel = prompt('이 카운터의 라벨을 입력하세요:', setting.label);
-                if (newLabel !== null) {
-                    setting.label = newLabel.trim();
-                    this.renderCountersViewer(); // UI 새로고침
-                }
-            };
-
-            item.append(dragHandle, btnDecrease, iconArea, btnIncrease, btnSetLabel);
-            list.appendChild(item);
-        });
-        
-        // 드래그 앤 드롭 기능 적용
-        this.setupDragAndDrop(list, this.genericCounters);
-    }
-
-	showCountersViewer() {
-        this.renderCountersViewer(); // 모달을 열 때마다 최신 데이터로 렌더링
-        this.elements.countersViewerOverlay.style.display = 'flex';
-        window.activeUI = this;
-    }
-
-    hideCountersViewer() {
-        this.elements.countersViewerOverlay.style.display = 'none';
-        window.activeUI = null;
-    }
-
-	getDragAfterElement(container, y) {
-		const draggableElements = [...container.querySelectorAll('.button-setting-item:not(.dragging)')];
-		return draggableElements.reduce((closest, child) => {
-			const box = child.getBoundingClientRect();
-			const offset = y - box.top - box.height / 2;
-			if (offset < 0 && offset > closest.offset) {	
-				return { offset: offset, element: child };
-			} else {
-				return closest;
-			}
-		}, { offset: Number.NEGATIVE_INFINITY }).element;
-	}
-
 	enableAndCreateButton(buttonId) {
 		const setting = this.buttonSettings.find(s => s.id === buttonId);
-		if (setting && !setting.enabled) {
+		if (setting) {
 			setting.enabled = true;
 			this.rebuildPlayerButtons(); // UI 업데이트
 		}
@@ -659,19 +350,28 @@ export class Player {
 				window.players.forEach(p => p.enableAndCreateButton('monarch'));
 				const playerIndex = this.getPlayerIndex();
 				window.dataSpace.settings.monarchIndex = playerIndex;
-				window.updateAllPlayerIcons();
+				Player.updateAllPlayerIcons();
 				break;
 			case 'log':
-				this.showLifeLog(); // 즉시 로그 창 열기
+                if (!this.lifeLogOverlay) {
+                    this.lifeLogOverlay = new LifeLogOverlay(this);
+                }
+				this.lifeLogOverlay.show();
 				break;
 			case 'theme':
-				this.showThemeSelector(); // 즉시 테마 창 열기
+                if (!this.themeSelectorOverlay) {
+                    this.themeSelectorOverlay = new ThemeSelectorOverlay(this);
+                }
+				this.themeSelectorOverlay.show();
 				break;
 			case 'layout':
 				console.log(`HP Layout button created for player ${this.id}`);
 				break;
 			case 'counter':
-                this.showCountersViewer();
+                if (!this.countersViewerModal) {
+                    this.countersViewerModal = new CountersViewerModal(this);
+                }
+                this.countersViewerModal.show();
                 break;
             case 'note':
 				secretNotes.showHub(this);
@@ -755,7 +455,7 @@ export class Player {
 							} else {
 								window.dataSpace.settings.monarchIndex = playerIndex;
 							}
-							window.updateAllPlayerIcons();
+							Player.updateAllPlayerIcons();
 						});
 						this.elements.monarchButton = button;
 						break;
@@ -766,7 +466,7 @@ export class Player {
 						
 						button.addEventListener('click', (e) => {
 							e.stopPropagation();
-							this.showLifeLog();
+							this.executeButtonAction('log');
 						});
 						break;
 					case 'theme':
@@ -775,7 +475,7 @@ export class Player {
 						button.style.backgroundImage = 'url(./assets/theme.png)';
 						button.addEventListener('click', (e) => {
 							e.stopPropagation();
-							this.showThemeSelector();
+							this.executeButtonAction('theme');
 						});
 						break;
 					case 'layout':
@@ -794,7 +494,7 @@ export class Player {
                         button.style.backgroundImage = 'url(./assets/counter.png)'; // 예시 아이콘
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            this.showCountersViewer();
+                            this.executeButtonAction('counter');
                         });
                         break;
 					case 'note':
@@ -803,7 +503,7 @@ export class Player {
                         button.style.backgroundImage = 'url(./assets/note.png)'; // 예시 아이콘
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
-							secretNotes.showHub(this);
+							this.executeButtonAction('note');
                         });
                         break;
 				}
@@ -815,162 +515,13 @@ export class Player {
 		});
 	}
 
-	showOptionsModal() {
-		this.renderButtonSettingsList(); // 모달을 열 때마다 최신 상태로 목록을 다시 렌더링
-		this.elements.optionsModalOverlay.style.display = 'flex';
-		window.activeUI = this; // 다른 UI와의 상호작용 방지
-	}
-
-	hideOptionsModal() {
-		this.elements.optionsModalOverlay.style.display = 'none';
-		window.activeUI = null;
-	}
-
-	// 기존 createDOM에 있던 다른 요소 생성 코드를 분리
-	createDiceAndLogOverlays() {
-		// Dice Container
-		this.elements.diceContainer = document.createElement('div');
-		this.elements.diceContainer.className = 'dice-container';
-		this.elements.area.appendChild(this.elements.diceContainer);
-
-		// Life Log Overlay
-		this.elements.logOverlay = document.createElement('div');
-		this.elements.logOverlay.className = 'life-log-overlay';
-		
-		const logModal = document.createElement('div');
-		logModal.className = 'life-log-modal';
-		
-		const closeModalBtn = document.createElement('button');
-		closeModalBtn.className = 'close-button';
-		closeModalBtn.innerHTML = '&times;';
-		
-		const canvas = document.createElement('canvas');
-		this.elements.logCanvas = canvas;
-		
-		logModal.appendChild(closeModalBtn);
-		logModal.appendChild(canvas);
-		this.elements.logOverlay.appendChild(logModal);
-		this.elements.area.appendChild(this.elements.logOverlay);
-
-		const hideLog = () => {
-			this.elements.logOverlay.style.display = 'none';
-			window.activeUI = null;
-		}
-
-		this.elements.logOverlay.addEventListener('pointerdown', e => e.stopPropagation());
-		logModal.addEventListener('pointerdown', e => e.stopPropagation());
-
-		this.elements.logOverlay.addEventListener('click', e => {
-			if (e.target === this.elements.logOverlay) {
-				hideLog();
-			}
-		});
-
-		closeModalBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			hideLog();
-		});
-
-		// Theme Selector Overlay
-        this.elements.themeSelector = document.createElement('div');
-        this.elements.themeSelector.className = 'theme-selector-overlay';
-        
-        const themeContainer = document.createElement('div');
-        themeContainer.className = 'theme-selector-container'; // 기존 CSS 재사용
-        
-        this.elements.themeSelector.appendChild(themeContainer);
-        this.elements.area.appendChild(this.elements.themeSelector);
-
-        const hideThemeSelector = () => {
-            this.elements.themeSelector.style.display = 'none';
-            window.activeUI = null;
-        };
-
-        this.elements.themeSelector.addEventListener('pointerdown', e => e.stopPropagation());
-        themeContainer.addEventListener('pointerdown', e => e.stopPropagation());
-
-        this.elements.themeSelector.addEventListener('click', (e) => {
-            if (e.target === this.elements.themeSelector) {
-                hideThemeSelector();
-            }
-        });
-	}
-
-	setupAreaEventListeners() {
-		this.lastTapTime = 0; // 마지막 탭 시간을 기록, 더블 탭 줌 방지용
-
-		this.elements.area.addEventListener('pointerdown', (event) => {
-			// ==================================================
-			// 1. 더블탭 줌(Zoom) 방지 로직
-			// ==================================================
-			const now = new Date().getTime();
-
-			// 마지막 탭 이후 300ms 이내에 다시 탭된 경우, 브라우저의 기본 동작(줌)을 막습니다.
-			if (now - this.lastTapTime <= 300) {
-				event.preventDefault();
-			}
-
-			// 현재 탭 시간을 기록하여 다음 탭에서 비교할 수 있도록 합니다.
-			this.lastTapTime = now;
-
-			// ==================================================
-			// 2. 라이프(Life) 변경 로직
-			// ==================================================
-
-			// 버튼 등 다른 UI 요소가 활성화 상태이거나, 특정 버튼을 눌렀을 때는 작동하지 않도록 함
-			if (window.activeUI !== null || event.target.closest('.header-button') || event.target.closest('.player-options-button')) {
-				return;
-			}
-
-			// 탭된 위치를 계산
-			const rect = this.elements.area.getBoundingClientRect();
-			const pointerX = event.clientX - rect.left;
-			const pointerY = event.clientY - rect.top;
-
-			let amount = 0;
-			const adjustMode = window.localSettings.lifeAdjustDirection;
-			const isRight = pointerX > rect.width / 2;
-			const isBottom = pointerY > rect.height / 2;
-
-			// 설정과 화면 회전 상태에 따라 라이프 증감 방향을 결정
-			if (adjustMode === 'horizontal') {
-				switch (this.rotation) {
-					case 0:   amount = isRight ? +1 : -1; break;
-					case 180: amount = isRight ? -1 : +1; break;
-					case 90:  amount = isBottom ? +1 : -1; break;
-					case 270: amount = isBottom ? -1 : +1; break;
-				}
-			} else { // 'vertical' 모드
-				switch (this.rotation) {
-					case 0:   amount = isBottom ? -1 : +1; break;
-					case 180: amount = isBottom ? +1 : -1; break;
-					case 90:  amount = isRight ? +1 : -1; break;
-					case 270: amount = isRight ? -1 : +1; break;
-				}
-			}
-
-			this.changeLife(amount);
-			this.showAreaRipple(amount, event);
-		});
-
-		// 일부 모바일 브라우저의 더블탭 줌을 막기 위한 추가 리스너
-		let lastTouchEnd = 0;
-		document.addEventListener('touchend', function (event) {
-			const now = new Date().getTime();
-			if (now - lastTouchEnd <= 300) {
-				event.preventDefault();
-			}
-			lastTouchEnd = now;
-		}, false);
-	}
-
-	enableAndCreateButton(buttonId) {
-		const setting = this.buttonSettings.find(s => s.id === buttonId);
-		if (setting) {
-			setting.enabled = true;
-			this.rebuildPlayerButtons(); // UI 업데이트
-		}
-	}
+    showOptionsModal() {
+        if (!this.optionsModal) {
+            this.optionsModal = new OptionsModal(this);
+            this.elements.area.appendChild(this.optionsModal.elements.optionsModalOverlay);
+        }
+        this.optionsModal.show();
+    }
 
 	getPlayerIndex() {
 		return window.players.findIndex(p => p.id === this.id);
@@ -1020,60 +571,6 @@ export class Player {
                 this.elements.monarchButton.classList.toggle('is-animating', isMonarchActive);
             }
 		}
-	}
-
-    showThemeSelector() {
-        const themeContainer = this.elements.themeSelector.querySelector('.theme-selector-container');
-		themeContainer.innerHTML = ''; 
-
-		const usedThemeNames = window.players
-			.filter(p => p.id !== this.id)
-			.map(p => p.themeName);
-
-		// 테마 그룹(한 줄)을 생성하는 헬퍼 함수
-		const createThemeGroup = (title, themeList) => {
-			const group = document.createElement('div');
-			group.className = 'theme-group'; // <- 이 클래스가 한 줄을 담당
-
-			const groupTitle = document.createElement('div');
-			groupTitle.className = 'theme-group-title';
-			groupTitle.textContent = title;
-			group.appendChild(groupTitle);
-			
-			const swatchesContainer = document.createElement('div');
-			swatchesContainer.className = 'theme-swatches-container'; // <- 스와치들을 감싸는 컨테이너
-			group.appendChild(swatchesContainer);
-
-			themeList.forEach(theme => {
-				const swatch = document.createElement('div');
-				swatch.className = 'theme-swatch';
-				swatch.style.background = theme.background;
-				
-				if (usedThemeNames.includes(theme.name)) {
-					swatch.classList.add('disabled');
-				} else {
-					swatch.addEventListener('click', () => {
-						this.themeName = theme.name;
-						this.applyTheme();
-						window.saveLifeTotals();
-						this.hideThemeSelector();
-					});
-				}
-				swatchesContainer.appendChild(swatch);
-			});
-			return group;
-		};
-
-		themeContainer.appendChild(createThemeGroup('Light Themes', allThemes.light));
-		themeContainer.appendChild(createThemeGroup('Dark Themes', allThemes.dark));
-
-		this.elements.themeSelector.style.display = 'flex';
-		window.activeUI = this;
-    }
-
-	hideThemeSelector() {
-		this.elements.themeSelector.style.display = 'none';
-		window.activeUI = null;
 	}
 
 	changeLife(amount) {
@@ -1150,7 +647,7 @@ export class Player {
         }
     }
 
-	setLife(newLife, isReset = false) {
+	    setLife(newLife, isReset = false) {
         this.life = newLife;
         if (isReset) {
             this.lifeLog = [];
@@ -1159,13 +656,9 @@ export class Player {
             	setting.count = 0;
 			});
 
-			this.rebuildPlayerButtons();
-
             this.logEvent('reset', { lifeAfter: this.life });
-            // ## 변경점 2 ##: 리셋 시에는 인트로 애니메이션을 재생
-            this.playIntroAnimation();
+            this.updateDisplay(true); // Ensure display is updated on reset
         } else {
-            // ## 변경점 2 ##: 일반적인 life 설정 시에는 펄스 애니메이션 재생
             this.updateDisplay(true);
         }
     }
@@ -1283,11 +776,5 @@ export class Player {
 		};
 		this.lifeLog.push(logEntry);
 		console.log(`Log for ${this.id}:`, logEntry);
-	}
-
-	showLifeLog() {
-		this.elements.logOverlay.style.display = 'flex';
-		const theme = this._getThemeByName(this.themeName);
-		renderLifeLogChart(this.elements.logCanvas, this.lifeLog, theme);
 	}
 }

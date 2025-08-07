@@ -125,11 +125,10 @@ export function setupEventListeners() {
 
 			window.dataSpace.settings.initiativeIndex = -1;
 			window.dataSpace.settings.monarchIndex = -1;
-			window.updateAllPlayerIcons();
+			Player.updateAllPlayerIcons();
 	
 			window.players.forEach(p => {
 				p.setLife(window.localSettings.lifeMax, true);
-				p.playIntroAnimation?.();  // 등장 애니메이션 재생
 			});
 			
 			btn.textContent = '라이프 초기화';
