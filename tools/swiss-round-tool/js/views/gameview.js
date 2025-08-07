@@ -87,19 +87,20 @@ export default function GameView() {
         } else if (e.target.classList.contains('draw-btn')) {
             handleDraw(e.target.dataset.match);
         } else if (e.target.id === 'next-round') {
-            if (Object.values(matchResults).length !== pairings.length) {
-                alert('모든 매치의 결과가 입력되지 않았습니다.');
+            // 모든 매치의 승자가 결정되었는지 확인
+            const allMatchesDecided = Object.values(matchResults).every(result => result.winner !== null);
+            if (!allMatchesDecided) {
+                alert('모든 매치의 결과(승자/무승부)가 입력되지 않았습니다.');
                 return;
             }
+
             stopTimer();
             saveRoundResult(pairings, Object.values(matchResults).map((r, i) => ({ players: pairings[i], ...r })));
             if (currentRound < rounds) {
                 setState({ currentRound: currentRound + 1 });
-                window.location.hash = '/game';
-                // history.go() is not reliable, manually re-render
+                // 페이지를 새로고침하는 대신, 뷰를 다시 렌더링하여 상태를 업데이트합니다.
                 const newView = GameView();
                 element.parentElement.replaceChild(newView, element);
-
             } else {
                 window.location.hash = '/result';
             }

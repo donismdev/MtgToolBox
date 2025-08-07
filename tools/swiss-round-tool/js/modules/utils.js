@@ -1,66 +1,86 @@
 import { getState } from '../config.js';
 
-// 플레이어 목록을 섞는 함수
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-// 스위스 페어링 로직 (점수 기반)
-export function createPairings(players, history) {
-    const playerScores = {};
-    players.forEach(p => { playerScores[p] = { points: 0, opponents: [] }; });
+// 플레이어의 현재 점수, 상대했던 플레이어 목록, 부전승 여부를 계산하는 헬퍼 함수
+function getPlayerStats(history) {
+    const stats = {};
+    const { players } = getState();
+    players.forEach(p => {
+        stats[p] = { points: 0, opponents: [], hadBye: false };
+    });
 
     history.forEach(round => {
         round.results.forEach(match => {
-            const p1 = match.players[0];
-            const p2 = match.players[1];
+            const [p1, p2] = match.players;
+            if (!p1) return;
+
             if (p2 === 'BYE') {
-                playerScores[p1].points += 3;
+                stats[p1].points += 3;
+                stats[p1].hadBye = true;
             } else {
-                playerScores[p1].opponents.push(p2);
-                playerScores[p2].opponents.push(p1);
-                if (match.winner === p1) playerScores[p1].points += 3;
-                else if (match.winner === p2) playerScores[p2].points += 3;
-                else { // 무승부
-                    playerScores[p1].points += 1;
-                    playerScores[p2].points += 1;
+                stats[p1].opponents.push(p2);
+                stats[p2].opponents.push(p1);
+                if (match.winner === p1) {
+                    stats[p1].points += 3;
+                } else if (match.winner === p2) {
+                    stats[p2].points += 3;
+                } else { // 무승부
+                    stats[p1].points += 1;
+                    stats[p2].points += 1;
                 }
             }
         });
     });
+    return stats;
+}
 
-    const sortedPlayers = players.sort((a, b) => playerScores[b].points - playerScores[a].points);
-
+// 새로운 스위스 페어링 알고리즘
+export function createPairings(players, history) {
+    const stats = getPlayerStats(history);
+    let unPairedPlayers = [...players].sort((a, b) => stats[b].points - stats[a].points);
     const pairings = [];
-    const paired = new Set();
 
-    for (const player of sortedPlayers) {
-        if (paired.has(player)) continue;
-
-        let opponentFound = false;
-        for (const potentialOpponent of sortedPlayers) {
-            if (player === potentialOpponent || paired.has(potentialOpponent) || playerScores[player].opponents.includes(potentialOpponent)) {
-                continue;
+    // 홀수 인원일 경우 BYE 처리
+    if (unPairedPlayers.length % 2 !== 0) {
+        // 가장 점수가 낮고, BYE를 받은 적 없는 플레이어를 찾음
+        for (let i = unPairedPlayers.length - 1; i >= 0; i--) {
+            const player = unPairedPlayers[i];
+            if (!stats[player].hadBye) {
+                pairings.push([player, 'BYE']);
+                unPairedPlayers.splice(i, 1); // 페어링된 플레이어는 목록에서 제거
+                break;
             }
-            pairings.push([player, potentialOpponent]);
-            paired.add(player);
-            paired.add(potentialOpponent);
-            opponentFound = true;
-            break;
         }
+        // 모든 플레이어가 BYE를 받은 경우, 그냥 가장 낮은 점수 플레이어에게 부여
+        if (unPairedPlayers.length % 2 !== 0) {
+            const playerToBye = unPairedPlayers.pop();
+            pairings.push([playerToBye, 'BYE']);
+        }
+    }
 
-        if (!opponentFound && !paired.has(player)) {
-            pairings.push([player, 'BYE']);
-            paired.add(player);
+    // 점수 기반 페어링
+    while (unPairedPlayers.length > 0) {
+        const p1 = unPairedPlayers.shift();
+        let opponentFound = false;
+        // 가장 이상적인 상대(점수 같고, 만난 적 없는)를 찾음
+        for (let i = 0; i < unPairedPlayers.length; i++) {
+            const p2 = unPairedPlayers[i];
+            if (!stats[p1].opponents.includes(p2)) {
+                pairings.push([p1, p2]);
+                unPairedPlayers.splice(i, 1);
+                opponentFound = true;
+                break;
+            }
+        }
+        // 이상적인 상대를 못 찾으면, 그냥 남은 플레이어 중 첫 번째와 페어링 (재대결 허용)
+        if (!opponentFound) {
+            const p2 = unPairedPlayers.shift();
+            pairings.push([p1, p2]);
         }
     }
 
     return pairings;
 }
+
 
 // 최종 순위 및 타이브레이커 계산
 export function calculateStandings() {
