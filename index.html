@@ -807,6 +807,47 @@
             });
         });
 
+		// --- Start of new code for iOS WKWebView issues (index.html) ---
+
+		// 1. 복귀 감지 → 강제 리렌더링 트리거 및 입력 핸들러 soft-reset
+		document.addEventListener("visibilitychange", () => {
+			if (document.visibilityState === "visible") {
+				console.log("Index: App is visible again. Forcing reflow and soft-resetting input.");
+				requestAnimationFrame(() => {
+					// 강제 리플로우 유도
+					document.body.offsetHeight;
+					// 입력 핸들러 soft-reset
+					document.body.click(); // 또는 dummy focus 이벤트
+				});
+			}
+		});
+
+		// 2. pointer-events, z-index, opacity 체크 - 모달/오버레이 강제 초기화
+		window.addEventListener("pageshow", () => {
+			console.log("Index: Page is shown again. Resetting main overlays.");
+			// 메인 페이지의 오버레이들을 초기화
+			document.querySelectorAll("#modal-tool-overlay, #sidebar-overlay").forEach(el => {
+				el.style.display = "none";
+				el.classList.remove("active");
+				// 추가적으로 opacity, z-index 등도 초기화할 수 있음
+				el.style.opacity = "";
+				el.style.zIndex = "";
+			});
+		});
+
+		// 4. CSS 트리 초기화 강제 리드로우 유틸리티 함수
+		function forceRepaint(el) {
+			if (el) {
+				const originalDisplay = el.style.display;
+				el.style.display = "none";
+				el.offsetHeight; // 강제 리플로우
+				el.style.display = originalDisplay;
+				console.log(`Index: Forced repaint on element: ${el.tagName}`);
+			}
+		}
+
+		// --- End of new code ---
+
 		function updateVh() {
 			const vh = window.innerHeight * 0.01;
 			document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -814,6 +855,8 @@
 
 		window.addEventListener('load', updateVh);
 		window.addEventListener('resize', updateVh);
+
+</script>
 
 </script>
 </body>
