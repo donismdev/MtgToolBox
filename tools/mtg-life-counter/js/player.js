@@ -386,6 +386,8 @@ export class Player {
         this.elements.initiativeButton = null;
         this.elements.monarchButton = null;
 
+        const fragment = document.createDocumentFragment();
+
 		this.counterSettings.forEach(setting => {
             if (setting.enabled) {
                 const button = document.createElement('button');
@@ -423,7 +425,7 @@ export class Player {
                     clearTimeout(this.longPressTimer);
                 });
 
-                container.appendChild(button);
+                fragment.appendChild(button);
             }
         });
 		
@@ -509,10 +511,11 @@ export class Player {
 				}
 				if (button) {
 					button.style.backgroundSize = setting.backgroundSize || '85%';
-					this.elements.actionButtonContainer.appendChild(button);
+					fragment.appendChild(button);
 				}
 			}
 		});
+        container.appendChild(fragment);
 	}
 
     showOptionsModal() {
@@ -647,7 +650,7 @@ export class Player {
         }
     }
 
-	    setLife(newLife, isReset = false) {
+	setLife(newLife, isReset = false) {
         this.life = newLife;
         if (isReset) {
             this.lifeLog = [];
