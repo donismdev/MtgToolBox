@@ -402,22 +402,21 @@ export class Player {
 
                 button.addEventListener('pointerdown', (e) => {
                     e.stopPropagation();
-                    this.isLongPress = false; // 타이머 시작 시 플래그 초기화
+                    this.isLongPress = false; 
+
+                    // 즉시 1 증가
+                    this.updateCounterValue(setting, 'increment', e.target);
 
                     this.longPressTimer = setTimeout(() => {
-                        // 0.7초 이상 누르면 실행되는 코드 (초기화)
-                        this.isLongPress = true; // 길게 누르기 성공!
+                        this.isLongPress = true; 
+						// 길게 누르기 성공 시, 1 증가했던 것을 초기화하고 reset
 						this.updateCounterValue(setting, 'reset', e.target);
-                    }, 700); // 700ms = 0.7초
+                    }, 700); 
                 });
 
                 button.addEventListener('pointerup', (e) => {
                     e.stopPropagation();
-                    clearTimeout(this.longPressTimer); // 타이머 취소
-
-                    if (!this.isLongPress) {
-						this.updateCounterValue(setting, 'increment', e.target);
-                    }
+                    clearTimeout(this.longPressTimer);
                 });
 
                 // 마우스가 버튼 밖으로 나가도 타이머 취소
