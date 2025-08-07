@@ -43,14 +43,6 @@
             "modalIcon": "A",
             "modalIconColor": "#6c757d"
 		},
-		{
-			"name": "swiss-tool",
-			"parent": "Tournament",
-			"description": "스위스 라운드 방식의 토너먼트를 지원하는 도구입니다. Bo1/Bo3/Bo5, 결과 기록, 승률 및 ELO 계산 기능이 포함되어 있습니다.",
-			"path": "tools/swiss-tool/",
-			"type": "html",
-			"enable": true
-		},
         {
 			"name": "mtg-life-counter",
 			"parent": "MTG",
@@ -94,9 +86,10 @@
 			"name": "swiss-round-tool",
 			"type": ["html", "html_modal"],
 			"path": "tools/swiss-round-tool/",
-			"modalIcon": "🔄",
+			"parent": "Tournament",
+			"modalIcon": "🏆",
 			"modalIconColor": "#ffc107",
-			"enable": false
+			"enable": true
 		},
 		{
 			"name": "etc-mighty-helper",
