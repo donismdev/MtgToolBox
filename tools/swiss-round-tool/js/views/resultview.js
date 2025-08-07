@@ -6,19 +6,21 @@ export default function ResultView() {
 
     element.innerHTML = `
         <h2>최종 순위</h2>
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>순위</th>
-                    <th>플레이어</th>
-                    <th>승점</th>
-                    <th>승-패-무</th>
-                    <th>GWP</th>
-                    <th>OMW%</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="table-container">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>플레이어</th>
+                        <th>승점</th>
+                        <th>승-패-무</th>
+                        <th>GWP</th>
+                        <th>OMW%</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
         <button id="restart" class="primary-btn">새 토너먼트 시작</button>
     `;
 

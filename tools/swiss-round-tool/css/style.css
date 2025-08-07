@@ -4,20 +4,16 @@ body {
     background-color: #f0f2f5;
     color: #1c1e21;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 20px;
+    padding: 0;
 }
 
 #app {
     width: 100%;
     max-width: 800px;
+    min-height: 100vh;
     background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    box-sizing: border-box;
+    padding: 15px;
 }
 
 h2 {
@@ -40,13 +36,15 @@ label {
 }
 
 input[type="number"],
-textarea {
+textarea,
+select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #dddfe2;
     border-radius: 6px;
     font-size: 16px;
     box-sizing: border-box;
+    -webkit-appearance: none; /* iOS 기본 스타일 제거 */
 }
 
 textarea {
@@ -56,13 +54,14 @@ textarea {
 
 /* Button Styles */
 button {
-    padding: 10px 15px;
+    padding: 12px 15px;
     border: none;
     border-radius: 6px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
+    -webkit-tap-highlight-color: transparent; /* 클릭 시 하이라이트 제거 */
 }
 
 .primary-btn {
@@ -110,21 +109,22 @@ button {
 /* Game View Styles */
 .round-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column; /* 모바일에서는 세로로 배치 */
+    align-items: flex-start;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
 #timer {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
     color: #1877f2;
 }
 
 .matchups-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: 1fr; /* 모바일에서는 항상 1열 */
+    gap: 15px;
 }
 
 .match-card {
@@ -139,6 +139,7 @@ button {
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .match-body {
@@ -171,8 +172,15 @@ button {
 }
 
 /* Result View Styles */
+.table-container {
+    width: 100%;
+    overflow-x: auto; /* 테이블이 넘칠 경우 가로 스크롤 생성 */
+    -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
+}
+
 .results-table {
     width: 100%;
+    min-width: 600px; /* 테이블의 최소 너비를 지정하여 내용이 찌그러지는 것을 방지 */
     border-collapse: collapse;
     margin-bottom: 20px;
 }
@@ -181,7 +189,8 @@ button {
 .results-table td {
     border: 1px solid #dddfe2;
     padding: 12px;
-    text-align: left;
+    text-align: center;
+    white-space: nowrap; /* 내용이 줄바꿈되지 않도록 */
 }
 
 .results-table th {
@@ -191,4 +200,27 @@ button {
 
 .results-table tr:nth-child(even) {
     background-color: #f7f8fa;
+}
+
+/* Desktop & Tablet Styles */
+@media (min-width: 768px) {
+    body {
+        padding: 20px;
+    }
+
+    #app {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .round-header {
+        flex-direction: row; /* 넓은 화면에서는 가로로 배치 */
+        align-items: center;
+    }
+
+    .matchups-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
 }
