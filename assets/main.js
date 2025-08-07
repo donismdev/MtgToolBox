@@ -1,7 +1,10 @@
 // --- 전역 변수 및 상수 정의 ---
 
 	const ResourceManager = {
-		basePath: "", // GitHub Pages 등을 사용한다면 \'/MtgToolbox\' 와 같이 프로젝트 이름을 넣을 수 있습니다.
+		basePath: "/MtgToolbox", // GitHub Pages 등을 사용한다면 
+/MtgToolbox
+ 와 같이 프로젝트 이름을 넣을 수 있습니다.
+
 
 		dungeon(filename) {
 			return `${this.basePath}/assets/dungeon/${filename}`;
