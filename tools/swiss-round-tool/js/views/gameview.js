@@ -63,9 +63,11 @@ export default function GameView() {
     }
 
     function handleWin(matchIndex, winner) {
+        const result = matchResults[matchIndex];
+        if (result.winner) return;
+
         const match = pairings[matchIndex];
         const [p1, p2] = match;
-        const result = matchResults[matchIndex];
         
         result.scores[winner]++;
         
@@ -77,7 +79,9 @@ export default function GameView() {
     }
 
     function handleDraw(matchIndex) {
-        matchResults[matchIndex].winner = 'DRAW';
+        const result = matchResults[matchIndex];
+        if (result.winner) return;
+        result.winner = 'DRAW';
         render();
     }
 
