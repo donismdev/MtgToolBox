@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 운세 - 블랙잭</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            margin: 0;
+            color: white;
+            perspective: 1000px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .game-table {
+            background-color: #006400;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 10px 10px;
+            padding: 30px;
+            border-radius: 150px;
+            border: 15px solid #5a3a22;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .hand-area {
+            min-height: 140px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .hand-area h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .cards {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            min-height: 120px;
+        }
+
+        .card {
+            width: 80px;
+            height: 120px;
+            margin: 5px;
+            border-radius: 8px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s, opacity 0.5s, width 0.3s, height 0.3s;
+            opacity: 0;
+            transform: scale(0) rotateY(180deg);
+        }
+        
+        .card.facedown {
+            opacity: 1;
+            transform: scale(1) rotateY(180deg);
+        }
+
+        .card.deal {
+            opacity: 1;
+            transform: scale(1) rotateY(180deg);
+        }
+        
+        /* --- 여기가 최종 수정된 부분 --- */
+        .card.is-flipped {
+            transform: scale(1) rotateY(0deg);
+            opacity: 1; /* 카드가 뒤집힌 후에도 투명도 1을 유지하도록 하여 사라지지 않게 함 */
+        }
+        /* --- 수정 끝 --- */
+
+        .card .front, .card .back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .card .front {
+            background-color: #fff;
+        }
+
+        .card .back {
+            background-color: #e74c3c;
+            background-image: linear-gradient(45deg, #c0392b 25%, transparent 25%, transparent 75%, #c0392b 75%),
+                              linear-gradient(45deg, #c0392b 25%, transparent 25%, transparent 75%, #c0392b 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 8px 8px;
+            transform: rotateY(180deg);
+        }
+
+        .card.suit-♠ .front, .card.suit-♣ .front { color: #2C3E50; }
+        .card.suit-♥ .front, .card.suit-♦ .front { color: #E74C3C; }
+
+        .score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            min-width: 120px;
+        }
+
+        .message-area {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-height: 50px;
+            color: #ffd700;
+        }
+
+        .btn-container {
+            margin-top: 20px;
+        }
+
+        .btn-container button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            font-family: 'Gowun Dodum', sans-serif;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #startBtn { background-color: #27ae60; color: white; }
+        #startBtn:hover { background-color: #2ecc71; }
+        #hitBtn { background-color: #3498db; color: white; }
+        #hitBtn:hover { background-color: #5dade2; }
+        #standBtn { background-color: #e74c3c; color: white; }
+        #standBtn:hover { background-color: #f1948a; }
+
+        .btn-container button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .game-table {
+                padding: 20px;
+                border-radius: 100px;
+                border-width: 10px;
+            }
+            h1 { font-size: 2rem; }
+            .hand-area h2 { font-size: 1.3rem; }
+            .message-area { font-size: 1.3rem; }
+            .card {
+                width: 65px;
+                height: 100px;
+                font-size: 1.8em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-table {
+                padding: 15px 10px;
+                border-radius: 60px;
+                border-width: 8px;
+            }
+            h1 { font-size: 1.6rem; }
+            .hand-area { min-height: 110px; margin: 10px 0;}
+            .hand-area h2 { font-size: 1.1rem; }
+            .score { font-size: 1rem; min-width: 100px; }
+            .message-area { font-size: 1.1rem; margin-top: 15px; }
+            .card {
+                width: 50px;
+                height: 75px;
+                font-size: 1.5em;
+                margin: 3px;
+            }
+            .cards { min-height: 85px; }
+            .btn-container button {
+                padding: 10px 15px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-table">
+        <h1>🃏 블랙잭 🃏</h1>
+        <div class="hand-area" id="dealer-area">
+            <h2>딜러 (<span id="dealer-score" class="score">점수: 0</span>)</h2>
+            <div class="cards" id="dealer-cards"></div>
+        </div>
+        <div class="message-area" id="message"></div>
+        <div class="hand-area" id="player-area">
+            <h2>플레이어 (<span id="player-score" class="score">점수: 0</span>)</h2>
+            <div class="cards" id="player-cards"></div>
+        </div>
+        <div class="btn-container">
+            <button id="startBtn">새 게임</button>
+            <button id="hitBtn" disabled>Hit</button>
+            <button id="standBtn" disabled>Stand</button>
+        </div>
+    </div>
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let deck = [], playerHand = [], dealerHand = [], isPlayerTurn = false;
+        const startBtn = document.getElementById('startBtn'), hitBtn = document.getElementById('hitBtn'), standBtn = document.getElementById('standBtn');
+        const messageEl = document.getElementById('message'), playerCardsEl = document.getElementById('player-cards'), dealerCardsEl = document.getElementById('dealer-cards');
+        const playerScoreEl = document.getElementById('player-score'), dealerScoreEl = document.getElementById('dealer-score');
+
+        function createDeck() { deck = suits.flatMap(suit => values.map(value => ({ suit, value }))).sort(() => Math.random() - 0.5); }
+        function getCardValue(card) { if (['J', 'Q', 'K'].includes(card.value)) return 10; if (card.value === 'A') return 11; return parseInt(card.value); }
+        function calculateScore(hand) { let score = hand.reduce((sum, card) => sum + getCardValue(card), 0); let aceCount = hand.filter(card => card.value === 'A').length; while (score > 21 && aceCount > 0) { score -= 10; aceCount--; } return score; }
+        
+        function dealCard(hand, element, reveal = true) {
+            const card = deck.pop();
+            hand.push(card);
+            const cardEl = document.createElement('div');
+            cardEl.classList.add('card', `suit-${card.suit}`);
+            const front = document.createElement('div');
+            front.classList.add('front');
+            front.textContent = `${card.value}${card.suit}`;
+            const back = document.createElement('div');
+            back.classList.add('back');
+            back.style.transform = 'rotateY(180deg)';
+            cardEl.appendChild(front);
+            cardEl.appendChild(back);
+            element.appendChild(cardEl);
+            if (reveal) {
+                setTimeout(() => {
+                    cardEl.classList.add('deal');
+                    setTimeout(() => cardEl.classList.add('is-flipped'), 250);
+                }, 100);
+            } else {
+                cardEl.classList.add('facedown');
+            }
+            return cardEl;
+        }
+
+        function updateScores() {
+            playerScoreEl.textContent = `점수: ${calculateScore(playerHand)}`;
+            const dealerFirstCard = dealerCardsEl.children[0];
+            if (dealerFirstCard && !dealerFirstCard.classList.contains('is-flipped')) {
+                if (dealerHand.length > 1) {
+                    dealerScoreEl.textContent = `점수: ${getCardValue(dealerHand[1])}`;
+                } else {
+                     dealerScoreEl.textContent = `점수: 0`;
+                }
+            } else {
+                dealerScoreEl.textContent = `점수: ${calculateScore(dealerHand)}`;
+            }
+        }
+        
+        async function startGame() {
+            startBtn.disabled = true;
+            hitBtn.disabled = false;
+            standBtn.disabled = false;
+            createDeck();
+            playerHand = [];
+            dealerHand = [];
+            playerCardsEl.innerHTML = '';
+            dealerCardsEl.innerHTML = '';
+            messageEl.textContent = '카드를 나눕니다...';
+            updateScores();
+            dealCard(dealerHand, dealerCardsEl, false);
+            await new Promise(res => setTimeout(res, 500));
+            dealCard(playerHand, playerCardsEl, true);
+            await new Promise(res => setTimeout(res, 500));
+            dealCard(dealerHand, dealerCardsEl, true);
+            await new Promise(res => setTimeout(res, 500));
+            dealCard(playerHand, playerCardsEl, true);
+            await new Promise(res => setTimeout(res, 500));
+            updateScores();
+            isPlayerTurn = true;
+            messageEl.textContent = '당신의 차례입니다. Hit or Stand?';
+            if (calculateScore(playerHand) === 21) {
+                messageEl.textContent = '♠️ 블랙잭! 딜러의 턴입니다.';
+                stand();
+            }
+        }
+
+        async function stand() {
+            if (!isPlayerTurn) return;
+            isPlayerTurn = false;
+            hitBtn.disabled = true;
+            standBtn.disabled = true;
+            const hiddenCard = dealerCardsEl.children[0];
+            if (hiddenCard) {
+                hiddenCard.classList.add('is-flipped');
+                hiddenCard.classList.remove('facedown');
+            }
+            await new Promise(res => setTimeout(res, 500));
+            updateScores();
+            await new Promise(res => setTimeout(res, 800));
+            while (calculateScore(dealerHand) < 17) {
+                messageEl.textContent = '딜러가 카드를 뽑습니다...';
+                await new Promise(res => setTimeout(res, 800));
+                dealCard(dealerHand, dealerCardsEl);
+                updateScores();
+            }
+            const playerScore = calculateScore(playerHand);
+            const dealerScore = calculateScore(dealerHand);
+            let resultMessage = '';
+            if (playerScore > 21) resultMessage = '💥 버스트! 당신의 패배입니다.';
+            else if (dealerScore > 21) resultMessage = '🎉 딜러 버스트! 당신의 승리입니다!';
+            else if (playerScore > dealerScore) resultMessage = '🥳 축하합니다! 당신의 승리입니다!';
+            else if (playerScore < dealerScore) resultMessage = '😥 아쉽네요. 당신의 패배입니다.';
+            else resultMessage = '⚖️ 무승부입니다!';
+            endGame(resultMessage);
+        }
+        
+        function endGame(message) {
+            messageEl.textContent = message;
+            isPlayerTurn = false;
+            hitBtn.disabled = true;
+            standBtn.disabled = true;
+            startBtn.disabled = false;
+        }
+
+        startBtn.addEventListener('click', startGame);
+        hitBtn.addEventListener('click', () => {
+            if (!isPlayerTurn) return;
+            dealCard(playerHand, playerCardsEl);
+            setTimeout(updateScores, 300);
+            setTimeout(() => {
+                if (calculateScore(playerHand) > 21) {
+                    endGame('💥 버스트! 당신의 패배입니다.');
+                }
+            }, 500);
+        });
+        standBtn.addEventListener('click', stand);
+    </script>
+</body>
+</html>

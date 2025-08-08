@@ -135,6 +135,20 @@
 			"modalIcon": "D",
 			"modalIconColor": "#6f42c1",
 			"enable": true
+		},
+		{
+			"name": "etc-poker",
+			"path": "tools/etc-poker/",
+			"parent": "etc",
+			"type": ["html"],
+			"enable": true
+		},
+		{
+			"name": "etc-blackjack",
+			"path": "tools/etc-blackjack/",
+			"parent": "etc",
+			"type": ["html"],
+			"enable": true
 		}
 	]
 }

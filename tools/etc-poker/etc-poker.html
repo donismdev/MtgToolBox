@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>랜덤 포커 패 생성기</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            margin: 0;
+            color: white;
+            perspective: 1000px;
+        }
+
+        .game-container {
+            background-color: #004d40; /* 짙은 청록색 */
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 10px 10px;
+            padding: 40px;
+            border-radius: 20px;
+            border: 10px solid #5a3a22;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.4);
+            width: 90vw;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        #cards {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            min-height: 150px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            width: 90px;
+            height: 130px;
+            margin: 10px;
+            border-radius: 10px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.7s, opacity 0.5s;
+            opacity: 0;
+            transform: translateY(100px) rotateY(180deg);
+        }
+        
+        .card.deal {
+            opacity: 1;
+            transform: translateY(0) rotateY(180deg);
+        }
+
+        .card.is-flipped {
+            transform: translateY(0) rotateY(0deg);
+        }
+
+        .card .front, .card .back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .card .front {
+            background-color: #fff;
+        }
+
+        .card .back {
+            background-color: #5cb85c;
+            background-image: linear-gradient(45deg, #4cae4c 25%, transparent 25%, transparent 75%, #4cae4c 75%),
+                              linear-gradient(45deg, #4cae4c 25%, transparent 25%, transparent 75%, #4cae4c 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            transform: rotateY(180deg);
+        }
+
+        .card.suit-♠ .front, .card.suit-♣ .front { color: #2C3E50; }
+        .card.suit-♥ .front, .card.suit-♦ .front { color: #E74C3C; }
+
+        #result {
+            font-size: 2rem;
+            font-weight: bold;
+            min-height: 80px;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            margin-bottom: 30px;
+        }
+
+        #result.visible {
+            opacity: 1;
+        }
+        
+        #result-rank {
+            color: #ffd700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        #result-message {
+            font-size: 1.2rem;
+            color: #e0e0e0;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-family: 'Gowun Dodum', sans-serif;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>랜덤 포커 패 생성기</h1>
+        <div id="cards"></div>
+        <div id="result"></div>
+        <button id="dealBtn">카드 받기</button>
+    </div>
+
+    <script>
+        const dealBtn = document.getElementById('dealBtn');
+        const cardsEl = document.getElementById('cards');
+        const resultEl = document.getElementById('result');
+
+        const suits = ['♠', '♥', '♦', '♣'];
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+        function createDeck() {
+            return suits.flatMap(suit => ranks.map(rank => ({ suit, rank })));
+        }
+
+        function evaluateHand(hand) {
+            const rankCounts = {};
+            const suitCounts = {};
+            const rankOrder = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+            hand.forEach(card => {
+                rankCounts[card.rank] = (rankCounts[card.rank] || 0) + 1;
+                suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+            });
+
+            const counts = Object.values(rankCounts).sort((a, b) => b - a);
+            const isFlush = Object.values(suitCounts).some(count => count === 5);
+            
+            const sortedRankIndices = [...new Set(hand.map(card => rankOrder.indexOf(card.rank)))].sort((a, b) => a - b);
+            
+            const isAceLowStraight = JSON.stringify(sortedRankIndices) === JSON.stringify([0, 1, 2, 3, 12]);
+            
+            let isStraight = false;
+            if (isAceLowStraight) {
+                isStraight = true;
+            } else if (sortedRankIndices.length === 5 && sortedRankIndices[4] - sortedRankIndices[0] === 4) {
+                isStraight = true;
+            }
+
+            const isRoyal = isFlush && isStraight && sortedRankIndices[4] === 12;
+
+            if (isRoyal) return "로얄 스트레이트 플러시";
+            if (isFlush && isStraight) return "스트레이트 플러시";
+            if (counts[0] === 4) return "포카드";
+            if (counts[0] === 3 && counts[1] === 2) return "풀하우스";
+            if (isFlush) return "플러시";
+            if (isStraight) return "스트레이트";
+            if (counts[0] === 3) return "트리플";
+            if (counts[0] === 2 && counts[1] === 2) return "투 페어";
+            if (counts[0] === 2) return "원 페어";
+            
+            return "하이 카드";
+        }
+
+        function getResultMessage(handResult) {
+            const messages = {
+                "로얄 스트레이트 플러시": "🌟 완벽 그 자체! 나올 확률은 0.000154%!",
+                "스트레이트 플러시": "🎉 엄청난 행운! 오늘 좋은 일이 생길 거예요.",
+                "포카드": "💥 강력한 한 방! 짜릿한 역전을 기대해 보세요.",
+                "풀하우스": "🏠 안정과 조화! 모든 것이 가득 찬 하루.",
+                "플러시": "🎨 같은 마음, 같은 뜻! 팀워크가 빛을 발합니다.",
+                "스트레이트": "🏃‍♂️ 거침없이 직진! 계획한 일이 순조롭게 진행됩니다.",
+                "트리플": "💡 좋은 아이디어가 반짝! 당신의 능력을 보여줄 기회.",
+                "투 페어": "🤝 두 마리 토끼를 잡는 날! 즐거운 일이 연달아 생겨요.",
+                "원 페어": "😊 소소하지만 확실한 행복! 작은 기쁨으로 시작하세요.",
+                "하이 카드": "🌱 잠재력을 믿으세요! 지금부터 시작입니다."
+            };
+            return messages[handResult];
+        }
+
+        dealBtn.addEventListener('click', () => {
+            dealBtn.disabled = true;
+            cardsEl.innerHTML = '';
+            resultEl.classList.remove('visible');
+
+            // 1. 덱 생성 및 셔플
+            const deck = createDeck();
+            deck.sort(() => Math.random() - 0.5);
+
+            // 2. 5장의 카드 뽑기
+            const hand = deck.slice(0, 5);
+
+            // 3. 카드 애니메이션과 함께 표시
+            hand.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.classList.add('card', `suit-${card.suit}`);
+                
+                const front = document.createElement('div');
+                front.classList.add('front');
+                front.textContent = `${card.rank}${card.suit}`;
+                
+                const back = document.createElement('div');
+                back.classList.add('back');
+                back.style.transform = 'rotateY(180deg)';
+                
+                cardEl.appendChild(front);
+                cardEl.appendChild(back);
+                cardsEl.appendChild(cardEl);
+
+                setTimeout(() => {
+                    cardEl.classList.add('deal');
+                    setTimeout(() => cardEl.classList.add('is-flipped'), 200);
+                }, 150 * (index + 1));
+            });
+
+            // 4. 모든 애니메이션이 끝난 후 결과 표시
+            setTimeout(() => {
+                const handRank = evaluateHand(hand);
+                const resultMessage = getResultMessage(handRank);
+                resultEl.innerHTML = `<span id="result-rank">${handRank}</span><span id="result-message">${resultMessage}</span>`;
+                resultEl.classList.add('visible');
+                dealBtn.disabled = false;
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
