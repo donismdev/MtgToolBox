@@ -94,6 +94,7 @@
 		{
 			"name": "etc-mighty-helper",
 			"path": "tools/etc-mighty-helper/",
+			"parent": "ETC",
 			"type": ["html", "html_modal"],
 			"modalIcon": "🃏",
 			"tags": ["game", "mighty", "card"],
@@ -101,6 +102,7 @@
 		},
 		{
 			"name": "etc-thegang-helper",
+			"parent" : "ETC",
 			"path": "tools/etc-thegang-helper/",
 			"type": ["html", "html_modal"],
 			"modalIcon": "G",
@@ -139,14 +141,14 @@
 		{
 			"name": "etc-poker",
 			"path": "tools/etc-poker/",
-			"parent": "etc",
+			"parent": "ETC",
 			"type": ["html"],
 			"enable": true
 		},
 		{
 			"name": "etc-blackjack",
 			"path": "tools/etc-blackjack/",
-			"parent": "etc",
+			"parent": "ETC",
 			"type": ["html"],
 			"enable": true
 		}

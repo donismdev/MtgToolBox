@@ -84,12 +84,10 @@
             transform: scale(1) rotateY(180deg);
         }
         
-        /* --- 여기가 최종 수정된 부분 --- */
         .card.is-flipped {
             transform: scale(1) rotateY(0deg);
-            opacity: 1; /* 카드가 뒤집힌 후에도 투명도 1을 유지하도록 하여 사라지지 않게 함 */
+            opacity: 1;
         }
-        /* --- 수정 끝 --- */
 
         .card .front, .card .back {
             width: 100%;
@@ -181,10 +179,13 @@
             .card {
                 width: 65px;
                 height: 100px;
+            }
+            .card .front {
                 font-size: 1.8em;
             }
         }
 
+        /* --- 여기가 최종 수정된 부분 --- */
         @media (max-width: 480px) {
             .game-table {
                 padding: 15px 10px;
@@ -196,13 +197,19 @@
             .hand-area h2 { font-size: 1.1rem; }
             .score { font-size: 1rem; min-width: 100px; }
             .message-area { font-size: 1.1rem; margin-top: 15px; }
+            
             .card {
                 width: 50px;
                 height: 75px;
-                font-size: 1.5em;
                 margin: 3px;
             }
             .cards { min-height: 85px; }
+
+            /* 카드의 앞면(글자) 크기를 카드 크기에 맞게 직접 조절 */
+            .card .front {
+                font-size: 1.6em;
+            }
+
             .btn-container button {
                 padding: 10px 15px;
                 font-size: 1em;
