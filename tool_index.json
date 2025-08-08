@@ -151,6 +151,13 @@
 			"parent": "ETC",
 			"type": ["html"],
 			"enable": true
+		},
+		{
+			"name": "misc-email-test",
+			"path": "tools/misc-email-test/",
+			"parent": "MISC",
+			"type": ["html"],
+			"enable": true
 		}
 	]
 }
