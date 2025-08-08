@@ -163,9 +163,9 @@ export class OptionsModal {
         
         // 현재 카운터가 분할 화면 목록에 포함되어 있는지 확인하여 checked 상태 결정
         splitViewCheckbox.checked = this.player.splitViewCounters.includes(setting.id);
-        
-        // 3개 제한 로직: 이미 3개가 찼고, 현재 항목이 선택되지 않았다면 비활성화
-        if (this.player.splitViewCounters.length >= 3 && !splitViewCheckbox.checked) {
+
+        // 4개 제한 로직: 이미 4개가 찼고, 현재 항목이 선택되지 않았다면 비활성화
+        if (this.player.splitViewCounters.length >= 4 && !splitViewCheckbox.checked) {
             splitViewCheckbox.disabled = true;
         }
 

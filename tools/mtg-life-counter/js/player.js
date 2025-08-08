@@ -331,10 +331,10 @@ export class Player {
 		const index = this.splitViewCounters.indexOf(counterId);
 
 		if (isAdding && index === -1) {
-			if (this.splitViewCounters.length < 3) {
+			if (this.splitViewCounters.length < 4) {
 				this.splitViewCounters.push(counterId);
 			} else {
-				alert("분할 화면에는 최대 3개의 카운터만 추가할 수 있습니다.");
+				alert("분할 화면에는 최대 4개의 카운터만 추가할 수 있습니다.");
 				if (this.optionsModal) {
 					this.optionsModal.renderCounterSettingsList();
 				}
