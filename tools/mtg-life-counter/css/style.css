@@ -130,6 +130,24 @@
 						animation: pulse-life 0.4s ease-in-out;
 					}
 
+					.drag-feedback {
+						position: absolute;
+						width: 80px;
+						height: 80px;
+						background-color: rgba(255, 255, 255, 0.2);
+						border-radius: 50%;
+						pointer-events: none;
+						opacity: 0;
+						transform: translate(-50%, -50%) scale(0.8);
+						transition: opacity 0.3s ease, transform 0.3s ease;
+						z-index: 10;
+					}
+
+					.drag-feedback.active {
+						opacity: 1;
+						transform: translate(-50%, -50%) scale(1);
+					}
+
 					@keyframes feedbackPop {
 						0% {
 							opacity: 1;

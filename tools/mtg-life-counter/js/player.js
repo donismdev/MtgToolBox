@@ -29,6 +29,13 @@ export class Player {
 		this.cumulativeFeedbackEl = null;
 		this.feedbackFadeTimeout = null;
 
+		// 드래그 상태 변수
+		this.isDragging = false;
+		this.isPressing = false;
+		this.dragStartPos = { x: 0, y: 0 };
+		this.longPressTimer = null;
+		this.fastChangeAmount = 5;
+
 		this.buttonSettings = [
 			{ id: 'initiative',	label: 'Initiative',	enabled: false, backgroundSize: '85%' },
 			{ id: 'monarch',	label: 'Monarch',		enabled: false, backgroundSize: '85%' },
@@ -147,6 +154,11 @@ export class Player {
 		this.elements.contentWrapper.appendChild(this.elements.hintInc);
 		this.elements.contentWrapper.appendChild(this.elements.hintDec);
 		this.elements.contentWrapper.appendChild(this.elements.lifeTotal);
+
+		// 드래그 피드백 요소 추가
+		this.elements.dragFeedback = document.createElement('div');
+		this.elements.dragFeedback.className = 'drag-feedback';
+		this.elements.contentWrapper.appendChild(this.elements.dragFeedback);
 		
 		// --- 생성된 요소들을 player-area에 추가 ---
 		this.elements.area.appendChild(this.elements.optionsButton);
@@ -168,71 +180,133 @@ export class Player {
 	}
 
 	setupAreaEventListeners() {
-		this.lastTapTime = 0; // 마지막 탭 시간을 기록, 더블 탭 줌 방지용
+		this.lastTapTime = 0;
+		this.isPressing = false;
+		this.isDragging = false;
+		this.longPressTimer = null;
+		this.dragStartPos = { x: 0, y: 0 };
+		this.draggedDistance = 0;
 
-		this.elements.area.addEventListener('pointerdown', (event) => {
-			// ==================================================
-			// 1. 더블탭 줌(Zoom) 방지 로직
-			// ==================================================
-			const now = new Date().getTime();
+		const DRAG_THRESHOLD = 20; // 드래그 감도 조절
+		const LONG_PRESS_DURATION = 250;
 
-			// 마지막 탭 이후 300ms 이내에 다시 탭된 경우, 브라우저의 기본 동작(줌)을 막습니다.
-			if (now - this.lastTapTime <= 300) {
-				event.preventDefault();
+		const getPointerPosition = (event) => {
+			const rect = this.elements.area.getBoundingClientRect();
+			return {
+				x: event.clientX - rect.left,
+				y: event.clientY - rect.top
+			};
+		};
+
+		// 클릭 위치에 따른 생명점 증감 로직
+		const getClickLifeChange = (position) => {
+			const rect = this.elements.area.getBoundingClientRect();
+			const adjustMode = window.localSettings.lifeAdjustDirection;
+			let amount = 0;
+
+			if (adjustMode === 'horizontal') {
+				const isRight = position.x > rect.width / 2;
+				switch (this.rotation) {
+					case 0: amount = isRight ? 1 : -1; break;
+					case 180: amount = isRight ? -1 : 1; break;
+					case 90: amount = position.y > rect.height / 2 ? 1 : -1; break;
+					case 270: amount = position.y > rect.height / 2 ? -1 : 1; break;
+				}
+			} else { // vertical
+				const isBottom = position.y > rect.height / 2;
+				switch (this.rotation) {
+					case 0: amount = isBottom ? -1 : 1; break;
+					case 180: amount = isBottom ? 1 : -1; break;
+					case 90: amount = position.x > rect.width / 2 ? 1 : -1; break;
+					case 270: amount = position.x > rect.width / 2 ? -1 : 1; break;
+				}
 			}
+			return amount;
+		};
 
-			// 현재 탭 시간을 기록하여 다음 탭에서 비교할 수 있도록 합니다.
-			this.lastTapTime = now;
-
-			// ==================================================
-			// 2. 라이프(Life) 변경 로직
-			// ==================================================
-
-			// 버튼 등 다른 UI 요소가 활성화 상태이거나, 특정 버튼을 눌렀을 때는 작동하지 않도록 함
-			if (window.activeUI !== null || event.target.closest('.header-button') || event.target.closest('.player-options-button')) {
+		this.elements.area.addEventListener('pointerdown', (e) => {
+			if (window.activeUI !== null || e.target.closest('.header-button, .player-options-button')) {
 				return;
 			}
 
-			// 탭된 위치를 계산
-			const rect = this.elements.area.getBoundingClientRect();
-			const pointerX = event.clientX - rect.left;
-			const pointerY = event.clientY - rect.top;
+			const now = new Date().getTime();
+			if (now - this.lastTapTime <= 300) e.preventDefault();
+			this.lastTapTime = now;
 
-			let amount = 0;
-			const adjustMode = window.localSettings.lifeAdjustDirection;
-			const isRight = pointerX > rect.width / 2;
-			const isBottom = pointerY > rect.height / 2;
+			this.isPressing = true;
+			this.isDragging = false;
+			this.draggedDistance = 0;
+			this.dragStartPos = getPointerPosition(e);
 
-			// 설정과 화면 회전 상태에 따라 라이프 증감 방향을 결정
-			if (adjustMode === 'horizontal') {
-				switch (this.rotation) {
-					case 0:   amount = isRight ? +1 : -1; break;
-					case 180: amount = isRight ? -1 : +1; break;
-					case 90:  amount = isBottom ? +1 : -1; break;
-					case 270: amount = isBottom ? -1 : +1; break;
+			this.longPressTimer = setTimeout(() => {
+				if (this.isPressing && !this.isDragging) {
+					this.isPressing = false;
+					const amount = getClickLifeChange(this.dragStartPos) * (this.fastChangeAmount - 1);
+					this.changeLife(amount);
+					this.showAreaRipple(amount, e);
+					if (navigator.vibrate) navigator.vibrate(50);
 				}
-			} else { // 'vertical' 모드
-				switch (this.rotation) {
-					case 0:   amount = isBottom ? -1 : +1; break;
-					case 180: amount = isBottom ? +1 : -1; break;
-					case 90:  amount = isRight ? +1 : -1; break;
-					case 270: amount = isRight ? -1 : +1; break;
-				}
-			}
+			}, LONG_PRESS_DURATION);
 
-			this.changeLife(amount);
-			this.showAreaRipple(amount, event);
+			window.addEventListener('pointermove', onPointerMove);
+			window.addEventListener('pointerup', onPointerUp);
 		});
 
-		// 일부 모바일 브라우저의 더블탭 줌을 막기 위한 추가 리스너
-		let lastTouchEnd = 0;
-		document.addEventListener('touchend', function (event) {
-			const now = new Date().getTime();
-			if (now - lastTouchEnd <= 300) {
-				event.preventDefault();
+		const onPointerMove = (e) => {
+			if (!this.isPressing) return;
+
+			const currentPos = getPointerPosition(e);
+			const deltaX = currentPos.x - this.dragStartPos.x;
+			const deltaY = currentPos.y - this.dragStartPos.y;
+			const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+			if (!this.isDragging && distance > DRAG_THRESHOLD) {
+				this.isDragging = true;
+				clearTimeout(this.longPressTimer);
+				this.elements.dragFeedback.classList.add('active');
 			}
-			lastTouchEnd = now;
-		}, false);
+
+			if (this.isDragging) {
+				this.draggedDistance = distance;
+				const feedbackStrength = Math.min(this.draggedDistance / 100, 1);
+				this.elements.dragFeedback.style.opacity = feedbackStrength;
+				this.elements.dragFeedback.style.transform = `translate(-50%, -50%) scale(${1 + feedbackStrength * 0.2})`;
+			}
+		};
+
+		const onPointerUp = (e) => {
+			clearTimeout(this.longPressTimer);
+
+			if (this.isDragging) {
+				const currentPos = getPointerPosition(e);
+				const deltaX = currentPos.x - this.dragStartPos.x;
+				const deltaY = currentPos.y - this.dragStartPos.y;
+				const adjustMode = window.localSettings.lifeAdjustDirection;
+				let change = 0;
+
+				if (adjustMode === 'horizontal') {
+					change = Math.round(deltaX / DRAG_THRESHOLD) * this.fastChangeAmount;
+				} else {
+					change = Math.round(deltaY / DRAG_THRESHOLD) * this.fastChangeAmount;
+				}
+
+				let amount = getClickLifeChange(this.dragStartPos) > 0 ? Math.abs(change) : -Math.abs(change);
+				this.changeLife(amount);
+
+			} else if (this.isPressing) {
+				const amount = getClickLifeChange(this.dragStartPos);
+				this.changeLife(amount);
+				this.showAreaRipple(amount, e);
+			}
+
+			this.isPressing = false;
+			this.isDragging = false;
+			this.elements.dragFeedback.classList.remove('active');
+			this.elements.dragFeedback.style.opacity = 0;
+
+			window.removeEventListener('pointermove', onPointerMove);
+			window.removeEventListener('pointerup', onPointerUp);
+		};
 	}
 
 	updateCounterValue(setting, action, targetElement = null) {
@@ -686,6 +760,9 @@ export class Player {
 	}
 
 	showAreaRipple(amount, event) {
+		// isDragging 상태일 때는 리플 효과를 보여주지 않음
+		if (this.isDragging) return;
+
 		// event가 없으면 함수를 바로 종료합니다.
 		if (!event) return;
 
