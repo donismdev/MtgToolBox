@@ -8,6 +8,30 @@ import { CountersViewerModal } from './CountersViewerModal.js';
 import { LifeLogOverlay } from './LifeLogOverlay.js';
 import { ThemeSelectorOverlay } from './ThemeSelectorOverlay.js';
 
+function getLifeChangeDirection(position, rect, rotation) {
+    const adjustMode = window.localSettings.lifeAdjustDirection;
+    let amount = 0;
+
+    if (adjustMode === 'horizontal') {
+        const isRight = position.x > rect.width / 2;
+        switch (rotation) {
+            case 0: amount = isRight ? 1 : -1; break;
+            case 180: amount = isRight ? -1 : 1; break;
+            case 90: amount = position.y > rect.height / 2 ? 1 : -1; break;
+            case 270: amount = position.y > rect.height / 2 ? -1 : 1; break;
+        }
+    } else { // vertical
+        const isBottom = position.y > rect.height / 2;
+        switch (rotation) {
+            case 0: amount = isBottom ? -1 : 1; break;
+            case 180: amount = isBottom ? 1 : -1; break;
+            case 90: amount = position.x > rect.width / 2 ? 1 : -1; break;
+            case 270: amount = position.x > rect.width / 2 ? -1 : 1; break;
+        }
+    }
+    return amount;
+
+}
 export class Player {
 
     // Helper to update all player icons
@@ -35,6 +59,9 @@ export class Player {
 		this.dragStartPos = { x: 0, y: 0 };
 		this.longPressTimer = null;
 		this.fastChangeAmount = 5;
+
+		// [NEW] State for the split-screen view
+        this.splitViewCounters = []; // Stores the IDs of counters to display in split view
 
 		this.buttonSettings = [
 			{ id: 'initiative',	label: 'Initiative',	enabled: false, backgroundSize: '85%' },
@@ -122,12 +149,13 @@ export class Player {
     }
 	
 	createDOM() {
-
-		 this.elements.area = document.createElement('div');
+		this.elements.area = document.createElement('div');
 		this.elements.area.id = `${this.id}-area`;
 		this.elements.area.className = 'player-area';
 
-		// 1. 옵션 버튼 (우측 상단 고정)
+		// 1. 모든 구성요소를 생성합니다 (순서는 아직 중요하지 않음).
+		
+		// 옵션 버튼 생성
 		this.elements.optionsButton = document.createElement('button');
 		this.elements.optionsButton.className = 'player-options-button header-button';
 		this.elements.optionsButton.style.backgroundImage = 'url(./assets/option.png)';
@@ -136,14 +164,23 @@ export class Player {
 			this.showOptionsModal();
 		});
 
-		// 2. 액션 버튼 컨테이너 (좌측 하단, 동적으로 버튼 추가/제거)
+		// 액션 버튼 컨테이너 생성
 		this.elements.actionButtonContainer = document.createElement('div');
-		this.elements.actionButtonContainer.className = 'player-header-buttons'; // 기존 클래스 재사용
+		this.elements.actionButtonContainer.className = 'player-header-buttons';
 
-		// --- 기본 라이프 카운터 및 래퍼 생성 ---
+		// 기본 뷰 Wrapper 생성 (전체 화면을 덮는 투명한 배경 역할)
 		this.elements.contentWrapper = document.createElement('div');
-		this.elements.area.appendChild(this.elements.contentWrapper);
+		this.elements.contentWrapper.className = 'player-content-wrapper'; 
 
+		// 분할 뷰 컨테이너 생성
+		this.elements.splitViewContainer = document.createElement('div');
+		this.elements.splitViewContainer.className = 'split-view-container';
+		
+		// 주사위 컨테이너 생성
+		this.elements.diceContainer = document.createElement('div');
+		this.elements.diceContainer.className = 'dice-container';
+
+		// 생명점 숫자 및 힌트 생성
 		this.elements.lifeTotal = document.createElement('div');
 		this.elements.lifeTotal.className = 'life-total user-select-none';
 		this.elements.hintInc = document.createElement('div');
@@ -151,33 +188,284 @@ export class Player {
 		this.elements.hintInc.className = 'life-hint increase';
 		this.elements.hintDec.className = 'life-hint decrease';
 
+		// Wrapper 안에 생명점 관련 요소들을 넣습니다.
 		this.elements.contentWrapper.appendChild(this.elements.hintInc);
 		this.elements.contentWrapper.appendChild(this.elements.hintDec);
 		this.elements.contentWrapper.appendChild(this.elements.lifeTotal);
-
-		// 드래그 피드백 요소 추가
-		this.elements.dragFeedback = document.createElement('div');
-		this.elements.dragFeedback.className = 'drag-feedback';
-		this.elements.contentWrapper.appendChild(this.elements.dragFeedback);
 		
-		// --- 생성된 요소들을 player-area에 추가 ---
-		this.elements.area.appendChild(this.elements.optionsButton);
-		this.elements.area.appendChild(this.elements.actionButtonContainer);
 		
-		// Dice Container (moved from createDiceAndLogOverlays)
-		this.elements.diceContainer = document.createElement('div');
-		this.elements.diceContainer.className = 'dice-container';
-		this.elements.area.appendChild(this.elements.diceContainer);
+		// 2. ✅ [핵심 수정] 최종적으로 player-area에 요소를 쌓는 순서를 변경합니다.
+		// 배경 역할을 하는 요소들을 먼저 추가합니다.
+		this.elements.area.appendChild(this.elements.contentWrapper);       // 기본 뷰 (가장 아래)
+		this.elements.area.appendChild(this.elements.splitViewContainer);   // 분할 뷰
+		this.elements.area.appendChild(this.elements.diceContainer);        // 주사위 컨테이너
 
-		// --- 기존 이벤트 리스너들 ---
-		this.setupAreaEventListeners();
+		// 그 위에 사용자가 클릭해야 하는 UI 버튼들을 추가합니다.
+		this.elements.area.appendChild(this.elements.actionButtonContainer); // 액션 버튼 (가장 위)
+		this.elements.area.appendChild(this.elements.optionsButton);       // 옵션 버튼 (가장 위)
 
-		// 초기 버튼 상태 렌더링
+
+		// 3. 이벤트 리스너 설정 및 초기화
+		this.setupInteractiveQuadrant(this.elements.contentWrapper, 'life');
+		
 		this.rebuildPlayerButtons();
 		this.updateRotationClass();
-
 		secretNotes.initialize(this);
 	}
+
+	setupInteractiveQuadrant(quadrantElement, target) {
+        // target can be 'life' string or a counter setting object
+        let lastTapTime = 0;
+        let isPressing = false;
+        let isDragging = false;
+        let longPressTimer = null;
+        let dragStartPos = { x: 0, y: 0 };
+    
+        const DRAG_THRESHOLD = 20;
+        const LONG_PRESS_DURATION = 250;
+    
+        const getPointerPosition = (event) => {
+            const rect = quadrantElement.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+        };
+    
+        const handleChange = (amount) => {
+            if (amount === 0) return;
+    
+            if (target === 'life') {
+                this.changeLife(amount);
+            } else {
+                // It's a counter setting object
+                const action = amount > 0 ? 'increment' : 'decrement';
+                for (let i = 0; i < Math.abs(amount); i++) {
+                    // Pass null for targetElement to prevent speech bubble spam
+                    this.updateCounterValue(target, action, null); 
+                }
+            }
+        };
+
+        quadrantElement.addEventListener('pointerdown', (e) => {
+            if (window.activeUI !== null || e.target.closest('.header-button, .player-options-button')) {
+                return;
+            }
+            e.stopPropagation(); // Prevent event from bubbling to parent player-area
+    
+            const now = new Date().getTime();
+            if (now - lastTapTime <= 300) e.preventDefault();
+            lastTapTime = now;
+    
+            isPressing = true;
+            isDragging = false;
+            dragStartPos = getPointerPosition(e);
+    
+            const clickDirection = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
+    
+            longPressTimer = setTimeout(() => {
+                if (isPressing && !isDragging) {
+                    isPressing = false;
+                    const amount = clickDirection * (this.fastChangeAmount - 1);
+                    handleChange(amount);
+                    if (target === 'life') this.showAreaRipple(amount, e);
+                    if (navigator.vibrate) navigator.vibrate(50);
+                }
+            }, LONG_PRESS_DURATION);
+    
+            const onPointerMove = (ev) => {
+                if (!isPressing) return;
+                const currentPos = getPointerPosition(ev);
+                const deltaX = currentPos.x - dragStartPos.x;
+                const deltaY = currentPos.y - dragStartPos.y;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+                if (distance > DRAG_THRESHOLD) {
+                    isDragging = true;
+                    clearTimeout(longPressTimer);
+                }
+            };
+    
+            const onPointerUp = (ev) => {
+                clearTimeout(longPressTimer);
+    
+                if (isDragging) {
+                    const currentPos = getPointerPosition(ev);
+                    const deltaX = currentPos.x - dragStartPos.x;
+                    const deltaY = currentPos.y - dragStartPos.y;
+                    const adjustMode = window.localSettings.lifeAdjustDirection;
+                    let change = 0;
+    
+                    if (adjustMode === 'horizontal') {
+                        change = Math.round(deltaX / DRAG_THRESHOLD);
+                    } else {
+                        change = Math.round(deltaY / DRAG_THRESHOLD);
+                    }
+                    
+                    const direction = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
+                    const amount = direction * Math.abs(change);
+                    handleChange(amount);
+    
+                } else if (isPressing) {
+                    const amount = getLifeChangeDirection(getPointerPosition(ev), quadrantElement.getBoundingClientRect(), this.rotation);
+                    handleChange(amount);
+                    if (target === 'life') this.showAreaRipple(amount, e);
+                }
+    
+                isPressing = false;
+                isDragging = false;
+    
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+            };
+    
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+        });
+    }
+
+	toggleCounterForSplitView(counterId, isAdding) {
+		console.log(`[1] toggleCounterForSplitView 호출됨: ${counterId}, 추가?: ${isAdding}`);
+		console.log(`[2] 변경 전 카운터 목록:`, [...this.splitViewCounters]);
+
+		const index = this.splitViewCounters.indexOf(counterId);
+
+		if (isAdding && index === -1) {
+			if (this.splitViewCounters.length < 3) {
+				this.splitViewCounters.push(counterId);
+			} else {
+				alert("분할 화면에는 최대 3개의 카운터만 추가할 수 있습니다.");
+				if (this.optionsModal) {
+					this.optionsModal.renderCounterSettingsList();
+				}
+				return;
+			}
+		} else if (!isAdding && index > -1) {
+			this.splitViewCounters.splice(index, 1);
+		}
+		
+		console.log(`[3] 변경 후 카운터 목록:`, [...this.splitViewCounters]);
+
+		// ✅ 핵심 로직: isSplitViewActive 대신, 배열 길이를 직접 확인합니다.
+		if (this.splitViewCounters.length > 0) {
+			console.log('[4] 카운터가 1개 이상이므로, 분할 화면을 활성화합니다.');
+			this._activateSplitView();
+		} else {
+			console.log('[4] 카운터가 없으므로, 분할 화면을 비활성화합니다.');
+			this._deactivateSplitView();
+		}
+	}
+
+	// [신규] 분할 화면을 활성화하는 내부 헬퍼
+    _activateSplitView() {
+    this.rebuildSplitView();
+    // `.hidden` 클래스를 추가하여 기본 뷰를 숨깁니다.
+    this.elements.contentWrapper.classList.add('hidden');
+    // `.active` 클래스를 추가하여 분할 뷰를 표시합니다.
+    this.elements.splitViewContainer.classList.add('active');
+}
+
+    // [신규] 분할 화면을 비활성화하는 내부 헬퍼
+    _deactivateSplitView() {
+		// 클래스를 제거하여 원래 상태로 되돌립니다.
+		this.elements.contentWrapper.classList.remove('hidden');
+		this.elements.splitViewContainer.classList.remove('active');
+	}
+
+    // [NEW] Dynamically builds the content of the split-screen view
+    rebuildSplitView() {
+        const container = this.elements.splitViewContainer;
+        container.innerHTML = ''; // Clear previous content
+
+        // 1. Create HP Area (Top 1/4)
+        const hpArea = document.createElement('div');
+        hpArea.className = 'split-hp-area';
+        
+        const hpValue = document.createElement('div');
+        hpValue.className = 'split-hp-value user-select-none';
+        hpValue.textContent = this.life;
+        
+        const hintInc = document.createElement('div');
+        const hintDec = document.createElement('div');
+        hintInc.className = 'life-hint increase';
+        hintDec.className = 'life-hint decrease';
+        hintInc.textContent = '+';
+        hintDec.textContent = '-';
+        const theme = this._getThemeByName(this.themeName);
+        if (theme) {
+            hintInc.style.color = theme.plusColor;
+            hintDec.style.color = theme.minusColor;
+        }
+
+        hpArea.appendChild(hintInc);
+        hpArea.appendChild(hintDec);
+        hpArea.appendChild(hpValue);
+        container.appendChild(hpArea);
+        
+        this.elements.splitViewHPValue = hpValue; // Store reference to update later
+        this.setupInteractiveQuadrant(hpArea, 'life');
+
+        // 2. Create Counter Grid (Bottom 3/4)
+        const counterGrid = document.createElement('div');
+        counterGrid.className = 'split-counter-grid';
+        container.appendChild(counterGrid);
+
+        // 3. Populate grid with selected counters
+        this.splitViewCounters.forEach(counterId => {
+            const setting = this.counterSettings.find(s => s.id === counterId);
+            if (!setting) return;
+
+            const quadrant = document.createElement('div');
+            quadrant.className = 'counter-quadrant';
+            quadrant.dataset.counterId = counterId; // For easy identification
+
+            const icon = document.createElement('div');
+            icon.className = 'counter-quadrant-icon';
+            icon.style.backgroundImage = `url(./assets/board_icon/${setting.imageName}.png)`;
+
+            const value = document.createElement('div');
+            value.className = 'counter-quadrant-value user-select-none';
+            value.textContent = setting.count;
+
+            quadrant.appendChild(icon);
+            quadrant.appendChild(value);
+
+            if (setting.label) {
+                const label = document.createElement('div');
+                label.className = 'counter-quadrant-label user-select-none';
+                label.textContent = setting.label;
+                quadrant.appendChild(label);
+            }
+            
+            counterGrid.appendChild(quadrant);
+            this.setupInteractiveQuadrant(quadrant, setting);
+        });
+    }
+
+
+    // [MODIFIED] Update the new view if it's active
+    updateCounterValue(setting, action, targetElement = null) {
+        // ... (existing logic for changing count and showing speech bubble)
+        if (action === 'increment') setting.count++;
+        else if (action === 'decrement') setting.count--;
+        else if (action === 'reset') setting.count = 0;
+
+        if (targetElement) { /* ... show speech bubble logic ... */ }
+
+        // --- UI Sync ---
+        this.rebuildPlayerButtons();
+        if (this.optionsModal && this.optionsModal.elements.counterSettingsList) {
+            this.optionsModal.renderCounterSettingsList();
+        }
+
+        // [NEW] Sync with split view if active
+        if (this.isSplitViewActive) {
+            const quadrant = this.elements.splitViewContainer.querySelector(`.counter-quadrant[data-counter-id="${setting.id}"]`);
+            if (quadrant) {
+                quadrant.querySelector('.counter-quadrant-value').textContent = setting.count;
+            }
+        }
+    }
 
 	setupAreaEventListeners() {
 		this.lastTapTime = 0;
@@ -596,6 +884,20 @@ export class Player {
             this.optionsModal = new OptionsModal(this);
             this.elements.area.appendChild(this.optionsModal.elements.optionsModalOverlay);
         }
+        
+        // This is a hypothetical addition to your OptionsModal rendering logic.
+        // You would add a checkbox that controls the split view.
+        // For example, in your OptionsModal's `renderGeneralSettings` method:
+        /*
+            const splitViewToggle = document.createElement('input');
+            splitViewToggle.type = 'checkbox';
+            splitViewToggle.checked = this.player.isSplitViewActive;
+            splitViewToggle.addEventListener('change', (e) => {
+                this.player.setSplitViewActive(e.target.checked);
+            });
+            // ... append this toggle to a label and the settings list ...
+        */
+        
         this.optionsModal.show();
     }
 
@@ -713,13 +1015,25 @@ export class Player {
     }
 
 	updateDisplay(withAnimation = false) {
+        // Main view
         const el = this.elements.lifeTotal;
         el.textContent = this.life;
-
         if (withAnimation) {
             el.classList.remove('life-total-animate');
             void el.offsetWidth;
             el.classList.add('life-total-animate');
+        }
+
+        // [NEW] Split view
+        if (this.isSplitViewActive && this.elements.splitViewHPValue) {
+            const hpEl = this.elements.splitViewHPValue;
+            hpEl.textContent = this.life;
+            // You can add a different, smaller animation for this one if you like
+            if (withAnimation) {
+                 hpEl.classList.remove('life-total-animate');
+                 void hpEl.offsetWidth;
+                 hpEl.classList.add('life-total-animate');
+            }
         }
     }
 
