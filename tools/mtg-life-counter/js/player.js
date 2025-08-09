@@ -217,13 +217,24 @@ export class Player {
 		let isPressing = false, isDragging = false;
 		let longPressTimer = null, dragStartPos = { x: 0, y: 0 };
 		
-		// ✅ [신규] 드래그 관련 상태 변수
-		let dragChangeAmount = 0; // 드래그 중 누적된 값
-		let dragFeedbackEl = null; // 누적 값을 보여줄 피드백 요소
+		let dragChangeAmount = 0;
+		let dragFeedbackEl = null;
 
-		// ✅ [조절] 이 값을 높이면 드래그 감도가 둔해집니다 (더 많이 움직여야 1이 오름).
-		const DRAG_SENSITIVITY = 40; 
+		const DRAG_SENSITIVITY = 40;
 		const LONG_PRESS_DURATION = 250;
+
+		// ✅ [핵심 수정 1] 회전 각도에 따라 방향을 뒤집을지 결정하는 변수 추가
+		const adjustMode = window.localSettings.lifeAdjustDirection;
+		let directionMultiplier = 1;
+		if (adjustMode === 'horizontal') {
+			if (this.rotation === 180 || this.rotation === 270) {
+				directionMultiplier = -1;
+			}
+		} else { // 'vertical'
+			if (this.rotation === 180 || this.rotation === 90) {
+				directionMultiplier = -1;
+			}
+		}
 
 		const getPointerPosition = (event) => {
 			const rect = quadrantElement.getBoundingClientRect();
@@ -233,7 +244,7 @@ export class Player {
 		const handleChange = (amount) => {
 			if (amount === 0) return;
 			if (target === 'life') {
-				this.changeLife(amount); // changeLife의 타이머 로직이 로그를 처리합니다.
+				this.changeLife(amount);
 			} else {
 				const action = amount > 0 ? 'increment' : 'decrement';
 				for (let i = 0; i < Math.abs(amount); i++) {
@@ -245,7 +256,6 @@ export class Player {
 			}
 		};
 		
-		// --- 이벤트 리스너 설정 ---
 		quadrantElement.addEventListener('pointerdown', (e) => {
 			if (window.activeUI !== null || e.target.closest('.header-button, .player-options-button')) return;
 			e.stopPropagation();
@@ -253,7 +263,7 @@ export class Player {
 			isPressing = true;
 			isDragging = false;
 			dragStartPos = getPointerPosition(e);
-			dragChangeAmount = 0; // 드래그 시작 시 누적값 초기화
+			dragChangeAmount = 0;
 
 			const clickDirection = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
 
@@ -264,20 +274,15 @@ export class Player {
 				}
 			}, LONG_PRESS_DURATION);
 
-			// --- 마우스 이동(드래그) 리스너 ---
 			const onPointerMove = (ev) => {
 				if (!isPressing) return;
-
 				const currentPos = getPointerPosition(ev);
 				const deltaX = currentPos.x - dragStartPos.x;
 				const deltaY = currentPos.y - dragStartPos.y;
 
-				// ✅ [수정] isDragging 활성화 조건을 기존 DRAG_THRESHOLD 대신 SENSITIVITY/2 로 변경
 				if (!isDragging && Math.hypot(deltaX, deltaY) > DRAG_SENSITIVITY / 2) {
 					isDragging = true;
-					clearTimeout(longPressTimer); // 롱클릭 타이머 취소
-
-					// ✅ [신규] 드래그 시작 시 누적 피드백 요소 생성
+					clearTimeout(longPressTimer);
 					if (!dragFeedbackEl) {
 						dragFeedbackEl = document.createElement('div');
 						dragFeedbackEl.className = 'drag-cumulative-feedback';
@@ -286,43 +291,29 @@ export class Player {
 				}
 
 				if (isDragging) {
-					const adjustMode = window.localSettings.lifeAdjustDirection;
 					const changeDelta = (adjustMode === 'horizontal') ? deltaX : deltaY;
 					
-					// ✅ [수정] 새 감도를 적용하여 누적값 계산
-					const newTotalAmount = Math.round(changeDelta / DRAG_SENSITIVITY);
+					// ✅ [핵심 수정 2] 기기가 인식한 값에 방향 변수를 곱해줍니다.
+					const newTotalAmount = Math.round(changeDelta / DRAG_SENSITIVITY) * directionMultiplier;
 
 					if (newTotalAmount !== dragChangeAmount) {
 						dragChangeAmount = newTotalAmount;
-						
-						// ✅ [신규] 누적 피드백 UI 업데이트
 						const displayAmount = dragChangeAmount > 0 ? `+${dragChangeAmount}` : `${dragChangeAmount}`;
 						dragFeedbackEl.textContent = displayAmount;
-						
-						const theme = this._getThemeByName(this.themeName);
-						if (theme) {
-							dragFeedbackEl.style.color = dragChangeAmount > 0 ? theme.plusColor : theme.minusColor;
-						}
 					}
 				}
 			};
 
-			// --- 마우스 놓기(드래그 종료) 리스너 ---
 			const onPointerUp = (ev) => {
 				clearTimeout(longPressTimer);
-
 				if (isDragging) {
-					// ✅ [수정] 드래그가 끝났을 때, 누적된 값을 한 번만 적용!
-					const direction = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
-					handleChange(direction * Math.abs(dragChangeAmount));
-					
-					// ✅ [신규] 누적 피드백 요소 제거
+					// ✅ [핵심 수정 3] 최종 적용되는 값도 이미 방향이 보정된 값을 사용합니다.
+					handleChange(dragChangeAmount);
 					if (dragFeedbackEl) {
 						dragFeedbackEl.remove();
 						dragFeedbackEl = null;
 					}
 				} else if (isPressing) {
-					// 일반 클릭 처리
 					handleChange(getLifeChangeDirection(getPointerPosition(ev), quadrantElement.getBoundingClientRect(), this.rotation));
 				}
 
