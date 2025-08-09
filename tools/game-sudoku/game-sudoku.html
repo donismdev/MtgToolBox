@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
 <title>Sudoku / Killer Sudoku</title>
 <style>
   :root{
@@ -74,6 +77,52 @@
 
   /* 케이지 텍스트 출력 */
   .outbox{ width:100%; min-height:120px; resize:vertical; font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:10px; border-radius:10px; border:1px solid #cfe1fb; background:#fff; }
+
+:root {
+    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
+}
+
+/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
+html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* 다크 선호 환경에서도 라이트로 고정 */
+ @media (prefers-color-scheme: dark) {
+    :root { color-scheme: light; }
+    html, body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+}
+
+/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
+img, video, canvas, svg, iframe {
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    background-color: transparent;
+}
+
+/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
+.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
+#modal-tool-iframe {
+    color-scheme: light;
+    background: #ffffff;
+}
+
+/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
+* { forced-color-adjust: none; }
+
+/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
+a, [class*="bi-"] { color: #0d6efd !important; }
 </style>
 </head>
 <body>

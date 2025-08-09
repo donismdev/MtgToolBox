@@ -1,4 +1,53 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>마이티 보조 툴</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><style>body{background-color:#121212;color:#fff;font-family:'Segoe UI',sans-serif;padding:1.5rem}button,input,label,select{margin-bottom:1rem}.result-box{background-color:#1e1e1e;padding:1rem;border-radius:.5rem;border:1px solid #333}.card-symbol{font-size:1.2rem;font-weight:700}.red{color:#ff4d4d}.black{color:#fff}details summary{cursor:pointer;color:#bbb;margin-bottom:.5rem}</style></head><body><h2 class="mb-4">🃏 마이티 보조 툴</h2><details><summary>마이티 규칙 요약 보기</summary><ul><li>마이티: 보통 스페이드 A (단, 스페이드 기루 시 다이아 A)</li><li>조커콜: 보통 클로버 3 (단, 클로버 기루 시 스페이드 3)</li><li>20 공약 시: 풀 (x1.5)</li><li>문양 없음 선택 시: 노기루 (x2)</li></ul></details><div class="mb-3"><label for="bidNumber">공약 (숫자):</label> <select id="bidNumber" class="form-select"><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option></select></div><div class="mb-3"><label for="suitSelect">기루 문양 선택:</label> <select id="suitSelect" class="form-select"><option value="none">🚫 문양 없음 (노기루)</option><option value="spade">♠ 스페이드</option><option value="heart">♥ 하트</option><option value="diamond">♦ 다이아</option><option value="club">♣ 클로버</option></select></div><button class="btn btn-primary mb-4" onclick="calculateMighty()">결과 보기</button><div id="result" class="result-box"></div><script>function calculateMighty(){var e=parseInt(document.getElementById("bidNumber").value),t=document.getElementById("suitSelect").value;let s="스페이드 A",n="검마",a="클로버 3",r="3끌",o="노기루";var p=[];switch(t){case"spade":s="다이아 A",n="노마",a="클로버 3",r="3끌",o="♠ 스페이드";break;case"club":s="스페이드 A",n="검마",a="스페이드 3",r="3끌",o="♣ 클로버";break;case"heart":n="검마",o="♥ 하트";break;case"diamond":n="검마",o="♦ 다이아";break;case"none":o="🚫 노기루",p.push("💥 <strong>노기루 (x2)</strong>")}20===e&&""!==t&&p.push("🔥 <strong>풀 (x1.5)</strong>"),document.getElementById("result").innerHTML=`
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title>마이티 보조 툴</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><style>body{background-color:#121212;color:#fff;font-family:'Segoe UI',sans-serif;padding:1.5rem}button,input,label,select{margin-bottom:1rem}.result-box{background-color:#1e1e1e;padding:1rem;border-radius:.5rem;border:1px solid #333}.card-symbol{font-size:1.2rem;font-weight:700}.red{color:#ff4d4d}.black{color:#fff}details summary{cursor:pointer;color:#bbb;margin-bottom:.5rem}
+:root {
+    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
+}
+
+/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
+html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* 다크 선호 환경에서도 라이트로 고정 */
+ @media (prefers-color-scheme: dark) {
+    :root { color-scheme: light; }
+    html, body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+}
+
+/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
+img, video, canvas, svg, iframe {
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    background-color: transparent;
+}
+
+/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
+.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
+#modal-tool-iframe {
+    color-scheme: light;
+    background: #ffffff;
+}
+
+/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
+* { forced-color-adjust: none; }
+
+/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
+a, [class*="bi-"] { color: #0d6efd !important; }
+</style></head><body><h2 class="mb-4">🃏 마이티 보조 툴</h2><details><summary>마이티 규칙 요약 보기</summary><ul><li>마이티: 보통 스페이드 A (단, 스페이드 기루 시 다이아 A)</li><li>조커콜: 보통 클로버 3 (단, 클로버 기루 시 스페이드 3)</li><li>20 공약 시: 풀 (x1.5)</li><li>문양 없음 선택 시: 노기루 (x2)</li></ul></details><div class="mb-3"><label for="bidNumber">공약 (숫자):</label> <select id="bidNumber" class="form-select"><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option></select></div><div class="mb-3"><label for="suitSelect">기루 문양 선택:</label> <select id="suitSelect" class="form-select"><option value="none">🚫 문양 없음 (노기루)</option><option value="spade">♠ 스페이드</option><option value="heart">♥ 하트</option><option value="diamond">♦ 다이아</option><option value="club">♣ 클로버</option></select></div><button class="btn btn-primary mb-4" onclick="calculateMighty()">결과 보기</button><div id="result" class="result-box"></div><script>function calculateMighty(){var e=parseInt(document.getElementById("bidNumber").value),t=document.getElementById("suitSelect").value;let s="스페이드 A",n="검마",a="클로버 3",r="3끌",o="노기루";var p=[];switch(t){case"spade":s="다이아 A",n="노마",a="클로버 3",r="3끌",o="♠ 스페이드";break;case"club":s="스페이드 A",n="검마",a="스페이드 3",r="3끌",o="♣ 클로버";break;case"heart":n="검마",o="♥ 하트";break;case"diamond":n="검마",o="♦ 다이아";break;case"none":o="🚫 노기루",p.push("💥 <strong>노기루 (x2)</strong>")}20===e&&""!==t&&p.push("🔥 <strong>풀 (x1.5)</strong>"),document.getElementById("result").innerHTML=`
 				<p><strong>기루:</strong> ${o}</p>
 				<p><strong>공약:</strong> ${e}</p>
 				<p><strong>마이티:</strong> ${s} <span class="text-muted">(${n})</span></p>
