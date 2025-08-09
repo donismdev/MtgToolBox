@@ -34,6 +34,7 @@ import { applyLifeFontSize } from './ui.js';
     window.centerButtons = document.getElementById('center-buttons');
     window.playerCountMenu = document.getElementById('player-count-menu');
     window.diceCountMenu = document.getElementById('diceCountMenu');
+	window.randomMenu = document.getElementById('random-menu');
     window.settingsMenu = document.getElementById('settingsMenu');
     window.lifeMaxMenu = document.getElementById('lifeMaxMenu');
     window.fontSizeMenu = document.getElementById('fontSizeMenu');

@@ -1,5 +1,5 @@
 import { Player } from './player.js';
-import { showMenu, hideAllOverlays, applyLifeFontSize } from './ui.js';
+import { showMenu, hideAllOverlays, applyLifeFontSize, showNumberSelector, showCardSelector } from './ui.js';
 import { rollDiceVisual } from './dice.js';
 import { initiativeManager } from './initiative.js';
 import { allThemes } from './themes.js';
@@ -144,10 +144,20 @@ export function setupEventListeners() {
     });
 
     document.getElementById('dice-button').addEventListener('click', () => {
-        showMenu(window.diceCountMenu, '굴릴 주사위 개수', [1, 2, 3, 4, 5, 6], (count) => {
-            rollDiceVisual(count, window.localSettings.diceSides);
-        });
-    });
+
+		showMenu(window.randomMenu, '무작위 선택', ['카드', '숫자', '주사위'], (selection) => {
+			if (selection === '카드') {
+				showCardSelector(); // 2단계에서 만들 카드 선택 함수
+			} else if (selection === '숫자') {
+				showNumberSelector(); // 3단계에서 만들 숫자 선택 함수
+			} else if (selection === '주사위') {
+				// 기존 주사위 굴리기 로직
+				showMenu(window.diceCountMenu, '굴릴 주사위 개수', [1, 2, 3, 4, 5, 6], (count) => {
+					rollDiceVisual(count, window.localSettings.diceSides);
+				});
+			}
+		});
+	});
 
     document.getElementById('settings-button').addEventListener('click', () => {
         

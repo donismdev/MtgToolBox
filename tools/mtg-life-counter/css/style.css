@@ -263,50 +263,92 @@
 					}
 
 					/* Dice & Menus */
-					.dice-container {
-						position: absolute; top: 50%; left: 50%;
-						transform: translate(-50%, -50%);
-						width: 90%; display: none; justify-content: center;
-						align-items: center; gap: 1rem;
-						z-index: 950;
+					/* 주사위가 굴러다닐 글로벌 컨테이너 */
+					#global-dice-container {
+						position: fixed;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						pointer-events: none; /* 클릭은 통과시켜서 아래 overlay가 닫을 수 있도록 */
+						z-index: 1020; /* 모든 요소 중 최상단 */
+						padding: 20px;
+						box-sizing: border-box;
 					}
-					.dice-container.pushed-up { top: 40%; }
-					.dice-container.pushed-down { top: 60%; }
 
-					.individual-dice-wrapper {
-						display: flex; gap: 0.5rem; overflow-x: auto;
-						justify-content: center; flex-wrap: wrap;
-						max-height: 12rem;
-						scrollbar-width: none;
+					/* 각 플레이어에 해당하는 주사위 '행' */
+					.dice-row {
+						width: 100%;
+						height: 50%; /* 2/4인 기준, 3인은 약간 다를 수 있음 */
+						display: flex;
+						justify-content: center;
+						align-items: center;
+						gap: 1rem;
 					}
-					.individual-dice-wrapper::-webkit-scrollbar { height: 0px; }
+					/* 4인 레이아웃일 때, 위쪽 두 행 */
+					.player-count-4:nth-child(1), .player-count-4:nth-child(2) {
+						height: 50%;
+					}
+					/* 4인 레이아웃일 때, 아래쪽 두 행은 flex-direction을 사용하지 않으므로 global-dice-container에 추가필요 */
+					#global-dice-container[data-player-count="4"] {
+						flex-wrap: wrap;
+						flex-direction: row;
+					}
+					#global-dice-container[data-player-count="4"] .dice-row {
+						width: 50%;
+						height: 50%;
+					}
+
+
+					/* 개별 주사위 스타일 */
 					.dice {
-						flex-shrink: 0; min-width: 3rem; height: 3rem;
-						font-size: 1.8rem; font-weight: bold;
-						background-color: #34495e; color: white;
-						border-radius: 0.5rem; display: flex;
-						justify-content: center; align-items: center;
-						box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-						transform: rotate(0deg) !important;
+						min-width: 3.5rem;
+						height: 3.5rem;
+						font-size: 2rem;
+						font-weight: bold;
+						background-color: #f0f0f0;
+						color: #333;
+						border: 2px solid #ccc;
+						border-radius: 0.5rem;
+						display: flex;
+						justify-content: center;
+						align-items: center;
+						box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 0 5px rgba(255,255,255,0.5);
+						transform: rotate(0deg);
 					}
-					.dice.rolling { animation: diceRollAnimation 0.1s infinite alternate; }
-					@keyframes diceRollAnimation { from { transform: scale(1); } to { transform: scale(1.02); } }
-					.dice.finalized {
-						background-color: #2ecc71;
-						animation: diceFinalizeAnimation 0.5s ease-out forwards;
+
+					/* 착지 애니메이션 */
+					.dice.landed {
+						animation: dice-land 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 					}
-					@keyframes diceFinalizeAnimation { from { transform: scale(0.8); } to { transform: scale(1); } }
+
+					@keyframes dice-land {
+						0% { transform: scale(1.2) rotate(15deg); }
+						50% { transform: scale(0.9) rotate(-10deg); }
+						100% { transform: scale(1) rotate(0deg); }
+					}
+
+					/* 합계 표시 스타일 */
 					.dice-sum-display {
-						flex-shrink: 0; width: 4rem; height: 4rem;
-						font-size: 2.5rem; font-weight: bold;
-						color: white; background-color: #e74c3c;
-						border-radius: 0.5rem; display: flex;
-						justify-content: center; align-items: center;
+						min-width: 4rem;
+						height: 4rem;
+						font-size: 2.5rem;
+						/* ... 나머지 스타일은 기존과 유사하게 유지 ... */
+						color: white;
+						background-color: #e74c3c;
+						border-radius: 0.5rem;
+						display: flex;
+						justify-content: center;
+						align-items: center;
 						box-shadow: 0 4px 8px rgba(0,0,0,0.4);
 						transition: opacity 0.3s ease, transform 0.3s ease;
-						opacity: 0; transform: scale(0.8);
+						opacity: 0;
+						transform: scale(0.8);
 					}
-					.dice-sum-display.show { opacity: 1; transform: scale(1); }
+					.dice-sum-display.show {
+						opacity: 1;
+						transform: scale(1);
+					}
 
 					.overlay {
 						position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -327,6 +369,9 @@
 						font-size: 1rem; background: #444;
 						border-radius: 0.3rem; cursor: pointer; text-align: center;
 					}
+
+
+
 					#three-player-layout-buttons { display: none; }
 
 					/* Rotate Button */
@@ -2031,4 +2076,103 @@ flex-basis: 50%;
     /* ✅ [수정] 아래 두 줄을 수정/추가해주세요. */
     color: white; /* 글자색을 흰색으로 고정 */
     text-shadow: 0 0 5px black, 0 0 10px black, 0 0 15px black; /* 검은색 글로우 효과를 여러 겹으로 적용하여 선명하게 만듭니다. */
+}
+
+/* 토글버튼 */
+/* 카드 결과창 전체 컨테이너 */
+.card-picker-container {
+    position: fixed;
+    /* ✅ [수정] 중앙(50%)보다 높은 35% 위치로 변경 */
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* ✅ [수정] 중앙 메뉴와 비슷하도록 최대 너비 지정 */
+    width: 90%;
+    max-width: 360px;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    /* ✅ [수정] 카드 사이 간격을 10px로 축소 */
+    gap: 10px;
+    padding: 10px; /* 내부 여백도 살짝 줄임 */
+    z-index: 1010;
+    pointer-events: none;
+}
+
+/* 기본 카드 뒷면 스타일 (크기 대폭 축소) */
+.card-back {
+    /* ✅ [수정] 카드 크기를 절반으로 줄입니다. */
+    width: 40px;
+    height: 60px;
+    
+    background-color: #3e2a53;
+    /* ✅ [수정] 보더 두께 축소 */
+    border: 2px solid #7a5a93;
+    /* ✅ [수정] 모서리 둥글기 축소 */
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+/* 선택된 카드를 위한 하이라이트 스타일 (효과 축소) */
+.card-back.selected {
+    border-color: #ffd700;
+    /* ✅ [수정] 빛나는 효과를 작은 크기에 맞게 줄입니다. */
+    box-shadow: 0 0 8px #ffd700, 0 0 15px #ffd700;
+    transform: scale(1.05);
+}
+
+.number-picker-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 350px;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1010;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.number-picker-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.slider-wrapper {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-wrapper input[type="range"] {
+    flex-grow: 1;
+}
+
+.slider-wrapper span {
+    font-size: 1.5rem;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: underline dashed;
+}
+
+.random-number-button {
+    padding: 10px 25px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: #3498db;
+    color: white;
 }

@@ -34,48 +34,67 @@ async function animateAndRollForPlayer(player, count, sides) {
     return { sum, results, sumDisplay };
 }
 
-export function rollDiceVisual(count, sides) {
-    hideAllOverlays();
-    window.centerButtons.style.display = 'none';
+export function rollDiceVisual(count, sides, predefinedResults = null) {
+
+	hideAllOverlays();
+
+    window.activeUI = 'dice';
+    // 암막(overlay)을 먼저 표시합니다.
     window.overlay.style.display = 'block';
-    window.activeUI = 'diceRolling';
 
-    (async () => {
-        const resolvedSums = new Set();
+    const globalDiceContainer = document.getElementById('global-dice-container');
+    globalDiceContainer.innerHTML = ''; // 이전 주사위 초기화
+
+    let totalSum = 0;
+    const results = predefinedResults || Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1);
+
+    // 각 플레이어의 위치에 맞춰 주사위가 표시될 '행'을 만듭니다.
+    window.players.forEach(p => {
+        const diceRow = document.createElement('div');
+        diceRow.className = `dice-row ${p.elements.area.className}`; // 플레이어 영역의 클래스를 복사해 위치를 잡습니다.
+        globalDiceContainer.appendChild(diceRow);
         
-        const playerPromises = window.players.map(async player => {
-            player.elements.area.classList.add('dice-rolling');
-            
-            let result;
-            let isUnique = false;
+        // 배경을 흐릿하게 만듭니다.
+        p.elements.area.classList.add('dice-rolling');
+    });
 
-            while (!isUnique) {
-                result = await animateAndRollForPlayer(player, count, sides);
-                if (!resolvedSums.has(result.sum)) {
-                    isUnique = true;
-                    resolvedSums.add(result.sum);
-                }
-            }
+    const allDiceElements = [];
 
-            if (result.results.length > 1) {
-                result.sumDisplay.textContent = result.sum;
-                result.sumDisplay.classList.add('show');
-            }
+    // 주사위 생성
+    results.forEach((result, i) => {
+        totalSum += result;
+        const diceRows = document.querySelectorAll('.dice-row');
+        diceRows.forEach(row => {
+            const dice = document.createElement('div');
+            dice.className = 'dice';
+            // tumbling 애니메이션 시작
+            const tumbleInterval = setInterval(() => {
+                dice.textContent = Math.floor(Math.random() * sides) + 1;
+            }, 70);
+
+            // 0.8초 후에 멈추고 결과를 표시
+            setTimeout(() => {
+                clearInterval(tumbleInterval);
+                dice.textContent = result;
+                dice.classList.add('landed'); // 착지 애니메이션
+            }, 800 + i * 200); // 주사위마다 약간의 시간차
+
+            row.appendChild(dice);
+            allDiceElements.push(dice);
         });
-        
-        await Promise.all(playerPromises);
-    })();
+    });
 
-    // --- 수정된 부분 ---
-    // 클릭 핸들러를 안정적인 형태로 수정합니다.
-    window.overlay.onclick = () => {
-        // 1. 플레이어 관련 UI를 항상 정리하고
-        window.players.forEach(p => {
-            p.elements.area.classList.remove('dice-rolling');
-            p.elements.diceContainer.style.display = 'none';
+    // 모든 주사위가 멈춘 후 합계 표시
+    setTimeout(() => {
+        const sumDisplay = document.createElement('div');
+        sumDisplay.className = 'dice-sum-display';
+        sumDisplay.textContent = totalSum;
+
+        const diceRows = document.querySelectorAll('.dice-row');
+        diceRows.forEach(row => {
+            const sumClone = sumDisplay.cloneNode(true);
+            row.appendChild(sumClone);
+            requestAnimationFrame(() => sumClone.classList.add('show'));
         });
-        // 2. 오버레이를 닫습니다.
-        hideAllOverlays();
-        // 3. 더 이상 불필요한 핸들러 재할당 코드는 삭제합니다.
-    };
+    }, 1000 + count * 200);
 }
