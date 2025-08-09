@@ -158,6 +158,13 @@
 			"parent": "MISC",
 			"type": ["html"],
 			"enable": false
+		},
+		{
+			"name": "game-sudoku",
+			"path": "tools/game-sudoku/",
+			"parent": "GAME",
+			"type": ["html"],
+			"enable": true
 		}
 	]
 }
