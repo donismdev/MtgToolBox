@@ -2262,21 +2262,21 @@ flex-basis: 50%;
 /* 낮일 때는 해 보이기, 달 숨김 */
 .player-area.is-day .celestial-sun {
   opacity: 0.95;
-  transform: translate(-6px, 0); /* 고정 위치에서 아주 살짝만 */
+  transform: translate(-16px, 0); /* 고정 위치에서 아주 살짝만 */
 }
 .player-area.is-day .celestial-moon {
   opacity: 0;
-  transform: translate(0, 12px);  /* 살짝 내려간 위치 */
+  transform: translate(0, 22px);  /* 살짝 내려간 위치 */
 }
 
 /* 밤일 때는 달 보이기, 해 숨김 */
 .player-area.is-night .celestial-moon {
   opacity: 0.95;
-  transform: translate(-6px, 0);
+  transform: translate(-16px, 0);
 }
 .player-area.is-night .celestial-sun {
   opacity: 0;
-  transform: translate(0, -12px);
+  transform: translate(0, -22px);
 }
 
 /* 옵션 켜지면 레이어 표시 */
