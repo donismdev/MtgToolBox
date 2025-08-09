@@ -332,11 +332,16 @@ export class Player {
 		console.log(`[1] toggleCounterForSplitView 호출됨: ${counterId}, 추가?: ${isAdding}`);
 		console.log(`[2] 변경 전 카운터 목록:`, [...this.splitViewCounters]);
 
+		// 대응되는 counter setting 찾기
+		const setting = this.counterSettings.find(s => s.id === counterId);
+
 		const index = this.splitViewCounters.indexOf(counterId);
 
 		if (isAdding && index === -1) {
 			if (this.splitViewCounters.length < 4) {
 				this.splitViewCounters.push(counterId);
+				// ⬇️ 헤더 버튼(메인 버튼)에도 노출되도록 enable
+				if (setting != null) setting.enabled = true;
 			} else {
 				alert("분할 화면에는 최대 4개의 카운터만 추가할 수 있습니다.");
 				if (this.optionsModal) {
@@ -346,26 +351,28 @@ export class Player {
 			}
 		} else if (!isAdding && index > -1) {
 			this.splitViewCounters.splice(index, 1);
+			// ⬇️ 분할뷰에서 뺐으면 헤더 버튼도 숨기고 싶다면 꺼준다(필요 없으면 이 줄은 주석)
+			if (setting != null) setting.enabled = false;
 		}
-		
+
 		console.log(`[3] 변경 후 카운터 목록:`, [...this.splitViewCounters]);
 
-		// ✅ 핵심 로직: isSplitViewActive 대신, 배열 길이를 직접 확인합니다.
+		// ⬇️ 헤더 버튼(메인 버튼) 최신화
+		this.rebuildPlayerButtons();
+
+		// 분할 뷰 토글
 		if (this.splitViewCounters.length > 0) {
-			console.log('[4] 카운터가 1개 이상이므로, 분할 화면을 활성화합니다.');
 			this._activateSplitView();
 		} else {
-			console.log('[4] 카운터가 없으므로, 분할 화면을 비활성화합니다.');
 			this._deactivateSplitView();
 		}
 	}
 
-	// [신규] 분할 화면을 활성화하는 내부 헬퍼
-    _activateSplitView() {
+	_activateSplitView() {
+		// 분할 뷰 내용 먼저 그리기
 		this.rebuildSplitView();
-		// `.hidden` 클래스를 추가하여 기본 뷰를 확실히 숨깁니다.
+		// 기본 뷰 숨김, 분할 뷰 표시
 		this.elements.contentWrapper.classList.add('hidden');
-		// `.active` 클래스를 추가하여 분할 뷰를 확실히 표시합니다.
 		this.elements.splitViewContainer.classList.add('active');
 	}
 
@@ -477,39 +484,6 @@ export class Player {
             this.setupInteractiveQuadrant(quadrant, setting); 
         });
     }
-
-	updateCounterValue(setting, action = null, targetElement = null) {
-		if (action === 'increment') setting.count++;
-		else if (action === 'decrement') setting.count--;
-		else if (action === 'reset') setting.count = 0;
-
-		 if (targetElement) {
-			let bubbleText = action; // 'increment', 'decrement', 'reset' 등
-
-			// action이 null이거나 비어있으면 기본 텍스트 설정
-			if (!bubbleText) {
-				bubbleText = "값 변경";
-			}
-
-			// 라벨이 있으면 텍스트에 추가
-			if (setting.label) {
-				bubbleText += `: ${setting.label}`;
-			}
-
-			if (action === 'reset') {
-				bubbleText += " 초기화!";
-			}
-			
-			// 말풍선 표시 함수 호출
-			this.showSpeechBubble(bubbleText, targetElement);
-		}
-
-		// 메인 버튼과 옵션 창 UI는 여기서 동기화합니다.
-		this.rebuildPlayerButtons();
-		if (this.optionsModal && this.optionsModal.elements.counterSettingsList) {
-			this.optionsModal.renderCounterSettingsList();
-		}
-	}
 
 	setupAreaEventListeners() {
 		this.lastTapTime = 0;
