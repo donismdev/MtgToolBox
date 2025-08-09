@@ -53,6 +53,10 @@ export class Player {
 		this.cumulativeFeedbackEl = null;
 		this.feedbackFadeTimeout = null;
 
+		// 낮 / 밤
+		this.isNight = false;
+		this.isCelestialTransitioning = false;
+
 		// 드래그 상태 변수
 		this.isDragging = false;
 		this.isPressing = false;
@@ -71,6 +75,7 @@ export class Player {
 			{ id: 'layout',		label: 'HP Layout',		enabled: false, backgroundSize: '85%' },
 			{ id: 'counter',	label: 'Counters',		enabled: false, backgroundSize: '85%' },
 			{ id: 'note',		label: 'Secret Notes',	enabled: false, backgroundSize: '85%' },
+			{ id: 'daynight',	label: 'Day/Night',		enabled: false, backgroundSize: '85%' },
     	];
 
 		this.counterSettings = [
@@ -152,6 +157,27 @@ export class Player {
 		this.elements.area = document.createElement('div');
 		this.elements.area.id = `${this.id}-area`;
 		this.elements.area.className = 'player-area';
+
+		// 배경 레이어(해/달)
+		this.elements.celestialLayer = document.createElement('div');
+		this.elements.celestialLayer.className = 'celestial-layer';
+		const sun = document.createElement('img');
+		sun.className = 'celestial-sun';
+		sun.src = './assets/sun.png';
+		const moon = document.createElement('img');
+		moon.className = 'celestial-moon';
+		moon.src = './assets/moon.png';
+		this.elements.celestialLayer.append(sun, moon);
+
+		this.elements.area.appendChild(this.elements.celestialLayer);
+
+		const endTransition = () => {
+		this.isCelestialTransitioning = false;
+		this.updateCelestialToggleIcon();
+		};
+		sun.addEventListener('transitionend', endTransition);
+		moon.addEventListener('transitionend', endTransition);
+		this.elements.area.classList.add('is-day');  // 기본은 낮
 
 		// 1. 모든 구성요소를 생성합니다 (순서는 아직 중요하지 않음).
 		
@@ -886,6 +912,24 @@ export class Player {
 							this.executeButtonAction('note');
                         });
                         break;
+					case 'daynight': {
+						const btn = document.createElement('button');
+						btn.className = 'header-button celestial-toggle';
+						// 아이콘은 상태에 따라 sun/moon
+						btn.style.backgroundImage = `url(./assets/${this.isNight ? 'moon' : 'sun'}.png)`;
+						btn.addEventListener('click', (e) => {
+							e.stopPropagation();
+							this.toggleDayNight();
+							this.updateCelestialToggleIcon();
+						});
+						button = btn;
+
+						// 옵션이 켜지면 배경 레이어 표시
+						this.elements.area.classList.add('celestial-enabled');
+						// 상태 반영
+						this.updateCelestialToggleIcon();
+						break;
+					}
 				}
 				if (button) {
 					button.style.backgroundSize = setting.backgroundSize || '85%';
@@ -1188,5 +1232,134 @@ export class Player {
 		};
 		this.lifeLog.push(logEntry);
 		console.log(`Log for ${this.id}:`, logEntry);
+	}
+
+	//=== 낮 / 밤 
+	setDayNightEnabled(enabled) {
+		this.dayNightEnabled = enabled;
+		if (enabled) {
+			this.ensureCelestialLayer(true);          // 없으면 생성
+			this.elements.celestialLayer.classList.add('enabled');  // 보이게
+			// 현재 상태 아이콘으로 베이스 표시
+			const icon = this.dayNight === 'day' ? 'assets/sun.png' : 'assets/moon.png';
+			this.elements.celestialIcon.src = icon;
+		} else {
+			if (this.elements.celestialLayer) {
+			this.elements.celestialLayer.classList.remove('enabled', 'transitioning');
+			}
+		}
+	}
+
+	updateCelestialToggleIcon() {
+	// 현재 렌더된 헤더 버튼 중 daynight 찾기
+	const btn = this.elements.actionButtonContainer.querySelector('.celestial-toggle');
+	if (btn) {
+		btn.style.backgroundImage = `url(./assets/${this.isNight ? 'moon' : 'sun'}.png)`;
+	}
+	}
+
+	toggleDayNight() {
+		if (this.isCelestialTransitioning) return;
+		this.isCelestialTransitioning = true;
+
+		this.isNight = !this.isNight;
+		// 클래스 토글 – CSS transition만으로 처리
+		if (this.isNight) {
+			this.elements.area.classList.remove('is-day');
+			this.elements.area.classList.add('is-night');
+		} else {
+			this.elements.area.classList.remove('is-night');
+			this.elements.area.classList.add('is-day');
+		}
+	}
+
+	toggleTimeOfDay() {
+		const from = this.timeOfDay || 'day';
+		const to = (from === 'day') ? 'night' : 'day';
+		this.timeOfDay = to;
+
+		// 헤더 버튼 아이콘 즉시 갱신(이미 있으시면 유지)
+		const nextIcon = (to === 'day') ? 'assets/sun.png' : 'assets/moon.png';
+		const dayBtn = this.elements.actionButtonContainer
+			.querySelector('.header-button[data-role="daynight"]');
+		if (dayBtn) dayBtn.style.backgroundImage = `url(${nextIcon})`;
+
+		// 배경 애니메이션
+		this._animateCelestialSwap(from, to);
+	}
+
+	_animateCelestialSwap(from, to) {
+		this.ensureCelestialLayer(true);
+		this.isCelestialAnimating = true;
+
+		const fromIcon = (from === 'day') ? 'assets/sun.png' : 'assets/moon.png';
+		const toIcon   = (to   === 'day') ? 'assets/sun.png' : 'assets/moon.png';
+
+		// 전환 시작: 기본 궤도 숨김(visibility), 레이어 표시
+		const layer = this.elements.celestialLayer;
+		layer.classList.add('enabled', 'transitioning');
+		if (this.elements.celestialOrbit) this.elements.celestialOrbit.style.visibility = 'hidden';
+
+		// 나가는 궤도
+		const exitOrbit = document.createElement('div');
+		exitOrbit.className = 'celestial-orbit celestial-exit';
+		const exitImg = document.createElement('img');
+		exitImg.className = 'celestial-icon';
+		exitImg.src = fromIcon;
+		exitOrbit.appendChild(exitImg);
+
+		// 들어오는 궤도
+		const enterOrbit = document.createElement('div');
+		enterOrbit.className = 'celestial-orbit celestial-enter';
+		const enterImg = document.createElement('img');
+		enterImg.className = 'celestial-icon';
+		enterImg.src = toIcon;
+		enterOrbit.appendChild(enterImg);
+
+		layer.append(exitOrbit, enterOrbit);
+
+		// 끝났을 때만 ‘한 번’에 상태/이미지 확정 (여기가 깜빡임 방지 핵심)
+		const done = () => {
+			// 베이스 아이콘을 최종 이미지로 교체 (여기서 ‘한 번에’ 바꿈)
+			this.elements.celestialIcon.src = toIcon;
+
+			// 상태 갱신
+			this.dayNight = to;
+
+			// 정리
+			exitOrbit.remove();
+			enterOrbit.remove();
+			layer.classList.remove('transitioning');
+			if (this.elements.celestialOrbit) this.elements.celestialOrbit.style.visibility = '';
+			this.isCelestialAnimating = false;
+		};
+
+		// 애니 길이 + 알맞은 여유
+		setTimeout(done, 560); // CSS 520ms보다 살짝 여유
+	}
+
+	ensureCelestialLayer() {
+		if (this.elements.celestialLayer) return;
+		const layer = document.createElement('div');
+		layer.className = 'celestial-layer';
+
+		// 기본(베이스) 궤도
+		const orbit = document.createElement('div');
+		orbit.className = 'celestial-orbit base-orbit';
+
+		const img = document.createElement('img');
+		img.className = 'celestial-icon';
+		// 기본은 아무 것도 넣지 않음(옵션 켤 때 세팅)
+		// img.src = '';
+
+		orbit.appendChild(img);
+		layer.appendChild(orbit);
+
+		this.elements.celestialLayer = layer;
+		this.elements.celestialOrbit = orbit;
+		this.elements.celestialIcon  = img;
+
+		// player-area에 가장 뒤쪽(배경)으로 추가
+		this.elements.area.appendChild(layer);
 	}
 }

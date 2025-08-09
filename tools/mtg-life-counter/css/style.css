@@ -2214,3 +2214,77 @@ flex-basis: 50%;
     background-color: #3498db;
     color: white;
 }
+
+/* ==== Day/Night (per player) ==== */
+.day-night-button {
+  width: 48px;
+  height: 48px;
+  background-color: var(--button-bg-color, rgba(0,0,0,0.4));
+  border: 2px solid transparent;
+  border-radius: 20%;
+  background-size: 85%;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.day-night-button:hover {
+  background-color: var(--button-hover-bg-color, rgba(0,0,0,0.6));
+}
+
+/* 기존 */
+/* === Day/Night 배경 (해/달) – 타이머 없이 전환 === */
+.celestial-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;           /* 숫자 등 앞쪽 UI보다 뒤 */
+  pointer-events: none;
+  display: none;        /* 옵션 켜기 전엔 숨김 */
+}
+
+/* 두 개를 겹쳐놓고 opacity만 바꿔서 교차 페이드 */
+.celestial-sun,
+.celestial-moon {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  /* 위치: 우상단에서 살짝 왼쪽으로 (요청 반영: 너무 모서리X) */
+  top: 6%;
+  right: 10%;
+  transform: translate(0, 0);
+  opacity: 0;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45));
+  transition:
+    opacity 380ms ease,
+    transform 380ms ease;   /* 살짝 슬라이드로 ‘오는 느낌’만 */
+}
+
+/* 낮일 때는 해 보이기, 달 숨김 */
+.player-area.is-day .celestial-sun {
+  opacity: 0.95;
+  transform: translate(-6px, 0); /* 고정 위치에서 아주 살짝만 */
+}
+.player-area.is-day .celestial-moon {
+  opacity: 0;
+  transform: translate(0, 12px);  /* 살짝 내려간 위치 */
+}
+
+/* 밤일 때는 달 보이기, 해 숨김 */
+.player-area.is-night .celestial-moon {
+  opacity: 0.95;
+  transform: translate(-6px, 0);
+}
+.player-area.is-night .celestial-sun {
+  opacity: 0;
+  transform: translate(0, -12px);
+}
+
+/* 옵션 켜지면 레이어 표시 */
+.player-area.celestial-enabled .celestial-layer {
+  display: block;
+}
+
+/* 하단 왼쪽 토글 버튼(해/달) – 기존 header buttons와 동일한 톤 */
+.header-button.celestial-toggle {
+  background-size: 85%;
+}

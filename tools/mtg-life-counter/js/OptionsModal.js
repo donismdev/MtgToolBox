@@ -220,6 +220,19 @@ export class OptionsModal {
 
                 setting.enabled = checkbox.checked;
                 this.player.rebuildPlayerButtons();
+
+				// ▶ Day/Night 전용: 배경 레이어 표시/숨김
+				if (setting.id === 'daynight') {
+					if (checkbox.checked) {
+						this.player.elements.area.classList.add('celestial-enabled');
+						// 버튼 아이콘도 현재 상태에 맞춰 갱신
+						if (typeof this.player.updateCelestialToggleIcon === 'function') {
+							this.player.updateCelestialToggleIcon();
+						}
+					} else {
+						this.player.elements.area.classList.remove('celestial-enabled');
+					}
+				}
             };
 
             const labelButton = document.createElement('button');
