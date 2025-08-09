@@ -165,7 +165,6 @@
 			"parent": "MISC",
 			"type": ["html"],
 			"enable": false
-		},
-		
+		}
 	]
 }
