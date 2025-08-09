@@ -214,128 +214,128 @@ export class Player {
 	}
 
 	setupInteractiveQuadrant(quadrantElement, target) {
-        // target can be 'life' string or a counter setting object
-        let lastTapTime = 0;
-        let isPressing = false;
-        let isDragging = false;
-        let longPressTimer = null;
-        let dragStartPos = { x: 0, y: 0 };
-    
-        const DRAG_THRESHOLD = 20;
-        const LONG_PRESS_DURATION = 250;
-    
-        const getPointerPosition = (event) => {
-            const rect = quadrantElement.getBoundingClientRect();
-            return {
-                x: event.clientX - rect.left,
-                y: event.clientY - rect.top
-            };
-        };
-    
-        const handleChange = (amount) => {
-			if (amount === 0) return;
+		let isPressing = false, isDragging = false;
+		let longPressTimer = null, dragStartPos = { x: 0, y: 0 };
+		
+		// ✅ [신규] 드래그 관련 상태 변수
+		let dragChangeAmount = 0; // 드래그 중 누적된 값
+		let dragFeedbackEl = null; // 누적 값을 보여줄 피드백 요소
 
+		// ✅ [조절] 이 값을 높이면 드래그 감도가 둔해집니다 (더 많이 움직여야 1이 오름).
+		const DRAG_SENSITIVITY = 40; 
+		const LONG_PRESS_DURATION = 250;
+
+		const getPointerPosition = (event) => {
+			const rect = quadrantElement.getBoundingClientRect();
+			return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+		};
+
+		const handleChange = (amount) => {
+			if (amount === 0) return;
 			if (target === 'life') {
-				// HP 변경은 기존 로직을 그대로 사용합니다.
-				this.changeLife(amount);
+				this.changeLife(amount); // changeLife의 타이머 로직이 로그를 처리합니다.
 			} else {
-				// 카운터인 경우 (target은 setting 객체)
 				const action = amount > 0 ? 'increment' : 'decrement';
-				
-				// 1. 데이터(모델)만 변경합니다. UI 변경은 여기서 하지 않습니다.
 				for (let i = 0; i < Math.abs(amount); i++) {
 					this.updateCounterValue(target, action, null);
-			}
-
-				// 2. ✅ UI는 여기서 직접 업데이트합니다.
-				// 현재 상호작용 중인 쿼드런트의 숫자 표시 영역을 찾습니다.
-				const valueElement = quadrantElement.querySelector('.counter-quadrant-value');
-				if (valueElement) {
-					// 최신 데이터(target.count)로 내용을 직접 바꿔줍니다.
-					valueElement.textContent = target.count;
 				}
-
-				// 3. 피드백을 표시합니다.
+				const valueElement = quadrantElement.querySelector('.counter-quadrant-value');
+				if (valueElement) valueElement.textContent = target.count;
 				this.showQuadrantFeedback(amount, quadrantElement);
 			}
 		};
+		
+		// --- 이벤트 리스너 설정 ---
+		quadrantElement.addEventListener('pointerdown', (e) => {
+			if (window.activeUI !== null || e.target.closest('.header-button, .player-options-button')) return;
+			e.stopPropagation();
 
-        quadrantElement.addEventListener('pointerdown', (e) => {
-            if (window.activeUI !== null || e.target.closest('.header-button, .player-options-button')) {
-                return;
-            }
-            e.stopPropagation(); // Prevent event from bubbling to parent player-area
-    
-            const now = new Date().getTime();
-            if (now - lastTapTime <= 300) e.preventDefault();
-            lastTapTime = now;
-    
-            isPressing = true;
-            isDragging = false;
-            dragStartPos = getPointerPosition(e);
-    
-            const clickDirection = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
-    
-            longPressTimer = setTimeout(() => {
-                if (isPressing && !isDragging) {
-                    isPressing = false;
-                    const amount = clickDirection * (this.fastChangeAmount - 1);
-                    handleChange(amount);
-                    if (target === 'life') this.showAreaRipple(amount, e);
-                    if (navigator.vibrate) navigator.vibrate(50);
-                }
-            }, LONG_PRESS_DURATION);
-    
-            const onPointerMove = (ev) => {
-                if (!isPressing) return;
-                const currentPos = getPointerPosition(ev);
-                const deltaX = currentPos.x - dragStartPos.x;
-                const deltaY = currentPos.y - dragStartPos.y;
-                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
-                if (distance > DRAG_THRESHOLD) {
-                    isDragging = true;
-                    clearTimeout(longPressTimer);
-                }
-            };
-    
-            const onPointerUp = (ev) => {
-                clearTimeout(longPressTimer);
-    
-                if (isDragging) {
-                    const currentPos = getPointerPosition(ev);
-                    const deltaX = currentPos.x - dragStartPos.x;
-                    const deltaY = currentPos.y - dragStartPos.y;
-                    const adjustMode = window.localSettings.lifeAdjustDirection;
-                    let change = 0;
-    
-                    if (adjustMode === 'horizontal') {
-                        change = Math.round(deltaX / DRAG_THRESHOLD);
-                    } else {
-                        change = Math.round(deltaY / DRAG_THRESHOLD);
-                    }
-                    
-                    const direction = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
-                    const amount = direction * Math.abs(change);
-                    handleChange(amount);
-    
-                } else if (isPressing) {
-                    const amount = getLifeChangeDirection(getPointerPosition(ev), quadrantElement.getBoundingClientRect(), this.rotation);
-                    handleChange(amount);
-                    if (target === 'life') this.showAreaRipple(amount, e);
-                }
-    
-                isPressing = false;
-                isDragging = false;
-    
-                window.removeEventListener('pointermove', onPointerMove);
-                window.removeEventListener('pointerup', onPointerUp);
-            };
-    
-            window.addEventListener('pointermove', onPointerMove);
-            window.addEventListener('pointerup', onPointerUp);
-        });
-    }
+			isPressing = true;
+			isDragging = false;
+			dragStartPos = getPointerPosition(e);
+			dragChangeAmount = 0; // 드래그 시작 시 누적값 초기화
+
+			const clickDirection = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
+
+			longPressTimer = setTimeout(() => {
+				if (isPressing && !isDragging) {
+					handleChange(clickDirection * (this.fastChangeAmount - 1));
+					if (navigator.vibrate) navigator.vibrate(50);
+				}
+			}, LONG_PRESS_DURATION);
+
+			// --- 마우스 이동(드래그) 리스너 ---
+			const onPointerMove = (ev) => {
+				if (!isPressing) return;
+
+				const currentPos = getPointerPosition(ev);
+				const deltaX = currentPos.x - dragStartPos.x;
+				const deltaY = currentPos.y - dragStartPos.y;
+
+				// ✅ [수정] isDragging 활성화 조건을 기존 DRAG_THRESHOLD 대신 SENSITIVITY/2 로 변경
+				if (!isDragging && Math.hypot(deltaX, deltaY) > DRAG_SENSITIVITY / 2) {
+					isDragging = true;
+					clearTimeout(longPressTimer); // 롱클릭 타이머 취소
+
+					// ✅ [신규] 드래그 시작 시 누적 피드백 요소 생성
+					if (!dragFeedbackEl) {
+						dragFeedbackEl = document.createElement('div');
+						dragFeedbackEl.className = 'drag-cumulative-feedback';
+						quadrantElement.appendChild(dragFeedbackEl);
+					}
+				}
+
+				if (isDragging) {
+					const adjustMode = window.localSettings.lifeAdjustDirection;
+					const changeDelta = (adjustMode === 'horizontal') ? deltaX : deltaY;
+					
+					// ✅ [수정] 새 감도를 적용하여 누적값 계산
+					const newTotalAmount = Math.round(changeDelta / DRAG_SENSITIVITY);
+
+					if (newTotalAmount !== dragChangeAmount) {
+						dragChangeAmount = newTotalAmount;
+						
+						// ✅ [신규] 누적 피드백 UI 업데이트
+						const displayAmount = dragChangeAmount > 0 ? `+${dragChangeAmount}` : `${dragChangeAmount}`;
+						dragFeedbackEl.textContent = displayAmount;
+						
+						const theme = this._getThemeByName(this.themeName);
+						if (theme) {
+							dragFeedbackEl.style.color = dragChangeAmount > 0 ? theme.plusColor : theme.minusColor;
+						}
+					}
+				}
+			};
+
+			// --- 마우스 놓기(드래그 종료) 리스너 ---
+			const onPointerUp = (ev) => {
+				clearTimeout(longPressTimer);
+
+				if (isDragging) {
+					// ✅ [수정] 드래그가 끝났을 때, 누적된 값을 한 번만 적용!
+					const direction = getLifeChangeDirection(dragStartPos, quadrantElement.getBoundingClientRect(), this.rotation);
+					handleChange(direction * Math.abs(dragChangeAmount));
+					
+					// ✅ [신규] 누적 피드백 요소 제거
+					if (dragFeedbackEl) {
+						dragFeedbackEl.remove();
+						dragFeedbackEl = null;
+					}
+				} else if (isPressing) {
+					// 일반 클릭 처리
+					handleChange(getLifeChangeDirection(getPointerPosition(ev), quadrantElement.getBoundingClientRect(), this.rotation));
+				}
+
+				isPressing = false;
+				isDragging = false;
+				window.removeEventListener('pointermove', onPointerMove);
+				window.removeEventListener('pointerup', onPointerUp);
+			};
+
+			window.addEventListener('pointermove', onPointerMove);
+			window.addEventListener('pointerup', onPointerUp);
+		});
+	}
 
 	toggleCounterForSplitView(counterId, isAdding) {
 		console.log(`[1] toggleCounterForSplitView 호출됨: ${counterId}, 추가?: ${isAdding}`);
