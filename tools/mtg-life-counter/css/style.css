@@ -1886,6 +1886,8 @@ input[type="range"]::-moz-range-thumb {
     top: 0;
     left: 0;
     overflow: hidden;
+	padding-bottom: 50px; 
+    box-sizing: border-box;
 }
 
 .split-view-container.active {
@@ -1894,8 +1896,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* --- Top HP Area (1/4 height) --- */
 .split-hp-area {
-    flex-basis: 25%;
-    flex-shrink: 0;
+    flex: 1; 
     position: relative;
     display: flex;
     justify-content: center;
@@ -1913,45 +1914,45 @@ input[type="range"]::-moz-range-thumb {
 
 /* Reposition hints for the smaller HP area */
 .split-hp-area .life-hint {
-    font-size: 2rem;
+    position: absolute;
+    font-size: 2.5rem; /* 힌트 크기 */
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
 }
 .split-hp-area .life-hint.increase {
-    /* Position hints closer to the number */
     top: 50%;
-    left: calc(50% + 5rem); 
+    /* HP 숫자 크기에 맞춰 간격을 조정합니다. */
+    left: calc(50% + 6rem); 
     transform: translate(-50%, -50%);
 }
 .split-hp-area .life-hint.decrease {
     top: 50%;
-    left: calc(50% - 5rem);
+    left: calc(50% - 6rem);
     transform: translate(-50%, -50%);
 }
 
 /* --- Bottom Counter Grid (3/4 height) --- */
 .split-counter-grid {
-    flex-grow: 1;
+    /* ✅ [수정] flex: 2; 로 공간의 2/3를 차지하게 합니다. */
+    flex: 2; 
     display: flex;
     flex-wrap: wrap;
 }
 
 .counter-quadrant {
-    /* Each quadrant tries to take up half the width */
-    flex-basis: 50%; 
-    /* Each quadrant takes up half the grid's height */
+flex-basis: 50%;
     height: 50%;
-    /* If there's only one item, it grows to fill the space */
-    flex-grow: 1;
-
     box-sizing: border-box;
-    border: 1px solid rgba(0,0,0,0.1);
-
+    border: 1px solid rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: center; /* 수직 중앙 정렬 */
     align-items: center;
-    gap: 5px;
-    position: relative; /* For potential future additions */
-    color: white; /* Default text color */
+    gap: 2px; /* 요소간 간격 살짝 조정 */
+    position: relative;
+    color: white;
+    padding: 5px; /* 내부 여백 추가 */
 }
 
 /* Special handling for 3 items: last one takes full width */
@@ -1966,31 +1967,54 @@ input[type="range"]::-moz-range-thumb {
 
 
 .counter-quadrant-icon {
-    width: 50%;
-    height: 40%;
-    max-width: 80px;
-    max-height: 80px;
+    width: 80%; /* 너비는 넉넉하게 */
+    /* ✅ [수정] flex: 1; 로 남는 공간을 모두 차지하게 만듭니다. */
+    flex: 1; 
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
+    /* ✅ [추가] 내용이 넘쳐도 아이콘이 줄어들 수 있도록 설정 */
+    min-height: 0; 
 }
 
 .counter-quadrant-value {
-    font-size: 5vh;
+    font-size: 4vh; /* 폰트 크기를 살짝 조정하여 공간 확보 */
     font-weight: bold;
     text-shadow: 0 0 5px black, 0 0 8px black;
 }
 
 .counter-quadrant-label {
-    font-size: 1rem;
-    font-weight: normal;
-    background-color: rgba(0,0,0,0.5);
+    font-size: 0.9rem;
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 2px 8px;
     border-radius: 5px;
-    margin-top: 5px;
-    text-shadow: none;
+    /* ✅ [추가] 라벨이 길어질 경우 대비 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90%;
+}
+
+.counter-quadrant-icon,
+.counter-quadrant-value,
+.counter-quadrant-label {
+    pointer-events: none; /* 아이콘과 텍스트는 클릭 이벤트를 받지 않도록 설정 */
 }
 
 .player-content-wrapper.hidden {
-    display: none !important; /* ✅ !important 추가 */
+    display: none !important;
+}
+
+.quadrant-feedback {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+    pointer-events: none;
+    z-index: 10;
+    opacity: 1;
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
 }

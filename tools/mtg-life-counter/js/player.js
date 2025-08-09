@@ -233,19 +233,21 @@ export class Player {
         };
     
         const handleChange = (amount) => {
-            if (amount === 0) return;
-    
-            if (target === 'life') {
-                this.changeLife(amount);
-            } else {
-                // It's a counter setting object
-                const action = amount > 0 ? 'increment' : 'decrement';
-                for (let i = 0; i < Math.abs(amount); i++) {
-                    // Pass null for targetElement to prevent speech bubble spam
-                    this.updateCounterValue(target, action, null); 
-                }
-            }
-        };
+			if (amount === 0) return;
+
+			if (target === 'life') {
+				this.changeLife(amount);
+			} else {
+				// 카운터인 경우
+				// 1. 루프를 돌며 값을 변경합니다.
+				const action = amount > 0 ? 'increment' : 'decrement';
+				for (let i = 0; i < Math.abs(amount); i++) {
+					this.updateCounterValue(target, action, null);
+				}
+				// 2. 변경이 끝난 후, 피드백을 표시합니다.
+				this.showQuadrantFeedback(amount, quadrantElement);
+			}
+		};
 
         quadrantElement.addEventListener('pointerdown', (e) => {
             if (window.activeUI !== null || e.target.closest('.header-button, .player-options-button')) {
@@ -358,18 +360,49 @@ export class Player {
 
 	// [신규] 분할 화면을 활성화하는 내부 헬퍼
     _activateSplitView() {
-    this.rebuildSplitView();
-    // `.hidden` 클래스를 추가하여 기본 뷰를 숨깁니다.
-    this.elements.contentWrapper.classList.add('hidden');
-    // `.active` 클래스를 추가하여 분할 뷰를 표시합니다.
-    this.elements.splitViewContainer.classList.add('active');
-}
+		this.rebuildSplitView();
+		// `.hidden` 클래스를 추가하여 기본 뷰를 확실히 숨깁니다.
+		this.elements.contentWrapper.classList.add('hidden');
+		// `.active` 클래스를 추가하여 분할 뷰를 확실히 표시합니다.
+		this.elements.splitViewContainer.classList.add('active');
+	}
 
-    // [신규] 분할 화면을 비활성화하는 내부 헬퍼
-    _deactivateSplitView() {
+	// 분할 화면을 비활성화하는 메서드
+	_deactivateSplitView() {
 		// 클래스를 제거하여 원래 상태로 되돌립니다.
 		this.elements.contentWrapper.classList.remove('hidden');
 		this.elements.splitViewContainer.classList.remove('active');
+	}
+
+	showQuadrantFeedback(amount, quadrantElement) {
+		if (!quadrantElement) return;
+
+		// 기존 피드백이 있다면 제거
+		const oldFeedback = quadrantElement.querySelector('.quadrant-feedback');
+		if (oldFeedback) oldFeedback.remove();
+
+		const feedbackEl = document.createElement('div');
+		feedbackEl.className = 'quadrant-feedback'; // CSS 스타일링을 위함
+
+		const displayAmount = amount > 0 ? `+${amount}` : `${amount}`;
+		feedbackEl.textContent = displayAmount;
+
+		const theme = this._getThemeByName(this.themeName);
+		if (theme) {
+			feedbackEl.style.color = amount > 0 ? theme.plusColor : theme.minusColor;
+		}
+		
+		quadrantElement.appendChild(feedbackEl);
+
+		// 잠시 후 사라지는 애니메이션
+		setTimeout(() => {
+			feedbackEl.style.opacity = '0';
+			feedbackEl.style.transform = 'translate(-50%, -150%)';
+		}, 100); // 아주 약간의 딜레이 후 애니메이션 시작
+
+		setTimeout(() => {
+			feedbackEl.remove();
+		}, 800); // 0.8초 후에 DOM에서 완전히 제거
 	}
 
     // [NEW] Dynamically builds the content of the split-screen view
@@ -438,34 +471,31 @@ export class Player {
             }
             
             counterGrid.appendChild(quadrant);
-            this.setupInteractiveQuadrant(quadrant, setting);
+
+            this.setupInteractiveQuadrant(quadrant, setting); 
         });
     }
 
+	updateCounterValue(setting, action = null, targetElement = null) {
+		if (action === 'increment') setting.count++;
+		else if (action === 'decrement') setting.count--;
+		else if (action === 'reset') setting.count = 0;
 
-    // [MODIFIED] Update the new view if it's active
-    updateCounterValue(setting, action, targetElement = null) {
-        // ... (existing logic for changing count and showing speech bubble)
-        if (action === 'increment') setting.count++;
-        else if (action === 'decrement') setting.count--;
-        else if (action === 'reset') setting.count = 0;
+		if (targetElement) { /* ... 기존 말풍선 로직 ... */ }
 
-        if (targetElement) { /* ... show speech bubble logic ... */ }
+		// 모든 UI(메인 버튼, 옵션창)를 데이터에 맞춰 새로고침
+		this.rebuildPlayerButtons();
+		if (this.optionsModal && this.optionsModal.elements.counterSettingsList) {
+			this.optionsModal.renderCounterSettingsList();
+		}
 
-        // --- UI Sync ---
-        this.rebuildPlayerButtons();
-        if (this.optionsModal && this.optionsModal.elements.counterSettingsList) {
-            this.optionsModal.renderCounterSettingsList();
-        }
-
-        // [NEW] Sync with split view if active
-        if (this.isSplitViewActive) {
-            const quadrant = this.elements.splitViewContainer.querySelector(`.counter-quadrant[data-counter-id="${setting.id}"]`);
-            if (quadrant) {
-                quadrant.querySelector('.counter-quadrant-value').textContent = setting.count;
-            }
-        }
-    }
+		// 분할 화면이 켜져있으면, 화면 전체를 다시 그려서 동기화
+		if (this.splitViewCounters.length > 0) {
+			// rebuildSplitView는 내부적으로 최신 setting.count 값을 사용하므로
+			// 숫자와 라벨이 모두 완벽하게 동기화됩니다.
+			this.rebuildSplitView();
+		}
+	}
 
 	setupAreaEventListeners() {
 		this.lastTapTime = 0;
@@ -1015,27 +1045,29 @@ export class Player {
     }
 
 	updateDisplay(withAnimation = false) {
-        // Main view
-        const el = this.elements.lifeTotal;
-        el.textContent = this.life;
-        if (withAnimation) {
-            el.classList.remove('life-total-animate');
-            void el.offsetWidth;
-            el.classList.add('life-total-animate');
-        }
+		// 기본 뷰의 생명점 업데이트
+		const el = this.elements.lifeTotal;
+		el.textContent = this.life;
 
-        // [NEW] Split view
-        if (this.isSplitViewActive && this.elements.splitViewHPValue) {
-            const hpEl = this.elements.splitViewHPValue;
-            hpEl.textContent = this.life;
-            // You can add a different, smaller animation for this one if you like
-            if (withAnimation) {
-                 hpEl.classList.remove('life-total-animate');
-                 void hpEl.offsetWidth;
-                 hpEl.classList.add('life-total-animate');
-            }
-        }
-    }
+		if (withAnimation) {
+			el.classList.remove('life-total-animate');
+			void el.offsetWidth;
+			el.classList.add('life-total-animate');
+		}
+
+		// ✅ [수정] 분할 화면의 생명점도 함께 업데이트
+		// isSplitViewActive 대신 splitViewCounters 배열의 길이로 확인합니다.
+		if (this.splitViewCounters.length > 0 && this.elements.splitViewHPValue) {
+			const hpEl = this.elements.splitViewHPValue;
+			hpEl.textContent = this.life;
+			
+			if (withAnimation) {
+				hpEl.classList.remove('life-total-animate');
+				void hpEl.offsetWidth;
+				hpEl.classList.add('life-total-animate');
+			}
+		}
+	}
 
 	setLife(newLife, isReset = false) {
         this.life = newLife;
