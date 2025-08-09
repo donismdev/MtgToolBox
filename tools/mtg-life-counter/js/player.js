@@ -236,15 +236,26 @@ export class Player {
 			if (amount === 0) return;
 
 			if (target === 'life') {
+				// HP 변경은 기존 로직을 그대로 사용합니다.
 				this.changeLife(amount);
 			} else {
-				// 카운터인 경우
-				// 1. 루프를 돌며 값을 변경합니다.
+				// 카운터인 경우 (target은 setting 객체)
 				const action = amount > 0 ? 'increment' : 'decrement';
+				
+				// 1. 데이터(모델)만 변경합니다. UI 변경은 여기서 하지 않습니다.
 				for (let i = 0; i < Math.abs(amount); i++) {
 					this.updateCounterValue(target, action, null);
+			}
+
+				// 2. ✅ UI는 여기서 직접 업데이트합니다.
+				// 현재 상호작용 중인 쿼드런트의 숫자 표시 영역을 찾습니다.
+				const valueElement = quadrantElement.querySelector('.counter-quadrant-value');
+				if (valueElement) {
+					// 최신 데이터(target.count)로 내용을 직접 바꿔줍니다.
+					valueElement.textContent = target.count;
 				}
-				// 2. 변경이 끝난 후, 피드백을 표시합니다.
+
+				// 3. 피드백을 표시합니다.
 				this.showQuadrantFeedback(amount, quadrantElement);
 			}
 		};
@@ -481,19 +492,31 @@ export class Player {
 		else if (action === 'decrement') setting.count--;
 		else if (action === 'reset') setting.count = 0;
 
-		if (targetElement) { /* ... 기존 말풍선 로직 ... */ }
+		 if (targetElement) {
+			let bubbleText = action; // 'increment', 'decrement', 'reset' 등
 
-		// 모든 UI(메인 버튼, 옵션창)를 데이터에 맞춰 새로고침
+			// action이 null이거나 비어있으면 기본 텍스트 설정
+			if (!bubbleText) {
+				bubbleText = "값 변경";
+			}
+
+			// 라벨이 있으면 텍스트에 추가
+			if (setting.label) {
+				bubbleText += `: ${setting.label}`;
+			}
+
+			if (action === 'reset') {
+				bubbleText += " 초기화!";
+			}
+			
+			// 말풍선 표시 함수 호출
+			this.showSpeechBubble(bubbleText, targetElement);
+		}
+
+		// 메인 버튼과 옵션 창 UI는 여기서 동기화합니다.
 		this.rebuildPlayerButtons();
 		if (this.optionsModal && this.optionsModal.elements.counterSettingsList) {
 			this.optionsModal.renderCounterSettingsList();
-		}
-
-		// 분할 화면이 켜져있으면, 화면 전체를 다시 그려서 동기화
-		if (this.splitViewCounters.length > 0) {
-			// rebuildSplitView는 내부적으로 최신 setting.count 값을 사용하므로
-			// 숫자와 라벨이 모두 완벽하게 동기화됩니다.
-			this.rebuildSplitView();
 		}
 	}
 
