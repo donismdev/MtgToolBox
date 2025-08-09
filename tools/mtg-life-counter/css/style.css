@@ -354,6 +354,7 @@
 						position: fixed; top: 0; left: 0; right: 0; bottom: 0;
 						background: rgba(0,0,0,0.8); /* 80% 불투명도로 변경하여 훨씬 어둡게 */
 						z-index: 900; display: none;
+						background: var(--overlay-bg);
 					}
 					.dice-menu {
 						position: absolute; background: rgba(0, 0, 0, 0.85);
@@ -361,6 +362,8 @@
 						display: none; z-index: 1000; width: 95%; max-width: 600px;
 						box-sizing: border-box; flex-direction: column;
 						align-items: center; left: 50%; transform: translateX(-50%);
+						background: var(--panel-bg);
+  						color: var(--panel-fg);
 					}
 					.dice-menu-label { margin-bottom: 0.8rem; font-weight: bold; font-size: 1.1rem; }
 					.dice-option-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
@@ -1032,6 +1035,7 @@
     justify-content: center;
     align-items: center;
     z-index: 100;
+	background-color: var(--overlay-bg);
 }
 
 /* 옵션 모달 창 */
@@ -1407,17 +1411,49 @@
 
 /* --- CSS 변수: 색상 및 스타일을 쉽게 변경할 수 있습니다 --- */
 :root {
-    color-scheme: light;
-    forced-color-adjust: none;
-    --bg-modal: #2c3e50;
-    --bg-content: #34495e;
-    --primary-color: #3498db;
-    --primary-text-color: #ffffff;
-    --secondary-text-color: #bdc3c7;
-    --border-color: #4a6279;
-    --danger-color: #e74c3c;
-    --success-color: #2ecc71;
-    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* App-wide tokens */
+  --app-bg: #f4f4f4;
+  --app-fg: #111;
+
+  --panel-bg: rgba(0,0,0,0.85);  /* dice-menu 같은 패널 배경 */
+  --panel-fg: #ffffff;
+
+  --modal-bg: #282828;           /* 옵션/모달 기본 배경 */
+  --modal-fg: #f0f0f0;
+  --modal-header-bg: #383838;
+
+  --overlay-bg: rgba(0,0,0,0.8);
+
+  /* 헤더 버튼(글로벌) 기본값 – JS 테마가 세팅 안 해주면 fallback */
+  --button-bg-color: rgba(0,0,0,0.4);
+  --button-hover-bg-color: rgba(0,0,0,0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-bg: #0f1115;
+    --app-fg: #e5e7eb;
+
+    --panel-bg: rgba(20,22,28,0.9);
+    --panel-fg: #e5e7eb;
+
+    --modal-bg: #1e1f22;
+    --modal-fg: #e5e7eb;
+    --modal-header-bg: #2a2c31;
+
+    --overlay-bg: rgba(0,0,0,0.85);
+
+    --button-bg-color: rgba(255,255,255,0.15);
+    --button-hover-bg-color: rgba(255,255,255,0.25);
+  }
+}
+
+body,html{
+  margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:sans-serif;
+  background-color: var(--app-bg);
+  color: var(--app-fg);
+  display:flex;flex-direction:column;
+  color-scheme: light dark; forced-color-adjust:none; touch-action:manipulation;
 }
 
 /* --- 공통 오버레이 --- */
@@ -1838,6 +1874,7 @@ input[type="range"]::-moz-range-thumb {
 	overflow: hidden;
 	z-index: 100;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+	background-color: var(--modal-bg); color: var(--modal-fg);
 }
 
 .player-options-modal .close-button {
@@ -1861,6 +1898,7 @@ input[type="range"]::-moz-range-thumb {
 	align-items: center;
 	padding: 15px 20px;
 	border-bottom: 1px solid #444;
+	background-color: var(--modal-header-bg);
 }
 
 .modal-content-scrollable {

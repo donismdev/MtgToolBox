@@ -1,1 +1,73 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="color-scheme" content="light dark"><title>MTG Life Counter</title><link rel="stylesheet" href="css/style.css"><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head><style>body,html{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:sans-serif;background-color:#f4f4f4!important;color:#f4f4f4!important;display:flex;flex-direction:column;color-scheme:light dark;forced-color-adjust:none;touch-action:manipulation}.no-select{-webkit-user-select:none;-ms-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}</style><body class="no-select"><div class="overlay"></div><div id="global-dice-container"></div> </body><input id="dummy-focus" type="text" readonly="readonly" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"><div id="overlay" class="overlay"></div><div id="player-count-menu" class="dice-menu"></div><div id="random-menu" class="dice-menu"></div><div id="diceCountMenu" class="dice-menu"></div><div id="settingsMenu" class="dice-menu"></div><div id="lifeMaxMenu" class="dice-menu"></div><div id="fontSizeMenu" class="dice-menu"></div><div id="diceSidesMenu" class="dice-menu"></div><div id="three-player-layout-buttons" class="dice-menu"><div class="dice-menu-label">3인 레이아웃 선택</div><div class="dice-option-group"><button id="layout-top-button" class="dice-option">위</button> <button id="layout-bottom-button" class="dice-option">아래</button> <button id="layout-left-button" class="dice-option">왼쪽</button> <button id="layout-right-button" class="dice-option">오른쪽</button></div></div><div id="game-container"></div><div id="dungeon-overlay" class="dungeon-overlay"></div><div id="center-buttons" style="display:none"><button id="dice-button">무작위 선택	</button> <button id="reset-button">라이프 초기화</button> <button id="settings-button">설정</button> <button id="close-button">닫기</button></div><div id="toggle-button-container"><img src="assets/MTG.png" id="toggle-button" alt="Toggle Menu"></div><script type="module" src="js/themes.js"></script><script type="module" src="js/main.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+	<meta name="color-scheme" content="light dark">
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+	<title>MTG Life Counter</title>
+	<link rel="stylesheet" href="css/style.css">
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<style>
+	body,html {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		font-family: sans-serif;
+		background-color: #f4f4f4 !important;
+		color: #f4f4f4 !important;
+		display: flex;
+		flex-direction: column;
+		color-scheme: light dark;
+		forced-color-adjust: none;
+		touch-action: manipulation;
+	}
+	.no-select {
+		-webkit-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		-webkit-tap-highlight-color: transparent;
+		-webkit-touch-callout: none;
+	}
+</style>
+<body class="no-select">
+	<div class="overlay"></div>
+	<div id="global-dice-container"></div>
+</body>
+<input id="dummy-focus" type="text" readonly="readonly" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+<div id="overlay" class="overlay"></div>
+<div id="player-count-menu" class="dice-menu"></div>
+<div id="random-menu" class="dice-menu"></div>
+<div id="diceCountMenu" class="dice-menu"></div>
+<div id="settingsMenu" class="dice-menu"></div>
+<div id="lifeMaxMenu" class="dice-menu"></div>
+<div id="fontSizeMenu" class="dice-menu"></div>
+<div id="diceSidesMenu" class="dice-menu"></div>
+<div id="three-player-layout-buttons" class="dice-menu">
+	<div class="dice-menu-label">3인 레이아웃 선택</div>
+	<div class="dice-option-group">
+		<button id="layout-top-button" class="dice-option">위</button>
+		<button id="layout-bottom-button" class="dice-option">아래</button>
+		<button id="layout-left-button" class="dice-option">왼쪽</button>
+		<button id="layout-right-button" class="dice-option">오른쪽</button>
+	</div>
+</div>
+<div id="game-container"></div>
+<div id="dungeon-overlay" class="dungeon-overlay"></div>
+<div id="center-buttons" style="display:none">
+	<button id="dice-button">무작위 선택</button>
+	<button id="reset-button">라이프 초기화</button>
+	<button id="settings-button">설정</button>
+	<button id="close-button">닫기</button>
+</div>
+<div id="toggle-button-container">
+	<img src="assets/MTG.png" id="toggle-button" alt="Toggle Menu">
+</div>
+<script type="module" src="js/themes.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
