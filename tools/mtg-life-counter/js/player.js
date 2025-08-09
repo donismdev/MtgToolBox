@@ -652,13 +652,9 @@ export class Player {
 
 	updateCounterValue(setting, action, targetElement = null) {
 		// 1. action에 따라 데이터(count)를 변경합니다.
-		if (action === 'increment') {
-			setting.count++;
-		} else if (action === 'decrement') {
-			setting.count--;
-		} else if (action === 'reset') {
-			setting.count = 0;
-		}
+		if (action === 'increment') setting.count++;
+		else if (action === 'decrement') setting.count--;
+		else if (action === 'reset') setting.count = 0;
 		// action이 null이면(라벨만 변경된 경우 등) 데이터 변경 없이 UI만 새로고침합니다.
 
 		// 2. targetElement가 있고(메인 버튼 클릭) 라벨이 존재하면 말풍선을 표시합니다.
@@ -687,6 +683,9 @@ export class Player {
         if (this.optionsModal && this.optionsModal.elements.counterSettingsList) {
             this.optionsModal.renderCounterSettingsList();
         }
+		if (this.splitViewCounters.length > 0) {
+        this.rebuildSplitView();
+   		}
     }
 
 	showSpeechBubble(text, buttonElement) {
