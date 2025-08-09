@@ -34,14 +34,21 @@
 			"enable": true
 		},
 		{
+			"name": "game-sudoku",
+			"path": "tools/game-sudoku/",
+			"parent": "GAME",
+			"type": ["html", "html_modal"],
+			"enable": true,
+			"modalIcon": "🎮",
+			"modalIconColor": "#007bff"
+		},
+		{
 			"name": "mtg-ability-finder",
 			"parent": "MTG",
 			"description": "MTG 카드의 능력을 찾는 도구입니다.",
 			"path": "tools/mtg-ability-finder/",
-			"type": ["html", "html_modal"],
-			"enable": true,
-            "modalIcon": "A",
-            "modalIconColor": "#6c757d"
+			"type": ["html"],
+			"enable": true
 		},
         {
 			"name": "mtg-life-counter",
@@ -159,12 +166,6 @@
 			"type": ["html"],
 			"enable": false
 		},
-		{
-			"name": "game-sudoku",
-			"path": "tools/game-sudoku/",
-			"parent": "GAME",
-			"type": ["html"],
-			"enable": true
-		}
+		
 	]
 }
