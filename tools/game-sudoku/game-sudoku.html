@@ -27,6 +27,8 @@
   .notes{ position:absolute; top:4px; bottom:6px; left:5px; right:5px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); place-items:center; gap:0; font-size:calc(var(--cell)*0.19); line-height:1; letter-spacing:-.75px; pointer-events:none; }
   .note{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
   .note.b{ color:#1d4ed8; } .note.r{ color:#b91c1c; }
+
+  /* 케이지 */
   .cage-seg{ position:absolute; pointer-events:none; }
   .seg{ border-color:transparent; }
   .seg.top{ left:var(--inset); right:var(--inset); top:var(--inset); height:0; border-top:2px dashed var(--cage); opacity:.95; }
@@ -34,21 +36,28 @@
   .seg.left{ top:var(--inset); bottom:var(--inset); left:var(--inset); width:0; border-left:2px dashed var(--cage); opacity:.95; }
   .seg.right{ top:var(--inset); bottom:var(--inset); right:var(--inset); width:0; border-right:2px dashed var(--cage); opacity:.95; }
   .cage-sum{ position:absolute; font-size:calc(var(--cell)*0.19); color:#0b2545; padding:0 2px; pointer-events:none; z-index:3; left:0px; top:-2px; background:#fff; font-weight:600; line-height:1; }
+
+  /* 하이라이트 */
   .cell.rc-row{ background:rgba(173,216,255,.35); } .cell.rc-col{ background:rgba(173,216,255,.35); } .cell.rc-center{ background:rgba(123,186,255,.5); }
   @keyframes pulse{ 50%{ transform:scale(1.3);} }
   .cell .num.animate{ animation:pulse .3s ease-in-out; }
 
-  /* 모바일 패널: 보드 아래에 세로 스택 */
+  /* 패널 */
   .panel{ width:100%; max-width: calc(var(--cell)*9 + 16px); background:var(--panel); border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(0,0,0,.1); }
   .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px; }
   .row.grid3{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
-  .row.grid4{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .row.grid4{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
   .row.grid2{ display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
   .row.grid12{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; } /* numpad line */
   .row.center{ justify-content:space-between; }
   h1{ font-size:18px; margin:0; }
   .header{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  button, select, input[type="number"]{ font-size:16px; border:none; border-radius:10px; padding:10px 12px; background:var(--btn); color:var(--text); cursor:pointer; box-shadow:inset 0 -2px 0 rgba(0,0,0,.06); }
+
+  button, select, input[type="number"]{
+    font-size:16px; border:none; border-radius:10px; padding:10px 12px;
+    background:var(--btn); color:var(--text); cursor:pointer; box-shadow:inset 0 -2px 0 rgba(0,0,0,.06);
+    min-width:0; white-space:nowrap;
+  }
   button.primary{ background:#cfe1fb; font-weight:700; }
   button:active{ transform:translateY(1px); }
   .numpad{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
@@ -56,10 +65,16 @@
   .small{ font-size:13px; opacity:.85; }
   .outbox{ width:100%; min-height:120px; resize:vertical; font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:10px; border-radius:10px; border:1px solid #cfe1fb; background:#fff; }
 
-  /* 큰 화면에선 좌우 배치 */
+  /* 큰 화면에서 좌우 배치 */
   @media (min-width: 900px){
     .app{ flex-direction:row; align-items:flex-start; gap:20px; }
     .panel{ max-width:380px; position:sticky; top:10px; }
+  }
+
+  /* 모드 버튼 하이라이트 공통 */
+  .mode-btn.active, button.active{
+    outline:2px solid #82aaff;
+    background:#dbe9ff;
   }
 </style>
 </head>
@@ -80,13 +95,13 @@
 
     <!-- 1줄: 노트1 / 노트2 / 기록 / Delete -->
     <div class="row grid4">
-      <button id="modeNote1" title="노트1 (q)">노트1</button>
-      <button id="modeNote2" title="노트2 (w)">노트2</button>
-      <button id="modeDigit" title="숫자기입 (e)">✏️</button>
-      <button id="btnDelete" title="삭제 (r)">Delete</button>
+      <button id="modeNote1" class="mode-btn" title="노트1 (q)">노트1</button>
+      <button id="modeNote2" class="mode-btn" title="노트2 (w)">노트2</button>
+      <button id="modeDigit" class="mode-btn" title="숫자기입 (e)">✏️</button>
+      <button id="btnDelete"  class="mode-btn" title="삭제 (r)">Delete</button>
     </div>
 
-    <!-- 숫자 키패드 -->
+    <!-- 숫자 키패드(한 줄에 3개씩) -->
     <div id="numpad" class="row grid12"></div>
 
     <!-- Undo/Redo/힌트/정답 한 줄 -->
@@ -97,7 +112,7 @@
       <button id="btnRevealM" title="정답 M개 랜덤 공개">정답 M개</button>
     </div>
 
-    <!-- 다시시작 / 새로고침 한 줄 (header에도 있지만 모바일 흐름상 한 번 더 둠: 필요없으면 제거해도 됨) -->
+    <!-- 다시시작 / 새로고침 -->
     <div class="row grid2">
       <button id="resetPuzzle2" title="현재 퍼즐을 처음부터 다시">다시시작</button>
       <button id="newGame2" class="primary" title="새 퍼즐">새로고침</button>
@@ -138,7 +153,7 @@
 
 <script type="module">
 /* ================= Version & Utils ================= */
-function version(){ return "5.1.0"; }
+function version(){ return "5.1.1"; }
 console.log("버전:", version());
 const $=(q,el=document)=>el.querySelector(q);
 const $$=(q,el=document)=>Array.from(el.querySelectorAll(q));
@@ -173,17 +188,47 @@ const Game=(()=>{ const st={ mode:'sudoku', board:Array(81).fill(0), given:Array
   function push(){ st.undo.push(snapshot()); if(st.undo.length>200) st.undo.shift(); st.redo.length=0; }
   function _countPlaced(){ let p=0; for(let i=0;i<81;i++){ if(!st.given[i]&&st.board[i]>0) p++; } return p; }
   function progress(){ let play=0; for(let i=0;i<81;i++){ if(!st.given[i]) play++; } return play?(_countPlaced()/play):1; }
+
   return {
     st, push, restore,
     undo(){ if(!st.undo.length)return; const s=st.undo.pop(); st.redo.push(snapshot()); restore(s); UI.renderAll(); },
     redo(){ if(!st.redo.length)return; const s=st.redo.pop(); st.undo.push(snapshot()); restore(s); UI.renderAll(); },
-    select(i){ st.selected=i; UI.renderSelection(); UI.applyRowColHighlight(i); },
-    setDigit(n){ if(st.selected<0||st.given[st.selected])return; push(); st.board[st.selected]=n; st.notes1[st.selected].clear(); st.notes2[st.selected].clear(); UI.renderAll(); UI.animateMatchingNumbers(n); Bus.emit('progress:changed',{mode:st.mode,ratio:progress()}); if(isSolvedNow()){ Timer.stop(); alert(`축하합니다! 퍼즐을 완료했습니다.\n경과 시간: ${Timer.format(Timer.elapsedMs())}`); } },
-    clear(){ if(st.selected<0||st.given[st.selected])return; push(); st.board[st.selected]=0; st.notes1[st.selected].clear(); st.notes2[st.selected].clear(); UI.renderAll(); Bus.emit('progress:changed',{mode:st.mode,ratio:progress()}); if(isSolvedNow()){ Timer.stop(); alert(`축하합니다! 퍼즐을 완료했습니다.\n경과 시간: ${Timer.format(Timer.elapsedMs())}`); } },
-    toggleNote(n){ if(st.selected<0||st.given[st.selected])return; push(); const set=(st.inputMode==='note2')?st.notes2[st.selected]:st.notes1[st.selected]; if(set.has(n)) set.delete(n); else set.add(n); UI.renderAll(); },
+    select(i){ st.selected=i; UI.renderSelection(); UI.applyRowColHighlight(i);
+      // 삭제 모드에서는 클릭 즉시 삭제(주어진 칸 제외)
+      if(st.inputMode==='delete' && i>=0 && !st.given[i] && st.board[i]!==0){ push(); st.board[i]=0; st.notes1[i].clear(); st.notes2[i].clear(); UI.renderAll(); }
+    },
+    setDigit(n){
+      if(st.selected<0||st.given[st.selected])return;
+      if(st.inputMode==='delete'){ // delete 모드에서 숫자 눌러도 삭제 동작
+        this.clear(); return;
+      }
+      push(); st.board[st.selected]=n; st.notes1[st.selected].clear(); st.notes2[st.selected].clear();
+      UI.renderAll(); UI.animateMatchingNumbers(n);
+      Bus.emit('progress:changed',{mode:st.mode,ratio:progress()});
+      if(isSolvedNow()){ Timer.stop(); alert(`축하합니다! 퍼즐을 완료했습니다.\n경과 시간: ${Timer.format(Timer.elapsedMs())}`); }
+    },
+    clear(){
+      if(st.selected<0||st.given[st.selected])return;
+      push(); st.board[st.selected]=0; st.notes1[st.selected].clear(); st.notes2[st.selected].clear();
+      UI.renderAll();
+      Bus.emit('progress:changed',{mode:st.mode,ratio:progress()});
+    },
+    toggleNote(n){
+      if(st.selected<0||st.given[st.selected])return;
+      if(st.inputMode==='delete'){ this.clear(); return; }
+      push(); const set=(st.inputMode==='note2')?st.notes2[st.selected]:st.notes1[st.selected];
+      if(set.has(n)) set.delete(n); else set.add(n);
+      UI.renderAll();
+    },
     setMode(m){ st.mode=m; },
     setInputMode(m){ st.inputMode=m; UI.updateInputModeButtons(); },
-    load(grid,cages,solution){ st.board=[...grid]; st.given=grid.map(v=>v>0); st.cages=cages||[]; st.notes1=Array.from({length:81},()=>new Set()); st.notes2=Array.from({length:81},()=>new Set()); st.selected=-1; st.undo.length=0; st.redo.length=0; st.solution=solution||null; UI.renderAll(); Timer.start(); },
+    load(grid,cages,solution){
+      st.board=[...grid]; st.given=grid.map(v=>v>0); st.cages=cages||[];
+      st.notes1=Array.from({length:81},()=>new Set()); st.notes2=Array.from({length:81},()=>new Set());
+      st.selected=-1; st.undo.length=0; st.redo.length=0; st.solution=solution||null;
+      UI.renderAll(); Timer.start();
+      this.setInputMode('digit'); // 로딩 시 연필 모드 기본 선택 & 하이라이트
+    },
     get(){ return st; }
   };
 })();
@@ -198,66 +243,270 @@ const UI=(()=>{ const boardEl=$("#board");
   const hookConfirmReset=btn=>btn.addEventListener('click',()=>{ if(confirm("현재 퍼즐의 입력과 노트를 모두 지우고\n처음 상태로 다시 시작합니다.\n진행할까요?")){ resetToGivens(); Timer.start(); }});
   hookConfirmReset($("#resetPuzzle")); hookConfirmReset($("#resetPuzzle2"));
 
+  // 모드 버튼들
   $("#modeNote1").addEventListener('click',()=>Game.setInputMode('note1'));
   $("#modeNote2").addEventListener('click',()=>Game.setInputMode('note2'));
   $("#modeDigit").addEventListener('click',()=>Game.setInputMode('digit'));
-  $("#btnDelete").addEventListener('click',()=>Game.clear());
+  // 삭제 버튼: 모드 전환 + 선택 칸 즉시 한 번 삭제
+  $("#btnDelete").addEventListener('click',()=>{
+    Game.setInputMode('delete');
+    const st=Game.get();
+    if(st.selected>=0 && !st.given[st.selected] && st.board[st.selected]!==0) Game.clear();
+  });
+
   $("#mode").onchange=()=>{ Input.newGame(); syncCountInputs(); };
-  $("#difficulty").onchange=()=>Input.newGame();
+  $("#difficulty").onchange=()=> Input.newGame();
   $("#undo").onclick=()=>Game.undo();
   $("#redo").onclick=()=>Game.redo();
+
   $("#btnHintN").onclick=()=>Assist.runHintsN(Config.get(Game.get().mode).hintN);
   $("#btnRevealM").onclick=()=>Assist.runRevealM(Config.get(Game.get().mode).revealM);
   $("#saveCounts").onclick=()=>{ const mode=$("#mode").value; const hintN=+$("#hintCount").value|0, revealM=+$("#revealCount").value|0; Config.set(mode,{hintN:Math.max(0,Math.min(20,hintN)), revealM:Math.max(0,Math.min(20,revealM))}); alert(`저장됨 (${mode}) → 힌트:${Config.get(mode).hintN} / 정답:${Config.get(mode).revealM}`); };
+
   function syncCountInputs(){ const mode=$("#mode").value; const {hintN,revealM}=Config.get(mode); $("#hintCount").value=hintN; $("#revealCount").value=revealM; }
   syncCountInputs();
 
   function animateMatchingNumbers(value){ if(!value)return; $$('.cell',boardEl).forEach((cell)=>{ const numEl=$('.num',cell); if(numEl && parseInt(numEl.textContent)===value){ numEl.classList.add('animate'); numEl.addEventListener('animationend',()=>numEl.classList.remove('animate'),{once:true}); } }); }
   function renderSelection(){}
   function applyRowColHighlight(i){ $$('.cell').forEach(el=>el.classList.remove('rc-row','rc-col','rc-center')); if(i<0)return; const [r,c]=rcFrom(i); for(let k=0;k<9;k++){ $$('.cell')[idx(r,k)].classList.add('rc-row'); $$('.cell')[idx(k,c)].classList.add('rc-col'); } $$('.cell')[i].classList.add('rc-center'); }
-  function conflicts(){ const st=Game.get(); const bad=new Set(); function scan(list){ const seen={}; for(const i of list){ const v=st.board[i]; if(!v) continue; if(seen[v]){ bad.add(i); bad.add(seen[v]); } else seen[v]=i; } } for(let r=0;r<9;r++) scan([...Array(9)].map((_,k)=>idx(r,k))); for(let c=0;c<9;c++) scan([...Array(9)].map((_,k)=>idx(k,c))); for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ const list=[]; for(let k=0;k<9;k++){ list.push(idx(br*3+Math.floor(k/3), bc*3+k%3)); } scan(list); } let badCage=new Set(); if(st.mode==='killer'){ for(const cg of st.cages){ const list=cg.cells.map(([r,c])=>idx(r,c)); let sum=0; const seen={}; let over=false; for(const i of list){ const v=st.board[i]; if(v){ sum+=v; if(seen[v]){ badCage.add(i); badCage.add(seen[v]); } else seen[v]=i; }} if(sum>cg.sum) over=true; if(over || (list.every(i=>st.board[i]>0) && sum!==cg.sum)) list.forEach(i=>badCage.add(i)); } } return {bad,badCage}; }
-  function renderAll(){ const st=Game.get(); $$('.cell',boardEl).forEach((el,i)=>{ el.innerHTML=''; el.classList.toggle('given', st.given[i]); const v=st.board[i]; if(v){ const s=document.createElement('div'); s.className='num'; s.textContent=v; el.appendChild(s); } else { const g=document.createElement('div'); g.className='notes'; for(let d=1;d<=9;d++){ const n=document.createElement('div'); n.className='note'; if(st.notes1[i].has(d)){ n.classList.add('b'); n.textContent=d; } if(st.notes2[i].has(d)){ n.classList.add('r'); n.textContent=d; } g.appendChild(n);} el.appendChild(g);} el.classList.remove('conflict','same','rc-row','rc-col','rc-center'); }); if(st.selected>=0 && st.board[st.selected]){ const val=st.board[st.selected]; $$('.cell',boardEl).forEach((el,i)=>{ if(st.board[i]===val) el.classList.add('same'); }); } const {bad,badCage}=conflicts(); bad.forEach(i=>$$('.cell')[i].classList.add('conflict')); badCage.forEach(i=>$$('.cell')[i].classList.add('conflict')); drawCages(); applyRowColHighlight(st.selected); }
-  function drawCages(){ const st=Game.get(); $$('.cage-seg',boardEl).forEach(e=>e.remove()); $$('.cage-sum',boardEl).forEach(e=>e.remove()); if(st.mode!=='killer'||!st.cages.length)return; for(const cg of st.cages){ const set=new Set(cg.cells.map(([r,c])=>idx(r,c))); let min=Infinity,minCell=[0,0]; for(const [r,c] of cg.cells){ const i=idx(r,c); if(i<min){ min=i; minCell=[r,c]; } } const host=$(`.cell[data-r="${minCell[0]}"][data-c="${minCell[1]}"]`); const sumEl=document.createElement('div'); sumEl.className='cage-sum'; sumEl.textContent=cg.sum; host.appendChild(sumEl); for(const [r,c] of cg.cells){ const cell=$(`.cell[data-r="${r}"][data-c="${c}"]`); const neighbors={top:[r-1,c,'top'],right:[r,c+1,'right'],bottom:[r+1,c,'bottom'],left:[r,c-1,'left']}; for(const k of Object.keys(neighbors)){ const [nr,nc,dir]=neighbors[k]; const inside=nr>=0&&nr<9&&nc>=0&&nc<9&&set.has(idx(nr,nc)); if(!inside){ const seg=document.createElement('div'); seg.className=`cage-seg seg ${dir}`; cell.appendChild(seg); } } } } }
-  function updateInputModeButtons(){ const m=Game.get().inputMode; ['modeNote1','modeNote2','modeDigit'].forEach(id=>$('#'+id).classList.remove('active')); if(m==='note1')$('#modeNote1').classList.add('active'); else if(m==='note2')$('#modeNote2').classList.add('active'); else $('#modeDigit').classList.add('active'); }
+
+  function conflicts(){
+    const st=Game.get(); const bad=new Set();
+    function scan(list){ const seen={}; for(const i of list){ const v=st.board[i]; if(!v) continue; if(seen[v]){ bad.add(i); bad.add(seen[v]); } else seen[v]=i; } }
+    for(let r=0;r<9;r++) scan([...Array(9)].map((_,k)=>idx(r,k)));
+    for(let c=0;c<9;c++) scan([...Array(9)].map((_,k)=>idx(k,c)));
+    for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ const list=[]; for(let k=0;k<9;k++){ list.push(idx(br*3+Math.floor(k/3), bc*3+k%3)); } scan(list); }
+    let badCage=new Set();
+    if(st.mode==='killer'){
+      for(const cg of st.cages){
+        const list=cg.cells.map(([r,c])=>idx(r,c)); let sum=0; const seen={}; let over=false;
+        for(const i of list){ const v=st.board[i]; if(v){ sum+=v; if(seen[v]){ badCage.add(i); badCage.add(seen[v]); } else seen[v]=i; } }
+        if(sum>cg.sum) over=true; if(over || (list.every(i=>st.board[i]>0) && sum!==cg.sum)) list.forEach(i=>badCage.add(i));
+      }
+    }
+    return {bad,badCage};
+  }
+
+  function renderAll(){
+    const st=Game.get();
+    $$('.cell',boardEl).forEach((el,i)=>{
+      el.innerHTML=''; el.classList.toggle('given', st.given[i]);
+      const v=st.board[i];
+      if(v){ const s=document.createElement('div'); s.className='num'; s.textContent=v; el.appendChild(s); }
+      else {
+        const g=document.createElement('div'); g.className='notes';
+        for(let d=1;d<=9;d++){ const n=document.createElement('div'); n.className='note'; if(st.notes1[i].has(d)){ n.classList.add('b'); n.textContent=d; } if(st.notes2[i].has(d)){ n.classList.add('r'); n.textContent=d; } g.appendChild(n); }
+        el.appendChild(g);
+      }
+      el.classList.remove('conflict','same','rc-row','rc-col','rc-center');
+    });
+
+    if(st.selected>=0 && st.board[st.selected]){ const val=st.board[st.selected]; $$('.cell',boardEl).forEach((el,i)=>{ if(st.board[i]===val) el.classList.add('same'); }); }
+
+    const {bad,badCage}=conflicts();
+    bad.forEach(i=>$$('.cell')[i].classList.add('conflict'));
+    badCage.forEach(i=>$$('.cell')[i].classList.add('conflict'));
+
+    drawCages();
+    applyRowColHighlight(st.selected);
+  }
+
+  function drawCages(){
+    const st=Game.get();
+    $$('.cage-seg',boardEl).forEach(e=>e.remove());
+    $$('.cage-sum',boardEl).forEach(e=>e.remove());
+    if(st.mode!=='killer'||!st.cages.length)return;
+    for(const cg of st.cages){
+      const set=new Set(cg.cells.map(([r,c])=>idx(r,c)));
+      let min=Infinity,minCell=[0,0];
+      for(const [r,c] of cg.cells){ const i=idx(r,c); if(i<min){ min=i; minCell=[r,c]; } }
+      const host=$(`.cell[data-r="${minCell[0]}"][data-c="${minCell[1]}"]`);
+      const sumEl=document.createElement('div'); sumEl.className='cage-sum'; sumEl.textContent=cg.sum; host.appendChild(sumEl);
+      for(const [r,c] of cg.cells){
+        const cell=$(`.cell[data-r="${r}"][data-c="${c}"]`);
+        const neighbors={top:[r-1,c,'top'],right:[r,c+1,'right'],bottom:[r+1,c,'bottom'],left:[r,c-1,'left']};
+        for(const k of Object.keys(neighbors)){
+          const [nr,nc,dir]=neighbors[k];
+          const inside=nr>=0&&nr<9&&nc>=0&&nc<9&&set.has(idx(nr,nc));
+          if(!inside){ const seg=document.createElement('div'); seg.className=`cage-seg seg ${dir}`; cell.appendChild(seg); }
+        }
+      }
+    }
+  }
+
+  function updateInputModeButtons(){
+    ['modeNote1','modeNote2','modeDigit','btnDelete'].forEach(id=> $('#'+id)?.classList.remove('active'));
+    const m=Game.get().inputMode; // 'note1' | 'note2' | 'digit' | 'delete'
+    if(m==='note1') $('#modeNote1')?.classList.add('active');
+    else if(m==='note2') $('#modeNote2')?.classList.add('active');
+    else if(m==='digit') $('#modeDigit')?.classList.add('active');
+    else if(m==='delete') $('#btnDelete')?.classList.add('active');
+  }
+
   return { renderAll, renderSelection, applyRowColHighlight, updateInputModeButtons, animateMatchingNumbers };
 })();
 
 /* ================= Export cages ================= */
-function formatCagesForText(){ const st=Game.get(); if(st.mode!=='killer'||!st.cages?.length) return `모드: ${st.mode}\n케이지가 없습니다. (킬러 모드에서 생성 후 다시)`; const lines=[]; lines.push(`모드: killer`); lines.push(`케이지 개수: ${st.cages.length}`); lines.push(''); st.cages.forEach((cg,i)=>{ const coords=cg.cells.map(([r,c])=>`(${r+1},${c+1})`).join(' '); lines.push(`[${i+1}] sum=${cg.sum} | cells: ${coords}`); }); const json={mode:'killer', cages: st.cages.map(cg=>({sum:cg.sum,cells:cg.cells.map(([r,c])=>({r:r+1,c:c+1}))}))}; lines.push('\n--- JSON ---'); lines.push(JSON.stringify(json)); return lines.join('\n'); }
-(function bindExport(){ const out=$("#cageText"); $("#exportCages").addEventListener('click',()=>{ out.value=formatCagesForText(); out.scrollTop=0; }); $("#copyCages").addEventListener('click',async()=>{ const txt=out.value||formatCagesForText(); try{ await navigator.clipboard.writeText(txt); $("#copyCages").textContent='복사됨!'; setTimeout(()=>$("#copyCages").textContent='복사',900);}catch{ out.select(); document.execCommand('copy'); } });})();
+function formatCagesForText(){
+  const st=Game.get();
+  if(st.mode!=='killer'||!st.cages?.length) return `모드: ${st.mode}\n케이지가 없습니다. (킬러 모드에서 생성 후 다시)`;
+  const lines=[];
+  lines.push(`모드: killer`);
+  lines.push(`케이지 개수: ${st.cages.length}`);
+  lines.push('');
+  st.cages.forEach((cg,i)=>{ const coords=cg.cells.map(([r,c])=>`(${r+1},${c+1})`).join(' '); lines.push(`[${i+1}] sum=${cg.sum} | cells: ${coords}`); });
+  const json={mode:'killer', cages: st.cages.map(cg=>({sum:cg.sum,cells:cg.cells.map(([r,c])=>({r:r+1,c:c+1}))}))};
+  lines.push('\n--- JSON ---'); lines.push(JSON.stringify(json));
+  return lines.join('\n');
+}
+(function bindExport(){
+  const out=$("#cageText");
+  $("#exportCages").addEventListener('click',()=>{ out.value=formatCagesForText(); out.scrollTop=0; });
+  $("#copyCages").addEventListener('click',async()=>{ const txt=out.value||formatCagesForText(); try{ await navigator.clipboard.writeText(txt); $("#copyCages").textContent='복사됨!'; setTimeout(()=>$("#copyCages").textContent='복사',900);}catch{ out.select(); document.execCommand('copy'); } });
+})();
 
 /* ================= Assist (힌트/정답 주입) ================= */
 const Assist=(()=>{ const houses={ row:r=>Array.from({length:9},(_,c)=>r*9+c), col:c=>Array.from({length:9},(_,r)=>r*9+c), box:b=>{const br=Math.floor(b/3)*3,bc=(b%3)*3;return Array.from({length:9},(_,k)=>(br+Math.floor(k/3))*9+(bc+(k%3)));}};
-  function buildCands(board,cages){ const cand=Array.from({length:81},()=>new Set([1,2,3,4,5,6,7,8,9])); for(let i=0;i<81;i++){ if(board[i]>0) cand[i].clear(); }
+  function buildCands(board,cages){
+    const cand=Array.from({length:81},()=>new Set([1,2,3,4,5,6,7,8,9])); for(let i=0;i<81;i++){ if(board[i]>0) cand[i].clear(); }
     for(let r=0;r<9;r++){ const used=new Set(houses.row(r).map(i=>board[i]).filter(v=>v>0)); houses.row(r).forEach(i=>{ if(board[i]===0) used.forEach(v=>cand[i].delete(v)); }); }
     for(let c=0;c<9;c++){ const used=new Set(houses.col(c).map(i=>board[i]).filter(v=>v>0)); houses.col(c).forEach(i=>{ if(board[i]===0) used.forEach(v=>cand[i].delete(v)); }); }
     for(let b=0;b<9;b++){ const used=new Set(houses.box(b).map(i=>board[i]).filter(v=>v>0)); houses.box(b).forEach(i=>{ if(board[i]===0) used.forEach(v=>cand[i].delete(v)); }); }
-    for(const cg of (cages||[])){ const cells=cg.cells.map(([r,c])=>r*9+c); const used=new Set(cells.map(i=>board[i]).filter(v=>v>0)); const sum=cells.reduce((s,i)=>s+(board[i]||0),0); const empties=cells.filter(i=>board[i]===0); empties.forEach(i=> used.forEach(v=>cand[i].delete(v))); const k=empties.length, remain=cg.sum-sum; if(k>0){ for(const i of empties){ for(let v=1;v<=9;v++){ if (remain - v < (k-1)*k/2) cand[i].delete(v); if (remain - v > 9*(k-1) - ((k-1)*(k-2))/2) cand[i].delete(v); } } } }
-    return cand; }
-  function logicalHintOnce(board,cages){ const cand=buildCands(board,cages); for(let i=0;i<81;i++){ if(board[i]===0 && cand[i].size===1){ const v=[...cand[i]][0]; return {i,v}; } }
-    function hiddenIn(list){ const C=new Map(); list.forEach(i=>{ if(board[i]!==0) return; for(const v of buildCands(board,cages)[i]) C.set(v,(C.get(v)||0)+1); }); for(const [v,c] of C){ if(c===1){ const i=list.find(i=> board[i]===0 && buildCands(board,cages)[i].has(v)); if(i!=null) return {i,v}; } } return null; }
+    for(const cg of (cages||[])){
+      const cells=cg.cells.map(([r,c])=>r*9+c);
+      const used=new Set(cells.map(i=>board[i]).filter(v=>v>0));
+      const sum=cells.reduce((s,i)=>s+(board[i]||0),0);
+      const empties=cells.filter(i=>board[i]===0);
+      empties.forEach(i=> used.forEach(v=>cand[i].delete(v)));
+      const k=empties.length, remain=cg.sum-sum;
+      if(k>0){
+        for(const i of empties){
+          for(let v=1;v<=9;v++){
+            if (remain - v < (k-1)*k/2) cand[i].delete(v);
+            if (remain - v > 9*(k-1) - ((k-1)*(k-2))/2) cand[i].delete(v);
+          }
+        }
+      }
+    }
+    return cand;
+  }
+  function logicalHintOnce(board,cages){
+    const cand=buildCands(board,cages);
+    for(let i=0;i<81;i++){
+      if(board[i]===0 && cand[i].size===1){ const v=[...cand[i]][0]; return {i,v}; }
+    }
+    function hiddenIn(list){
+      const C=new Map();
+      list.forEach(i=>{ if(board[i]!==0) return; for(const v of buildCands(board,cages)[i]) C.set(v,(C.get(v)||0)+1); });
+      for(const [v,c] of C){ if(c===1){ const i=list.find(i=> board[i]===0 && buildCands(board,cages)[i].has(v)); if(i!=null) return {i,v}; } }
+      return null;
+    }
     for(let r=0;r<9;r++){ const res=hiddenIn(houses.row(r)); if(res) return res; }
     for(let c=0;c<9;c++){ const res=hiddenIn(houses.col(c)); if(res) return res; }
     for(let b=0;b<9;b++){ const res=hiddenIn(houses.box(b)); if(res) return res; }
-    for(const cg of (cages||[])){ const cells=cg.cells.map(([r,c])=>r*9+c).filter(i=>board[i]===0); if(!cells.length) continue; const counts=new Map(); cells.forEach(i=>{ for(const v of buildCands(board,cages)[i]) counts.set(v,(counts.get(v)||0)+1); }); for(const [v,cnt] of counts){ if(cnt===1){ const i=cells.find(i=> buildCands(board,cages)[i].has(v)); if(i!=null) return {i,v}; } } }
-    return null; }
-  function isLocallyValid(g,i,cages){ const r=(i/9|0),c=i%9,v=g[i]; for(let k=0;k<9;k++){ if(k!==c && g[r*9+k]===v) return false; if(k!==r && g[k*9+c]===v) return false; } const br=(r/3|0)*3,bc=(c/3|0)*3; for(let rr=0; rr<3; rr++) for(let cc=0; cc<3; cc++){ const j=(br+rr)*9+(bc+cc); if(j!==i && g[j]===v) return false; } for(const cg of (cages||[])){ const list=cg.cells.map(([rr,cc])=>rr*9+cc); if(!list.includes(i)) continue; const seen=new Set(); let sum=0; for(const j of list){ const val=g[j]; if(val>0){ if(seen.has(val)) return false; seen.add(val); sum+=val; } } const empt=list.filter(j=>g[j]===0).length; if(empt===0 && sum!==cg.sum) return false; if(sum>cg.sum) return false; } return true; }
-  function lookaheadOne(board,cages){ const cand=buildCands(board,cages); for(let i=0;i<81;i++){ if(board[i]!==0) continue; const opts=[...cand[i]]; if(opts.length<=1) continue; for(const v of opts){ const g=board.slice(); g[i]=v; if(!isLocallyValid(g,i,cages)){ const other=opts.find(x=>x!==v); if(other!=null) return {i,v:other}; } } } return null; }
-  function rescueWithSolution(board,given,solution){ if(!solution) return null; const empties=[]; for(let i=0;i<81;i++){ if(board[i]===0 && !given[i]) empties.push(i); } if(!empties.length) return null; const i=empties[(Math.random()*empties.length)|0]; return { i, v:solution[i] }; }
-  function runHintsN(N){ const st=Game.get(); let applied=0; for(let t=0;t<N;t++){ const r=logicalHintOnce(st.board,st.cages)||lookaheadOne(st.board,st.cages); if(!r) break; Game.push(); st.board[r.i]=r.v; UI.renderAll(); applied++; } if(applied===0) alert('지금 줄 수 있는 힌트가 없어요.'); }
-  function runRevealM(M){ const st=Game.get(); if(!st.solution){ alert('해답이 없어 공개할 수 없어요.'); return; } let injected=0; for(let t=0;t<M;t++){ const r=rescueWithSolution(st.board,st.given,st.solution); if(!r) break; Game.push(); st.board[r.i]=r.v; st.given[r.i]=true; UI.renderAll(); injected++; } if(injected===0) alert('공개할 칸이 없어요.'); }
+    for(const cg of (cages||[])){
+      const cells=cg.cells.map(([r,c])=>r*9+c).filter(i=>board[i]===0);
+      if(!cells.length) continue;
+      const counts=new Map();
+      cells.forEach(i=>{ for(const v of buildCands(board,cages)[i]) counts.set(v,(counts.get(v)||0)+1); });
+      for(const [v,cnt] of counts){ if(cnt===1){ const i=cells.find(i=> buildCands(board,cages)[i].has(v)); if(i!=null) return {i,v}; } }
+    }
+    return null;
+  }
+  function isLocallyValid(g,i,cages){
+    const r=(i/9|0),c=i%9,v=g[i];
+    for(let k=0;k<9;k++){ if(k!==c && g[r*9+k]===v) return false; if(k!==r && g[k*9+c]===v) return false; }
+    const br=(r/3|0)*3,bc=(c/3|0)*3;
+    for(let rr=0; rr<3; rr++) for(let cc=0; cc<3; cc++){ const j=(br+rr)*9+(bc+cc); if(j!==i && g[j]===v) return false; }
+    for(const cg of (cages||[])){
+      const list=cg.cells.map(([rr,cc])=>rr*9+cc);
+      if(!list.includes(i)) continue;
+      const seen=new Set(); let sum=0;
+      for(const j of list){ const val=g[j]; if(val>0){ if(seen.has(val)) return false; seen.add(val); sum+=val; } }
+      const empt=list.filter(j=>g[j]===0).length;
+      if(empt===0 && sum!==cg.sum) return false;
+      if(sum>cg.sum) return false;
+    }
+    return true;
+  }
+  function lookaheadOne(board,cages){
+    const cand=buildCands(board,cages);
+    for(let i=0;i<81;i++){
+      if(board[i]!==0) continue;
+      const opts=[...cand[i]];
+      if(opts.length<=1) continue;
+      for(const v of opts){
+        const g=board.slice(); g[i]=v;
+        if(!isLocallyValid(g,i,cages)){
+          const other=opts.find(x=>x!==v);
+          if(other!=null) return {i,v:other};
+        }
+      }
+    }
+    return null;
+  }
+  function rescueWithSolution(board,given,solution){
+    if(!solution) return null;
+    const empties=[];
+    for(let i=0;i<81;i++){ if(board[i]===0 && !given[i]) empties.push(i); }
+    if(!empties.length) return null;
+    const i=empties[(Math.random()*empties.length)|0];
+    return { i, v:solution[i] };
+  }
+  function runHintsN(N){
+    const st=Game.get(); let applied=0;
+    for(let t=0;t<N;t++){
+      const r=logicalHintOnce(st.board,st.cages)||lookaheadOne(st.board,st.cages);
+      if(!r) break;
+      Game.push(); st.board[r.i]=r.v; UI.renderAll(); applied++;
+    }
+    if(applied===0) alert('지금 줄 수 있는 힌트가 없어요.');
+  }
+  function runRevealM(M){
+    const st=Game.get();
+    if(!st.solution){ alert('해답이 없어 공개할 수 없어요.'); return; }
+    let injected=0;
+    for(let t=0;t<M;t++){
+      const r=rescueWithSolution(st.board,st.given,st.solution);
+      if(!r) break;
+      Game.push(); st.board[r.i]=r.v; st.given[r.i]=true; UI.renderAll(); injected++;
+    }
+    if(injected===0) alert('공개할 칸이 없어요.');
+  }
   return { runHintsN, runRevealM };
 })();
 
 /* ================= Helpers: 리셋/완성 체크 ================= */
-function resetToGivens(){ const st=Game.get(); Game.push(); for(let i=0;i<81;i++){ if(st.given[i]) continue; st.board[i]=0; st.notes1[i].clear(); st.notes2[i].clear(); } UI.renderAll(); }
-function isSolvedNow(){ const st=Game.get(); if(st.board.some(v=>v===0)) return false; if(st.solution && st.solution.length===81){ for(let i=0;i<81;i++){ if(st.board[i]!==st.solution[i]) return false; } return true; }
-  const row=r=>Array.from({length:9},(_,c)=>r*9+c); const col=c=>Array.from({length:9},(_,r)=>r*9+c); const box=b=>{const br=Math.floor(b/3)*3,bc=(b%3)*3; return Array.from({length:9},(_,k)=>(br+Math.floor(k/3))*9+(bc+(k%3)));}; const uniq=a=>{ const s=new Set(a); return s.size===9; };
+function resetToGivens(){
+  const st=Game.get(); Game.push();
+  for(let i=0;i<81;i++){ if(st.given[i]) continue; st.board[i]=0; st.notes1[i].clear(); st.notes2[i].clear(); }
+  UI.renderAll();
+}
+function isSolvedNow(){
+  const st=Game.get();
+  if(st.board.some(v=>v===0)) return false;
+  if(st.solution && st.solution.length===81){
+    for(let i=0;i<81;i++){ if(st.board[i]!==st.solution[i]) return false; }
+    return true;
+  }
+  const row=r=>Array.from({length:9},(_,c)=>r*9+c);
+  const col=c=>Array.from({length:9},(_,r)=>r*9+c);
+  const box=b=>{const br=Math.floor(b/3)*3,bc=(b%3)*3; return Array.from({length:9},(_,k)=>(br+Math.floor(k/3))*9+(bc+(k%3)));};
+  const uniq=a=>{ const s=new Set(a); return s.size===9; };
   for(let r=0;r<9;r++){ const a=row(r).map(i=>Game.get().board[i]); if(!uniq(a)) return false; }
   for(let c=0;c<9;c++){ const a=col(c).map(i=>Game.get().board[i]); if(!uniq(a)) return false; }
   for(let b=0;b<9;b++){ const a=box(b).map(i=>Game.get().board[i]); if(!uniq(a)) return false; }
-  if(Game.get().mode==='killer' && Game.get().cages?.length){ for(const cg of Game.get().cages){ const vals=cg.cells.map(([r,c])=>Game.get().board[r*9+c]); const sum=vals.reduce((s,v)=>s+v,0); const set=new Set(vals); if(sum!==cg.sum) return false; if(set.size!==vals.length) return false; } }
-  return true; }
+  if(Game.get().mode==='killer' && Game.get().cages?.length){
+    for(const cg of Game.get().cages){
+      const vals=cg.cells.map(([r,c])=>Game.get().board[r*9+c]);
+      const sum=vals.reduce((s,v)=>s+v,0);
+      const set=new Set(vals);
+      if(sum!==cg.sum) return false;
+      if(set.size!==vals.length) return false;
+    }
+  }
+  return true;
+}
 
 /* ================= Killer generation core ================= */
 /* LocalSolution */
@@ -269,9 +518,66 @@ const Smoke=(()=>{ function countCombos(k,target){ const nums=[1,2,3,4,5,6,7,8,9
 /* Profiles */
 const KILLER_PROFILES={ easy:{minSize:2,maxSize:3,needTight:4,minCross:6,givens:8}, medium:{minSize:2,maxSize:4,needTight:3,minCross:5,givens:5}, hard:{minSize:2,maxSize:4,needTight:2,minCross:4,givens:2}, expert:{minSize:2,maxSize:4,needTight:2,minCross:3,givens:0} };
 function cageStats(cages){ const boxId=(r,c)=>Math.floor(r/3)*3+Math.floor(c/3); let tightCount=0,crossCount=0; for(const cg of cages){ const boxes=new Set(cg.cells.map(([r,c])=>boxId(r,c))); if(boxes.size>=2) crossCount++; const k=cg.cells.length; if(k>=2&&k<=4){ const combos=Smoke._countCombos(k,cg.sum); if(combos<=2) tightCount++; } } return {tightCount,crossCount}; }
-function chooseGivens(solArr,k){ if(k<=0) return Array(81).fill(0); const picks=new Set(); const byBox=Array.from({length:9},()=>[]); for(let r=0;r<9;r++) for(let c=0;c<9;c++) byBox[Math.floor(r/3)*3+Math.floor(c/3)].push(r*9+c); function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;} byBox.forEach(shuffle); let iBox=0; while(picks.size<k && iBox<9){ picks.add(byBox[iBox][0]); iBox++; } const rest=shuffle([...Array(81).keys()]); for(const i of rest){ if(picks.size>=k) break; picks.add(i); } const grid=Array(81).fill(0); for(const i of picks) grid[i]=solArr[i]; return grid; }
+function chooseGivens(solArr,k){
+  if(k<=0) return Array(81).fill(0);
+  const picks=new Set();
+  const byBox=Array.from({length:9},()=>[]);
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++) byBox[Math.floor(r/3)*3+Math.floor(c/3)].push(r*9+c);
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+  byBox.forEach(shuffle);
+  let iBox=0; while(picks.size<k && iBox<9){ picks.add(byBox[iBox][0]); iBox++; }
+  const rest=shuffle([...Array(81).keys()]);
+  for(const i of rest){ if(picks.size>=k) break; picks.add(i); }
+  const grid=Array(81).fill(0); for(const i of picks) grid[i]=solArr[i]; return grid;
+}
 /* UniqueFast */
-const UniqueFast=(()=>{ const toI=(r,c)=>r*9+c; function build(grid,cages){ const row=Array.from({length:9},()=>Array(10).fill(false)), col=Array.from({length:9},()=>Array(10).fill(false)), box=Array.from({length:9},()=>Array(10).fill(false)); const cageOf=Array(81).fill(-1), cageCells=[], tgt=[], used=[], sum=[], empt=[]; cages?.forEach((cg,id)=>{ cageCells[id]=cg.cells.map(([r,c])=>toI(r,c)); tgt[id]=cg.sum; used[id]=Array(10).fill(false); sum[id]=0; let e=0; for(const i of cageCells[id]){ const v=grid[i]||0; if(v>0){used[id][v]=true; sum[id]+=v;} else e++; cageOf[i]=id; } empt[id]=e; }); for(let r=0;r<9;r++) for(let c=0;c<9;c++){ const i=toI(r,c),v=grid[i]||0; if(!v) continue; row[r][v]=col[c][v]=box[Math.floor(r/3)*3+Math.floor(c/3)][v]=true; } return {row,col,box,cageOf,cageCells,tgt,used,sum,empt}; } function feas(v,i,S){ const id=S.cageOf[i]; if(id<0) return true; if(S.used[id][v]) return false; const remain=S.empt[id]-1; const s=S.sum[id]+v, t=S.tgt[id]; if(s>t) return false; const min=remain*(remain+1)/2, max=9*remain-(remain*(remain-1))/2; const need=t-s; return (need>=min && need<=max); } function cand(i,g,S){ const r=(i/9|0),c=i%9,b=(r/3|0)*3+(c/3|0); const a=[]; for(let v=1;v<=9;v++){ if(S.row[r][v]||S.col[c][v]||S.box[b][v]) continue; if(!feas(v,i,S)) continue; a.push(v);} return a; } function hasUnique(grid,cages,expect,{limit=2,timeoutMs=150}={}){ const g=grid.slice(); const S=build(g,cages||[]); const empty=[]; for(let i=0;i<81;i++) if(!g[i]) empty.push(i); function pickMRV(){ let bi=-1,bl=10,bc=null; for(const i of empty){ if(g[i]) continue; const c=cand(i,g,S), L=c.length; if(L===0) return {i,c}; if(L<bl){ bl=L; bi=i; bc=c; if(L===1) break; } } return {i:bi,c:bc||[]}; } let count=0; const t0=performance.now(); function place(i,v){ const r=(i/9|0),c=i%9,b=(r/3|0)*3+(c/3|0), id=S.cageOf[i]; g[i]=v; S.row[r][v]=S.col[c][v]=S.box[b][v]=true; if(id>=0){ S.used[id][v]=true; S.sum[id]+=v; S.empt[id]--; } } function unplace(i,v){ const r=(i/9|0),c=i%9,b=(r/3|0)*3+(c/3|0), id=S.cageOf[i]; g[i]=0; S.row[r][v]=S.col[c][v]=S.box[b][v]=false; if(id>=0){ S.used[id][v]=false; S.sum[id]-=v; S.empt[id]++; } } function dfs(){ if(performance.now()-t0>timeoutMs) return true; let done=true; for(const i of empty){ if(!g[i]){done=false;break;} } if(done){ if(expect){ for(let i=0;i<81;i++){ if((g[i]||0)!==expect[i]){ count=limit; return true; } } } count++; return (count>=limit); } const {i,c}=pickMRV(); if(i<0 || c.length===0) return false; c.sort((a,b)=>{ if(!expect) return 0; const va=(expect[i]===a)?-1:0, vb=(expect[i]===b)?-1:0; return va-vb; }); for(const v of c){ place(i,v); if(dfs()) return true; unplace(i,v); if(count>=limit) return true; } return false; } dfs(); return (count===1); } return { hasUnique };})();
+const UniqueFast=(()=>{ const toI=(r,c)=>r*9+c;
+  function build(grid,cages){
+    const row=Array.from({length:9},()=>Array(10).fill(false)),
+          col=Array.from({length:9},()=>Array(10).fill(false)),
+          box=Array.from({length:9},()=>Array(10).fill(false));
+    const cageOf=Array(81).fill(-1), cageCells=[], tgt=[], used=[], sum=[], empt=[];
+    cages?.forEach((cg,id)=>{ cageCells[id]=cg.cells.map(([r,c])=>toI(r,c)); tgt[id]=cg.sum; used[id]=Array(10).fill(false); sum[id]=0; let e=0;
+      for(const i of cageCells[id]){ const v=grid[i]||0; if(v>0){used[id][v]=true; sum[id]+=v;} else e++; cageOf[i]=id; } empt[id]=e; });
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++){ const i=toI(r,c),v=grid[i]||0; if(!v) continue; row[r][v]=col[c][v]=box[Math.floor(r/3)*3+Math.floor(c/3)][v]=true; }
+    return {row,col,box,cageOf,cageCells,tgt,used,sum,empt};
+  }
+  function feas(v,i,S){
+    const id=S.cageOf[i]; if(id<0) return true;
+    if(S.used[id][v]) return false;
+    const remain=S.empt[id]-1;
+    const s=S.sum[id]+v, t=S.tgt[id];
+    if(s>t) return false;
+    const min=remain*(remain+1)/2, max=9*remain-(remain*(remain-1))/2;
+    const need=t-s; return (need>=min && need<=max);
+  }
+  function cand(i,g,S){
+    const r=(i/9|0),c=i%9,b=(r/3|0)*3+(c/3|0);
+    const a=[]; for(let v=1;v<=9;v++){ if(S.row[r][v]||S.col[c][v]||S.box[b][v]) continue; if(!feas(v,i,S)) continue; a.push(v);} return a;
+  }
+  function hasUnique(grid,cages,expect,{limit=2,timeoutMs=150}={}){
+    const g=grid.slice(); const S=build(g,cages||[]);
+    const empty=[]; for(let i=0;i<81;i++) if(!g[i]) empty.push(i);
+    function pickMRV(){ let bi=-1,bl=10,bc=null; for(const i of empty){ if(g[i]) continue; const c=cand(i,g,S), L=c.length; if(L===0) return {i,c}; if(L<bl){ bl=L; bi=i; bc=c; if(L===1) break; } } return {i:bi,c:bc||[]}; }
+    let count=0; const t0=performance.now();
+    function place(i,v){ const r=(i/9|0),c=i%9,b=(r/3|0)*3+(c/3|0), id=S.cageOf[i]; g[i]=v; S.row[r][v]=S.col[c][v]=S.box[b][v]=true; if(id>=0){ S.used[id][v]=true; S.sum[id]+=v; S.empt[id]--; } }
+    function unplace(i,v){ const r=(i/9|0),c=i%9,b=(r/3|0)*3+(c/3|0), id=S.cageOf[i]; g[i]=0; S.row[r][v]=S.col[c][v]=S.box[b][v]=false; if(id>=0){ S.used[id][v]=false; S.sum[id]-=v; S.empt[id]++; } }
+    function dfs(){
+      if(performance.now()-t0>timeoutMs) return true;
+      let done=true; for(const i of empty){ if(!g[i]){done=false;break;} }
+      if(done){
+        if(expect){ for(let i=0;i<81;i++){ if((g[i]||0)!==expect[i]){ count=limit; return true; } } }
+        count++; return (count>=limit);
+      }
+      const {i,c}=pickMRV(); if(i<0 || c.length===0) return false;
+      c.sort((a,b)=>{ if(!expect) return 0; const va=(expect[i]===a)?-1:0, vb=(expect[i]===b)?-1:0; return va-vb; });
+      for(const v of c){ place(i,v); if(dfs()) return true; unplace(i,v); if(count>=limit) return true; }
+      return false;
+    }
+    dfs(); return (count===1);
+  }
+  return { hasUnique };
+})();
 
 /* ===== Killer Maker ===== */
 async function makeKillerLightSmart(diff='easy', maxTries=30){
@@ -307,23 +613,73 @@ const Prefetch=(()=>{ const sudokuQ=[], killerQ=[]; let sudokuDiff='easy', kille
 })();
 
 /* ================= Input ================= */
-const Input=(()=>{ function bindKeys(){ document.addEventListener('keydown',(e)=>{ const st=Game.get(); if(e.key==='q'){ Game.setInputMode('note1'); return; } if(e.key==='w'){ Game.setInputMode('note2'); return; } if(e.key==='e'){ Game.setInputMode('digit'); return; } if(e.key==='r'){ Game.clear(); return; } if(st.selected<0) return; if(e.key>='1'&&e.key<='9'){ if(st.inputMode==='digit') Game.setDigit(+e.key); else Game.toggleNote(+e.key); } if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){ Game.clear(); } }); }
-  function onCellClick(i){ Game.select(i); }
-  function onDigit(n){ const st=Game.get(); if(st.inputMode==='digit') Game.setDigit(n); else Game.toggleNote(n); }
-  async function newGame(){ const mode=$("#mode").value, diff=$("#difficulty").value; Prefetch.setDiffs({sudoku:diff, killer:diff}); Game.setMode(mode); const btn=$("#newGame"); const old=btn.textContent; btn.textContent='생성 중...';
-    try{
-      if(mode==='sudoku'){ const ready=Prefetch.popSudoku(); if(ready) Game.load(ready.grid, [], ready.solution); else { const {grid,solution}=makeSudokuLocal(diff); Game.load(grid, [], solution); } Prefetch._fillKillerOnce();
-      }else{ const ready=Prefetch.popKiller(); if(ready) Game.load(ready.grid, ready.cages, ready.solution); else { const {grid,cages,solution}=await makeKillerLightSmart(diff,20); Game.load(grid, cages, solution); } }
-      Game.setInputMode('digit');
-    }catch(e){ alert('새 퍼즐 생성 실패'); console.error(e); } finally{ btn.textContent=old; }
+const Input=(()=>{
+
+  function bindKeys(){
+    document.addEventListener('keydown',(e)=>{
+      const st=Game.get();
+      if(e.key==='q'){ Game.setInputMode('note1'); return; }
+      if(e.key==='w'){ Game.setInputMode('note2'); return; }
+      if(e.key==='e'){ Game.setInputMode('digit'); return; }
+      if(e.key==='r'){ // delete 모드로 전환 + 한 번 삭제
+        Game.setInputMode('delete');
+        Game.clear();
+        return;
+      }
+      if(st.selected<0) return;
+      if(e.key>='1'&&e.key<='9'){
+        if(st.inputMode==='digit') Game.setDigit(+e.key);
+        else Game.toggleNote(+e.key);
+      }
+      if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){ Game.setInputMode('delete'); Game.clear(); }
+    });
   }
-  bindKeys(); return { onCellClick, onDigit, newGame };
+
+  function onCellClick(i){ Game.select(i); }
+  function onDigit(n){
+    const st=Game.get();
+    if(st.inputMode==='digit') Game.setDigit(n);
+    else if(st.inputMode==='delete') Game.clear();
+    else Game.toggleNote(n);
+  }
+
+  async function newGame(){
+    const mode=$("#mode").value, diff=$("#difficulty").value;
+    Prefetch.setDiffs({sudoku:diff, killer:diff});
+    Game.setMode(mode);
+    const btn=$("#newGame"); const old=btn.textContent; btn.textContent='생성 중...';
+    try{
+      if(mode==='sudoku'){
+        const ready=Prefetch.popSudoku();
+        if(ready) Game.load(ready.grid, [], ready.solution);
+        else { const {grid,solution}=makeSudokuLocal(diff); Game.load(grid, [], solution); }
+        Prefetch._fillKillerOnce();
+      }else{
+        const ready=Prefetch.popKiller();
+        if(ready) Game.load(ready.grid, ready.cages, ready.solution);
+        else { const {grid,cages,solution}=await makeKillerLightSmart(diff,20); Game.load(grid, cages, solution); }
+      }
+    }catch(e){
+      alert('새 퍼즐 생성 실패'); console.error(e);
+    } finally { btn.textContent=old; }
+  }
+
+  bindKeys();
+  return { onCellClick, onDigit, newGame };
 })();
 
 /* ================= Init ================= */
-(async()=>{ const diff=$("#difficulty").value; Prefetch.setDiffs({sudoku:diff, killer:diff});
-  try{ const {grid,solution}=makeSudokuLocal(diff); Game.load(grid, [], solution); Game.setInputMode('digit'); Prefetch._fillKillerOnce(); }
-  catch(e){ alert('초기 퍼즐 생성 실패'); console.error(e); }
+(async()=>{
+  const diff=$("#difficulty").value;
+  Prefetch.setDiffs({sudoku:diff, killer:diff});
+  try{
+    const {grid,solution}=makeSudokuLocal(diff);
+    Game.load(grid, [], solution);
+    // 기본 모드는 digit로 세팅되어 하이라이트 켜짐
+    Prefetch._fillKillerOnce();
+  }catch(e){
+    alert('초기 퍼즐 생성 실패'); console.error(e);
+  }
 })();
 </script>
 </body>
