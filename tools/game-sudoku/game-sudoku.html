@@ -17,10 +17,34 @@
   body{ margin:0; padding:12px; background:#f7fbff; color:var(--text); font-family:system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif; }
   .app{ display:flex; flex-direction:column; gap:12px; align-items:center; max-width:1100px; margin:0 auto; }
   .board-wrap{ padding:6px; background:#fff; border-radius:10px; box-shadow:0 3px 12px rgba(0,0,0,.08); width:100%; max-width: calc(var(--cell)*9 + 16px); }
-  .board{ display:grid; grid-template-columns:repeat(9,var(--cell)); grid-template-rows:repeat(9,var(--cell)); border:2px solid var(--bold); position:relative; margin:0 auto; }
-  .cell{ width:var(--cell); height:var(--cell); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; background:#fff; }
-  .cell[data-r="0"], .cell[data-r="3"], .cell[data-r="6"]{ border-top:2px solid var(--bold); }
-  .cell[data-c="0"], .cell[data-c="3"], .cell[data-c="6"]{ border-left:2px solid var(--bold); }
+.board{
+	display:grid;
+	grid-template-columns:repeat(9,var(--cell));
+	grid-template-rows:repeat(9,var(--cell));
+	border:2px solid var(--bold); /* 외곽선 */
+	position:relative; margin:0 auto;
+	/* 권장: 보드 크기를 명시해서 합계 = 정확히 9*cell */
+	width:calc(var(--cell) * 9);
+	height:calc(var(--cell) * 9);
+}
+  .cell{
+	width:var(--cell);
+	height:var(--cell);
+	border:0; /* 초기화 */
+	border-top:1px solid var(--line);
+	border-left:1px solid var(--line);
+	display:flex; align-items:center; justify-content:center;
+	position:relative; cursor:pointer; background:#fff;
+}
+
+/* 2) 굵은 라인(3x3 경계)도 상/좌만 굵게 */
+.cell[data-r="0"],
+.cell[data-r="3"],
+.cell[data-r="6"]{ border-top:2px solid var(--bold); }
+
+.cell[data-c="0"],
+.cell[data-c="3"],
+.cell[data-c="6"]{ border-left:2px solid var(--bold); }
   .cell[data-r="8"]{ border-bottom:2px solid var(--bold); }
   .cell[data-c="8"]{ border-right:2px solid var(--bold); }
   .cell.given{ font-weight:700; color:#0d3b66; background:#f0f6ff; }
@@ -38,7 +62,7 @@
   .seg.bottom{ left:var(--inset); right:var(--inset); bottom:var(--inset); height:0; border-bottom:2px dashed var(--cage); opacity:.95; }
   .seg.left{ top:var(--inset); bottom:var(--inset); left:var(--inset); width:0; border-left:2px dashed var(--cage); opacity:.95; }
   .seg.right{ top:var(--inset); bottom:var(--inset); right:var(--inset); width:0; border-right:2px dashed var(--cage); opacity:.95; }
-  .cage-sum{ position:absolute; font-size:calc(var(--cell)*0.19); color:#0b2545; padding:0 2px; pointer-events:none; z-index:3; left:0px; top:-2px; background:#fff; font-weight:600; line-height:1; }
+  .cage-sum{ position:absolute; font-size:calc(var(--cell)*0.19); color:#0b2545; padding:0 2px; pointer-events:none; z-index:3; left:0px; top:0px; background:#fff; font-weight:600; line-height:1; }
 
   /* 하이라이트 */
   .cell.rc-row{ background:rgba(173,216,255,.35); } .cell.rc-col{ background:rgba(173,216,255,.35); } .cell.rc-center{ background:rgba(123,186,255,.5); }
@@ -184,7 +208,7 @@ a, [class*="bi-"] { color: #0d6efd !important; }
 
 <script type="module">
 /* ================= Version & Utils ================= */
-function version(){ return "5.2.0"; }
+function version(){ return "5.2.1"; }
 console.log("버전:", version());
 const $=(q,el=document)=>el.querySelector(q);
 const $$=(q,el=document)=>Array.from(el.querySelectorAll(q));
