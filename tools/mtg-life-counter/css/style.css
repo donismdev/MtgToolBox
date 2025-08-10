@@ -2246,8 +2246,8 @@ flex-basis: 50%;
 .celestial-sun,
 .celestial-moon {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   /* 위치: 우상단에서 살짝 왼쪽으로 (요청 반영: 너무 모서리X) */
   top: 6%;
   right: 10%;

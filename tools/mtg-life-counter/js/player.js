@@ -75,7 +75,7 @@ export class Player {
 			{ id: 'layout',		label: 'HP Layout',		enabled: false, backgroundSize: '85%' },
 			{ id: 'counter',	label: 'Counters',		enabled: false, backgroundSize: '85%' },
 			{ id: 'note',		label: 'Secret Notes',	enabled: false, backgroundSize: '85%' },
-			{ id: 'daynight',	label: 'Day/Night',		enabled: false, backgroundSize: '85%' },
+			{ id: 'daynight',	label: 'Day / Night',		enabled: false, backgroundSize: '85%' },
     	];
 
 		this.counterSettings = [
