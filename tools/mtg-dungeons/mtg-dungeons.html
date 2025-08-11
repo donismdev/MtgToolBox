@@ -100,15 +100,14 @@ a, [class*="bi-"] { color: #0d6efd !important; }
         const dungeonSelector = document.getElementById('dungeonSelector');
         const dungeonImage = document.getElementById('dungeonImage');
 
-        // GitHub Pages 환경을 감지하여 기본 경로를 설정합니다.
-        const isGithubPages = window.location.hostname.includes('github.io');
-        const basePath = isGithubPages ? '/MtgToolbox' : '';
+        // 부모 창의 ResourceManager를 사용하여 이미지 경로를 가져옵니다.
+        const resourceManager = window.parent.resourceManager;
 
         dungeonSelector.addEventListener('change', function() {
             const selectedDungeon = this.value;
-            if (selectedDungeon) {
-                // 기본 경로를 포함한 전체 이미지 경로를 생성합니다.
-                const imageUrl = `${basePath}/assets/dungeon/${selectedDungeon}`;
+            if (selectedDungeon && resourceManager) {
+                // resourceManager의 dungeon 함수를 호출하여 전체 이미지 경로를 생성합니다.
+                const imageUrl = resourceManager.dungeon(selectedDungeon);
                 dungeonImage.src = imageUrl;
                 dungeonImage.alt = this.options[this.selectedIndex].text;
             } else {
