@@ -1,8 +1,8 @@
 // --- 전역 변수 및 상수 정의 ---
 
+	    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 	const ResourceManager = {
-		basePath: "/MtgToolbox", // GitHub Pages 등을 사용한다면 
-
+		basePath: isLocal ? "" : "/MtgToolbox", // 로컬에서는 상대 경로, GitHub Pages 등에서는 절대 경로 사용
 
 		dungeon(filename) {
 			return `${this.basePath}/assets/dungeon/${filename}`;
