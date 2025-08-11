@@ -3,8 +3,8 @@
 // === 광고 토글 설정 =========================================
 const bApplyAd = true;              // 광고 사용 여부
 const pcAdPos  = 'right';           // PC에선 'right' 또는 'bottom'
-const defaultAdH = 64;              // 하단 광고 기본 높이(로드 전 임시)
-const defaultAdW = 300;             // 우측 광고 기본 폭(로드 전 임시)
+const defaultAdH = 48;              // 하단 광고 기본 높이(로드 전 임시)
+const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임시)
 // =============================================================	
 
 
