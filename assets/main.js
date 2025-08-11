@@ -39,9 +39,9 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
     // 오른쪽 UI 관련 요소
     const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
     const uiToggleBtn = document.getElementById('uiToggleBtn');
-    const expandedUiContainer = document.getElementById('expanded-ui-container');
-    const hideButtonsBtn = document.getElementById('hideButtonsBtn');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    // const expandedUiContainer = document.getElementById('expanded-ui-container');
+    // const hideButtonsBtn = document.getElementById('hideButtonsBtn');
+    // const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     // --- 상태 관리 변수 ---
     let currentOpenModalUrl = null;
@@ -75,18 +75,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
         } else {
             sidebar.classList.remove("show");
             sidebarOverlay.classList.remove("active");
-        }
-    }
-
-    /** 확장 UI 메뉴를 열거나 닫습니다. */
-    function toggleUiExpansion(forceHide = false) {
-        const isActive = expandedUiContainer.classList.contains('show');
-        if (forceHide || isActive) {
-            expandedUiContainer.classList.remove('show');
-            uiToggleBtn.classList.remove('active');
-        } else {
-            expandedUiContainer.classList.add('show');
-            uiToggleBtn.classList.add('active');
         }
     }
 
@@ -281,53 +269,32 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 
     // --- 전체화면 관리 ---
     function toggleFullScreen() {
-		// body에 'iOS' 클래스가 있는지 확인하여 아이폰 계열 기기인지 판단
 		const isIOSDevice = document.body.classList.contains('iOS');
-		const fullscreenIcon = fullscreenBtn.querySelector('i');
 
-		// iOS 기기일 경우: CSS 클래스를 이용한 유사 전체화면 모드 토글
 		if (isIOSDevice) {
+			// 의사 전체화면: 바디에 클래스 토글
 			const isPseudoFullscreen = document.body.classList.toggle('pseudo-fullscreen');
-			
-			// 아이콘 상태를 직접 업데이트
-			fullscreenIcon.classList.toggle('bi-arrows-fullscreen', !isPseudoFullscreen);
-			fullscreenIcon.classList.toggle('bi-arrows-angle-contract', isPseudoFullscreen);
-
-		} else { // 그 외 기기(안드로이드, PC)일 경우: 표준 전체화면 API 사용
+			// 아이콘 상태는 캡션 버튼에서 갱신
+		} else {
 			if (!document.fullscreenElement) {
-				document.documentElement.requestFullscreen().catch(err => {
-					alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
-				});
+			document.documentElement.requestFullscreen().catch(err => {
+				alert(`전체화면 모드를 시작할 수 없습니다: ${err.message}`);
+			});
 			} else {
-				if (document.exitFullscreen) document.exitFullscreen();
+			document.exitFullscreen?.();
 			}
 		}
-		toggleUiExpansion(true); // 기능 실행 후 확장 메뉴 닫기
 	}
 
     // --- 이벤트 리스너 설정 ---
 
-    // 확장 UI 토글 버튼
-    uiToggleBtn.addEventListener('click', () => toggleUiExpansion());
-
-    // 플로팅 버튼 숨기기/표시 버튼
-    hideButtonsBtn.addEventListener('click', () => {
-        const icon = hideButtonsBtn.querySelector('i');
-        const isHidden = fixedButtonsContainer.classList.toggle('hidden-to-right');
-        icon.classList.toggle('bi-box-arrow-right', !isHidden);
-        icon.classList.toggle('bi-box-arrow-left', isHidden);
-        toggleUiExpansion(true); // 메뉴 닫기
-    });
-
     // 사이드바 목록 토글 버튼
     toggleSidebarBtn.addEventListener('click', () => {
         if (toggleSidebarBtn.classList.contains('inactive-when-modal')) return; // 모달 열렸을 땐 동작 안함
-        toggleUiExpansion(true); // 확장 메뉴 먼저 닫기
         toggleSidebar(!sidebar.classList.contains("show"));
     });
 
     // 전체화면 버튼
-    fullscreenBtn.addEventListener('click', toggleFullScreen);
     document.addEventListener('fullscreenchange', () => {
 		const isFullscreen = !!document.fullscreenElement;
 		const fullscreenIcon = fullscreenBtn.querySelector('i');
@@ -368,29 +335,61 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
                 return true;
             });
 
-            // 1. ModalTool 버튼 생성
-            const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
-            modalTools.forEach(tool => {
-                const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
-                const displayName = tool.modalIcon || tool.name;
-                modalToolDisplayNameMap[fullUrl] = displayName; // 아이콘/텍스트 정보 저장
+			const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
 
-                const button = document.createElement('button');
-                button.className = 'btn modal-tool-button';
-                button.textContent = displayName;
-                button.dataset.modalUrl = fullUrl;
-                button.title = tool.name;
-                if (tool.modalIconColor) {
-                    button.style.backgroundColor = tool.modalIconColor;
-                }
+			// 2) 캡션 드롭다운 채우기
+			const captionMenu = document.getElementById('caption-modal-menu');
+			if (captionMenu) {
+			captionMenu.innerHTML = '';
 
-                button.onclick = () => {
-                    toggleUiExpansion(true); // 버튼 클릭 시 확장 메뉴는 닫기
-                    openModalTool(fullUrl, tool);
-                };
-                
-                fixedButtonsContainer.appendChild(button);
-            });
+				if (modalTools.length === 0) {
+					const li = document.createElement('li');
+					li.innerHTML = '<span class="dropdown-item-text text-muted">모달 툴 없음</span>';
+					captionMenu.appendChild(li);
+				} else {
+					modalTools.forEach(tool => {
+					const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
+					const li = document.createElement('li');
+					const a = document.createElement('a');
+					a.href = '#';
+					a.className = 'dropdown-item';
+					a.textContent = tool.modalIcon || tool.name;
+
+					a.addEventListener('click', (e) => {
+						e.preventDefault();
+						openModalTool(fullUrl, tool);
+					});
+
+					li.appendChild(a);
+					captionMenu.appendChild(li);
+
+					// (선택) 기존 매핑 유지
+					modalToolDisplayNameMap[fullUrl] = tool.modalIcon || tool.name;
+					});
+				}
+			}
+
+			// // 1. ModalTool 버튼 생성
+			// const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
+			// modalTools.forEach(tool => {
+			//     const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
+			//     const displayName = tool.modalIcon || tool.name;
+			//     modalToolDisplayNameMap[fullUrl] = displayName; // 아이콘/텍스트 정보 // 
+			//     const button = document.createElement('button');
+			//     button.className = 'btn modal-tool-button';
+			//     button.textContent = displayName;
+			//     button.dataset.modalUrl = fullUrl;
+			//     button.title = tool.name;
+			//     if (tool.modalIconColor) {
+			//         button.style.backgroundColor = tool.modalIconColor;
+			// 
+			//     button.onclick = () => {
+			//         toggleUiExpansion(true); // 버튼 클릭 시 확장 메뉴는 닫기
+			//         openModalTool(fullUrl, tool);
+			//     };
+			//     
+			//     fixedButtonsContainer.appendChild(button);
+			// });
             
             // 2. EmbeddedTool 및 기타 툴 목록 (사이드바) 생성
             const toolsByParent = enabledTools.reduce((acc, tool) => {
@@ -511,30 +510,45 @@ function bindCaptionControls() {
   const bar = document.getElementById('caption-bar');
   const revealBtn = document.getElementById('caption-reveal-btn');
 
-  // 캡션바 안 버튼들: data-action 기반으로 스위치
   bar?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
 
     switch (btn.dataset.action) {
       case 'menu':
-        // 예: 사이드바 열기
         toggleSidebar(true);
+        break;
+      case 'toggle-fullscreen':
+        toggleFullScreen();
+        setTimeout(updateFullscreenIcon, 0);
+        break;
+      case 'hide-modal':
+        if (modalToolOverlay?.style.display === 'flex') closeModalTool(true);
         break;
       case 'hide-caption':
         setCaption(false);
         break;
-      // 필요하면 여기서 'open-modal', 'fullscreen' 등 추가
     }
   });
 
-  // 숨겨졌을 때 나오는 ▼
   revealBtn?.addEventListener('click', () => setCaption(true));
+  document.addEventListener('fullscreenchange', updateFullscreenIcon);
 }
 
 function setCaption(show) {
 	document.documentElement.setAttribute('data-caption', show ? 'on' : 'off');
 	bShowCaption = show;
+}
+
+function updateFullscreenIcon() {
+  const icon = document.querySelector('#caption-bar [data-action="toggle-fullscreen"] i');
+  if (!icon) return;
+
+  const isPseudo = document.body.classList.contains('iOS') && document.body.classList.contains('pseudo-fullscreen');
+  const isFs = !!document.fullscreenElement || isPseudo;
+
+  icon.classList.toggle('bi-arrows-fullscreen', !isFs);
+  icon.classList.toggle('bi-arrows-angle-contract', isFs);
 }
 
 		// --- End of new code ---
@@ -546,18 +560,13 @@ function setCaption(show) {
 
 
 		window.addEventListener('load', () => {
+		setCaption(true);
+		updateVh();
+		setupAdShell?.();
+		bShowCaption = true;
 
-			setCaption(true);
-			updateVh();
-			setupAdShell?.();
-			const hideBtn   = document.getElementById('caption-hide-btn');
-			const revealBtn = document.getElementById('caption-reveal-btn');
-
-			hideBtn?.addEventListener('click',  () => setCaption(false));
-			revealBtn?.addEventListener('click', () => setCaption(true));
-			bShowCaption = true;
-
-			bindCaptionControls();
+		bindCaptionControls();
+		updateFullscreenIcon();
 		});
 		window.addEventListener('resize', () => {
 			updateVh();

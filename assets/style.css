@@ -364,25 +364,6 @@ body.modal-open {
 }
 #expanded-ui-container .btn { transform: scale(0.85); }
 #expanded-ui-container .btn,
-#uiToggleBtn {
-	height: 48px;
-	pointer-events: auto;
-	width: 48px;
-}
-
-/* + 버튼 */
-#uiToggleBtn {
-	align-items: center;
-	border: none;
-	border-radius: 50%;
-	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-	cursor: pointer;
-	display: flex;
-	font-size: 1.5rem;
-	justify-content: center;
-	transition: transform 0.2s ease-out !important;
-}
-#uiToggleBtn.active { transform: rotate(45deg); }
 
 /* 사이드바 리스트 활성 */
 .nav-link.active-tool {
@@ -526,7 +507,6 @@ body.modal-open #fixed-ui-wrapper {
 }
 
 /* 실제 버튼/토글이 보일 때만 이벤트 활성화 */
-#uiToggleBtn { pointer-events: auto; }
 #expanded-ui-container { pointer-events: none; }
 #expanded-ui-container.show { pointer-events: auto; }
 
@@ -614,6 +594,7 @@ html[data-ad="on"][data-ad-pos="right"] #ad-slot {
 
 /* 캡션 토글: data-caption="on"이면 보임 */
 html[data-caption="on"] #caption-bar { display: flex; }
+#caption-bar .dropdown-menu { z-index: 1700; }
 
 /* 컨텐츠 프레임: 기존 요소 전부 이 안에서 작동 */
 #content-frame {
@@ -666,3 +647,5 @@ html[data-caption="on"] #caption-bar { display: flex; }
 }
 html[data-caption="off"] #caption-reveal-btn { display: flex; }
 html[data-caption="on"]  #caption-reveal-btn { display: none; }
+
+#fixed-ui-wrapper { display: none !important; }
