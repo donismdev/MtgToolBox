@@ -1,537 +1,437 @@
 body {
-    height: 100vh; /* 전체 뷰포트 높이 */
-    overflow: hidden; /* 전체 페이지 스크롤 방지 */
+	height: 100vh;
+	overflow: hidden;
 }
 
+/* 사이드바(간단 버전) */
 #sidebar {
-    width: 240px; /* 너비 축소 */
-    height: 100vh; /* 사이드바 높이 고정 */
-    overflow-y: auto; /* 사이드바 내부 스크롤 */
-    border-right: 1px solid #dee2e6; /* 시각적 구분선 */
+	border-right: 1px solid #dee2e6;
+	overflow-y: auto;
+	width: 240px;
 }
 
 #content {
-    flex: 1;
-    overflow-y: auto; /* 콘텐츠 영역 스크롤 */
+	flex: 1;
+	overflow-y: auto;
 }
 
+/* 네비/목차 */
 .nav-link {
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    line-height: 1.2;
+	align-items: center;
+	display: flex;
+	font-size: 0.9rem;
+	line-height: 1.2;
 }
-
-.nav-item {
-    margin-bottom: 5px; /* 목차 항목 간 간격 추가 */
-}
-
+.nav-item { margin-bottom: 5px; }
 .collapse-icon {
-    width: 16px; /* 아이콘 너비 고정 */
-    text-align: center;
+	text-align: center;
+	width: 16px;
 }
-
-/* 텍스트 애니메이션 스타일 */
 .tool-link-text-container {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis; /* 텍스트 넘침 방지 */
-    display: inline-block;
-    flex-grow: 1; /* 남은 공간 채우기 */
-    /* 아이콘 및 여백 고려하여 최대 너비 설정 */
-    max-width: calc(100% - 35px);
+	display: inline-block;
+	flex-grow: 1;
+	max-width: calc(100% - 35px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
-
-.tool-link-text {
-    display: inline-block;
-    /* transition 속성은 JavaScript에서 동적으로 제어 */
-}
-
-.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
-    background-color: #0d6efd;
-}
-
+.tool-link-text { display: inline-block; }
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link { background-color: #0d6efd; }
 .nav-link.active-tool {
-    background-color: #e9ecef; /* 선택된 툴 하이라이트 색상 */
-    color: #000; /* 선택된 툴 텍스트 색상 */
+	background-color: #e9ecef;
+	color: #000;
 }
 
+/* 카드 */
 .card-header {
-    position: relative; /* 툴팁 위치의 기준점 */
-    padding-top: 0.2rem; /* 상단 패딩 추가 조정 */
-    padding-bottom: 0.2rem; /* 하단 패딩 추가 조정 */
+	padding-bottom: 0.2rem;
+	padding-top: 0.2rem;
+	position: relative;
 }
-
 .card-header h2 {
-    font-size: 1.25rem; /* 캡션 제목 크기 줄임 */
-    margin-bottom: 0;
+	font-size: 1.25rem;
+	margin-bottom: 0;
 }
-
-.card-body {
-    padding: 0; /* card-body 패딩 0으로 설정 */
-}
-
+.card-body { padding: 0; }
 .card-text {
-    font-size: 0.85rem; /* 설명 텍스트 크기 줄임 */
-    color: #6c757d; /* 설명 텍스트 색상 변경 */
+	color: #6c757d;
+	font-size: 0.85rem;
 }
 
-#embedded-tool-iframe {
-    min-height: 85vh;
-}
+/* 임베디드 iframe */
+#embedded-tool-iframe { min-height: 85vh; }
 
+/* 커스텀 툴팁 */
 .custom-tooltip {
-    display: none;
-    position: fixed;
-    background-color: #333;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    pointer-events: none; /* 툴팁이 마우스 이벤트를 가로채지 않도록 */
-    z-index: 1070; /* 다른 요소들 위에 표시되도록 z-index 설정 */
+	background-color: #333;
+	border-radius: 4px;
+	color: #fff;
+	display: none;
+	font-size: 0.875rem;
+	padding: 5px 10px;
+	pointer-events: none;
+	position: fixed;
+	z-index: 1070;
 }
 
-/* Modal styles */
+/* (구) 모달 */
 #modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: none; /* Initially hidden */
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	justify-content: center;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 1000;
 }
-
 #modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  position: relative;
-  width: 80%;
-  height: 80%;
-  display: flex;
-  flex-direction: column;
+	background-color: #fff;
+	border-radius: 5px;
+	display: flex;
+	flex-direction: column;
+	height: 80%;
+	padding: 20px;
+	position: relative;
+	width: 80%;
 }
-
 #modal-close {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 1001;
+	cursor: pointer;
+	font-size: 24px;
+	font-weight: 700;
+	position: absolute;
+	right: 15px;
+	top: 10px;
+	z-index: 1001;
 }
-
 #modal-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  flex-grow: 1;
+	border: none;
+	flex-grow: 1;
+	height: 100%;
+	width: 100%;
 }
 
+/* 모달 버튼 컨테이너 */
 #modal-button-container {
-    position: fixed;
-    bottom: 80px; /* Adjust this value to position the buttons above the toggle button */
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 1100;
+	bottom: 80px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	position: fixed;
+	right: 20px;
+	z-index: 1100;
 }
 
+/* 모달 툴 버튼 */
 .modal-tool-button {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: white;
-    background-color: #495057;
-    border: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
-    transition: all 0.3s ease;
+	background-color: #495057;
+	border: none;
+	border-radius: 50%;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2),
+	            0 6px 20px rgba(0, 0, 0, 0.19);
+	font-size: 1.5rem;
+	font-weight: 700;
+	height: 50px;
+	transition: all 0.3s ease;
+	width: 50px;
 }
-
 .modal-tool-button:hover {
-    background-color: #343a40;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.22);
-    transform: translateY(-2px);
+	background-color: #343a40;
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3),
+	            0 8px 24px rgba(0, 0, 0, 0.22);
+	transform: translateY(-2px);
 }
 
-/* A, L, 메뉴 버튼을 담을 컨테이너 스타일 */
+/* 오른쪽 상단 고정 버튼 컨테이너 (간단 버전) */
 #fixed-buttons-container {
 	position: fixed;
-	top: 15px; /* 상단에서 조금 떨어뜨림 */
-	right: 15px; /* 우측에서 조금 떨어뜨림 */
-	z-index: 1200; /* 다른 요소들 위에 확실히 표시 */
-	display: flex;
-	flex-direction: column; /* 버튼들을 세로로 정렬 */
-	gap: 10px; /* 버튼 사이 간격 */
-	align-items: flex-end; /* 오른쪽 정렬 */
+	right: 15px;
+	top: 15px;
+	z-index: 1200;
 }
 
-/* 기존 #toggleSidebarBtn 위치 조정 (이제 #fixed-buttons-container 안으로 이동) */
+/* 토글 버튼(간단) */
 #toggleSidebarBtn {
-	/* 기존 fixed 속성 제거 또는 변경 */
-	position: static; /* 컨테이너 내에서 일반적인 흐름에 따르도록 */
-	margin-top: auto; /* 필요시 컨테이너 내에서 아래쪽으로 배치 */
+	margin-top: auto;
+	position: static;
 }
 
-/* 원래 #toggleSidebarBtn의 bi-list 아이콘 크기 조정 */
-#toggleSidebarBtn .bi-list {
-	font-size: 1.8rem !important; /* 모바일에서 더 크게 */
-}
-
-/* --- 기본 레이아웃 --- */
-		html, body {
-			height: 100%;
-			width: 100%;
-			color-scheme: light;
-			forced-color-adjust: none;
-			-webkit-text-fill-color: currentColor;
-			background-color: #121212 !important;
-			color: #ffffff !important;
-		}
-
-		.no-select {
-			-webkit-user-select: none; /* Safari */
-			-ms-user-select: none;    /* IE 10+ */
-			user-select: none;        /* Standard */
-
-			/* iOS, Android에서 탭했을 때 하이라이트되는 배경색 없애기 */
-			-webkit-tap-highlight-color: transparent;
-			-webkit-touch-callout: none; /* iOS Safari */
-		}
-
-		body {
-			margin: 0;
-			padding: 0;
-			min-height: 100%;
-
-			overflow-x: hidden;
-			touch-action: manipulation;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-			-webkit-overflow-scrolling: touch;
-		}
-
-		:root {
-			--vh: 1vh;
-		}
-
-		* {
-			box-sizing: border-box;
-		}
-
-		/* ⬇️ 추가: 모바일 safe-area 대응 */
-		@supports (padding-bottom: env(safe-area-inset-bottom)) {
-			@media (hover: none) and (pointer: coarse) {
-				body {
-					padding-bottom: env(safe-area-inset-bottom);
-				}
-			}
-		}
-
-        body.modal-open {
-            overflow: hidden;
-            touch-action: none;
-        }
-        #content {
-            padding: 2rem;
-            margin-left: 0;
-            min-height: 100vh;
-        }
-
-        /* --- 사이드바 --- */
-        #sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100vh;
-            background-color: #f8f9fa;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
-            z-index: 1050;
-            box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-        }
-        #sidebar.show {
-            transform: translateX(0);
-        }
-        #sidebar .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            border: none;
-            background: transparent;
-            font-size: 1.5rem;
-            color: #333;
-        }
-        #sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.3);
-            z-index: 1040;
-            display: none;
-        }
-        #sidebar-overlay.active {
-            display: block;
-        }
-
-        /* --- ModalTool 전용 모달 --- */
-        #modal-tool-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(50, 40, 40, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        #modal-tool-content {
-			background-color: white;
-			height: calc(var(--vh, 1vh) * 100);
-			max-height: none;
-			padding-top: env(safe-area-inset-top);
-			/* ⬇️ 수정: 불필요한 + 40px 제거 */
-			padding-bottom: env(safe-area-inset-bottom, 0px); 
-			border-radius: 5px;
-			position: relative;
-			width: 95vw;
-			display: flex;
-			flex-direction: column;
-			overflow: hidden;
-			overflow-y: auto;
-			background-color: #121212;
-		}
-        #modal-tool-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            flex-grow: 1;
-        }
-
-        /* --- 오른쪽 고정 UI 버튼 --- */
-        #fixed-ui-wrapper {
-            position: fixed;
-            top: 15px;
-            right: 5px;
-            z-index: 1200;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-            pointer-events: none; /* 래퍼는 클릭 이벤트를 통과시킴 */
-        }
-
-        /* 오른쪽 플로팅 버튼들을 담는 컨테이너 */
-        #fixed-buttons-container {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-end;
-            transition: transform 0.35s ease-in-out;
-            will-change: transform;
-            margin-right: -10px;
-        }
-        #fixed-buttons-container.hidden-to-right {
-            transform: translateX(200%);
-        }
-
-        /* ModalTool 버튼 / 사이드바 목록 버튼 공통 스타일 */
-        .modal-tool-button, #toggleSidebarBtn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border: none;
-            cursor: pointer;
-            flex-shrink: 0;
-            transform: scale(0.85);
-            transition: transform 0.2s ease-in-out, background-color 0.2s ease, opacity 0.2s ease;
-            pointer-events: auto; /* 버튼 자체는 클릭 가능해야 함 */
-        }
-
-        /* ModalTool 버튼 개별 스타일 */
-        .modal-tool-button {
-            font-size: 1.2rem;
-            color: white;
-        }
-
-        #toggleSidebarBtn .bi-list {
-            font-size: 1.8rem !important;
-        }
-
-        /* [상태] 마우스 오버 시 확대 */
-        .modal-tool-button:hover,
-        #toggleSidebarBtn:hover {
-            transform: scale(1);
-        }
-
-        /* [상태] 활성화된 ModalTool 버튼 */
-        .modal-tool-button.active-modal {
-            transform: scale(1);
-            box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(0, 0, 0, 0.3);
-            font-weight: bold;
-        }
-
-        /* [상태] 모달이 열렸을 때의 사이드바 버튼 (비활성화) */
-        #toggleSidebarBtn.inactive-when-modal {
-            transform: scale(0.85);
-            background-color: #6c757d;
-            border-color: #6c757d;
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        #toggleSidebarBtn.inactive-when-modal:hover {
-            transform: scale(0.85); /* 비활성화 시 hover 효과 제거 */
-        }
-        
-        /* --- 확장 UI 메뉴 --- */
-        #expanded-ui-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-            margin-bottom: 10px;
-            transform-origin: bottom right;
-            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-            transform: scale(0); /* 기본 숨김 */
-            opacity: 0;
-            pointer-events: none;
-        }
-        #expanded-ui-container.show {
-            transform: scale(1);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #expanded-ui-container .btn {
-            width: 48px;
-            height: 48px;
-            transform: scale(0.85);
-            pointer-events: auto;
-        }
-
-        /* 메인 UI 토글 버튼 (+) */
-        #uiToggleBtn {
-            width: 48px;
-            height: 48px;
-            font-size: 1.5rem;
-            transition: transform 0.2s ease-out !important;
-            pointer-events: auto;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            cursor: pointer;
-            border: none;
-        }
-        #uiToggleBtn.active {
-            transform: rotate(45deg); /* 활성화 시 + 아이콘을 X로 회전 */
-        }
-        
-        /* --- 사이드바 내부 툴 목록 --- */
-        .nav-link.active-tool {
-            background-color: var(--bs-primary);
-            color: white !important;
-            font-weight: bold;
-        }
-        .nav-link.active-tool::after {
-            content: " ✓";
-            margin-left: 6px;
-            color: white;
-        }
-
-        /* --- 로딩 스피너 --- */
-        #loader-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(18, 18, 18, 0.8);
-            display: none; /* 평소에는 숨김 */
-            justify-content: center;
-            align-items: center;
-            z-index: 2000; /* 최상단에 표시 */
-        }
-        .spinner {
-            width: 56px;
-            height: 56px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-		.modal-content {
-			height: 100dvh;
-			height: calc(var(--vh, 1vh) * 100); /* fallback */
-			overflow-y: auto;
-			background-color: #121212; /* 모달 배경도 명시! */
-		}
-
-		.fullscreen,
-		[data-vh-fill="true"] {
-			height: calc(var(--vh, 1vh) * 100);
-		}
-
-:root {
-    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
-}
-
-/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
+/* 전역 색/레이아웃 */
 html, body {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+	-webkit-text-fill-color: currentColor;
+	background-color: #121212 !important;
+	color: #fff !important;
+	color-scheme: light;
+	forced-color-adjust: none;
+	height: 100%;
+	width: 100%;
+}
+.no-select {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-overflow-scrolling: touch;
+	margin: 0;
+	min-height: 100%;
+	overflow-x: hidden;
+	padding: 0;
+	touch-action: manipulation;
+}
+:root { --vh: 1vh; }
+* { box-sizing: border-box; }
+
+/* 모바일 safe-area 패딩 */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+	@media (hover: none) and (pointer: coarse) {
+		body { padding-bottom: env(safe-area-inset-bottom); }
+	}
 }
 
-/* 다크 선호 환경에서도 라이트로 고정 */
- @media (prefers-color-scheme: dark) {
-    :root { color-scheme: light; }
-    html, body {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
+/* 모달 오픈 상태 */
+body.modal-open {
+	overflow: hidden;
+	touch-action: none;
 }
 
-/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
-img, video, canvas, svg, iframe {
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    background-color: transparent;
+/* 컨텐츠 영역 */
+#content {
+	margin-left: 0;
+	min-height: 100vh;
+	padding: 2rem;
 }
 
-/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
-.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
-    background-color: #ffffff !important;
-    color: #000000 !important;
+/* 사이드바(상세) */
+#sidebar {
+	background-color: #f8f9fa;
+	box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
+	height: 100vh;
+	left: 0;
+	padding: 1rem;
+	position: fixed;
+	top: 0;
+	transform: translateX(-100%);
+	transition: transform 0.3s ease-in-out;
+	width: 280px;
+	z-index: 1050;
 }
+#sidebar.show { transform: translateX(0); }
+#sidebar .close-btn {
+	background: transparent;
+	border: none;
+	color: #333;
+	font-size: 1.5rem;
+	position: absolute;
+	right: 10px;
+	top: 10px;
+}
+#sidebar-overlay {
+	background-color: rgba(0, 0, 0, 0.3);
+	display: none;
+	inset: 0;
+	position: fixed;
+	z-index: 1040;
+}
+#sidebar-overlay.active { display: block; }
 
-/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
+/* ModalTool 전용 모달 */
+#modal-tool-overlay {
+	align-items: center;
+	background-color: rgba(50, 40, 40, 0.5);
+	display: none;
+	height: 100%;
+	justify-content: center;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 1000;
+}
+#modal-tool-content {
+	background-color: #121212; /* 덮어씀 */
+	border-radius: 5px;
+	display: flex;
+	flex-direction: column;
+	height: calc(var(--vh, 1vh) * 100);
+	max-height: none;
+	overflow: hidden;
+	overflow-y: auto;
+	padding-bottom: env(safe-area-inset-bottom, 0);
+	padding-top: env(safe-area-inset-top);
+	position: relative;
+	width: 95vw;
+}
 #modal-tool-iframe {
-    color-scheme: light;
-    background: #ffffff;
+	border: none;
+	flex-grow: 1;
+	height: 100%;
+	width: 100%;
 }
 
-/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
-* { forced-color-adjust: none; }
+/* 오른쪽 UI 래퍼/컨테이너 */
+#fixed-ui-wrapper {
+	pointer-events: none;
+	position: fixed;
+	right: 5px;
+	top: 15px;
+	z-index: 1200;
+}
+#fixed-ui-wrapper,
+#fixed-buttons-container {
+	align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
 
-/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
-a, [class*="bi-"] { color: #0d6efd !important; }
+/* (상세) 고정 버튼 컨테이너 */
+#fixed-buttons-container {
+	margin-right: -10px;
+	position: relative;           /* ← min 기준: relative (아래 주석 참고) */
+	transition: transform 0.35s ease-in-out;
+	will-change: transform;
+}
+#fixed-buttons-container.hidden-to-right { transform: translateX(200%); }
+
+/* 버튼 공통 */
+#toggleSidebarBtn,
+.modal-tool-button {
+	align-items: center;
+	border: none;
+	border-radius: 50%;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+	cursor: pointer;
+	display: flex;
+	flex-shrink: 0;
+	height: 48px;
+	justify-content: center;
+	pointer-events: auto;
+	transform: scale(0.85);
+	transition:
+		transform 0.2s ease-in-out,
+		background-color 0.2s ease,
+		opacity 0.2s ease;
+	width: 48px;
+}
+.modal-tool-button {
+	color: #fff;
+	font-size: 1.2rem;
+}
+#toggleSidebarBtn .bi-list { font-size: 1.8rem !important; }
+#toggleSidebarBtn:hover,
+.modal-tool-button:hover { transform: scale(1); }
+
+/* 활성/비활성 상태 */
+.modal-tool-button.active-modal {
+	box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(0,0,0,0.3);
+	font-weight: 700;
+	transform: scale(1);
+}
+#toggleSidebarBtn.inactive-when-modal {
+	background-color: #6c757d;
+	border-color: #6c757d;
+	cursor: not-allowed;
+	opacity: 0.7;
+	transform: scale(0.85);
+}
+#toggleSidebarBtn.inactive-when-modal:hover { transform: scale(0.85); }
+
+/* 확장 UI */
+#expanded-ui-container {
+	align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 10px;
+	opacity: 0;
+	pointer-events: none;
+	transform: scale(0);
+	transform-origin: bottom right;
+	transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+#expanded-ui-container.show {
+	opacity: 1;
+	pointer-events: auto;
+	transform: scale(1);
+}
+#expanded-ui-container .btn { transform: scale(0.85); }
+#expanded-ui-container .btn,
+#uiToggleBtn {
+	height: 48px;
+	pointer-events: auto;
+	width: 48px;
+}
+
+/* + 버튼 */
+#uiToggleBtn {
+	align-items: center;
+	border: none;
+	border-radius: 50%;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+	cursor: pointer;
+	display: flex;
+	font-size: 1.5rem;
+	justify-content: center;
+	transition: transform 0.2s ease-out !important;
+}
+#uiToggleBtn.active { transform: rotate(45deg); }
+
+/* 사이드바 리스트 활성 */
+.nav-link.active-tool {
+	background-color: var(--bs-primary);
+	color: #fff !important;
+	font-weight: 700;
+}
+.nav-link.active-tool::after {
+	color: #fff;
+	content: " ✓";
+	margin-left: 6px;
+}
+
+/* 로딩 오버레이 */
+#loader-overlay {
+	align-items: center;
+	background-color: rgba(18, 18, 18, 0.8);
+	display: none;
+	height: 100%;
+	justify-content: center;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 2000;
+}
+.spinner {
+	animation: spin 1s linear infinite;
+	border: 5px solid #f3f3f3;
+	border-radius: 50%;
+	border-top-color: #3498db;
+	height: 56px;
+	width: 56px;
+}
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(1turn); }
+}
+
+/* 모달 콘텐츠 높이 */
+.modal-content {
+	background-color: #121212;
+	height: 100dvh;
+	overflow-y: auto;
+}
+
+/* 100vh 보정 */
+.fullscreen,
+.modal-content,
+[data-vh-fill="true"] {
+	height: calc(var(--vh, 1vh) * 100);
+}

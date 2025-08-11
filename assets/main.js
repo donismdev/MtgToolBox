@@ -2,8 +2,6 @@
 
 	const ResourceManager = {
 		basePath: "/MtgToolbox", // GitHub Pages 등을 사용한다면 
-/MtgToolbox
- 와 같이 프로젝트 이름을 넣을 수 있습니다.
 
 
 		dungeon(filename) {
