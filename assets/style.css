@@ -43,22 +43,6 @@ body {
 	color: #000;
 }
 
-/* 카드 */
-.card-header {
-	padding-bottom: 0.2rem;
-	padding-top: 0.2rem;
-	position: relative;
-}
-.card-header h2 {
-	font-size: 1.25rem;
-	margin-bottom: 0;
-}
-.card-body { padding: 0; }
-.card-text {
-	color: #6c757d;
-	font-size: 0.85rem;
-}
-
 /* 임베디드 iframe */
 #embedded-tool-iframe { min-height: 85vh; }
 
