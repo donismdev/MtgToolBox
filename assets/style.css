@@ -435,3 +435,99 @@ body.modal-open {
 [data-vh-fill="true"] {
 	height: calc(var(--vh, 1vh) * 100);
 }
+
+
+:root {
+  --vh: 1vh;
+  --ad-h: 0px;  /* 모바일 하단 광고 높이 */
+  --ad-w: 0px;  /* PC 우측 광고 폭 */
+}
+
+/* 페이지 전체를 그리드로 쪼갠다 */
+#app-shell {
+  display: grid;
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100%;
+  grid-template-rows: 1fr;      /* 기본: 한 칸만 */
+  grid-template-columns: 1fr;
+}
+
+/* 뷰포트(메인 칸) */
+#app-viewport {
+  grid-row: 1;
+  grid-column: 1;
+  position: relative;           /* 내부의 overlay/버튼을 absolute로 얹을 베이스 */
+  overflow: hidden;
+}
+
+/* 광고 기본은 숨김 */
+#ad-slot { display: none; }
+
+/* 광고 ON: 그리드 형태를 광고 위치에 맞춰 바꾼다 */
+html[data-ad="on"][data-ad-pos="bottom"] #app-shell {
+  grid-template-rows: 1fr var(--ad-h);   /* 아래에 광고 칸 추가 */
+  grid-template-columns: 1fr;
+}
+html[data-ad="on"][data-ad-pos="bottom"] #ad-slot {
+  display: block;
+  grid-row: 2;
+  grid-column: 1;
+  background: #fff;
+  box-shadow: 0 -2px 6px rgba(0,0,0,.15);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+html[data-ad="on"][data-ad-pos="right"] #app-shell {
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr var(--ad-w); /* 오른쪽에 광고 칸 추가 */
+}
+html[data-ad="on"][data-ad-pos="right"] #ad-slot {
+  display: block;
+  grid-row: 1;
+  grid-column: 2;
+  background: #fff;
+  box-shadow: -2px 0 6px rgba(0,0,0,.15);
+}
+
+/* 모달/로더/버튼들은 이제 '화면'이 아니라 뷰포트 안을 채운다 */
+#modal-tool-overlay,
+#loader-overlay {
+  position: absolute;
+  inset: 0;                     /* app-viewport만 덮음 */
+}
+
+#fixed-ui-wrapper {
+  position: absolute;
+  top: 15px;
+  right: 5px;                   /* 광고가 우측이어도 자동으로 칸 안 오른쪽에 붙음 */
+  z-index: 1500;
+  pointer-events: none;         /* 내부 버튼들만 이벤트 */
+  transform: translateZ(0); /* Safari/GPU 합성 꼬임 방지 */
+  will-change: transform;
+}
+#fixed-ui-wrapper * { pointer-events: auto; }
+
+/* 모달은 뷰포트만 채우면 되니 height:100% */
+#modal-tool-content { 
+  height: 100%;
+  width: 100%;
+}
+
+/* 레이어링: 사이드바 < 모달 < 광고 < 로더(최상단) */
+#sidebar { z-index: 1050; }
+#ad-slot { z-index: 1300; } 
+#modal-tool-overlay { position: absolute; inset: 0; z-index: 1200; }
+#loader-overlay     { position: absolute; inset: 0; z-index: 2000; }
+
+#modal-tool-overlay { z-index: 1200; }
+#fixed-ui-wrapper  { position: absolute; z-index: 1500; }
+
+/* 모달 열릴 때 우측 버튼군 가리기(선택) */
+body.modal-open #fixed-ui-wrapper { transition: opacity .15s; }
+
+body.modal-open #fixed-ui-wrapper {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important; /* 클릭 막히는 경우 대비 */
+  filter: none !important;         /* 투명도/블러 등 제거 */
+}

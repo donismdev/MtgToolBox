@@ -1,5 +1,13 @@
 // --- 전역 변수 및 상수 정의 ---
 
+// === 광고 토글 설정 =========================================
+const bApplyAd = true;              // 광고 사용 여부
+const pcAdPos  = 'right';           // PC에선 'right' 또는 'bottom'
+const defaultAdH = 64;              // 하단 광고 기본 높이(로드 전 임시)
+const defaultAdW = 300;             // 우측 광고 기본 폭(로드 전 임시)
+// =============================================================	
+
+
 	    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 	const ResourceManager = {
 		basePath: isLocal ? "" : "/MtgToolbox", // 로컬에서는 상대 경로, GitHub Pages 등에서는 절대 경로 사용
@@ -155,6 +163,9 @@
 
         // 렌더링 후 화면 상단으로 스크롤합니다.
         setTimeout(() => window.scrollTo(0, 0), 10);
+
+		document.body.classList.remove('modal-open');
+		toggleSidebarBtn.classList.remove('inactive-when-modal');
     }
     
     /**
@@ -469,6 +480,32 @@
 			}
 		}
 
+		function setupAdShell() {
+  const pos = isMobile ? 'bottom' : pcAdPos;
+  document.documentElement.setAttribute('data-ad', bApplyAd ? 'on' : 'off');
+  document.documentElement.setAttribute('data-ad-pos', pos);
+
+  const ad = document.getElementById('ad-slot');
+  if (!bApplyAd) {
+    if (ad) ad.style.display = 'none';
+    document.documentElement.style.setProperty('--ad-h', '0px');
+    document.documentElement.style.setProperty('--ad-w', '0px');
+    return;
+  }
+
+  // 광고 크기 반영(로드 전엔 기본값 사용)
+  requestAnimationFrame(() => {
+    const rect = ad?.getBoundingClientRect?.() || { width: 0, height: 0 };
+    if (pos === 'bottom') {
+      document.documentElement.style.setProperty('--ad-h', `${rect.height || defaultAdH}px`);
+      document.documentElement.style.setProperty('--ad-w', `0px`);
+    } else {
+      document.documentElement.style.setProperty('--ad-w', `${rect.width || defaultAdW}px`);
+      document.documentElement.style.setProperty('--ad-h', `0px`);
+    }
+  });
+}
+
 		// --- End of new code ---
 
 		function updateVh() {
@@ -476,5 +513,15 @@
 			document.documentElement.style.setProperty('--vh', `${vh}px`);
 		}
 
-		window.addEventListener('load', updateVh);
-		window.addEventListener('resize', updateVh);
+
+		window.addEventListener('load', () => {
+			updateVh();
+			setupAdShell();
+		});
+		window.addEventListener('resize', () => {
+			updateVh();
+			if (bApplyAd) {
+				const pos = isMobile ? 'bottom' : pcAdPos;
+				setupAdShell();
+			}
+		});
