@@ -1,6 +1,7 @@
 // --- 전역 변수 및 상수 정의 ---
 
 // === 광고 토글 설정 =========================================
+let bShowCaption = true;
 const bApplyAd = true;              // 광고 사용 여부
 const pcAdPos  = 'right';           // PC에선 'right' 또는 'bottom'
 const defaultAdH = 48;              // 하단 광고 기본 높이(로드 전 임시)
@@ -506,6 +507,36 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
   });
 }
 
+function bindCaptionControls() {
+  const bar = document.getElementById('caption-bar');
+  const revealBtn = document.getElementById('caption-reveal-btn');
+
+  // 캡션바 안 버튼들: data-action 기반으로 스위치
+  bar?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    switch (btn.dataset.action) {
+      case 'menu':
+        // 예: 사이드바 열기
+        toggleSidebar(true);
+        break;
+      case 'hide-caption':
+        setCaption(false);
+        break;
+      // 필요하면 여기서 'open-modal', 'fullscreen' 등 추가
+    }
+  });
+
+  // 숨겨졌을 때 나오는 ▼
+  revealBtn?.addEventListener('click', () => setCaption(true));
+}
+
+function setCaption(show) {
+	document.documentElement.setAttribute('data-caption', show ? 'on' : 'off');
+	bShowCaption = show;
+}
+
 		// --- End of new code ---
 
 		function updateVh() {
@@ -515,13 +546,24 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 
 
 		window.addEventListener('load', () => {
+
+			setCaption(true);
 			updateVh();
-			setupAdShell();
+			setupAdShell?.();
+			const hideBtn   = document.getElementById('caption-hide-btn');
+			const revealBtn = document.getElementById('caption-reveal-btn');
+
+			hideBtn?.addEventListener('click',  () => setCaption(false));
+			revealBtn?.addEventListener('click', () => setCaption(true));
+			bShowCaption = true;
+
+			bindCaptionControls();
 		});
 		window.addEventListener('resize', () => {
 			updateVh();
 			if (bApplyAd) {
 				const pos = isMobile ? 'bottom' : pcAdPos;
-				setupAdShell();
+				setupAdShell?.();
+				setCaption(bShowCaption);
 			}
 		});

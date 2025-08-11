@@ -436,13 +436,6 @@ body.modal-open {
 	height: calc(var(--vh, 1vh) * 100);
 }
 
-
-:root {
-  --vh: 1vh;
-  --ad-h: 0px;  /* 모바일 하단 광고 높이 */
-  --ad-w: 0px;  /* PC 우측 광고 폭 */
-}
-
 /* 페이지 전체를 그리드로 쪼갠다 */
 #app-shell {
   display: grid;
@@ -552,3 +545,124 @@ body.modal-open #fixed-ui-wrapper {
   visibility: visible !important;
   pointer-events: none !important; /* 래퍼는 계속 통과 */
 }
+
+:root {
+  --vh: 1vh;
+  --ad-h: 0px;  /* 모바일 하단 광고 높이 */
+  --ad-w: 0px;  /* PC 우측 광고 폭 */
+}
+
+/* ── 페이지 그리드: 메인칸 + (옵션) 광고칸 ───────────────────────── */
+#app-shell {
+  display: grid;
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100%;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
+}
+
+#ad-slot { display: none; }
+
+html[data-ad="on"][data-ad-pos="bottom"] #app-shell {
+  grid-template-rows: 1fr var(--ad-h);
+  grid-template-columns: 1fr;
+}
+html[data-ad="on"][data-ad-pos="bottom"] #ad-slot {
+  display: block; grid-row: 2; grid-column: 1;
+  background: #fff; box-shadow: 0 -2px 6px rgba(0,0,0,.15);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+html[data-ad="on"][data-ad-pos="right"] #app-shell {
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr var(--ad-w);
+}
+html[data-ad="on"][data-ad-pos="right"] #ad-slot {
+  display: block; grid-row: 1; grid-column: 2;
+  background: #fff; box-shadow: -2px 0 6px rgba(0,0,0,.15);
+}
+
+/* ── 메인칸(app-viewport): 캡션 + 컨텐츠 2행 ─────────────────────── */
+#app-viewport {
+  grid-row: 1; grid-column: 1;
+  display: grid;
+  grid-template-rows: auto 1fr;  /* 캡션 auto, 컨텐츠 1fr */
+  grid-template-columns: 100%;
+  min-height: 0; /* grid 자식 스크롤 허용 */
+}
+
+/* 캡션바(메뉴바) */
+#caption-bar {
+  grid-row: 1; grid-column: 1;
+  display: none;                    /* 기본은 숨김 */
+  height: auto;
+  padding: 8px 12px;
+  padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  background: #1e1e1e;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  align-items: center;
+  gap: 8px;
+}
+#caption-bar .caption-left,
+#caption-bar .caption-center,
+#caption-bar .caption-right {
+  display: flex; align-items: center; gap: 8px;
+}
+#caption-bar .caption-left  { justify-content: flex-start; }
+#caption-bar .caption-center{ flex: 1; justify-content: center; }
+#caption-bar .caption-right { justify-content: flex-end; }
+
+/* 캡션 토글: data-caption="on"이면 보임 */
+html[data-caption="on"] #caption-bar { display: flex; }
+
+/* 컨텐츠 프레임: 기존 요소 전부 이 안에서 작동 */
+#content-frame {
+  grid-row: 2; grid-column: 1;
+  position: relative;     /* 오버레이 절대배치 기준 */
+  display: flex; flex-direction: column;
+  min-height: 0;          /* 내부 스크롤 허용 */
+  overflow: hidden;
+}
+
+/* 기존 content 영역은 프레임 안에서 스크롤 */
+#content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* 오버레이/로더는 '프레임'만 덮음 (캡션은 가리지 않음) */
+#modal-tool-overlay,
+#loader-overlay {
+  position: absolute; inset: 0;
+}
+#modal-tool-content { height: 100%; width: 100%; }
+
+/* 레이어링: 사이드바 < 모달 < 광고 < 로더(최상단) */
+#sidebar            { z-index: 1050; }
+#modal-tool-overlay { z-index: 1200; }
+#ad-slot            { z-index: 1300; }
+#loader-overlay     { z-index: 2000; }
+
+/* 우측 플로팅 래퍼는 프레임 우상단 (원하면 이후 제거 가능) */
+#fixed-ui-wrapper {
+  position: absolute; top: 15px; right: 5px;
+  z-index: 1500; pointer-events: none;
+}
+#fixed-ui-wrapper * { pointer-events: auto; }
+
+#caption-reveal-btn {
+  position: absolute;
+  top: calc(6px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  z-index: 1600;            /* 모달(1200) 위, 로더(2000) 아래 */
+  padding: 2px 10px;
+  border-radius: 9999px;
+  line-height: 1;
+  align-items: center;
+  gap: 6px;
+}
+html[data-caption="off"] #caption-reveal-btn { display: flex; }
+html[data-caption="on"]  #caption-reveal-btn { display: none; }
