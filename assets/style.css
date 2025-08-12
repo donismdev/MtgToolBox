@@ -3,13 +3,6 @@ body {
 	overflow: hidden;
 }
 
-/* 사이드바(간단 버전) */
-#sidebar {
-	border-right: 1px solid #dee2e6;
-	overflow-y: auto;
-	width: 240px;
-}
-
 #content {
 	flex: 1;
 	overflow-y: auto;
@@ -129,20 +122,6 @@ body {
 	transform: translateY(-2px);
 }
 
-/* 오른쪽 상단 고정 버튼 컨테이너 (간단 버전) */
-#fixed-buttons-container {
-	position: fixed;
-	right: 15px;
-	top: 15px;
-	z-index: 1200;
-}
-
-/* 토글 버튼(간단) */
-#toggleSidebarBtn {
-	margin-top: auto;
-	position: static;
-}
-
 /* 전역 색/레이아웃 */
 html, body {
 	-webkit-text-fill-color: currentColor;
@@ -193,39 +172,6 @@ body.modal-open {
 	padding: 2rem;
 }
 
-/* 사이드바(상세) */
-#sidebar {
-	background-color: #f8f9fa;
-	box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
-	height: 100vh;
-	left: 0;
-	padding: 1rem;
-	position: fixed;
-	top: 0;
-	transform: translateX(-100%);
-	transition: transform 0.3s ease-in-out;
-	width: 280px;
-	z-index: 1050;
-}
-#sidebar.show { transform: translateX(0); }
-#sidebar .close-btn {
-	background: transparent;
-	border: none;
-	color: #333;
-	font-size: 1.5rem;
-	position: absolute;
-	right: 10px;
-	top: 10px;
-}
-#sidebar-overlay {
-	background-color: rgba(0, 0, 0, 0.3);
-	display: none;
-	inset: 0;
-	position: fixed;
-	z-index: 1040;
-}
-#sidebar-overlay.active { display: block; }
-
 /* ModalTool 전용 모달 */
 #modal-tool-overlay {
 	align-items: center;
@@ -260,33 +206,7 @@ body.modal-open {
 	width: 100%;
 }
 
-/* 오른쪽 UI 래퍼/컨테이너 */
-#fixed-ui-wrapper {
-	pointer-events: none;
-	position: fixed;
-	right: 5px;
-	top: 15px;
-	z-index: 1200;
-}
-#fixed-ui-wrapper,
-#fixed-buttons-container {
-	align-items: flex-end;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
-/* (상세) 고정 버튼 컨테이너 */
-#fixed-buttons-container {
-	margin-right: -10px;
-	position: relative;           /* ← min 기준: relative (아래 주석 참고) */
-	transition: transform 0.35s ease-in-out;
-	will-change: transform;
-}
-#fixed-buttons-container.hidden-to-right { transform: translateX(200%); }
-
 /* 버튼 공통 */
-#toggleSidebarBtn,
 .modal-tool-button {
 	align-items: center;
 	border: none;
@@ -309,8 +229,7 @@ body.modal-open {
 	color: #fff;
 	font-size: 1.2rem;
 }
-#toggleSidebarBtn .bi-list { font-size: 1.8rem !important; }
-#toggleSidebarBtn:hover,
+
 .modal-tool-button:hover { transform: scale(1); }
 
 /* 활성/비활성 상태 */
@@ -319,14 +238,6 @@ body.modal-open {
 	font-weight: 700;
 	transform: scale(1);
 }
-#toggleSidebarBtn.inactive-when-modal {
-	background-color: #6c757d;
-	border-color: #6c757d;
-	cursor: not-allowed;
-	opacity: 0.7;
-	transform: scale(0.85);
-}
-#toggleSidebarBtn.inactive-when-modal:hover { transform: scale(0.85); }
 
 /* 확장 UI */
 #expanded-ui-container {
@@ -454,36 +365,20 @@ html[data-ad="on"][data-ad-pos="right"] #ad-slot {
   inset: 0;                     /* app-viewport만 덮음 */
 }
 
-#fixed-ui-wrapper {
-  position: absolute;
-  top: 15px;
-  right: 5px;                   /* 광고가 우측이어도 자동으로 칸 안 오른쪽에 붙음 */
-  z-index: 1500;
-  pointer-events: none;         /* 내부 버튼들만 이벤트 */
-  transform: translateZ(0); /* Safari/GPU 합성 꼬임 방지 */
-  will-change: transform;
-}
-#fixed-ui-wrapper * { pointer-events: auto; }
-
 /* 모달은 뷰포트만 채우면 되니 height:100% */
 #modal-tool-content { 
   height: 100%;
   width: 100%;
 }
 
-/* 레이어링: 사이드바 < 모달 < 광고 < 로더(최상단) */
-#sidebar { z-index: 1050; }
+/* 레이어링: 모달 < 광고 < 로더(최상단) */
 #ad-slot { z-index: 1300; } 
 #modal-tool-overlay { position: absolute; inset: 0; z-index: 1200; }
 #loader-overlay     { position: absolute; inset: 0; z-index: 2000; }
 
 #modal-tool-overlay { z-index: 1200; }
-#fixed-ui-wrapper  { position: absolute; z-index: 1500; }
 
-/* 모달 열릴 때 우측 버튼군 가리기(선택) */
-body.modal-open #fixed-ui-wrapper { transition: opacity .15s; }
-
-body.modal-open #fixed-ui-wrapper {
+body.modal-open {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important; /* 클릭 막히는 경우 대비 */
@@ -494,17 +389,8 @@ body.modal-open #fixed-ui-wrapper {
 #expanded-ui-container { pointer-events: none; }
 #expanded-ui-container.show { pointer-events: auto; }
 
-/* 모달 버튼 묶음(사이드바 토글 포함) */
-#fixed-buttons-container { pointer-events: auto; }
-
-/* ⬇️ 핵심: 숨김 상태에선 완전히 클릭 통과 */
-#fixed-buttons-container.hidden-to-right,
-#fixed-buttons-container.hidden-to-right * {
-  pointer-events: none !important;
-}
-
 /* (혹시 남아 있었다면) 모달 열릴 때 버튼군을 숨기는 규칙 무력화 */
-body.modal-open #fixed-ui-wrapper {
+body.modal-open {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: none !important; /* 래퍼는 계속 통과 */
@@ -604,17 +490,9 @@ html[data-caption="on"] #caption-bar { display: flex; }
 #modal-tool-content { height: 100%; width: 100%; }
 
 /* 레이어링: 사이드바 < 모달 < 광고 < 로더(최상단) */
-#sidebar            { z-index: 1050; }
 #modal-tool-overlay { z-index: 1200; }
 #ad-slot            { z-index: 1300; }
 #loader-overlay     { z-index: 2000; }
-
-/* 우측 플로팅 래퍼는 프레임 우상단 (원하면 이후 제거 가능) */
-#fixed-ui-wrapper {
-  position: absolute; top: 15px; right: 5px;
-  z-index: 1500; pointer-events: none;
-}
-#fixed-ui-wrapper * { pointer-events: auto; }
 
 #caption-reveal-btn {
   position: absolute;
@@ -631,8 +509,6 @@ html[data-caption="on"] #caption-bar { display: flex; }
 }
 html[data-caption="off"] #caption-reveal-btn { display: flex; }
 html[data-caption="on"]  #caption-reveal-btn { display: none; }
-
-#fixed-ui-wrapper { display: none !important; }
 
 /* ─ Tool Launcher (모달형 선택기) ─ */
 #tool-launcher-overlay{
@@ -672,5 +548,3 @@ html[data-caption="on"]  #caption-reveal-btn { display: none; }
 }
 .launcher-accordion .tool:hover{ background:#323232; }
 #tool-launcher .btn-close{ filter: invert(1) grayscale(100%); opacity:.8; }
-
-#sidebar, #sidebar-overlay, #toggleSidebarBtn, #fixed-ui-wrapper { display:none !important; }

@@ -30,19 +30,7 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
     // ModalTool 관련 요소
     const modalToolOverlay = document.getElementById('modal-tool-overlay');
     const modalTool = document.getElementById('modal-tool-iframe');
-    
-    // 사이드바 관련 요소
-    const sidebar = document.getElementById("sidebar");
-    const sidebarOverlay = document.getElementById("sidebar-overlay");
-    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-    
-    // 오른쪽 UI 관련 요소
-    const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
-    const uiToggleBtn = document.getElementById('uiToggleBtn');
-    // const expandedUiContainer = document.getElementById('expanded-ui-container');
-    // const hideButtonsBtn = document.getElementById('hideButtonsBtn');
-    // const fullscreenBtn = document.getElementById('fullscreenBtn');
-
+        
     // --- 상태 관리 변수 ---
     let currentOpenModalUrl = null;
     const modalToolDisplayNameMap = {}; // { "url": "icon" } 형식으로 ModalTool 버튼의 텍스트 저장
@@ -50,33 +38,17 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 
     // --- 초기화 ---
     history.replaceState({ modal: false }, '', location.href);
-    toggleSidebar(true); // 페이지 로드 시 사이드바를 기본으로 표시
 
 	// 페이지 로드 시 기기를 감지하여 iOS일 경우 body에 'iOS' 클래스를 추가합니다.
 	if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 		document.body.classList.add('iOS');
 	}
 
-
-
     // ===================================================================================
     // ✨ 리팩토링 핵심 개념 ✨
     // 1. EmbeddedTool: 사이드바 목록에서 선택하여 메인 콘텐츠 영역(#content)에 그려지는 툴
     // 2. ModalTool: 화면 오른쪽의 플로팅 버튼을 눌러 전체 화면 모달(#modal-tool-overlay)로 로드되는 툴.
     // ===================================================================================
-
-    // --- 사이드바 및 UI 상태 관리 함수 ---
-
-    /** 사이드바를 열거나 닫습니다. */
-    function toggleSidebar(show) {
-        if (show) {
-            sidebar.classList.add("show");
-            sidebarOverlay.classList.add("active");
-        } else {
-            sidebar.classList.remove("show");
-            sidebarOverlay.classList.remove("active");
-        }
-    }
 
     // --- 툴 렌더링 및 관리 함수 ---
 
@@ -123,8 +95,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
         }
 
         contentArea.innerHTML = html;
-        toggleSidebar(false); // 툴을 선택하면 사이드바를 닫습니다.
-
 
         if (isIframe) {
             const embeddedToolIframe = document.getElementById('embedded-tool-iframe');
@@ -154,7 +124,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
         setTimeout(() => window.scrollTo(0, 0), 10);
 
 		document.body.classList.remove('modal-open');
-		toggleSidebarBtn.classList.remove('inactive-when-modal');
     }
     
     /**
@@ -188,8 +157,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
         };
 
         // 모달을 열기 전 UI 상태를 설정합니다.
-        toggleSidebar(false);
-        toggleSidebarBtn.classList.add('inactive-when-modal'); // 사이드바 버튼 비활성화
         document.body.classList.add('modal-open');
         currentOpenModalUrl = fullUrl;
         updateModalToolButtonStates(fullUrl); // 활성 ModalTool 버튼 스타일 업데이트
@@ -221,7 +188,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
         }
 
         // UI 상태를 원래대로 복원합니다.
-        toggleSidebarBtn.classList.remove('inactive-when-modal');
         modalToolOverlay.style.display = 'none';
         document.body.classList.remove('modal-open');
         modalTool.src = 'about:blank'; // ModalTool 비우기
@@ -233,7 +199,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
             history.back();
         }
     }
-
 
     // --- UI 상태 업데이트 함수 ---
 
@@ -288,12 +253,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 
     // --- 이벤트 리스너 설정 ---
 
-    // 사이드바 목록 토글 버튼
-    toggleSidebarBtn.addEventListener('click', () => {
-        if (toggleSidebarBtn.classList.contains('inactive-when-modal')) return; // 모달 열렸을 땐 동작 안함
-        toggleSidebar(!sidebar.classList.contains("show"));
-    });
-
     // 전체화면 버튼
     document.addEventListener('fullscreenchange', () => {
 		const isFullscreen = !!document.fullscreenElement;
@@ -311,14 +270,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
     window.addEventListener('popstate', (event) => {
         if (!event.state?.modal && modalToolOverlay.style.display === 'flex') {
             closeModalTool(false);
-        }
-    });
-
-    // 초기 화면에서 콘텐츠 영역 클릭 시 사이드바 열기
-    contentArea.addEventListener('click', () => {
-        const h1 = contentArea.querySelector('h1');
-        if (h1 && h1.textContent === '툴을 선택해주세요') {
-            toggleSidebar(true);
         }
     });
 
@@ -462,7 +413,7 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 		window.addEventListener("pageshow", () => {
 			console.log("Index: Page is shown again. Resetting main overlays.");
 			// 메인 페이지의 오버레이들을 초기화
-			document.querySelectorAll("#modal-tool-overlay, #sidebar-overlay").forEach(el => {
+			document.querySelectorAll("#modal-tool-overlay").forEach(el => {
 				el.style.display = "none";
 				el.classList.remove("active");
 				// 추가적으로 opacity, z-index 등도 초기화할 수 있음
