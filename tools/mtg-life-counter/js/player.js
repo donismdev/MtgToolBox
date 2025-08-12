@@ -88,7 +88,6 @@ export class Player {
 			{ id: 'monarch',	label: 'Monarch',		enabled: false, backgroundSize: '85%' },
 			{ id: 'log',		label: 'Life Log',		enabled: false, backgroundSize: '95%' },
 			{ id: 'theme',		label: 'Theme',			enabled: false, backgroundSize: '85%' },
-			{ id: 'layout',		label: 'HP Layout',		enabled: false, backgroundSize: '85%' },
 			{ id: 'counter',	label: 'Counters',		enabled: false, backgroundSize: '85%' },
 			{ id: 'note',		label: 'Secret Notes',	enabled: false, backgroundSize: '85%' },
 			{ id: 'daynight',	label: 'Day / Night',	enabled: false, backgroundSize: '85%' },
@@ -785,9 +784,6 @@ export class Player {
                 }
 				this.themeSelectorOverlay.show();
 				break;
-			case 'layout':
-				console.log(`HP Layout button created for player ${this.id}`);
-				break;
 			case 'counter':
                 if (!this.countersViewerModal) {
                     this.countersViewerModal = new CountersViewerModal(this);
@@ -904,16 +900,6 @@ export class Player {
 						button.addEventListener('click', (e) => {
 							e.stopPropagation();
 							this.executeButtonAction('theme');
-						});
-						break;
-					case 'layout':
-						button = document.createElement('button');
-						button.className = 'header-button';
-						button.style.backgroundImage = 'url(./assets/layout.png)';
-						button.addEventListener('click', (e) => {
-							e.stopPropagation();
-							// HP 레이아웃 변경 로직 (향후 구현)
-							console.log('HP Layout button clicked');
 						});
 						break;
 					case 'counter':
