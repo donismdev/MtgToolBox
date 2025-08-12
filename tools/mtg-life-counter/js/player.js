@@ -1391,6 +1391,7 @@ export class Player {
 		this.elements.area.appendChild(layer);
 	}
 
+
 	_createOrUpdateTimerBadge()
 	{
 		if (!this.timerBadge) {
@@ -1480,26 +1481,89 @@ export class Player {
 	}
 
 	_tickTimer() {
-		const loop = () => {
-			if (!this._timer.running) return;
-			const remain = Math.max(0, this._timer.endAt - performance.now());
+        const loop = () => {
+            if (!this._timer.running) return;
+            const remain = Math.max(0, this._timer.endAt - performance.now());
+            const totalSec = Math.floor(remain / 1000);
 
-			if (remain <= 0) {
-				this._timer.running = false;
-				this._timer.remainMs = 0;
-				this._renderTimerBadge();
+            // 종료 임박 시 (예: 5초 이하) is-finishing 클래스 추가 (선택 사항)
+            this.timerBadge.classList.toggle('is-finishing', this._timer.running && totalSec <= 5 && remain > 0);
 
-				// 종료 알림(진동 + 말풍선)
-				if (navigator.vibrate) navigator.vibrate([80, 60, 80]);
-				
-				this.showSpeechBubble('타이머 종료!', this.timerBadge || this.elements.optionsButton);
-				return;
-			}
+            if (remain <= 0) {
+                this._timer.running = false;
+                this._timer.remainMs = 0;
+                this._renderTimerBadge();
+                this.timerBadge.classList.add('is-finished'); // 종료 클래스 추가
 
-			// 1초 이하에서도 부드럽게 갱신하되, 그리기는 최소화
-			this._renderTimerBadge();
-			this._timer.rafId = requestAnimationFrame(loop);
-		};
-		this._timer.rafId = requestAnimationFrame(loop);
-	}
+                this.showSpeechBubble('타이머 종료!', this.timerBadge || this.elements.optionsButton);
+                return;
+            }
+
+            this._renderTimerBadge();
+            this._timer.rafId = requestAnimationFrame(loop);
+        };
+        this._timer.rafId = requestAnimationFrame(loop);
+    }
+
+    _createOrUpdateTimerBadge() {
+        if (!this.timerBadge) {
+            const badge = document.createElement('button');
+            badge.className = 'timer-badge header-button';
+            badge.title = '탭: 일시정지/재개, 길게: 리셋';
+            badge.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                this._timer._pressTimer = setTimeout(() => {
+                    this.resetTimer();
+                }, 700);
+                // 타이머 버튼 클릭 시 애니메이션 끄기
+                badge.classList.remove('is-finished');
+                badge.classList.remove('is-finishing');
+            });
+            badge.addEventListener('pointerup', (e) => {
+                e.stopPropagation();
+                clearTimeout(this._timer._pressTimer);
+                this.toggleTimer();
+                // 타이머 버튼 클릭 시 애니메이션 끄기 (pointerup 시에도 제거)
+                badge.classList.remove('is-finished');
+                badge.classList.remove('is-finishing');
+            });
+            badge.addEventListener('pointerleave', () => {
+                clearTimeout(this._timer._pressTimer);
+            });
+            this.timerBadge = badge;
+            this.elements.area.appendChild(badge);
+        } else {
+            // 뱃지가 이미 있으면 종료 관련 클래스 제거 (재시작 또는 수동 클릭 시)
+            this.timerBadge.classList.remove('is-finished');
+            this.timerBadge.classList.remove('is-finishing');
+        }
+        this._renderTimerBadge();
+    }
+
+    resetTimer() {
+        this.stopTimer(true);
+        this._renderTimerBadge();
+        // 리셋 시 애니메이션 클래스 제거
+        if (this.timerBadge) {
+            this.timerBadge.classList.remove('is-finished');
+            this.timerBadge.classList.remove('is-finishing');
+        }
+    }
+
+    stopTimer(keepBadge = false) {
+        cancelAnimationFrame(this._timer.rafId);
+        this._timer.running = false;
+        this._timer.durationMs = 0;
+        this._timer.endAt = 0;
+        this._timer.remainMs = 0;
+        // stop 시에도 애니메이션 클래스 제거
+        if (this.timerBadge) {
+            this.timerBadge.classList.remove('is-finished');
+            this.timerBadge.classList.remove('is-finishing');
+        }
+        if (!keepBadge && this.timerBadge) {
+            this.timerBadge.remove();
+            this.timerBadge = null;
+        }
+    }
 }
