@@ -165,6 +165,12 @@ body.modal-open {
 	touch-action: none;
 }
 
+#modal-tool-overlay,
+#modal-tool-content,
+#modal-tool-iframe {
+  pointer-events: auto;
+}
+
 /* 컨텐츠 영역 */
 #content {
 	margin-left: 0;
@@ -378,23 +384,9 @@ html[data-ad="on"][data-ad-pos="right"] #ad-slot {
 
 #modal-tool-overlay { z-index: 1200; }
 
-body.modal-open {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important; /* 클릭 막히는 경우 대비 */
-  filter: none !important;         /* 투명도/블러 등 제거 */
-}
-
 /* 실제 버튼/토글이 보일 때만 이벤트 활성화 */
 #expanded-ui-container { pointer-events: none; }
 #expanded-ui-container.show { pointer-events: auto; }
-
-/* (혹시 남아 있었다면) 모달 열릴 때 버튼군을 숨기는 규칙 무력화 */
-body.modal-open {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: none !important; /* 래퍼는 계속 통과 */
-}
 
 :root {
   --vh: 1vh;

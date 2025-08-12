@@ -9,7 +9,7 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 // =============================================================	
 
 
-	    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+	const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 	const ResourceManager = {
 		basePath: isLocal ? "" : "/MtgToolbox", // 로컬에서는 상대 경로, GitHub Pages 등에서는 절대 경로 사용
 
@@ -23,7 +23,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
     const toolIndexUrl = "tool_index.json";
 
     // --- DOM 요소 캐싱 ---
-    const toolListContainer = document.getElementById("tool-list-container");
     const contentArea = document.getElementById("content");
     const loaderOverlay = document.getElementById('loader-overlay');
     
@@ -389,7 +388,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 
                 if (toolsByParent[parent].length > 0) {
                     parentLi.appendChild(subUl);
-                    toolListContainer.appendChild(parentLi);
                 }
             });
         });
