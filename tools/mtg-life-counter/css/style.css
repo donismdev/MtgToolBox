@@ -1549,6 +1549,31 @@ body,html{
 /* =================================================== */
 /* 노트 편집기 모달                                    */
 /* =================================================== */
+.note-modal {
+    /* ✅ 반투명 문제의 원인인 배경색을 확실하게 지정합니다. */
+    background-color: var(--modal-bg, #282828); /* CSS 변수가 없으면 회색으로 fallback */
+    color: var(--modal-fg, #f0f0f0);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    
+    /* 모달 내부에서만 이벤트가 동작하도록 설정합니다. */
+    pointer-events: auto; 
+}
+
+/* ✅ Custom Note를 위한 Textarea 스타일 추가 */
+.editor-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background-color: #222;
+    color: #f0f0f0;
+    resize: vertical; /* 세로 크기만 조절 가능 */
+    box-sizing: border-box;
+}
 
 .note-editor-modal {
     display: flex;

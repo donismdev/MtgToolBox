@@ -91,7 +91,7 @@ const noteCategories = {
     cost: { label: 'Cost', type: 'slider', min: 1, max: 15, default: 8 },
     number: { label: 'Number', type: 'buttons', items: ['1','2','3','4','5','6','7','8','9','Other'], default: [] },
     type: { label: 'Type', type: 'buttons', items: ['Permanent', 'Creature', 'Planeswalker', 'Artifact', 'Enchantment', 'Land', 'Battle', 'Instant', 'Sorcery'], default: [] },
-    char: { label: 'Char', type: 'slider', min: 'A', max: 'Z', default: 'M' },
+    custom: { label: 'Custom Note', type: 'textarea', default: '' },
 };
 
 export function createDefaultNote() {
@@ -105,135 +105,147 @@ export function createDefaultNote() {
     };
 }
 
-function renderSecretNoteEditor(player, noteIndex) {
-    const modal = player.elements.noteEditorOverlay.querySelector('.note-editor-modal');
-    const note = player.secretNotes[noteIndex];
-    let tempSelections = JSON.parse(JSON.stringify(note.selections));
+function renderSecretNoteEditor(player, noteIndex)
+{
+		const modal = player.elements.noteEditorOverlay.querySelector('.note-editor-modal');
+		const note = player.secretNotes[noteIndex];
+		let tempSelections = JSON.parse(JSON.stringify(note.selections));
 
-    const getSummaryText = (category) => {
-        const selection = tempSelections[category];
-        if (Array.isArray(selection)) {
-            return selection.length > 0 ? `(${selection.join(', ')})` : '';
-        }
-        return `(${selection})`;
-    };
+		// ✅ 요약 텍스트 생성 로직 개선 (문자열 타입 처리 추가)
+		const getSummaryText = (category) => {
+			const selection = tempSelections[category];
+			if (Array.isArray(selection)) {
+				return selection.length > 0 ? `(${selection.join(', ')})` : '';
+			}
+			if (typeof selection === 'string' && selection.trim() !== '') {
+				// 텍스트가 길 경우 일부만 표시
+				const truncated = selection.length > 15 ? selection.substring(0, 15) + '...' : selection;
+				return `(${truncated})`;
+			}
+			return `(${selection})`;
+		};
 
-    modal.innerHTML = `
-        <div class="note-editor-header">
-            <h2 class="note-modal-title">Edit Note ${noteIndex + 1}</h2>
-            <div class="note-editor-buttons">
-                <button class="note-editor-save btn">Save</button>
-                <button class="note-editor-cancel btn">Cancel</button>
-            </div>
-        </div>
-        <div class="note-editor-content"></div>
-    `;
+		modal.innerHTML = `
+			<div class="note-editor-header">
+				<h2 class="note-modal-title">Edit Note ${noteIndex + 1}</h2>
+				<div class="note-editor-buttons">
+					<button class="note-editor-save btn">Save</button>
+					<button class="note-editor-cancel btn">Cancel</button>
+				</div>
+			</div>
+			<div class="note-editor-content"></div>
+		`;
 
-    const contentArea = modal.querySelector('.note-editor-content');
+		const contentArea = modal.querySelector('.note-editor-content');
 
-    for (const [key, config] of Object.entries(noteCategories)) {
-        const categoryWrapper = document.createElement('div');
-        categoryWrapper.className = 'editor-category';
-        categoryWrapper.dataset.categoryWrapper = key;
+		for (const [key, config] of Object.entries(noteCategories)) {
+			const categoryWrapper = document.createElement('div');
+			categoryWrapper.className = 'editor-category';
+			categoryWrapper.dataset.categoryWrapper = key;
 
-        let controlHTML = '';
-        if (config.type === 'buttons') {
-            const buttonsHTML = config.items.map(item => {
-                const isActive = tempSelections[key]?.includes(item) ? 'active' : '';
-                return `<button class="editor-btn ${isActive}" data-value="${item}">${item}</button>`;
-            }).join('');
-            controlHTML = `<div class="editor-btn-group">${buttonsHTML}</div>`;
-        } else if (config.type === 'slider') {
-            const value = tempSelections[key];
-            const isChar = key === 'char';
-            const min = isChar ? config.min.charCodeAt(0) : config.min;
-            const max = isChar ? config.max.charCodeAt(0) : config.max;
-            const sliderValue = isChar ? value.charCodeAt(0) : value;
-            controlHTML = `<div class="editor-slider-group">
-                <span>${config.min}</span>
-                <input type="range" min="${min}" max="${max}" value="${sliderValue}">
-                <output>${value}</output>
-                <span>${config.max}</span>
-            </div>`;
-        }
+			let controlHTML = '';
+			if (config.type === 'buttons') {
+				const buttonsHTML = config.items.map(item => {
+					const isActive = tempSelections[key]?.includes(item) ? 'active' : '';
+					return `<button class="editor-btn ${isActive}" data-value="${item}">${item}</button>`;
+				}).join('');
+				controlHTML = `<div class="editor-btn-group">${buttonsHTML}</div>`;
+			} else if (config.type === 'slider') {
+				const value = tempSelections[key];
+				controlHTML = `<div class="editor-slider-group">
+					<span>${config.min}</span>
+					<input type="range" min="${config.min}" max="${config.max}" value="${value}">
+					<output>${value}</output>
+					<span>${config.max}</span>
+				</div>`;
+			// ✅ 'textarea' 타입 처리 로직 추가
+			} else if (config.type === 'textarea') {
+				controlHTML = `<textarea class="editor-textarea" placeholder="자유롭게 메모를 입력하세요...">${tempSelections[key]}</textarea>`;
+			}
 
-        categoryWrapper.innerHTML = `
-            <div class="editor-category-header">
-                <h3>${config.label}</h3>
-                <span class="editor-category-summary">${getSummaryText(key)}</span>
-                <button class="editor-category-reset" data-category="${key}">Reset</button>
-            </div>
-            ${controlHTML}
-        `;
-        contentArea.appendChild(categoryWrapper);
-    }
+			categoryWrapper.innerHTML = `
+				<div class="editor-category-header">
+					<h3>${config.label}</h3>
+					<span class="editor-category-summary">${getSummaryText(key)}</span>
+					<button class="editor-category-reset" data-category="${key}">Reset</button>
+				</div>
+				${controlHTML}
+			`;
+			contentArea.appendChild(categoryWrapper);
+		}
 
-    // --- Event Handlers ---
-    modal.querySelector('.note-editor-cancel').onclick = () => hideSecretNoteEditor(player);
+		// --- Event Handlers ---
+		modal.querySelector('.note-editor-cancel').onclick = () => hideSecretNoteEditor(player);
 
-    modal.querySelector('.note-editor-save').onclick = () => {
-        player.secretNotes[noteIndex].title = ''; // Title field is removed
-        player.secretNotes[noteIndex].selections = tempSelections;
-        const isDefault = Object.keys(noteCategories).every(key =>
-            JSON.stringify(tempSelections[key]) === JSON.stringify(noteCategories[key].default)
-        );
-        player.secretNotes[noteIndex].isFilled = !isDefault;
-        hideSecretNoteEditor(player);
-        renderSecretNotesHub(player);
-    };
+		modal.querySelector('.note-editor-save').onclick = () => {
+			player.secretNotes[noteIndex].selections = tempSelections;
+			const isDefault = Object.keys(noteCategories).every(key =>
+				JSON.stringify(tempSelections[key]) === JSON.stringify(noteCategories[key].default)
+			);
+			player.secretNotes[noteIndex].isFilled = !isDefault;
+			hideSecretNoteEditor(player);
+			renderSecretNotesHub(player);
+		};
+		
+		// --- 이벤트 핸들러 통합 (input과 click) ---
+		contentArea.addEventListener('input', (e) => {
+			const target = e.target;
+			const wrapper = target.closest('.editor-category');
+			if (!wrapper) return;
+			
+			const category = wrapper.dataset.categoryWrapper;
 
-    contentArea.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target.matches('.editor-btn')) {
-            const wrapper = target.closest('.editor-category');
-            const category = wrapper.dataset.categoryWrapper;
-            const value = target.dataset.value;
-            const index = tempSelections[category].indexOf(value);
-            if (index > -1) {
-                tempSelections[category].splice(index, 1);
-            } else {
-                tempSelections[category].push(value);
-            }
-            target.classList.toggle('active');
-            wrapper.querySelector('.editor-category-summary').textContent = getSummaryText(category);
-        }
-        if (target.matches('.editor-category-reset')) {
-            const category = target.dataset.category;
-            const defaultValue = noteCategories[category].default;
-            tempSelections[category] = JSON.parse(JSON.stringify(defaultValue));
-            const wrapper = target.closest('.editor-category');
-            if (noteCategories[category].type === 'buttons') {
-                wrapper.querySelectorAll('.editor-btn').forEach(btn => btn.classList.remove('active'));
-            } else if (noteCategories[category].type === 'slider') {
-                const slider = wrapper.querySelector('input[type="range"]');
-                const output = wrapper.querySelector('output');
-                const isChar = category === 'char';
-                const sliderValue = isChar ? defaultValue.charCodeAt(0) : defaultValue;
-                slider.value = sliderValue;
-                output.textContent = defaultValue;
-            }
-            wrapper.querySelector('.editor-category-summary').textContent = getSummaryText(category);
-        }
-    });
+			// ✅ Textarea 입력 처리
+			if (target.matches('.editor-textarea')) {
+				tempSelections[category] = target.value;
+			}
+			// ✅ Slider 입력 처리 (기존 로직)
+			else if (target.matches('input[type="range"]')) {
+				const output = wrapper.querySelector('output');
+				output.textContent = target.value;
+				tempSelections[category] = parseInt(target.value, 10);
+			}
+			
+			wrapper.querySelector('.editor-category-summary').textContent = getSummaryText(category);
+		});
 
-    contentArea.addEventListener('input', (e) => {
-        if (e.target.matches('input[type="range"]')) {
-            const wrapper = e.target.closest('.editor-category');
-            const category = wrapper.dataset.categoryWrapper;
-            const output = wrapper.querySelector('output');
-            let value = e.target.value;
-            if (category === 'char') {
-                const charValue = String.fromCharCode(value);
-                output.textContent = charValue;
-                tempSelections[category] = charValue;
-            } else {
-                output.textContent = value;
-                tempSelections[category] = parseInt(value, 10);
-            }
-            wrapper.querySelector('.editor-category-summary').textContent = getSummaryText(category);
-        }
-    });
-}
+		contentArea.addEventListener('click', (e) => {
+			const target = e.target;
+			const wrapper = target.closest('.editor-category');
+			if (!wrapper) return;
+
+			const category = wrapper.dataset.categoryWrapper;
+
+			// ✅ 버튼 클릭 처리
+			if (target.matches('.editor-btn')) {
+				const value = target.dataset.value;
+				const index = tempSelections[category].indexOf(value);
+				if (index > -1) {
+					tempSelections[category].splice(index, 1);
+				} else {
+					tempSelections[category].push(value);
+				}
+				target.classList.toggle('active');
+			}
+			// ✅ 리셋 버튼 클릭 처리
+			else if (target.matches('.editor-category-reset')) {
+				const defaultValue = noteCategories[category].default;
+				tempSelections[category] = JSON.parse(JSON.stringify(defaultValue));
+				
+				// UI 초기화
+				if (noteCategories[category].type === 'buttons') {
+					wrapper.querySelectorAll('.editor-btn').forEach(btn => btn.classList.remove('active'));
+				} else if (noteCategories[category].type === 'slider') {
+					wrapper.querySelector('input[type="range"]').value = defaultValue;
+					wrapper.querySelector('output').textContent = defaultValue;
+				} else if (noteCategories[category].type === 'textarea') {
+					wrapper.querySelector('.editor-textarea').value = defaultValue;
+				}
+			}
+
+			wrapper.querySelector('.editor-category-summary').textContent = getSummaryText(category);
+		});
+	}
 
 // --- "공개" API 함수들 (player.js에서 호출할 함수들) ---
 
