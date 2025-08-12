@@ -1025,19 +1025,17 @@
 
 /* 옵션 모달 오버레이 */
 .player-options-overlay {
-    display: none; /* 평소에는 숨김 */
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.6); /* 반투명 검정 배경 */
+    display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100;
-	background-color: var(--overlay-bg);
+    z-index: 1000; /* 다른 요소들보다 앞에 표시 */
 }
-
 /* 옵션 모달 창 */
 
 /* 옵션창 카운터의 텍스트와 카운트 래퍼 */
@@ -1121,20 +1119,20 @@
 .options-tab-container {
     display: flex;
     border-bottom: 1px solid #444;
-    margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
+
 .options-tab-button {
-    flex: 1 0 auto;
-	width: 50% !important;
-    padding: 10px;
-    background: none;
+    flex-grow: 1;
+    padding: 12px 15px;
+    background-color: #222;
+    color: #ddd;
     border: none;
-    color: #aaa;
+    border-right: 1px solid #444;
+    font-size: 1rem;
     cursor: pointer;
-    font-size: 16px;
-    border-bottom: 3px solid transparent;
-	white-space: nowrap;
+    transition: background-color 0.2s ease;
 }
 
 .options-tab-button.active {
@@ -1223,6 +1221,59 @@
     text-align: left;
     flex-grow: 1;
     cursor: pointer;
+}
+
+.options-tab-button:last-child {
+    border-right: none;
+}
+
+.options-tab-button.active {
+    background-color: #444;
+    color: #fff;
+}
+
+/* ===================================================
+   목록 아이템 스타일 (버튼/카운터 공통)
+   =================================================== */
+.button-settings-list, .counter-settings-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.button-setting-item, .counter-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #555;
+    min-height: 48px;
+}
+
+.button-setting-item:last-child, .counter-item:last-child {
+    border-bottom: none;
+}
+
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+    color: #ccc;
+    font-size: 1.2rem;
+}
+
+.counter-item-checkbox, .split-view-checkbox {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+.label-button {
+    flex-grow: 1;
+    background: none;
+    border: none;
+    color: #eee;
+    text-align: left;
+    cursor: pointer;
+    padding: 8px 0;
+    font-size: 1rem;
 }
 
 /* 4. 애니메이션: 회전 값을 잃지 않도록 '--content-rotation' 변수를 항상 포함 */
@@ -1885,36 +1936,40 @@ input[type="range"]::-moz-range-thumb {
 
 /* --- 모달 창 기본틀 (변경 없음) --- */
 .player-options-modal {
-    /* ✅ 모달을 수직 flex 컨테이너로 만듭니다. */
+    position: relative;
+    width: 95%; /* 부모 영역에 거의 꽉 차도록 너비 조정 */
+    max-width: 550px;
+    
+    /* ✅ vh 단위를 % 단위로 변경하여 부모(플레이어 영역) 기준이 되도록 수정 */
+    max-height: 95%; 
+    
     display: flex;
     flex-direction: column;
-
-    /* ✅ 모달의 최대 높이를 제한하여 너무 길어지는 것을 방지합니다. */
-    max-height: 80vh; 
     
-    width: 90%;
-    max-width: 600px;
     background-color: var(--modal-bg, #282828);
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-    overflow: hidden; /* 내부 요소가 둥근 모서리를 넘어가지 않도록 함 */
+    overflow: hidden;
+
+    /* ✅ 패딩이나 테두리가 크기에 영향을 주지 않도록 설정 (안전장치) */
+    box-sizing: border-box; 
 }
+
 
 .player-options-modal .close-button {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
     background: none;
     border: none;
     color: #fff;
     font-size: 24px;
     cursor: pointer;
-    padding: 5px; /* 클릭 영역 확보 */
-    line-height: 1; /* 수직 정렬 */
+    padding: 5px;
+    line-height: 1;
     opacity: 0.7;
     transition: opacity 0.2s ease;
-    
-    /* ✅ 다른 헤더 요소들 위에 표시되도록 z-index 추가 */
     z-index: 10;
 }
 
@@ -1924,16 +1979,14 @@ input[type="range"]::-moz-range-thumb {
 
 
 .modal-header-fixed {
-	position: sticky;
-	top: 0;
-	z-index: 10;
-	background-color: #383838;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 15px 20px;
-	border-bottom: 1px solid #444;
-	background-color: var(--modal-header-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #444;
+    background-color: var(--modal-header-bg, #333); /* 헤더 배경색 */
+    flex-shrink: 0;
+    position: relative; /* 닫기 버튼의 기준점 */
 }
 
 .modal-header-fixed,
@@ -1944,13 +1997,13 @@ input[type="range"]::-moz-range-thumb {
 .modal-content-scrollable {
 	flex-grow: 1;
 	overflow-y: auto;
-	min-height: 0;
-	padding: 15px 20px;
+	padding: 10px 15px;
 }
 
 .modal-title-fixed {
-	margin: 0;
-	font-size: 1.2rem;
+    font-size: 1.2rem;
+    color: #eee;
+    margin: 0;
 }
 
 .close-button-text {
@@ -1968,8 +2021,9 @@ input[type="range"]::-moz-range-thumb {
 
 /* --- Options 모달 내부 콘텐츠에 직접 패딩 적용 --- */
 .options-tab-container {
-    /* 2. 스크롤 영역의 첫 번째 자식인 탭 컨테이너에 위쪽 패딩을 줍니다. */
-    padding-top: 15px; 
+    display: flex;
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
 }
 
 .button-settings-list {
@@ -1994,6 +2048,14 @@ input[type="range"]::-moz-range-thumb {
 .modal-content-scrollable::-webkit-scrollbar-thumb {
 	background: rgba(255, 255, 255, 0.3);
 	border-radius: 4px;
+}
+
+.options-content-container > .options-tab-content {
+    display: none;
+}
+
+.options-content-container > .options-tab-content.active {
+    display: block;
 }
 
 /* ==================================================

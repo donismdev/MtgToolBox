@@ -88,9 +88,9 @@ export class Player {
 			{ id: 'monarch',	label: 'Monarch',		enabled: false, backgroundSize: '85%' },
 			{ id: 'log',		label: 'Life Log',		enabled: false, backgroundSize: '95%' },
 			{ id: 'theme',		label: 'Theme',			enabled: false, backgroundSize: '85%' },
-			{ id: 'counter',	label: 'Counters',		enabled: false, backgroundSize: '85%' },
 			{ id: 'note',		label: 'Secret Notes',	enabled: false, backgroundSize: '85%' },
 			{ id: 'daynight',	label: 'Day / Night',	enabled: false, backgroundSize: '85%' },
+			{ id: 'counter',	label: 'Ex Counters',	enabled: false, backgroundSize: '85%' },
     	];
 
 		this.counterSettings = [
