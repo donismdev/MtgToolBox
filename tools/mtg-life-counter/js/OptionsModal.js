@@ -6,87 +6,97 @@ export class OptionsModal {
     }
 
     createDOM() {
-        this.elements.optionsModalOverlay = document.createElement('div');
-        this.elements.optionsModalOverlay.className = 'player-options-overlay';
-        
-        const modal = document.createElement('div');
-        modal.className = 'player-options-modal';
-        modal.addEventListener('pointerdown', e => e.stopPropagation());
+		this.elements.optionsModalOverlay = document.createElement('div');
+		this.elements.optionsModalOverlay.className = 'player-options-overlay';
+		
+		// --- 1. 모달의 기본 틀 생성 ---
+		const modal = document.createElement('div');
+		// ✅ 모달 자체를 flex 컨테이너로 만들어 내부 요소를 수직으로 쌓습니다.
+		modal.className = 'player-options-modal'; 
+		modal.addEventListener('pointerdown', e => e.stopPropagation());
 
-        const modalHeader = document.createElement('div');
-        modalHeader.className = 'modal-header-fixed';
-        
-        const playerIdNumber = this.player.id.split('-')[1];
-        modalHeader.innerHTML = `<h2 class="modal-title-fixed">Options (P${playerIdNumber})</h2>`;
-        
-        const closeButtonText = document.createElement('button');
-        closeButtonText.className = 'close-button-text';
-        closeButtonText.textContent = 'Close';
-        closeButtonText.onclick = () => this.hide();
-        modalHeader.appendChild(closeButtonText);
+		// --- 2. 고정될 헤더 생성 (변경 없음) ---
+		const modalHeader = document.createElement('div');
+		modalHeader.className = 'modal-header-fixed';
+		const playerIdNumber = this.player.id.split('-')[1];
+		modalHeader.innerHTML = `<h2 class="modal-title-fixed">Options (P${playerIdNumber})</h2>`;
+		
+		const closeButtonText = document.createElement('button');
+		closeButtonText.className = 'close-button';
+		closeButtonText.textContent = 'x';
+		closeButtonText.onclick = () => this.hide();
+		modalHeader.appendChild(closeButtonText);
 
-        const tabContainer = document.createElement('div');
-        tabContainer.className = 'options-tab-container';
+		// --- 3. 고정될 탭 버튼 컨테이너 생성 ---
+		const tabContainer = document.createElement('div');
+		tabContainer.className = 'options-tab-container';
 
-        const counterTabBtn = document.createElement('button');
-        counterTabBtn.className = 'options-tab-button';
-        counterTabBtn.textContent = 'Counters';
+		const counterTabBtn = document.createElement('button');
+		counterTabBtn.className = 'options-tab-button';
+		counterTabBtn.textContent = 'Counters';
 
-        const buttonsTabBtn = document.createElement('button');
-        buttonsTabBtn.className = 'options-tab-button active';
-        buttonsTabBtn.textContent = `Buttons`;
+		const buttonsTabBtn = document.createElement('button');
+		buttonsTabBtn.className = 'options-tab-button active';
+		buttonsTabBtn.textContent = 'Buttons';
+		
+		tabContainer.append(buttonsTabBtn, counterTabBtn);
 
-        const modalContentWrapper = document.createElement('div');
-        modalContentWrapper.className = 'modal-content-scrollable';
-        
-        const contentContainer = document.createElement('div');
-        contentContainer.className = 'options-content-container';
-        
-        const counterContent = document.createElement('div');
-        counterContent.className = 'options-tab-content';
-        this.elements.counterSettingsList = document.createElement('ul');
-        this.elements.counterSettingsList.className = 'button-settings-list';
-        counterContent.appendChild(this.elements.counterSettingsList);
+		// --- 4. 스크롤될 콘텐츠 영역 생성 ---
+		// ✅ 이 div는 이제 탭 콘텐츠만 담고, 스크롤 기능을 담당합니다.
+		const modalContentWrapper = document.createElement('div');
+		modalContentWrapper.className = 'modal-content-scrollable';
+		
+		// 이 부분은 변경 없음
+		const contentContainer = document.createElement('div');
+		contentContainer.className = 'options-content-container';
+		
+		const counterContent = document.createElement('div');
+		counterContent.className = 'options-tab-content';
+		this.elements.counterSettingsList = document.createElement('ul');
+		this.elements.counterSettingsList.className = 'button-settings-list';
+		counterContent.appendChild(this.elements.counterSettingsList);
 
-        const buttonsContent = document.createElement('div');
-        buttonsContent.className = 'options-tab-content active';
-        this.elements.buttonSettingsList = document.createElement('ul');
-        this.elements.buttonSettingsList.className = 'button-settings-list';
-        buttonsContent.appendChild(this.elements.buttonSettingsList);
-        
-        counterTabBtn.onclick = () => {
-            counterTabBtn.classList.add('active');
-            buttonsTabBtn.classList.remove('active');
-            counterContent.classList.add('active');
-            buttonsContent.classList.remove('active');
-        };
-        buttonsTabBtn.onclick = () => {
-            buttonsTabBtn.classList.add('active');
-            counterTabBtn.classList.remove('active');
-            buttonsContent.classList.add('active');
-            counterContent.classList.remove('active');
-        };
+		const buttonsContent = document.createElement('div');
+		buttonsContent.className = 'options-tab-content active';
+		this.elements.buttonSettingsList = document.createElement('ul');
+		this.elements.buttonSettingsList.className = 'button-settings-list';
+		buttonsContent.appendChild(this.elements.buttonSettingsList);
+		
+		contentContainer.append(counterContent, buttonsContent);
+		modalContentWrapper.appendChild(contentContainer);
 
-        tabContainer.append(buttonsTabBtn, counterTabBtn);
-        contentContainer.append(counterContent, buttonsContent);
+		// --- 5. 탭 버튼 클릭 이벤트 (변경 없음) ---
+		counterTabBtn.onclick = () => {
+			counterTabBtn.classList.add('active');
+			buttonsTabBtn.classList.remove('active');
+			counterContent.classList.add('active');
+			buttonsContent.classList.remove('active');
+		};
+		buttonsTabBtn.onclick = () => {
+			buttonsTabBtn.classList.add('active');
+			counterTabBtn.classList.remove('active');
+			buttonsContent.classList.add('active');
+			counterContent.classList.remove('active');
+		};
+		
+		// ✅ [핵심] 모달에 헤더, 탭, 콘텐츠 순서로 요소를 추가합니다.
+		modal.append(modalHeader, tabContainer, modalContentWrapper);
+		
+		this.elements.optionsModalOverlay.appendChild(modal);
 
-        modalContentWrapper.append(tabContainer, contentContainer);
-        modal.append(modalHeader, modalContentWrapper);
-        
-        this.elements.optionsModalOverlay.appendChild(modal);
+		// --- 나머지 로직 (변경 없음) ---
+		this.elements.optionsModalOverlay.addEventListener('click', (e) => {
+			if (e.target === this.elements.optionsModalOverlay) {
+				this.hide();
+			}
+		});
 
-        this.elements.optionsModalOverlay.addEventListener('click', (e) => {
-            if (e.target === this.elements.optionsModalOverlay) {
-                this.hide();
-            }
-        });
+		this.renderCounterSettingsList();
+		this.renderButtonSettingsList();
 
-        this.renderCounterSettingsList();
-        this.renderButtonSettingsList();
-
-        this.setupDragAndDrop(this.elements.counterSettingsList, this.player.counterSettings);
-        this.setupDragAndDrop(this.elements.buttonSettingsList, this.player.buttonSettings);
-    }
+		this.setupDragAndDrop(this.elements.counterSettingsList, this.player.counterSettings);
+		this.setupDragAndDrop(this.elements.buttonSettingsList, this.player.buttonSettings);
+	}
 
     renderCounterSettingsList() {
     const list = this.elements.counterSettingsList;

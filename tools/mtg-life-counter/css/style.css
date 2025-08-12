@@ -1885,21 +1885,19 @@ input[type="range"]::-moz-range-thumb {
 
 /* --- 모달 창 기본틀 (변경 없음) --- */
 .player-options-modal {
+    /* ✅ 모달을 수직 flex 컨테이너로 만듭니다. */
     display: flex;
-	flex-direction: column;
-	position: absolute; /* ✅ 수정된 부분 */
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	width: 90%;
-	max-width: 600px;
-	max-height: 80%;
-	background-color: #282828;
-	border-radius: 10px;
-	overflow: hidden;
-	z-index: 100;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-	background-color: var(--modal-bg); color: var(--modal-fg);
+    flex-direction: column;
+
+    /* ✅ 모달의 최대 높이를 제한하여 너무 길어지는 것을 방지합니다. */
+    max-height: 80vh; 
+    
+    width: 90%;
+    max-width: 600px;
+    background-color: var(--modal-bg, #282828);
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    overflow: hidden; /* 내부 요소가 둥근 모서리를 넘어가지 않도록 함 */
 }
 
 .player-options-modal .close-button {
@@ -1911,7 +1909,19 @@ input[type="range"]::-moz-range-thumb {
     color: #fff;
     font-size: 24px;
     cursor: pointer;
+    padding: 5px; /* 클릭 영역 확보 */
+    line-height: 1; /* 수직 정렬 */
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    
+    /* ✅ 다른 헤더 요소들 위에 표시되도록 z-index 추가 */
+    z-index: 10;
 }
+
+.player-options-modal .close-button:hover {
+    opacity: 1;
+}
+
 
 .modal-header-fixed {
 	position: sticky;
@@ -1924,6 +1934,11 @@ input[type="range"]::-moz-range-thumb {
 	padding: 15px 20px;
 	border-bottom: 1px solid #444;
 	background-color: var(--modal-header-bg);
+}
+
+.modal-header-fixed,
+.options-tab-container {
+    flex-shrink: 0; /* ✅ 공간이 부족해도 줄어들지 않도록 설정 */
 }
 
 .modal-content-scrollable {
