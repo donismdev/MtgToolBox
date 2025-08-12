@@ -1,6 +1,11 @@
 import { initializePlayers, setupEventListeners } from './setup.js';
 import { applyLifeFontSize } from './ui.js';
 
+
+// document.addEventListener('click', (e) => {
+// 	console.log('[click path]', e.composedPath().map(n => n.id || n.className || n.tagName));
+// }, { capture: true });
+
 	document.addEventListener('DOMContentLoaded', () => {
 		// [수정] 상위 창의 session_data 객체에 안정적으로 연결하고, 없으면 생성합니다.
 		const parentWindow = window.parent || window;

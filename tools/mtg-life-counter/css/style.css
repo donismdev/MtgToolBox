@@ -2288,3 +2288,99 @@ flex-basis: 50%;
 .header-button.celestial-toggle {
   background-size: 85%;
 }
+
+.player-area .timer-badge {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	min-width: 64px; /* 시간 글자폭 보장 */
+	height: 40px;
+	padding: 0 10px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* ==================================================
+   Timer Modal Styles
+   ================================================== */
+
+/* 타이머 모달 내부 폼 컨테이너 */
+.timer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* 행 사이 간격 */
+    padding: 15px 5px; /* 위아래, 좌우 여백 */
+}
+
+/* 분/초 입력 행 */
+.timer-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    color: #f0f0f0;
+}
+
+/* 숫자 입력 필드 스타일 */
+.timer-input-row input[type="number"] {
+    flex: 1;
+    width: 100%; /* 너비 채우기 */
+    padding: 12px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background-color: #222;
+    color: #f0f0f0;
+    -moz-appearance: textfield; /* Firefox에서 증감 버튼 숨기기 */
+}
+
+/* Webkit 브라우저(크롬, 사파리)에서 증감 버튼 숨기기 */
+.timer-input-row input[type="number"]::-webkit-outer-spin-button,
+.timer-input-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 버튼 행 */
+.timer-button-row {
+    display: flex;
+    justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
+    gap: 12px;
+}
+
+/* 모달 버튼 공통 스타일 */
+.timer-button-row button {
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.timer-button-row button:active {
+    transform: scale(0.98);
+}
+
+/* 보조 버튼 (취소) */
+.modal-btn-secondary {
+    background-color: #5a6268;
+    color: #f0f0f0;
+}
+.modal-btn-secondary:hover {
+    background-color: #6c757d;
+}
+
+/* 주요 버튼 (시작) */
+.modal-btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+.modal-btn-primary:hover {
+    background-color: #0069d9;
+}

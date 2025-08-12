@@ -7,6 +7,7 @@ import { OptionsModal } from './OptionsModal.js';
 import { CountersViewerModal } from './CountersViewerModal.js';
 import { LifeLogOverlay } from './LifeLogOverlay.js';
 import { ThemeSelectorOverlay } from './ThemeSelectorOverlay.js';
+import { TimerOverlay } from './TimerOverlay.js';
 
 function getLifeChangeDirection(position, rect, rotation) {
     const adjustMode = window.localSettings.lifeAdjustDirection;
@@ -41,6 +42,9 @@ export class Player {
 
 
 	constructor(id, initialLife, initialRotation, themeName) {
+
+		console.log('[Player] constructor - 1');
+
 		this.id = id;
 		this.life = initialLife;
 		this.rotation = initialRotation;
@@ -57,6 +61,17 @@ export class Player {
 		this.isNight = false;
 		this.isCelestialTransitioning = false;
 
+		// 타이머
+		this.timerOverlay = null;
+		this.timerBadge = null;
+		this._timer = {
+			running: false,
+			durationMs: 0,
+			endAt: 0,
+			remainMs: 0,
+			rafId: null,
+		};
+
 		// 드래그 상태 변수
 		this.isDragging = false;
 		this.isPressing = false;
@@ -68,6 +83,7 @@ export class Player {
         this.splitViewCounters = []; // Stores the IDs of counters to display in split view
 
 		this.buttonSettings = [
+			{ id: 'timer',		label: 'Timer',			enabled: false, backgroundSize: '85%' },
 			{ id: 'initiative',	label: 'Initiative',	enabled: false, backgroundSize: '85%' },
 			{ id: 'monarch',	label: 'Monarch',		enabled: false, backgroundSize: '85%' },
 			{ id: 'log',		label: 'Life Log',		enabled: false, backgroundSize: '95%' },
@@ -75,7 +91,7 @@ export class Player {
 			{ id: 'layout',		label: 'HP Layout',		enabled: false, backgroundSize: '85%' },
 			{ id: 'counter',	label: 'Counters',		enabled: false, backgroundSize: '85%' },
 			{ id: 'note',		label: 'Secret Notes',	enabled: false, backgroundSize: '85%' },
-			{ id: 'daynight',	label: 'Day / Night',		enabled: false, backgroundSize: '85%' },
+			{ id: 'daynight',	label: 'Day / Night',	enabled: false, backgroundSize: '85%' },
     	];
 
 		this.counterSettings = [
@@ -781,6 +797,12 @@ export class Player {
             case 'note':
 				secretNotes.showHub(this);
                 break;
+			case 'timer':
+				if (!this.timerOverlay) {
+					this.timerOverlay = new TimerOverlay(this);
+				}
+				this.timerOverlay.show();
+				break;
 		}
 	}
 
@@ -930,6 +952,15 @@ export class Player {
 						this.updateCelestialToggleIcon();
 						break;
 					}
+					case 'timer' :
+						button = document.createElement('button');
+                        button.className = 'header-button';
+						button.style.backgroundImage = 'url(./assets/timer.png)'; // 예시 아이콘
+                        button.addEventListener('click', (e) => {
+                            e.stopPropagation();
+							this.executeButtonAction('timer');
+                        });
+						break;
 				}
 				if (button) {
 					button.style.backgroundSize = setting.backgroundSize || '85%';
@@ -1155,8 +1186,6 @@ export class Player {
 
 		const rect = this.elements.area.getBoundingClientRect();
 
-		// ▼▼▼▼▼ 여기가 수정된 부분입니다 ▼▼▼▼▼
-
 		// 기존 변수명 'x', 'y'를 그대로 사용하되, 값을 변경해야 하므로 const 대신 let으로 선언합니다.
 		let x = event.clientX - rect.left;
 		let y = event.clientY - rect.top;
@@ -1181,7 +1210,6 @@ export class Player {
 				break;
 			}
 		}
-		// ▲▲▲▲▲ 여기까지가 수정된 부분입니다 ▲▲▲▲▲
 
 		ripple.style.left = `${x - 50}px`;
 		ripple.style.top = `${y - 50}px`;
@@ -1361,5 +1389,117 @@ export class Player {
 
 		// player-area에 가장 뒤쪽(배경)으로 추가
 		this.elements.area.appendChild(layer);
+	}
+
+	_createOrUpdateTimerBadge()
+	{
+		if (!this.timerBadge) {
+			const badge = document.createElement('button');
+			badge.className = 'timer-badge header-button';
+			// header-button 재사용 + 위치만 별도 조정
+			badge.title = '탭: 일시정지/재개, 길게: 리셋';
+			badge.addEventListener('pointerdown', (e) => {
+				e.stopPropagation();
+				this._timer._pressTimer = setTimeout(() => {
+					// 길게: 리셋
+					this.resetTimer();
+				}, 700);
+			});
+			badge.addEventListener('pointerup', (e) => {
+				e.stopPropagation();
+				clearTimeout(this._timer._pressTimer);
+				// 짧게: 토글
+				this.toggleTimer();
+			});
+			badge.addEventListener('pointerleave', () => {
+				clearTimeout(this._timer._pressTimer);
+			});
+			this.timerBadge = badge;
+			this.elements.area.appendChild(badge);
+		}
+		this._renderTimerBadge();
+	}
+
+	_renderTimerBadge()
+	{
+		if (!this.timerBadge) return;
+		const t = this._timer;
+		const ms = t.running ? Math.max(0, t.endAt - performance.now()) : Math.max(0, t.remainMs);
+		const totalSec = Math.floor(ms / 1000);
+		const mm = Math.floor(totalSec / 60).toString().padStart(2, '0');
+		const ss = (totalSec % 60).toString().padStart(2, '0');
+
+		this.timerBadge.textContent = `${mm}:${ss}`;
+		this.timerBadge.classList.toggle('is-paused', !t.running && ms > 0);
+		this.timerBadge.classList.toggle('is-finished', ms === 0);
+	}
+
+	startTimer(durationMs) {
+		// 이미 동작 중이면 초기화 후 재시작
+		this.stopTimer(true);
+
+		this._timer.durationMs = durationMs;
+		this._timer.remainMs = durationMs;
+		this._timer.endAt = performance.now() + durationMs;
+		this._timer.running = true;
+
+		this._createOrUpdateTimerBadge();
+		this._tickTimer();
+	}
+
+	toggleTimer() {
+		if (this._timer.running) {
+			// 일시정지
+			this._timer.remainMs = Math.max(0, this._timer.endAt - performance.now());
+			this._timer.running = false;
+			cancelAnimationFrame(this._timer.rafId);
+			this._renderTimerBadge();
+		} else if (this._timer.remainMs > 0) {
+			// 재개
+			this._timer.endAt = performance.now() + this._timer.remainMs;
+			this._timer.running = true;
+			this._tickTimer();
+		}
+	}
+
+	resetTimer() {
+		this.stopTimer(true);
+		this._renderTimerBadge(); // 00:00 될 수도 있으니 반영
+	}
+
+	stopTimer(keepBadge = false) {
+		cancelAnimationFrame(this._timer.rafId);
+		this._timer.running = false;
+		this._timer.durationMs = 0;
+		this._timer.endAt = 0;
+		this._timer.remainMs = 0;
+		if (!keepBadge && this.timerBadge) {
+			this.timerBadge.remove();
+			this.timerBadge = null;
+		}
+	}
+
+	_tickTimer() {
+		const loop = () => {
+			if (!this._timer.running) return;
+			const remain = Math.max(0, this._timer.endAt - performance.now());
+
+			if (remain <= 0) {
+				this._timer.running = false;
+				this._timer.remainMs = 0;
+				this._renderTimerBadge();
+
+				// 종료 알림(진동 + 말풍선)
+				if (navigator.vibrate) navigator.vibrate([80, 60, 80]);
+				
+				this.showSpeechBubble('타이머 종료!', this.timerBadge || this.elements.optionsButton);
+				return;
+			}
+
+			// 1초 이하에서도 부드럽게 갱신하되, 그리기는 최소화
+			this._renderTimerBadge();
+			this._timer.rafId = requestAnimationFrame(loop);
+		};
+		this._timer.rafId = requestAnimationFrame(loop);
 	}
 }
