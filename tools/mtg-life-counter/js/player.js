@@ -1391,14 +1391,13 @@ export class Player {
 		this.elements.area.appendChild(layer);
 	}
 
-
 	_createOrUpdateTimerBadge()
 	{
 		if (!this.timerBadge) {
 			const badge = document.createElement('button');
 			badge.className = 'timer-badge header-button';
 			// header-button 재사용 + 위치만 별도 조정
-			badge.title = '탭: 일시정지/재개, 길게: 리셋';
+			badge.title = '탭: 일시정지/재개, 길게: 리셋, 리셋 시 길게 : UI 숨김';
 			badge.addEventListener('pointerdown', (e) => {
 				e.stopPropagation();
 				this._timer._pressTimer = setTimeout(() => {
@@ -1463,10 +1462,7 @@ export class Player {
 		}
 	}
 
-	resetTimer() {
-		this.stopTimer(true);
-		this._renderTimerBadge(); // 00:00 될 수도 있으니 반영
-	}
+	
 
 	stopTimer(keepBadge = false) {
 		cancelAnimationFrame(this._timer.rafId);
@@ -1475,8 +1471,7 @@ export class Player {
 		this._timer.endAt = 0;
 		this._timer.remainMs = 0;
 		if (!keepBadge && this.timerBadge) {
-			this.timerBadge.remove();
-			this.timerBadge = null;
+			this.hideTimerBadge();
 		}
 	}
 
@@ -1540,15 +1535,34 @@ export class Player {
         this._renderTimerBadge();
     }
 
+	hideTimerBadge() {
+		if (this.timerBadge) {
+			this.timerBadge.remove(); // DOM에서 요소 제거
+			this.timerBadge = null;   // 참조 제거
+		}
+	}
+
     resetTimer() {
-        this.stopTimer(true);
-        this._renderTimerBadge();
-        // 리셋 시 애니메이션 클래스 제거
-        if (this.timerBadge) {
-            this.timerBadge.classList.remove('is-finished');
-            this.timerBadge.classList.remove('is-finishing');
+
+		console.log('timer reset');
+
+		const ms = this._timer.remainMs;
+
+		if (ms > 0)
+		{
+			this.stopTimer(true);
+			this._renderTimerBadge(); // 00:00 될 수도 있으니 반영s
+
+			if (this.timerBadge) {
+				this.timerBadge.classList.remove('is-finished');
+				this.timerBadge.classList.remove('is-finishing');
+			}
         }
-    }
+		else
+		{
+			this.stopTimer(false);
+		}
+	}
 
     stopTimer(keepBadge = false) {
         cancelAnimationFrame(this._timer.rafId);
@@ -1561,9 +1575,8 @@ export class Player {
             this.timerBadge.classList.remove('is-finished');
             this.timerBadge.classList.remove('is-finishing');
         }
-        if (!keepBadge && this.timerBadge) {
-            this.timerBadge.remove();
-            this.timerBadge = null;
-        }
+        if (!keepBadge) {
+			this.hideTimerBadge();
+		}
     }
 }
