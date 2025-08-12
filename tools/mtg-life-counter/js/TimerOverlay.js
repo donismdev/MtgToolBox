@@ -15,7 +15,7 @@ export class TimerOverlay {
         this.elements.overlay.className = 'counters-viewer-overlay';
 
         const modal = document.createElement('div');
-        modal.className = 'counters-viewer-modal';
+        modal.className = 'counters-viewer-modal timer-modal-compact';
         modal.addEventListener('pointerdown', e => e.stopPropagation());
 
         // 2. 고정 헤더 생성

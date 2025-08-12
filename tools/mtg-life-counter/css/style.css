@@ -2338,6 +2338,32 @@ flex-basis: 50%;
     -moz-appearance: textfield; /* Firefox에서 증감 버튼 숨기기 */
 }
 
+/* ==================================================
+   타이머 모달 높이 및 정렬 조정
+   ================================================== */
+
+/* 타이머 전용 모달의 높이와 정렬을 재정의(override)합니다. */
+.timer-modal-compact {
+    height: auto; /* ✅ 높이를 내용물에 맞게 자동으로 조절 */
+    max-height: 90vh; /* 혹시 화면보다 커지는 것을 방지 */
+    
+    /* 부모인 .counters-viewer-overlay가 flex 컨테이너이므로,
+      margin: auto;를 주면 수직/수평 모두 완벽하게 중앙 정렬됩니다.
+    */
+    margin: auto; 
+}
+
+/* 내부 콘텐츠 패딩을 조정하여 더 보기 좋게 만듭니다. */
+.timer-modal-compact .modal-content-scrollable {
+    padding-top: 20px;
+    padding-bottom: 25px; /* 버튼과 하단 간격 확보 */
+}
+
+/* 입력 필드와 버튼 사이의 간격을 살짝 조정합니다. */
+.timer-modal-compact .timer-form {
+    gap: 30px; 
+}
+
 /* Webkit 브라우저(크롬, 사파리)에서 증감 버튼 숨기기 */
 .timer-input-row input[type="number"]::-webkit-outer-spin-button,
 .timer-input-row input[type="number"]::-webkit-inner-spin-button {
