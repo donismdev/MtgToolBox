@@ -1,287 +1,183 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<title>9x9 Block Puzzle</title>
-	<style>
-		:root{
-			--bg:#0f172a; /* slate-900 */
-			--panel:#111827; /* gray-900 */
-			--board:#1f2937; /* gray-800 */
-			--text:#e5e7eb;
-			--cellA:#0ea5e9; --cellB:#0284c7; /* 블록 채움 색상 */
-			--accent:#f59e0b; --good:#22c55e; --bad:#ef4444; --grid:rgba(255,255,255,0.08);
-		}
-		*{box-sizing:border-box}
-		html, body{height:100%}
-		body{
-			margin:0; background:linear-gradient(180deg, var(--bg), #0b1226 40%, #020617);
-			color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-			display:flex; align-items:center; justify-content:center; padding:10px;
-			touch-action: manipulation;
-		}
-		.app{
-			width:min(96vw, 720px);
-			background:var(--panel); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);
-			padding:12px; display:grid; gap:12px; grid-template-rows:auto 1fr auto;
-		}
-		.header{display:flex; align-items:center; justify-content:space-between; gap:8px}
-		.brand{display:flex; align-items:center; gap:10px}
-		.brand .logo{width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg, var(--cellA), var(--accent)); box-shadow:0 0 0 2px #0006 inset}
-		.brand h1{font-size:16px; margin:0}
-		.scores{display:flex; gap:8px; align-items:center}
-		.badge{background:#0b1220; border:1px solid #18233d; border-radius:999px; padding:6px 10px; font-weight:700; letter-spacing:.2px; display:flex; gap:6px; align-items:center}
-		.badge .val{min-width:42px; text-align:right}
-		.reset{background:var(--accent); color:#111; border:none; border-radius:10px; padding:7px 10px; font-weight:800; cursor:pointer}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>9x9 Block Puzzle</title>
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --board:#1f2937; --text:#e5e7eb;
+      --cellA:#0ea5e9; --cellB:#0284c7; --accent:#f59e0b; --good:#22c55e; --bad:#ef4444; --grid:rgba(255,255,255,0.08);
+      --u:24px; /* 트레이 블록 한 칸(고정) */
+    }
+    *{box-sizing:border-box}
+    html, body{height:100%}
+    body{margin:0; background:linear-gradient(180deg, var(--bg), #0b1226 40%, #020617); color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; display:flex; align-items:center; justify-content:center; padding:10px; touch-action: manipulation}
+    .app{width: 720px; max-width: 96vw; background:var(--panel); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); padding:12px; display:grid; gap:12px; grid-template-rows:auto 1fr auto}
 
-		.board-wrap{display:grid; place-items:center}
-		.board{
-			/* 이전 이쁜 UI 유지 + 모바일 사이징 축소 */
-			width:min(92vw, 360px); aspect-ratio:1/1; background:var(--board); border-radius:12px; padding:6px; position:relative;
-			display:grid; grid-template-columns:repeat(9,1fr); grid-template-rows:repeat(9,1fr); gap:3px;
-			border:2px solid #0c1428;
-		}
-		.cell{
-			background:linear-gradient(180deg,#0b1222,#0d1a30); border-radius:6px; box-shadow: inset 0 0 0 1px #18233d;
-			position:relative; transition:transform .05s ease, background .15s ease;
-		}
-		.cell.filled{ background:linear-gradient(180deg,var(--cellA),var(--cellB)); box-shadow: inset 0 0 0 1px rgba(0,0,0,.4), inset 0 -10px 18px rgba(0,0,0,.25)}
-		.cell.hint-ok{ outline:2px solid var(--good); outline-offset:-2px }
-		.cell.hint-bad{ outline:2px solid var(--bad); outline-offset:-2px }
-		/* 3x3 굵은 격자 표시 */
-		.board::before{
-			content:""; position:absolute; inset:6px; pointer-events:none; border-radius:8px;
-			background:
-				linear-gradient(var(--grid), var(--grid)) 0 33.33%/100% 2px no-repeat,
-				linear-gradient(var(--grid), var(--grid)) 0 66.66%/100% 2px no-repeat,
-				linear-gradient(90deg, var(--grid), var(--grid)) 33.33% 0/2px 100% no-repeat,
-				linear-gradient(90deg, var(--grid), var(--grid)) 66.66% 0/2px 100% no-repeat;
-		}
+    /* 상단바: 제목 제거, 점수/콤보/새 게임만 */
+    .header{display:flex; align-items:center; justify-content:flex-end; gap:8px}
+    .badge{background:#0b1220; border:1px solid #18233d; border-radius:999px; padding:6px 10px; font-weight:700; letter-spacing:.2px; display:flex; gap:6px; align-items:center}
+    .badge .val{min-width:42px; text-align:right}
+    .reset{background:var(--accent); color:#111; border:none; border-radius:8px; width:30px; height:30px; padding:0; font-weight:800; cursor:pointer; display:inline-grid; place-items:center}
 
-		/* 하단 피스 트레이 */
-		.tray{display:flex; gap:8px; justify-content:center; padding:6px; flex-wrap:wrap}
-		.piece{
-			--u: 24px; /* 모바일 기본 더 작게 */
-			padding:8px; background:#0b1220; border:1px solid #17233f; border-radius:12px; position:relative; touch-action:none;
-			box-shadow:0 10px 24px rgba(0,0,0,.4);
-		}
-		.piece.hidden{opacity:.2; filter:grayscale(1)}
-		.grid{ display:grid; grid-auto-rows:var(--u); grid-auto-columns:var(--u); gap:4px }
-		.block{
-			width:var(--u); height:var(--u); border-radius:6px; background:linear-gradient(180deg,#22d3ee,#0891b2);
-			box-shadow: inset 0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.35);
-			/* 드래그 신뢰성 향상 */
-			touch-action:none; -webkit-user-select:none; user-select:none;
-		}
-		.drag-ghost{ position:fixed; z-index:9999; pointer-events:none; opacity:.95; transform:translate(-50%,-50%); }
+    /* 보드: 완전 고정 사이즈 */
+    .board-wrap{display:grid; place-items:center}
+    .board{width:340px; height:340px; background:var(--board); border-radius:12px; padding:6px; position:relative; display:grid; grid-template-columns:repeat(9,1fr); grid-template-rows:repeat(9,1fr); gap:3px; border:2px solid #0c1428}
+    .cell{background:linear-gradient(180deg,#0b1222,#0d1a30); border-radius:6px; box-shadow: inset 0 0 0 1px #18233d; position:relative; transition:background .12s ease}
+    .cell.filled{ background:linear-gradient(180deg,var(--cellA),var(--cellB)); box-shadow: inset 0 0 0 1px rgba(0,0,0,.4), inset 0 -10px 18px rgba(0,0,0,.25)}
+    .cell.hint-ok{ outline:2px solid var(--good); outline-offset:-2px }
+    .cell.hint-bad{ outline:2px solid var(--bad); outline-offset:-2px }
+    .board::before{content:""; position:absolute; inset:6px; pointer-events:none; border-radius:8px; background: linear-gradient(var(--grid), var(--grid)) 0 33.33%/100% 2px no-repeat, linear-gradient(var(--grid), var(--grid)) 0 66.66%/100% 2px no-repeat, linear-gradient(90deg, var(--grid), var(--grid)) 33.33% 0/2px 100% no-repeat, linear-gradient(90deg, var(--grid), var(--grid)) 66.66% 0/2px 100% no-repeat}
 
-		/* 토스트 */
-		.toast{ position:fixed; left:50%; bottom:16px; transform:translateX(-50%); background:#0b1220; border:1px solid #1a2a4a; padding:8px 12px; border-radius:10px; font-weight:700; display:none }
-		.toast.show{ display:block; animation:pop .3s ease }
-		@keyframes pop{ from{ transform:translateX(-50%) scale(.9); opacity:0 } to{ transform:translateX(-50%) scale(1); opacity:1 } }
-		@media (max-width:480px){ .badge .val{min-width:auto} .piece{ --u: 22px } }
-	</style>
+    /* 트레이: 높이 고정해 레이아웃 출렁임 방지 */
+    .tray{display:flex; gap:8px; justify-content:center; padding:6px; flex-wrap:wrap; min-height:90px}
+    .piece{ --u: var(--u); padding:8px; background:#0b1220; border:1px solid #17233f; border-radius:12px; position:relative; touch-action:none; box-shadow:0 10px 24px rgba(0,0,0,.4) }
+    .piece.hidden{opacity:.2; filter:grayscale(1)}
+    .grid{ display:grid; grid-auto-rows:var(--u); grid-auto-columns:var(--u); gap:4px }
+    .block{ width:var(--u); height:var(--u); border-radius:6px; background:linear-gradient(180deg,#22d3ee,#0891b2); box-shadow: inset 0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.35); touch-action:none; -webkit-user-select:none; user-select:none }
+
+    .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; opacity:.95; transform:translate(-50%,-50%) scale(1.06)}
+
+    .toast{ position:fixed; left:50%; bottom:16px; transform:translateX(-50%); background:#0b1220; border:1px solid #1a2a4a; padding:8px 12px; border-radius:10px; font-weight:700; display:none }
+    .toast.show{ display:block; animation:pop .3s ease }
+    @keyframes pop{ from{ transform:translateX(-50%) scale(.9); opacity:0 } to{ transform:translateX(-50%) scale(1); opacity:1 } }
+  </style>
 </head>
 <body>
-	<div class="app" id="app">
-		<div class="header">
-			<div class="brand"><div class="logo"></div><h1>9x9 블록 퍼즐</h1></div>
-			<div class="scores">
-				<div class="badge" title="점수">⭐ 점수 <span class="val" id="score">0</span></div>
-				<div class="badge" title="콤보">🔥 콤보 <span class="val" id="combo">x1</span></div>
-				<button class="reset" id="btnReset">새 게임</button>
-			</div>
-		</div>
+  <div class="app" id="app">
+    <div class="header">
+      <div class="badge" title="점수">⭐ 점수 <span class="val" id="score">0</span></div>
+      <div class="badge" title="콤보">🔥 콤보 <span class="val" id="combo">x1</span></div>
+      <button class="reset" id="btnReset" title="새 게임">↻</button>
+    </div>
 
-		<div class="board-wrap">
-			<div class="board" id="board" aria-label="9x9 보드"></div>
-		</div>
+    <div class="board-wrap"><div class="board" id="board" aria-label="9x9 보드"></div></div>
+    <div class="tray" id="tray" aria-label="현재 피스 3개"></div>
+  </div>
+  <div class="toast" id="toast">+0</div>
 
-		<div class="tray" id="tray" aria-label="현재 피스 3개"></div>
-	</div>
-	<div class="toast" id="toast">+0</div>
+  <script>
+    function version(){ return "1.0.3"; }
+    function printVersion(){ console.log("도구 모음 버전: " + version()); }
+    printVersion();
 
-	<script>
-		/* ===== 버전 ===== */
-		function version(){ return "1.0.2"; }
-		function printVersion(){ console.log("도구 모음 버전: " + version()); }
-		printVersion();
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
 
-		/* ===== 유틸 ===== */
-		const $ = (sel, el=document) => el.querySelector(sel);
-		const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+    const state = { board: Array.from({length:9},()=>Array(9).fill(0)), score: 0, combo: 1, activePieces: [], placing: null };
+    const PIECES = [ [[0,0]], [[0,0],[1,0]], [[0,0],[1,0],[2,0]], [[0,0],[0,1]], [[0,0],[0,1],[0,2]], [[0,0],[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[2,1]], [[0,0],[1,0],[1,1]], [[0,0],[1,0],[0,1],[0,2]], [[0,0],[1,0],[2,0],[3,0]], [[0,0],[0,1],[0,2],[0,3]], [[0,0],[1,0],[2,0],[3,0],[4,0]] ];
 
-		/* ===== 게임 상태 ===== */
-		const state = {
-			board: Array.from({length:9},()=>Array(9).fill(0)),
-			score: 0,
-			combo: 1,
-			activePieces: [],
-			placing: null
-		};
+    const boardEl = $('#board');
+    const trayEl = $('#tray');
+    const scoreEl = $('#score');
+    const comboEl = $('#combo');
+    const toastEl = $('#toast');
 
-		/* ===== 피스 정의 (회전 없음) ===== */
-		const PIECES = [
-			[[0,0]],
-			[[0,0],[1,0]],
-			[[0,0],[1,0],[2,0]],
-			[[0,0],[0,1]],
-			[[0,0],[0,1],[0,2]],
-			[[0,0],[1,0],[0,1],[1,1]],
-			[[0,0],[1,0],[2,0],[2,1]],
-			[[0,0],[1,0],[1,1]],
-			[[0,0],[1,0],[0,1],[0,2]],
-			[[0,0],[1,0],[2,0],[3,0]],
-			[[0,0],[0,1],[0,2],[0,3]],
-			[[0,0],[1,0],[2,0],[3,0],[4,0]]
-		];
+    function buildBoard(){
+      boardEl.innerHTML = '';
+      for(let r=0;r<9;r++) for(let c=0;c<9;c++){
+        const cell=document.createElement('div'); cell.className='cell'; cell.dataset.r=r; cell.dataset.c=c; boardEl.appendChild(cell);
+      }
+    }
 
-		/* ===== 요소 ===== */
-		const boardEl = $('#board');
-		const trayEl = $('#tray');
-		const scoreEl = $('#score');
-		const comboEl = $('#combo');
-		const toastEl = $('#toast');
+    function reset(){
+      state.board = Array.from({length:9},()=>Array(9).fill(0));
+      state.score = 0; state.combo = 1; state.activePieces = []; state.placing = null;
+      updateScore(0,true); comboEl.textContent='x1';
+      $$('.cell',boardEl).forEach(c=>c.classList.remove('filled','hint-ok','hint-bad'));
+      dealPieces();
+    }
+    $('#btnReset').addEventListener('click', reset);
 
-		/* ===== 보드 구축 ===== */
-		function buildBoard(){
-			boardEl.innerHTML = '';
-			for(let r=0; r<9; r++){
-				for(let c=0; c<9; c++){
-					const cell = document.createElement('div');
-					cell.className = 'cell';
-					cell.dataset.r = r; cell.dataset.c = c;
-					boardEl.appendChild(cell);
-				}
-			}
-		}
+    function updateScore(delta, force){ if(!force){ state.score += delta; } scoreEl.textContent = state.score.toString(); if(delta>0){ toastEl.textContent = `+${delta}`; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'), 650);} }
 
-		function reset(){
-			state.board = Array.from({length:9},()=>Array(9).fill(0));
-			state.score = 0; state.combo = 1; state.activePieces = []; state.placing = null;
-			updateScore(0, true);
-			comboEl.textContent = 'x1';
-			$$('.cell', boardEl).forEach(c=>c.classList.remove('filled','hint-ok','hint-bad'));
-			dealPieces();
-		}
-		$('#btnReset').addEventListener('click', reset);
+    function randomPiece(){ return PIECES[Math.floor(Math.random()*PIECES.length)]; }
+    function dealPieces(){ while(state.activePieces.length<3){ state.activePieces.push(randomPiece()); } renderTray(); }
 
-		/* ===== 점수/토스트 ===== */
-		function updateScore(delta, force){
-			if(!force){ state.score += delta; }
-			scoreEl.textContent = state.score.toString();
-			if(delta>0){ toastEl.textContent = `+${delta}`; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'), 650); }
-		}
+    function bounds(shape){ let w=0,h=0; shape.forEach(([x,y])=>{ w=Math.max(w,x+1); h=Math.max(h,y+1); }); return {w,h}; }
+    function pickUnit(){ return getComputedStyle(document.documentElement).getPropertyValue('--u').trim() || '24px'; }
 
-		/* ===== 피스 공급 ===== */
-		function randomPiece(){ return PIECES[Math.floor(Math.random()*PIECES.length)]; }
-		function dealPieces(){ while(state.activePieces.length < 3){ state.activePieces.push(randomPiece()); } renderTray(); }
+    function renderTray(){
+      trayEl.innerHTML='';
+      state.activePieces.forEach((shape, idx)=>{
+        const p=document.createElement('div'); p.className='piece'; p.dataset.idx=idx; p.style.setProperty('--u', pickUnit());
+        const g=document.createElement('div'); g.className='grid'; const {w,h}=bounds(shape); g.style.gridTemplateColumns=`repeat(${w}, var(--u))`;
+        for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+          const has=shape.some(([sx,sy])=>sx===x && sy===y); if(has){ const b=document.createElement('div'); b.className='block'; b.dataset.sx=x; b.dataset.sy=y; g.appendChild(b);} }
+        p.appendChild(g);
+        p.addEventListener('pointerdown', onPiecePointerDown, {passive:false});
+        trayEl.appendChild(p);
+      });
+    }
 
-		/* ===== 트레이 렌더 & 드래그 ===== */
-		function bounds(shape){ let w=0,h=0; shape.forEach(([x,y])=>{ w=Math.max(w,x+1); h=Math.max(h,y+1); }); return {w,h}; }
-		function pickUnit(){ const w = Math.min(window.innerWidth, 900); return Math.max(20, Math.min(30, Math.floor(w/26))) + 'px'; }
+    function makeGhost(shape, src){ const ghost = src.cloneNode(true); ghost.classList.add('drag-ghost'); ghost.classList.remove('hidden'); ghost.style.setProperty('--u', pickUnit()); return ghost; }
 
-		function renderTray(){
-			trayEl.innerHTML = '';
-			state.activePieces.forEach((shape, idx)=>{
-				const p = document.createElement('div'); p.className = 'piece'; p.dataset.idx = idx; p.style.setProperty('--u', pickUnit());
-				const g = document.createElement('div'); g.className='grid'; const {w,h} = bounds(shape); g.style.gridTemplateColumns = `repeat(${w}, var(--u))`;
-				for(let y=0; y<h; y++){
-					for(let x=0; x<w; x++){
-						const has = shape.some(([sx,sy])=>sx===x && sy===y);
-						if(has){ const b = document.createElement('div'); b.className='block'; b.dataset.sx = x; b.dataset.sy = y; g.appendChild(b); }
-					}
-				}
-				p.appendChild(g);
-				p.addEventListener('pointerdown', onPiecePointerDown, {passive:false});
-				trayEl.appendChild(p);
-			});
-		}
+    function onPiecePointerDown(e){
+      e.preventDefault();
+      const pieceIdx=Number(e.currentTarget.dataset.idx); const shape=state.activePieces[pieceIdx]; if(!shape) return;
+      const t=e.target.closest('.block'); const ax=t?Number(t.dataset.sx||0):0; const ay=t?Number(t.dataset.sy||0):0;
+      const ghost=makeGhost(shape, e.currentTarget); document.body.appendChild(ghost);
+      // 선택 블록이 커서 아래: 유령 오프셋
+      const u=parseFloat(getComputedStyle(ghost).getPropertyValue('--u'))||24; const gap=4, pad=8; const offX=-(ax*(u+gap)+pad), offY=-(ay*(u+gap)+pad);
+      ghost.style.transform = `translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) scale(1.06)`;
+      state.placing={ pieceIdx, shape, ghost, anchor:{ax,ay}, lastX:e.clientX, lastY:e.clientY };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      document.addEventListener('pointermove', onMove, {passive:false});
+      document.addEventListener('pointerup', onUp, { once:true });
+      onMove(e);
+    }
 
-		function makeGhost(shape, src){ const ghost = src.cloneNode(true); ghost.classList.add('drag-ghost'); ghost.classList.remove('hidden'); ghost.style.setProperty('--u', pickUnit()); return ghost; }
+    function onMove(e){
+      if(!state.placing) return; e.preventDefault();
+      const { ghost, shape, anchor } = state.placing;
+      // 속도 기반 리드: 시각/판정 모두 리드좌표 사용
+      const dx = e.clientX - (state.placing.lastX||e.clientX);
+      const dy = e.clientY - (state.placing.lastY||e.clientY);
+      const lead = 0.25; // 빠르게 느끼도록 25% 앞서가기
+      const Lx = e.clientX + dx*lead; const Ly = e.clientY + dy*lead;
+      ghost.style.left = Lx + 'px'; ghost.style.top = Ly + 'px';
+      state.placing.lastX = Lx; state.placing.lastY = Ly;
+      // 힌트 갱신
+      $$('.cell',boardEl).forEach(c=>c.classList.remove('hint-ok','hint-bad'));
+      const tgt=document.elementFromPoint(Lx, Ly);
+      if(tgt && tgt.classList.contains('cell')){
+        const r=Number(tgt.dataset.r), c=Number(tgt.dataset.c);
+        const r0=r-(anchor?.ay||0), c0=c-(anchor?.ax||0);
+        const ok=canPlace(r0,c0,shape); markHint(r0,c0,shape, ok);
+      }
+    }
 
-		function onPiecePointerDown(e){
-			e.preventDefault(); // 모바일 브라우저 제스처 방지
-			const pieceIdx = Number(e.currentTarget.dataset.idx);
-			const shape = state.activePieces[pieceIdx];
-			if(!shape) return;
-			// 클릭한 블록의 로컬 좌표(anchor)
-			const targetBlock = e.target.closest('.block');
-			const ax = targetBlock ? Number(targetBlock.dataset.sx || 0) : 0;
-			const ay = targetBlock ? Number(targetBlock.dataset.sy || 0) : 0;
-			const ghost = makeGhost(shape, e.currentTarget);
-			document.body.appendChild(ghost);
-			state.placing = { pieceIdx, shape, ghost, anchor:{ax, ay} };
-			e.currentTarget.setPointerCapture(e.pointerId);
-			document.addEventListener('pointermove', onMove);
-			document.addEventListener('pointerup', onUp, { once:true });
-			onMove(e); // 초기 위치 업데이트
-		}
+    function onUp(e){
+      if(!state.placing) return;
+      const { pieceIdx, shape, ghost, anchor, lastX, lastY } = state.placing;
+      ghost.remove();
+      $$('.cell',boardEl).forEach(c=>c.classList.remove('hint-ok','hint-bad'));
+      const dropX = lastX ?? e.clientX, dropY = lastY ?? e.clientY;
+      const tgt=document.elementFromPoint(dropX, dropY);
+      if(tgt && tgt.classList.contains('cell')){
+        const r=Number(tgt.dataset.r), c=Number(tgt.dataset.c);
+        const r0=r-(anchor?.ay||0), c0=c-(anchor?.ax||0);
+        if(canPlace(r0,c0,shape)){
+          place(r0,c0,shape);
+          state.activePieces.splice(pieceIdx,1); renderTray(); if(state.activePieces.length===0) dealPieces();
+          state.placing=null; return;
+        }
+      }
+      flashBad(); state.placing=null;
+    }
 
-		function onMove(e){
-			if(!state.placing) return;
-			const { ghost, shape, anchor } = state.placing;
-			ghost.style.left = e.clientX + 'px';
-			ghost.style.top = e.clientY + 'px';
-			// 힌트 갱신 (녹색/빨강 유지)
-			$$('.cell', boardEl).forEach(c=>c.classList.remove('hint-ok','hint-bad'));
-			const tgt = document.elementFromPoint(e.clientX, e.clientY);
-			if(tgt && tgt.classList.contains('cell')){
-				const r = Number(tgt.dataset.r), c = Number(tgt.dataset.c);
-				const r0 = r - (anchor?.ay || 0), c0 = c - (anchor?.ax || 0);
-				const ok = canPlace(r0,c0,shape);
-				markHint(r0,c0,shape, ok);
-			}
-		}
+    function cellAt(r,c){ return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`); }
+    function canPlace(r,c,shape){ for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; if(rr<0||rr>=9||cc<0||cc>=9) return false; if(state.board[rr][cc]===1) return false; } return true; }
+    function markHint(r,c,shape, ok){ for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; const cell=cellAt(rr,cc); if(!cell) continue; cell.classList.add(ok?'hint-ok':'hint-bad'); } }
+    function place(r,c,shape){ let base=0; for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; state.board[rr][cc]=1; cellAt(rr,cc).classList.add('filled'); base+=10; } const cleared=clearLinesAndBoxes(); let bonus=0; if(cleared.total>0){ bonus+=cleared.total*50; } if(cleared.total>1){ state.combo=Math.min(8,state.combo+1);} else if(cleared.total===0){ state.combo=1;} comboEl.textContent='x'+state.combo; const gained=Math.floor((base+bonus)*state.combo); updateScore(gained); }
 
-		function onUp(e){
-			if(!state.placing) return;
-			const { pieceIdx, shape, ghost, anchor } = state.placing;
-			ghost.remove();
-			$$('.cell', boardEl).forEach(c=>c.classList.remove('hint-ok','hint-bad'));
-			const tgt = document.elementFromPoint(e.clientX, e.clientY);
-			if(tgt && tgt.classList.contains('cell')){
-				const r = Number(tgt.dataset.r), c = Number(tgt.dataset.c);
-				const r0 = r - (anchor?.ay || 0), c0 = c - (anchor?.ax || 0);
-				if(canPlace(r0,c0,shape)){
-					place(r0,c0,shape);
-					state.activePieces.splice(pieceIdx,1);
-					renderTray();
-					if(state.activePieces.length===0) dealPieces();
-					state.placing = null; return;
-				}
-			}
-			flashBad(); state.placing = null;
-		}
+    function clearLinesAndBoxes(){ const toClear=new Set(); for(let r=0;r<9;r++){ let full=true; for(let c=0;c<9;c++){ if(state.board[r][c]!==1){ full=false; break; } } if(full){ for(let c=0;c<9;c++) toClear.add(r*9+c); } } for(let c=0;c<9;c++){ let full=true; for(let r=0;r<9;r++){ if(state.board[r][c]!==1){ full=false; break; } } if(full){ for(let r=0;r<9;r++) toClear.add(r*9+c); } } for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ let full=true; for(let y=0;y<3;y++) for(let x=0;x<3;x++){ if(state.board[br*3+y][bc*3+x]!==1){ full=false; } } if(full){ for(let y=0;y<3;y++) for(let x=0;x<3;x++){ toClear.add((br*3+y)*9+(bc*3+x)); } } } toClear.forEach(key=>{ const r=Math.floor(key/9), c=key%9; state.board[r][c]=0; const cell=cellAt(r,c); if(cell){ cell.classList.remove('filled'); cell.animate([{transform:'scale(1)'},{transform:'scale(.7)'},{transform:'scale(1)'}],{duration:180}); } }); return { total: countRegions(toClear) }; }
+    function countRegions(set){ let cnt=0; for(let r=0;r<9;r++){ let all=true; for(let c=0;c<9;c++){ if(!set.has(r*9+c)){ all=false; break; } } if(all) cnt++; } for(let c=0;c<9;c++){ let all=true; for(let r=0;r<9;r++){ if(!set.has(r*9+c)){ all=false; break; } } if(all) cnt++; } for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ let all=true; for(let y=0;y<3;y++) for(let x=0;x<3;x++){ if(!set.has((br*3+y)*9+(bc*3+x))){ all=false; } } if(all) cnt++; } return cnt; }
 
-		/* ===== 검증/배치 ===== */
-		function cellAt(r,c){ return $(`.cell[data-r="${r}"][data-c="${c}"]`, boardEl); }
-		function canPlace(r,c,shape){ for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; if(rr<0||rr>=9||cc<0||cc>=9) return false; if(state.board[rr][cc]===1) return false; } return true; }
-		function markHint(r,c,shape, ok){ for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; const cell = cellAt(rr,cc); if(!cell) continue; cell.classList.add(ok?'hint-ok':'hint-bad'); } }
-		function place(r,c,shape){
-			let base=0; for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; state.board[rr][cc]=1; cellAt(rr,cc).classList.add('filled'); base += 10; }
-			const cleared = clearLinesAndBoxes(); let bonus=0; if(cleared.total>0){ bonus += cleared.total * 50; }
-			if(cleared.total>1){ state.combo = Math.min(8, state.combo + 1); } else if(cleared.total===0){ state.combo = 1; }
-			comboEl.textContent = 'x' + state.combo; const gained = Math.floor((base + bonus) * state.combo); updateScore(gained);
-		}
+    function flashBad(){ boardEl.classList.add('shake'); setTimeout(()=>boardEl.classList.remove('shake'), 250); }
 
-		function clearLinesAndBoxes(){
-			const toClear = new Set();
-			for(let r=0;r<9;r++){ let full=true; for(let c=0;c<9;c++){ if(state.board[r][c]!==1){ full=false; break; } } if(full){ for(let c=0;c<9;c++) toClear.add(r*9+c); } }
-			for(let c=0;c<9;c++){ let full=true; for(let r=0;r<9;r++){ if(state.board[r][c]!==1){ full=false; break; } } if(full){ for(let r=0;r<9;r++) toClear.add(r*9+c); } }
-			for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ let full=true; for(let y=0;y<3;y++) for(let x=0;x<3;x++){ if(state.board[br*3+y][bc*3+x]!==1){ full=false; } } if(full){ for(let y=0;y<3;y++) for(let x=0;x<3;x++){ toClear.add((br*3+y)*9+(bc*3+x)); } } }
-			toClear.forEach(key=>{ const r=Math.floor(key/9), c=key%9; state.board[r][c]=0; const cell=cellAt(r,c); if(cell){ cell.classList.remove('filled'); cell.animate([{transform:'scale(1)'},{transform:'scale(.7)'},{transform:'scale(1)'}],{duration:180}); } });
-			return { total: countRegions(toClear) };
-		}
-		function countRegions(set){ let cnt=0; for(let r=0;r<9;r++){ let all=true; for(let c=0;c<9;c++){ if(!set.has(r*9+c)){ all=false; break; } } if(all) cnt++; } for(let c=0;c<9;c++){ let all=true; for(let r=0;r<9;r++){ if(!set.has(r*9+c)){ all=false; break; } } if(all) cnt++; } for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ let all=true; for(let y=0;y<3;y++) for(let x=0;x<3;x++){ if(!set.has((br*3+y)*9+(bc*3+x))){ all=false; } } if(all) cnt++; } return cnt; }
-
-		function flashBad(){ boardEl.classList.add('shake'); setTimeout(()=>boardEl.classList.remove('shake'), 250); }
-
-		/* ===== 시작 ===== */
-		buildBoard();
-		reset();
-		window.addEventListener('resize', ()=>{ $$('.piece', trayEl).forEach(p=>p.style.setProperty('--u', pickUnit())); });
-	</script>
+    buildBoard(); reset();
+  </script>
 </body>
 </html>
