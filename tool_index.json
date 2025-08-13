@@ -165,6 +165,15 @@
 			"parent": "MISC",
 			"type": ["html"],
 			"enable": false
+		},
+		{
+			"name": "game-puzzle-match",
+			"path": "tools/game-puzzle-match/",
+			"parent": "GAME",
+			"type": ["html_modal"],
+			"modalIcon": "🧩",
+			"modalIconColor": "#28a745",
+			"enable": true
 		}
 	]
 }
