@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>MTG Swiss Tool - API Tester</title>
+
+	<!-- Google APIs -->
+	<script src="https://apis.google.com/js/api.js"></script>
+	<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+	<style>
+		body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;line-height:1.6;background-color:#f8f9fa;color:#212529;margin:0;padding:20px}
+		#app{max-width:1000px;margin:0 auto;background:#fff;border-radius:8px;padding:20px;box-shadow:0 4px 8px rgba(0,0,0,0.05)}
+		.section{border-top:1px solid #dee2e6;padding-top:16px;margin-top:16px}
+		h1,h2,h3{color:#343a40}
+		button,input,select{font-size:1rem;padding:10px 14px;border-radius:6px;border:1px solid #ced4da;margin:5px 2px;cursor:pointer}
+		button{background-color:#0d6efd;color:#fff;border-color:#0d6efd}
+		button.secondary{background-color:#6c757d;border-color:#6c757d}
+		button:disabled{background-color:#adb5bd;cursor:not-allowed}
+		.status-bar{padding:10px;margin-top:16px;border-radius:6px;font-weight:bold}
+		.status-bar.success{background-color:#d1e7dd;color:#0f5132}
+		.status-bar.error{background-color:#f8d7da;color:#842029}
+		.status-bar.info{background-color:#cff4fc;color:#055160}
+		table{width:100%;border-collapse:collapse;margin-top:10px}
+		th,td{border:1px solid #dee2e6;padding:8px;text-align:left}
+		th{background-color:#e9ecef}
+		.form-inline{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+		.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+		.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+		.input-sm{width:120px}
+		.input-md{width:180px}
+		.input-lg{width:240px}
+		.full{width:100%}
+		hr{border:0;border-top:1px solid #e9ecef;margin:8px 0}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<h1>MTG Swiss Tool - API Tester</h1>
+
+		<!-- 인증/스프레드시트 -->
+		<div class="section" id="auth-sec">
+			<h2>1) 인증 / 스프레드시트</h2>
+			<div class="form-inline">
+				<button id="btnSignIn">로그인</button>
+				<button id="btnSignOut" class="secondary">로그아웃</button>
+				<button id="btnEnsure" class="secondary">스프레드시트 보장(생성/연결)</button>
+				<button id="btnPicker" class="secondary">기존 스프레드시트 선택(Picker)</button>
+			</div>
+			<div class="form-inline">
+				<label>Spreadsheet ID:</label>
+				<input id="txtSpreadsheetId" class="full" type="text" readonly />
+			</div>
+		</div>
+
+		<!-- 플레이어 -->
+		<div class="section" id="players-sec">
+			<h2>2) Players</h2>
+			<div class="form-inline">
+				<input id="playerName" class="input-lg" type="text" placeholder="플레이어 이름" />
+				<button id="btnAddPlayer">플레이어 추가</button>
+				<button id="btnLoadPlayers" class="secondary">플레이어 목록 새로고침</button>
+			</div>
+			<table id="tblPlayers">
+				<thead><tr><th>player_id</th><th>name</th><th>created_date</th><th>last_updated</th></tr></thead>
+				<tbody></tbody>
+			</table>
+		</div>
+
+		<!-- 이벤트 -->
+		<div class="section" id="events-sec">
+			<h2>3) Events</h2>
+			<div class="form-inline">
+				<input id="eventDate" class="input-md" type="date" />
+				<select id="eventBestOf" class="input-sm">
+					<option value="3" selected>BO3</option>
+					<option value="1">BO1</option>
+					<option value="5">BO5</option>
+				</select>
+				<select id="eventFormat" class="input-md">
+					<option value="cube" selected>cube</option>
+					<option value="modern">modern</option>
+					<option value="legacy">legacy</option>
+					<option value="commander">commander</option>
+					<option value="limited">limited</option>
+				</select>
+				<button id="btnAddEvent">이벤트 생성</button>
+				<button id="btnLoadEvents" class="secondary">이벤트 목록 새로고침</button>
+			</div>
+			<table id="tblEvents">
+				<thead><tr><th>event_id</th><th>date</th><th>best_of</th><th>event_format</th></tr></thead>
+				<tbody></tbody>
+			</table>
+		</div>
+
+		<!-- 라운드(매치) -->
+		<div class="section" id="rounds-sec">
+			<h2>4) Rounds (1:1 경기 기록)</h2>
+			<div class="grid-3">
+				<div>
+					<b>기본</b><hr>
+					<input id="rEventId" class="input-sm" type="number" placeholder="event_id" />
+					<input id="rRoundNo" class="input-sm" type="number" placeholder="round_no" />
+					<input id="rTableNo" class="input-sm" type="number" placeholder="table_no" />
+					<select id="rResult" class="input-md">
+						<option value="OK" selected>OK</option>
+						<option value="BYE">BYE</option>
+						<option value="CONCEDE">CONCEDE</option>
+						<option value="NO_SHOW">NO_SHOW</option>
+					</select>
+				</div>
+				<div>
+					<b>Player A</b><hr>
+					<input id="rAId" class="input-sm" type="number" placeholder="playerA_id" />
+					<input id="rAW" class="input-sm" type="number" placeholder="a_wins" />
+					<input id="rAD" class="input-sm" type="number" placeholder="a_draws" />
+					<input id="rAL" class="input-sm" type="number" placeholder="a_losses" />
+				</div>
+				<div>
+					<b>Player B</b><hr>
+					<input id="rBId" class="input-sm" type="number" placeholder="playerB_id (BYE는 비워둠)" />
+					<input id="rBW" class="input-sm" type="number" placeholder="b_wins" />
+					<input id="rBD" class="input-sm" type="number" placeholder="b_draws" />
+					<input id="rBL" class="input-sm" type="number" placeholder="b_losses" />
+				</div>
+			</div>
+			<div class="form-inline">
+				<button id="btnAddRound">라운드 추가</button>
+				<button id="btnLoadRounds" class="secondary">라운드 목록 새로고침</button>
+			</div>
+			<table id="tblRounds">
+				<thead>
+					<tr>
+						<th>event_id</th><th>round_no</th><th>table_no</th>
+						<th>playerA_id</th><th>playerB_id</th>
+						<th>a_w</th><th>a_d</th><th>a_l</th>
+						<th>b_w</th><th>b_d</th><th>b_l</th>
+						<th>result_type</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+
+		<!-- 메타 -->
+		<div class="section" id="meta-sec">
+			<h2>5) Meta</h2>
+			<div class="form-inline">
+				<button id="btnLoadMeta">메타 조회</button>
+				<button id="btnInitAll" class="secondary">폴더/문서/탭/헤더/메타 보장(초기화)</button>
+			</div>
+			<table id="tblMeta">
+				<thead><tr><th>key</th><th>value</th></tr></thead>
+				<tbody></tbody>
+			</table>
+		</div>
+
+		<div id="status-bar" class="status-bar info">앱을 초기화하는 중...</div>
+	</div>
+
+	<!-- 필수: 버전 함수(항상 포함) -->
+	<script>
+		function version(){ return "1.0.0"; }
+		function printVersion(){ console.log("도구 모음 버전: " + version()); }
+		document.addEventListener("DOMContentLoaded", printVersion);
+	</script>
+
+	<!-- 메인 모듈 -->
+	<script type="module" src="js/main.js"></script>
+</body>
+</html>
