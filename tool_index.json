@@ -58,7 +58,7 @@
 			"type": ["html", "html_modal"],
 			"enable": true,
 			"hide_header": true,
-            "modalIcon": "L",
+            "modalIcon": "Life Counter",
             "modalIconColor": "#dc3545"
 		},
 		{
@@ -78,7 +78,7 @@
 			"path": "tools/misc-dice/",
 			"type": ["html", "html_modal"],
 			"enable": true,
-			"modalIcon": "D",
+			"modalIcon": "Dice",
 			"modalIconColor": "#17a2b8"
 		},
 		{
