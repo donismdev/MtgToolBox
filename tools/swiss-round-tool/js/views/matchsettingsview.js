@@ -4,9 +4,13 @@ export default function MatchSettingsView() {
     const element = document.createElement('div');
     element.id = 'match-settings-view-container';
 
+    // --- 내부 상태 ---
     const { players } = getState();
     let status = { type: 'info', message: '경기의 세부 설정을 진행해주세요.' };
     
+    // ★★★ 수정: 넘어온 플레이어 정보를 보고 정규/임시 경기인지 판단 ★★★
+    const isTempMatch = players && players.length > 0 && String(players[0].player_id).startsWith('temp_');
+
     let suggestedRounds;
     const playerCount = players?.length || 0;
     if (playerCount <= 4) suggestedRounds = 2;
@@ -16,12 +20,13 @@ export default function MatchSettingsView() {
 
     let uiState = { format: 'cube draft', rounds: suggestedRounds };
 
+    // --- 렌더링 함수 ---
     const render = () => {
         if (!players || !players.length) {
             element.innerHTML = `<div class="status-bar error">오류: 설정할 플레이어 정보가 없습니다. <a href="#/">처음으로 돌아가기</a></div>`;
             return;
         }
-        const formats = ['cube draft', 'standard', 'modern', 'pioneer', 'legacy', 'vintage', 'pauper', 'commander', 'custom'];
+        
         element.innerHTML = `
             <h2>매치 설정</h2>
             <div class="status-bar ${status.type}">${status.message}</div>
@@ -32,11 +37,7 @@ export default function MatchSettingsView() {
             <div class="section">
                 <form id="match-settings-form">
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label for="format-select">이벤트 형식</label>
-                            <select id="format-select">${formats.map(f => `<option value="${f}" ${uiState.format === f ? 'selected' : ''}>${f}</option>`).join('')}</select>
-                            ${uiState.format === 'custom' ? `<input type="text" id="custom-format-input" placeholder="커스텀 형식 입력..." required>` : ''}
-                        </div>
+                        ${renderFormatSelector()} 
                         <div class="form-group">
                             <label for="rounds-input">라운드 수 (추천: ${suggestedRounds})</label>
                             <input type="number" id="rounds-input" min="1" value="${uiState.rounds}" required>
@@ -63,6 +64,27 @@ export default function MatchSettingsView() {
         attachEventListeners();
     };
 
+    // ★★★ 수정: 경기 모드에 따라 다른 UI를 그리는 헬퍼 함수 ★★★
+    const renderFormatSelector = () => {
+        if (isTempMatch) {
+            return `
+                <div class="form-group">
+                    <label>이벤트 형식</label>
+                    <p style="padding: 0.5rem 0;">임시 경기 (저장되지 않음)</p>
+                </div>
+            `;
+        }
+
+        const formats = ['cube draft', 'standard', 'modern', 'pioneer', 'legacy', 'vintage', 'pauper', 'commander', 'custom'];
+        return `
+            <div class="form-group">
+                <label for="format-select">이벤트 형식</label>
+                <select id="format-select">${formats.map(f => `<option value="${f}" ${uiState.format === f ? 'selected' : ''}>${f}</option>`).join('')}</select>
+                ${uiState.format === 'custom' ? `<input type="text" id="custom-format-input" placeholder="커스텀 형식 입력..." required>` : ''}
+            </div>
+        `;
+    };
+
     const attachEventListeners = () => {
         element.querySelector('#match-settings-form')?.addEventListener('submit', handleStartMatch);
         element.querySelector('#format-select')?.addEventListener('change', e => {
@@ -72,28 +94,33 @@ export default function MatchSettingsView() {
         element.querySelector('#rounds-input')?.addEventListener('input', e => { uiState.rounds = parseInt(e.target.value, 10); });
     };
 
-    // ★★★ 수정: API 호출 로직 제거, 순수하게 상태만 설정 ★★★
     const handleStartMatch = (e) => {
         e.preventDefault();
         const form = element.querySelector('#match-settings-form');
-        const selectedFormat = form.querySelector('#format-select').value;
-        const customFormatInput = form.querySelector('#custom-format-input');
         
-        let finalFormat = selectedFormat;
-        if (selectedFormat === 'custom') {
-            const customFormatValue = customFormatInput?.value.trim();
-            if (!customFormatValue) {
-                status = { type: 'error', message: '커스텀 형식을 입력해주세요.' };
-                render();
-                return;
+        let finalFormat;
+        // ★★★ 수정: 임시 경기일 때와 정규 경기일 때의 format 값을 다르게 처리 ★★★
+        if (isTempMatch) {
+            finalFormat = 'temporary';
+        } else {
+            const selectedFormat = form.querySelector('#format-select').value;
+            const customFormatInput = form.querySelector('#custom-format-input');
+            finalFormat = selectedFormat;
+            if (selectedFormat === 'custom') {
+                const customFormatValue = customFormatInput?.value.trim();
+                if (!customFormatValue) {
+                    status = { type: 'error', message: '커스텀 형식을 입력해주세요.' };
+                    render();
+                    return;
+                }
+                finalFormat = customFormatValue.toLowerCase();
             }
-            finalFormat = customFormatValue.toLowerCase();
         }
 
         setState({
             currentEvent: {
-                id: null, // ID는 나중에 ResultView에서 최종 저장 시 부여
-                date: new Date().toISOString().slice(0, 10), // 오늘 날짜를 미리 기록
+                id: null,
+                date: new Date().toISOString().slice(0, 10),
                 players: players,
                 settings: {
                     format: finalFormat,
@@ -107,6 +134,7 @@ export default function MatchSettingsView() {
         });
         window.location.hash = '/game';
     };
+
     render();
     return element;
 }
