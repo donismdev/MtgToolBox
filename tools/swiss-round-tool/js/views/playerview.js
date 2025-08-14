@@ -6,11 +6,14 @@ export default function PlayerView() {
     element.id = 'player-view-container';
 
     // --- 뷰의 내부 상태 ---
-    const { isSignedIn, meta } = getState(); // main.js에서 미리 로드한 meta 데이터 사용
+    const { isSignedIn, meta } = getState();
     const spreadsheetId = GoogleApi.getCurrentSpreadsheetId();
-    let localPlayers = [];      // 시트에서 불러온 전체 플레이어 목록
-    let selectedPlayers = [];   // 토너먼트에 참가할 플레이어로 선택된 목록
+    let localPlayers = [];
+    let selectedPlayers = [];
     let status = { type: 'info', message: '환영합니다! 모드를 선택해주세요.' };
+    
+    // ★★★ 수정된 부분 1: 로딩 상태를 관리할 변수 추가 ★★★
+    let isConnectingSheet = false;
 
     // --- 렌더링 함수 ---
 
@@ -37,15 +40,18 @@ export default function PlayerView() {
         </div>
     `;
 
+    // ★★★ 수정된 부분 2: 로딩 상태에 따라 버튼을 비활성화하고 텍스트 변경 ★★★
     const renderRegularMatchView = () => `
         <div class="section">
             <h3>1. 스프레드시트 연결</h3>
             ${!spreadsheetId ? `
                 <p>데이터를 저장할 스프레드시트를 선택하거나 생성하세요.</p>
-                <button id="ensure-sheet-btn">시트 연결 및 확인</button>
-                <button id="pick-sheet-btn">기존 시트 선택</button>
+                <button id="ensure-sheet-btn" class="primary-btn" ${isConnectingSheet ? 'disabled' : ''}>
+                    ${isConnectingSheet ? '시트 생성 및 연결 중...' : '시트 연결 및 확인'}
+                </button>
+                <button id="pick-sheet-btn" class="secondary-btn" ${isConnectingSheet ? 'disabled' : ''}>기존 시트 선택</button>
             ` : `
-                <p>✅ 연결된 시트: <strong>${spreadsheetId}</strong></p>
+                <p>✅ 연결된 시트: <strong>${meta?.spreadsheetId || spreadsheetId}</strong></p>
                 <button id="disconnect-sheet-btn" class="secondary">다른 시트 선택</button>
             `}
         </div>
@@ -112,6 +118,7 @@ export default function PlayerView() {
         const target = e.target;
         try {
             if (target.id === 'google-signin-btn') GoogleApi.signIn();
+            // ★★★ 수정된 부분 3: connectSheet 호출은 그대로 유지, 내부 로직이 변경됨 ★★★
             if (target.id === 'ensure-sheet-btn') await connectSheet(true);
             if (target.id === 'pick-sheet-btn') await connectSheet(false);
             if (target.id === 'disconnect-sheet-btn') disconnectSheet();
@@ -120,32 +127,63 @@ export default function PlayerView() {
             if (target.classList.contains('player-checkbox')) handlePlayerSelection(target);
         } catch (err) {
             updateStatus('error', err.message);
+            // 에러 발생 시에도 isConnectingSheet가 false로 설정되어야 하므로 connectSheet 내부에서 처리
             render();
         }
     };
 
+    // ★★★ 수정된 부분 4: 시트 연결/생성 함수의 로직을 안정적으로 변경 ★★★
     const connectSheet = async (allowCreate) => {
-        updateStatus('info', '시트 확인 및 연결 중...');
-        const id = allowCreate 
-            ? await GoogleApi.ensureSpreadsheetId({ allowCreate: true })
-            : await GoogleApi.openSpreadsheetPicker();
+        if (isConnectingSheet) return; // 중복 실행 방지
+
+        isConnectingSheet = true;
+        updateStatus('info', '시트 확인 및 연결 중입니다. 잠시만 기다려주세요...');
+        render(); // 로딩 UI 즉시 렌더링 (버튼 비활성화)
         
-        setState({ spreadsheetId: id, meta: await GoogleApi.getConfigMap() });
-        updateStatus('success', `시트 준비 완료! ID: ${id}`);
-        render();
+        try {
+            // '시트 연결 및 확인'은 allowCreate=true 이므로 ensureSpreadsheetId를 호출.
+            // 이 함수는 폴더, 시트 파일, 4개의 탭, 헤더, 메타데이터까지 모두 자동으로 생성 및 확인합니다.
+            const id = allowCreate 
+                ? await GoogleApi.ensureSpreadsheetId({ allowCreate: true })
+                : await GoogleApi.openSpreadsheetPicker();
+            
+            // 성공 시, 최신 meta 데이터를 불러와 전역 상태 업데이트
+            const newMeta = await GoogleApi.getConfigMap();
+            setState({ spreadsheetId: id, meta: newMeta });
+            updateStatus('success', `✅ 시트가 성공적으로 준비되었습니다!`);
+
+        } catch (err) {
+            // 에러는 상위 핸들러에서 처리하지만, 여기서도 상태 메시지를 업데이트 할 수 있습니다.
+            console.error("Sheet connection error:", err);
+            updateStatus('error', `시트 연결에 실패했습니다: ${err.message}`);
+            throw err; // 에러를 다시 던져서 상위 catch 블록에서 최종 렌더링을 처리하도록 함
+
+        } finally {
+            // 성공하든 실패하든, 작업이 끝나면 로딩 상태를 해제
+            isConnectingSheet = false;
+            // 여기서 render()를 호출하여 성공 시 바뀐 화면을 보여주거나, 실패 시 버튼을 다시 활성화
+            render();
+        }
     };
 
     const disconnectSheet = () => {
         GoogleApi.setCurrentSpreadsheetId(null);
         setState({ spreadsheetId: null, meta: null });
+        localPlayers = [];
+        selectedPlayers = [];
         updateStatus('info', '시트 연결이 해제되었습니다.');
         render();
     };
 
     const loadPlayers = async () => {
         updateStatus('info', '플레이어 목록 로딩 중...');
-        localPlayers = await GoogleApi.getPlayers();
-        updateStatus('success', `${localPlayers.length}명의 플레이어를 불러왔습니다.`);
+        render();
+        try {
+            localPlayers = await GoogleApi.getPlayers();
+            updateStatus('success', `${localPlayers.length}명의 플레이어를 불러왔습니다.`);
+        } catch (err) {
+            updateStatus('error', `플레이어 로딩 실패: ${err.message}`);
+        }
         render();
     };
 
@@ -159,16 +197,18 @@ export default function PlayerView() {
         }
 
         updateStatus('info', `${names.length}명의 플레이어 추가 중...`);
-        // API는 이름 객체 배열을 받아 ID와 날짜를 자동으로 채워줌
-        await GoogleApi.addPlayers(names.map(name => ({ name })));
+        render();
         
-        // 추가 후, 최신 meta 데이터를 다시 불러와 전역 상태 업데이트
-        const newMeta = await GoogleApi.getConfigMap();
-        setState({ meta: newMeta });
-        
-        updateStatus('success', `${names.length}명 추가 완료. 목록을 다시 불러오세요.`);
-        namesInput.value = '';
-        render(); // 추가 후 UI를 새로고침하여 상태 메시지 등을 업데이트
+        try {
+            await GoogleApi.addPlayers(names.map(name => ({ name })));
+            const newMeta = await GoogleApi.getConfigMap();
+            setState({ meta: newMeta });
+            updateStatus('success', `${names.length}명 추가 완료. 목록을 다시 불러오세요.`);
+            namesInput.value = '';
+        } catch (err) {
+            updateStatus('error', `플레이어 추가 실패: ${err.message}`);
+        }
+        render();
     };
 
     const handlePlayerSelection = (checkbox) => {
@@ -179,57 +219,57 @@ export default function PlayerView() {
         } else {
             selectedPlayers = selectedPlayers.filter(p => p.player_id !== playerId);
         }
-        render(); // 선택 상태가 바뀔 때마다 UI를 다시 그려 버튼 활성화 등을 반영
+        render();
     };
     
     const startMatch = () => {
+        if (selectedPlayers.length < 2) {
+            updateStatus('error', '매치를 시작하려면 최소 2명 이상의 플레이어를 선택해야 합니다.');
+            render();
+            return;
+        }
         setState({ players: selectedPlayers });
         window.location.hash = '/match';
     };
 
     const handleTempMatchSubmit = () => {
-		const count = parseInt(element.querySelector('#player-count').value, 10);
-		if (count < 2) {
-			updateStatus('error', '참가자는 최소 2명 이상이어야 합니다.');
-			render();
-			return;
-		}
-		const players = Array.from({ length: count }, (_, i) => ({ 
-			name: `Player ${i + 1}`, 
-			player_id: `temp_${i + 1}`
-		}));
+        const countInput = element.querySelector('#player-count');
+        const count = parseInt(countInput.value, 10);
+        if (isNaN(count) || count < 2) {
+            updateStatus('error', '참가자는 최소 2명 이상이어야 합니다.');
+            render();
+            return;
+        }
+        const players = Array.from({ length: count }, (_, i) => ({ 
+            name: `Player ${i + 1}`, 
+            player_id: `temp_${i + 1}`
+        }));
 
-		let suggestedRounds;
-
-		if (players.length <= 3)
-		{
-			suggestedRounds = 2;
-		} else if (players.length <= 8) {
-            // 8인 이하일 경우, 3라운드를 기본값으로 추천합니다.
+        let suggestedRounds;
+        if (players.length <= 3) {
+            suggestedRounds = 2;
+        } else if (players.length <= 8) {
             suggestedRounds = 3;
         } else {
-            // 9인 이상부터는 공식에 따라 계산합니다. (예: 9~16인 -> 4라운드)
             suggestedRounds = Math.ceil(Math.log2(players.length));
         }
 
-		// ★★★ 수정된 부분 ★★★
-		// currentEvent.settings에 timerMinutes를 추가합니다.
-		setState({
-			players, 
-			currentEvent: {
-				id: `temp_${Date.now()}`,
-				players: players,
-				settings: {
-					rounds: suggestedRounds,
-					bestOf: 3,
-					timerMinutes: 50, // 기본 타이머 시간 50분 설정
-				},
-				history: [],
-			},
-			currentRound: 1,
-		});
-		window.location.hash = '/game';
-	};
+        setState({
+            players, 
+            currentEvent: {
+                id: `temp_${Date.now()}`,
+                players: players,
+                settings: {
+                    rounds: suggestedRounds,
+                    bestOf: 3,
+                    timerMinutes: 50,
+                },
+                history: [],
+            },
+            currentRound: 1,
+        });
+        window.location.hash = '/game';
+    };
     
     const updateStatus = (type, message) => {
         status = { type, message };

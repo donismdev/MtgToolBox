@@ -52,27 +52,52 @@ const ROUNDS_HEADER = [
 // - last_game_date: 마지막 경기 날짜(ISO 문자열). 라운드 입력 시 갱신
 // - event_count: 생성된 이벤트 개수
 // - size3_meets ~ size16_meets: N인 모임 횟수 (원하면 사용), 초기 0
-const META_DEFAULTS = {
-	"last_player_id": "0",
-	"last_event_id": "0",
-	"first_game_date": "",
-	"last_game_date": "",
-	"event_count": "0",
-	"size3_meets": "0",
-	"size4_meets": "0",
-	"size5_meets": "0",
-	"size6_meets": "0",
-	"size7_meets": "0",
-	"size8_meets": "0",
-	"size9_meets": "0",
-	"size10_meets": "0",
-	"size11_meets": "0",
-	"size12_meets": "0",
-	"size13_meets": "0",
-	"size14_meets": "0",
-	"size15_meets": "0",
-	"size16_meets": "0",
-};
+
+// META_DEFAULTS
+
+const META_HEADER = [
+	"last_player_id",
+	"last_event_id",
+	"first_game_date",
+	"last_game_date",
+	"event_count",
+	"size3_meets",
+	"size4_meets",
+	"size5_meets",
+	"size6_meets",
+	"size7_meets",
+	"size8_meets",
+	"size9_meets",
+	"size10_meets",
+	"size11_meets",
+	"size12_meets",
+	"size13_meets",
+	"size14_meets",
+	"size15_meets",
+	"size16_meets",
+];
+
+const META_DefaultValue = [
+	0,
+	0,
+	"", // 오늘 날짜
+	"", // 오늘 날짜
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+];
 
 const STORAGE_KEY = "mtg_spreadsheet_id";
 
@@ -314,7 +339,7 @@ async function ensureSheetsAndHeaders() {
 		{ title: PLAYERS_SHEET, header: PLAYERS_HEADER },
 		{ title: EVENTS_SHEET,  header: EVENTS_HEADER  },
 		{ title: ROUNDS_SHEET,  header: ROUNDS_HEADER  },
-		{ title: META_SHEET,    header: ["key", "value"] },
+		{ title: META_SHEET,    header: META_HEADER },
 	];
 
 	// 1) 없는 시트 추가
@@ -352,16 +377,11 @@ function colLabel(n) {
 
 /** meta 기본값을 보장한다(없으면 생성). */
 async function ensureMetaDefaults() {
-	const map = await getConfigMap();	// key-value 맵
-	const toWrite = [];
-	for (const [k, v] of Object.entries(META_DEFAULTS)) {
-		if (map[k] == null) {
-			toWrite.push([k, v]);
-		}
-	}
-	if (toWrite.length > 0) {
-		await appendSheetData(META_SHEET, toWrite);
-	}
+    const rows = await getSheetData(META_SHEET);
+    // 헤더만 있거나 시트가 비어있는 경우 (rows.length <= 1), 기본값 데이터 행을 추가
+    if (rows.length <= 1) {
+        await appendSheetData(META_SHEET, [META_DefaultValue]);
+    }
 }
 
 // ================================
@@ -425,32 +445,47 @@ export async function getConfigMap() {
 	await ensureSheetsAndHeaders();
 	await ensureMetaDefaults();
 
-	const rows = await getSheetData(`${META_SHEET}`);
-	const map = {};
-	for (let i = 0; i < rows.length; i++) {
-		const [k, v] = rows[i];
-		if ((k ?? "") !== "") map[k] = v ?? "";
-	}
-	return map;
+	const rows = await getSheetData(META_SHEET);
+    if (rows.length < 2) {
+        console.error("Meta 시트에서 헤더 또는 데이터 행을 찾을 수 없습니다.");
+        return {}; // 문제가 있으면 빈 객체 반환
+    }
+
+    const header = rows[0]; // ["last_player_id", "last_event_id", ...]
+    const values = rows[1]; // ["0", "0", ...]
+
+    const map = {};
+    header.forEach((key, index) => {
+        if (key) { // 키가 비어있지 않은 경우에만
+            map[key] = values[index] ?? ""; // 해당 인덱스의 값을 할당
+        }
+    });
+    return map;
 }
 
 /** Meta(Config) key 하나 업데이트(없으면 append) */
 export async function setConfig(key, value) {
 	await ensureSpreadsheetId({ allowCreate: true });
-	await ensureSheetsAndHeaders();
-	await ensureMetaDefaults();
 
-	const rows = await getSheetData(`${META_SHEET}`);
-	let foundRow = -1;
-	for (let i = 0; i < rows.length; i++) {
-		if ((rows[i][0] ?? "") === key) { foundRow = i; break; }
-	}
-	if (foundRow >= 0) {
-		const rowIndex = foundRow + 1; // 1-based
-		return updateSheetData(`${META_SHEET}!A${rowIndex}:B${rowIndex}`, [[key, String(value)]]);
-	} else {
-		return appendSheetData(META_SHEET, [[key, String(value)]]);
-	}
+    // 헤더를 읽어와서 key에 해당하는 열 인덱스를 찾음
+    const headerRows = await getSheetData(`${META_SHEET}!A1:Z1`);
+    if (!headerRows || headerRows.length === 0) {
+        throw new Error("Meta 시트의 헤더를 읽을 수 없습니다.");
+    }
+    const header = headerRows[0];
+    const colIndex = header.findIndex(h => h === key);
+
+    if (colIndex === -1) {
+        console.warn(`'${key}'는 유효한 meta 설정이 아닙니다.`);
+        return;
+    }
+
+    // 0-based index를 'A', 'B' ... 와 같은 열 문자로 변환
+    const colLetter = colLabel(colIndex + 1);
+    // 항상 2번째 행의 해당 열을 업데이트
+    const range = `${META_SHEET}!${colLetter}2`;
+
+    return updateSheetData(range, [[String(value)]]);
 }
 
 // -------- Players --------
@@ -663,12 +698,27 @@ export async function updatePlayerTimestamps(playerIds) {
 
 /** meta 시트의 여러 key-value를 한 번에 업데이트 */
 export async function batchUpdateMeta(newMeta) {
-    const rows = [];
-    for (const [key, value] of Object.entries(newMeta)) {
-        rows.push([key, value]);
+    const headerRows = await getSheetData(`${META_SHEET}!A1:Z1`);
+    if (!headerRows || headerRows.length === 0) {
+        throw new Error("Meta 시트의 헤더를 읽을 수 없습니다.");
     }
-    // meta 시트 전체를 덮어쓰는 방식이 더 간단하고 안전
-    return updateSheetData(`${META_SHEET}!A1:B${rows.length}`, rows);
+    const header = headerRows[0];
+    
+    const updates = [];
+    for (const [key, value] of Object.entries(newMeta)) {
+        const colIndex = header.findIndex(h => h === key);
+        if (colIndex !== -1) {
+            const colLetter = colLabel(colIndex + 1);
+            updates.push({
+                range: `${META_SHEET}!${colLetter}2`,
+                values: [[String(value)]]
+            });
+        }
+    }
+
+    if (updates.length > 0) {
+        return batchUpdateValues(updates);
+    }
 }
 
 
