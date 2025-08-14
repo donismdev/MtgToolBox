@@ -2,15 +2,15 @@ import * as GoogleApi from './api/google.js'; // API 모듈 임포트
 import { setState, getState } from './config.js'; // 상태 관리 모듈 임포트
 
 import PlayerView from './views/playerview.js';
-import MatchView from './views/matchview.js';
+import MatchSettingsView from './views/matchsettingsview.js';
 import GameView from './views/gameview.js';
-import ResultView from './views/ResultView.js';
+import ResultView from './views/resultview.js';
 
 const app = document.getElementById('app');
 
 const routes = {
     '/': PlayerView,
-    '/match': MatchView,
+    '/match': MatchSettingsView,
     '/game': GameView,
     '/result': ResultView
 };
