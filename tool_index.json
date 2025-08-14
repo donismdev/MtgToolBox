@@ -95,6 +95,7 @@
 			"path": "tools/swiss-round-tool/",
 			"parent": "Tournament",
 			"modalIcon": "🏆",
+			"hide_header": true,
 			"modalIconColor": "#ffc107",
 			"enable": true
 		},
