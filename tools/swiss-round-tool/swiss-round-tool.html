@@ -93,6 +93,81 @@
             border-color: #0d6efd;
         }
         .hidden { display: none; }
+
+
+		/* views/GameView.js의 새로운 UI를 위한 스타일 */
+		.match-card {
+			display: flex;
+			flex-direction: column;
+			padding: 12px;
+			border: 1px solid #e9ecef;
+			border-radius: 8px;
+			background-color: #fff;
+			transition: all 0.2s ease-in-out;
+		}
+		.match-card.finished {
+			border: 2px solid #28a745; /* 굵은 녹색 테두리 */
+			background-color: #f8f9fa;
+		}
+		.match-body-interactive { /* 이전 코드에서 이 부분 스타일이 있다면 이걸로 교체 */
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 10px;
+			padding: 8px 0;
+		}
+		.player-button {
+			flex: 1;
+			padding: 12px 8px;
+			font-size: 1.1rem;
+			font-weight: bold;
+			background-color: #f8f9fa;
+			border: 1px solid #dee2e6;
+			border-radius: 6px;
+			cursor: pointer;
+			text-align: center;
+			transition: background-color 0.2s;
+		}
+		.player-button:hover { background-color: #e9ecef; }
+		.score-display {
+			display: flex;
+			align-items: center;
+			font-size: 1.5rem;
+			font-weight: bold;
+		}
+		.score-digit {
+			padding: 4px 8px;
+			cursor: pointer;
+			border-radius: 4px;
+		}
+		.score-digit:hover { background-color: #e9ecef; }
+		.match-actions-group {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+		.action-btn {
+			padding: 8px;
+			line-height: 1;
+			font-size: 0.9rem;
+			min-width: 40px;
+			background-color: #6c757d;
+			color: white;
+		}
+		.confirm-btn, .edit-btn {
+			font-size: 1.2rem;
+			padding: 8px 12px;
+			background-color: #28a745;
+		}
+		.edit-btn { background-color: #ffc107; }
+
+		/* 작은 화면 대응 */
+		@media (max-width: 600px) {
+			.match-body-interactive { flex-direction: column; gap: 12px; }
+			.player-button { width: 100%; }
+		}
+
+		
     </style>
 </head>
 <body>

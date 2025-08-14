@@ -60,16 +60,15 @@ export function getState() {
  * @param {Array} pairings - 현재 라운드의 대진표
  * @param {Array} results - 현재 라운드의 경기 결과
  */
-export function saveRoundResult(pairings, results) {
+export function saveRoundResult(roundData) {
     if (!state.currentEvent) {
         console.error("저장할 이벤트가 없습니다.");
         return;
     }
     // currentEvent의 history 배열에 저장
-    state.currentEvent.history[state.currentRound - 1] = {
-        pairings: JSON.parse(JSON.stringify(pairings)),
-        results: JSON.parse(JSON.stringify(results)),
-    };
+    // JSON.parse(JSON.stringify(...))는 객체를 깊은 복사하여,
+    // 나중에 원본이 바뀌어도 저장된 내용이 영향을 받지 않도록 합니다.
+    state.currentEvent.history[state.currentRound - 1] = JSON.parse(JSON.stringify(roundData));
 }
 
 /**

@@ -188,31 +188,48 @@ export default function PlayerView() {
     };
 
     const handleTempMatchSubmit = () => {
-        const count = parseInt(element.querySelector('#player-count').value, 10);
-        if (count < 2) {
-            updateStatus('error', '참가자는 최소 2명 이상이어야 합니다.');
-            render();
-            return;
+		const count = parseInt(element.querySelector('#player-count').value, 10);
+		if (count < 2) {
+			updateStatus('error', '참가자는 최소 2명 이상이어야 합니다.');
+			render();
+			return;
+		}
+		const players = Array.from({ length: count }, (_, i) => ({ 
+			name: `Player ${i + 1}`, 
+			player_id: `temp_${i + 1}`
+		}));
+
+		let suggestedRounds;
+
+		if (players.length <= 3)
+		{
+			suggestedRounds = 2;
+		} else if (players.length <= 8) {
+            // 8인 이하일 경우, 3라운드를 기본값으로 추천합니다.
+            suggestedRounds = 3;
+        } else {
+            // 9인 이상부터는 공식에 따라 계산합니다. (예: 9~16인 -> 4라운드)
+            suggestedRounds = Math.ceil(Math.log2(players.length));
         }
-        const players = Array.from({ length: count }, (_, i) => ({ 
-            name: `Player ${i + 1}`, 
-            player_id: `temp_${i + 1}`
-        }));
-        setState({
-            players, 
-            currentEvent: {
-                id: `temp_${Date.now()}`,
-                settings: {
-                    rounds: Math.ceil(Math.log2(players.length)),
-                    bestOf: 3,
-                },
-                players: players,
-                history: [],
-            },
-            currentRound: 1,
-        });
-        window.location.hash = '/game';
-    };
+
+		// ★★★ 수정된 부분 ★★★
+		// currentEvent.settings에 timerMinutes를 추가합니다.
+		setState({
+			players, 
+			currentEvent: {
+				id: `temp_${Date.now()}`,
+				players: players,
+				settings: {
+					rounds: suggestedRounds,
+					bestOf: 3,
+					timerMinutes: 50, // 기본 타이머 시간 50분 설정
+				},
+				history: [],
+			},
+			currentRound: 1,
+		});
+		window.location.hash = '/game';
+	};
     
     const updateStatus = (type, message) => {
         status = { type, message };

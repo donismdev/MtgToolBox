@@ -10,7 +10,18 @@ export default function MatchView() {
     // 렌더링 함수: 참가자 목록과 토너먼트 설정 폼을 표시합니다.
     const render = () => {
         // 참가자 수에 따라 스위스 라운드 수를 자동으로 추천합니다. (예: 8명 -> 3라운드)
-        const suggestedRounds = players.length > 1 ? Math.ceil(Math.log2(players.length)) : 1;
+        let suggestedRounds;
+
+		if (players.length <= 3)
+		{
+			suggestedRounds = 2;
+		} else if (players.length <= 8) {
+            // 8인 이하일 경우, 3라운드를 기본값으로 추천합니다.
+            suggestedRounds = 3;
+        } else {
+            // 9인 이상부터는 공식에 따라 계산합니다. (예: 9~16인 -> 4라운드)
+            suggestedRounds = Math.ceil(Math.log2(players.length));
+        }
         
         element.innerHTML = `
             <h2>토너먼트 설정</h2>
