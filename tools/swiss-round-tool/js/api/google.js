@@ -61,20 +61,6 @@ const META_HEADER = [
 	"first_game_date",
 	"last_game_date",
 	"event_count",
-	"size3_meets",
-	"size4_meets",
-	"size5_meets",
-	"size6_meets",
-	"size7_meets",
-	"size8_meets",
-	"size9_meets",
-	"size10_meets",
-	"size11_meets",
-	"size12_meets",
-	"size13_meets",
-	"size14_meets",
-	"size15_meets",
-	"size16_meets",
 ];
 
 const META_DefaultValue = [
@@ -82,20 +68,6 @@ const META_DefaultValue = [
 	0,
 	"", // 오늘 날짜
 	"", // 오늘 날짜
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
 	0,
 ];
 

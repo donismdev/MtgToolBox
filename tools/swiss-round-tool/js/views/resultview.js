@@ -38,23 +38,21 @@ export default function ResultView() {
 		statusDiv.textContent = '스프레드시트에 모든 결과를 기록하고 있습니다...';
 
 		try {
-			// ★★★ STEP 1: 이벤트 생성 및 실제 ID 확보 ★★★
-			// 모든 경기가 끝난 이 시점에 이벤트를 시트에 기록하고, 고유 ID를 부여받습니다.
+			// --- STEP 1: 이벤트 생성 및 실제 ID 확보 ---
 			const newEventId = await GoogleApi.addEvent({
 				date: currentEvent.date,
 				best_of: currentEvent.settings.bestOf,
 				event_format: currentEvent.settings.format,
 			});
 
-			// ★★★ STEP 2: 모든 라운드 기록 저장 ★★★
-			// 위에서 받은 실제 newEventId를 사용하여 라운드 기록을 저장합니다.
+			// --- STEP 2: 모든 라운드 기록 저장 ---
 			const allRoundLogs = [];
 			currentEvent.history.forEach((roundData, roundIndex) => {
 				const round_no = roundIndex + 1;
 				roundData.results.forEach((result, tableIndex) => {
 					const [p1, p2] = result.players;
 					allRoundLogs.push({
-						event_id: newEventId, // <--- 확보한 새 이벤트 ID 사용
+						event_id: newEventId,
 						round_no: round_no,
 						table_no: tableIndex + 1,
 						playerA_id: getPlayerId(p1),
@@ -69,15 +67,7 @@ export default function ResultView() {
 			const participantIds = currentEvent.players.map(p => p.player_id);
 			await GoogleApi.updatePlayerTimestamps(participantIds);
 			
-			// ★★★ STEP 4: size 카운터 버그 수정 ★★★
-			// 저장 직전에 시트에서 최신 meta 데이터를 다시 가져와서 계산합니다.
-			const freshMeta = await GoogleApi.getConfigMap();
-			const sizeKey = `size${currentEvent.players.length}_meets`;
-			if (freshMeta.hasOwnProperty(sizeKey)) {
-				const currentCount = parseInt(freshMeta[sizeKey] || '0', 10);
-				const newCount = currentCount + 1;
-				await GoogleApi.setConfig(sizeKey, String(newCount));
-			}
+			// ★★★ 수정: STEP 4 (size 카운터 로직) 완전 제거
 
 			// 최종 성공 처리
 			isSaved = true;
