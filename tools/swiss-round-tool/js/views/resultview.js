@@ -27,75 +27,61 @@ export default function ResultView() {
 
     // 3. "결과 저장하기" 버튼을 눌렀을 때 실행될 함수
     const handleSaveResults = async () => {
-        if (isSaved) return; // 중복 저장 방지
+		if (isSaved) return;
 
-        const saveButton = element.querySelector('#save-btn');
-        const statusDiv = element.querySelector('#save-status');
+		const saveButton = element.querySelector('#save-btn');
+		const statusDiv = element.querySelector('#save-status');
 
-        saveButton.disabled = true;
-        saveButton.textContent = '저장 중...';
-        statusDiv.className = 'status-bar info';
-        statusDiv.textContent = '스프레드시트에 모든 결과를 기록하고 있습니다...';
+		saveButton.disabled = true;
+		saveButton.textContent = '저장 중...';
+		statusDiv.className = 'status-bar info';
+		statusDiv.textContent = '스프레드시트에 모든 결과를 기록하고 있습니다...';
 
-        try {
-            // STEP 1: 이벤트(Event) 정보 저장
-            await GoogleApi.addEvent({
-                event_id: currentEvent.id,
-                date: currentEvent.date,
-                best_of: currentEvent.settings.bestOf,
-                event_format: currentEvent.format,
-            });
+		try {
+			// --- STEP 1: 모든 라운드(Round) 기록 저장 ---
+			// 이벤트 자체는 이미 MatchSettingsView에서 생성되었으므로, 여기서는 라운드 결과만 추가합니다.
+			const allRoundLogs = [];
+			currentEvent.history.forEach((roundData, roundIndex) => {
+				const round_no = roundIndex + 1;
+				roundData.results.forEach((result, tableIndex) => {
+					const [p1, p2] = result.players;
+					allRoundLogs.push({
+						event_id: currentEvent.id,
+						round_no: round_no,
+						table_no: tableIndex + 1,
+						playerA_id: getPlayerId(p1),
+						playerB_id: getPlayerId(p2),
+						...result.report
+					});
+				});
+			});
+			await GoogleApi.addRounds(allRoundLogs);
 
-            // STEP 2: 모든 라운드(Round) 기록 저장
-            const allRoundLogs = [];
-            currentEvent.history.forEach((roundData, roundIndex) => {
-                const round_no = roundIndex + 1;
-                roundData.results.forEach((result, tableIndex) => {
-                    const [p1, p2] = result.players;
-                    allRoundLogs.push({
-                        event_id: currentEvent.id,
-                        round_no: round_no,
-                        table_no: tableIndex + 1,
-                        playerA_id: getPlayerId(p1),
-                        playerB_id: getPlayerId(p2),
-                        ...result.report // GameView에서 계산해둔 a_wins, a_draws 등을 그대로 사용
-                    });
-                });
-            });
-            await GoogleApi.addRounds(allRoundLogs);
+			// --- STEP 2: 참가자(Player) 정보 업데이트 (last_updated) ---
+			const participantIds = currentEvent.players.map(p => p.player_id);
+			await GoogleApi.updatePlayerTimestamps(participantIds);
+			
+			// --- STEP 3: 추가 메타(Meta) 정보 업데이트 ---
+			// event_id, date, event_count 등은 addEvent 시 이미 업데이트 되었으므로 여기서는 규모(size) 정보만 추가합니다.
+			const sizeKey = `size${currentEvent.players.length}_meets`;
+			if (meta.hasOwnProperty(sizeKey)) {
+				const newCount = String(parseInt(meta[sizeKey] || '0', 10) + 1);
+				await GoogleApi.setConfig(sizeKey, newCount); // setConfig로 단일 값만 업데이트
+			}
 
-            // STEP 3: 참가자(Player) 정보 업데이트 (last_updated)
-            const participantIds = currentEvent.players.map(p => p.player_id);
-            await GoogleApi.updatePlayerTimestamps(participantIds);
-            
-            // STEP 4: 메타(Meta) 정보 일괄 업데이트
-            const newMeta = { ...meta };
-            newMeta.last_event_id = String(currentEvent.id);
-            newMeta.last_game_date = currentEvent.date;
-            if (!meta.first_game_date) {
-                newMeta.first_game_date = currentEvent.date;
-            }
-            newMeta.event_count = String(parseInt(meta.event_count || '0', 10) + 1);
-            
-            const sizeKey = `size${currentEvent.players.length}_meets`;
-            if (newMeta.hasOwnProperty(sizeKey)) {
-                newMeta[sizeKey] = String(parseInt(newMeta[sizeKey] || '0', 10) + 1);
-            }
-            await GoogleApi.batchUpdateMeta(newMeta);
+			// 최종 성공 처리
+			isSaved = true;
+			saveButton.textContent = '저장 완료';
+			statusDiv.className = 'status-bar success';
+			statusDiv.textContent = '✅ 모든 결과가 성공적으로 저장되었습니다!';
 
-            // 최종 성공 처리
-            isSaved = true;
-            saveButton.textContent = '저장 완료';
-            statusDiv.className = 'status-bar success';
-            statusDiv.textContent = '✅ 모든 결과가 성공적으로 저장되었습니다!';
-
-        } catch (err) {
-            statusDiv.className = 'status-bar error';
-            statusDiv.textContent = `저장 실패: ${err.message}`;
-            saveButton.disabled = false; // 실패 시 다시 시도할 수 있도록 버튼 활성화
-            saveButton.textContent = '토너먼트 결과 저장';
-        }
-    };
+		} catch (err) {
+			statusDiv.className = 'status-bar error';
+			statusDiv.textContent = `저장 실패: ${err.message}`;
+			saveButton.disabled = false;
+			saveButton.textContent = '토너먼트 결과 저장';
+		}
+	};
 
     // 4. 화면 UI를 그리는 함수
     const render = () => {
