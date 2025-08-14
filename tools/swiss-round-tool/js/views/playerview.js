@@ -5,23 +5,22 @@ export default function PlayerView() {
     const element = document.createElement('div');
     element.id = 'player-view-container';
 
-    // --- 뷰의 내부 상태 ---
-    const { isSignedIn, meta } = getState();
-    const spreadsheetId = GoogleApi.getCurrentSpreadsheetId();
+    // --- 뷰의 내부 상태 (컴포넌트 지역 상태) ---
     let localPlayers = [];
     let selectedPlayers = [];
     let status = { type: 'info', message: '환영합니다! 모드를 선택해주세요.' };
-    
-    // ★★★ 수정된 부분 1: 로딩 상태를 관리할 변수 추가 ★★★
     let isConnectingSheet = false;
 
     // --- 렌더링 함수 ---
 
     const render = () => {
+        // ★★★ 수정된 부분 1: 렌더링 직전에 항상 최신 전역 상태를 가져옴 ★★★
+        const { isSignedIn, spreadsheetId, meta } = getState();
+
         element.innerHTML = `
             <h2>참가자 설정</h2>
             <div class="status-bar ${status.type}">${status.message}</div>
-            ${!isSignedIn ? renderLoginView() : renderRegularMatchView()}
+            ${!isSignedIn ? renderLoginView() : renderRegularMatchView({ spreadsheetId, meta })}
         `;
         attachEventListeners();
     };
@@ -40,14 +39,14 @@ export default function PlayerView() {
         </div>
     `;
 
-    // ★★★ 수정된 부분 2: 로딩 상태에 따라 버튼을 비활성화하고 텍스트 변경 ★★★
-    const renderRegularMatchView = () => `
+    // ★★★ 수정된 부분 2: 최신 상태(spreadsheetId)를 인자로 받아 UI를 결정 ★★★
+    const renderRegularMatchView = ({ spreadsheetId, meta }) => `
         <div class="section">
             <h3>1. 스프레드시트 연결</h3>
             ${!spreadsheetId ? `
                 <p>데이터를 저장할 스프레드시트를 선택하거나 생성하세요.</p>
                 <button id="ensure-sheet-btn" class="primary-btn" ${isConnectingSheet ? 'disabled' : ''}>
-                    ${isConnectingSheet ? '시트 생성 및 연결 중...' : '시트 연결 및 확인'}
+                    ${isConnectingSheet ? '시트 생성 및 연결 중...' : '시트 자동 생성 및 연결'}
                 </button>
                 <button id="pick-sheet-btn" class="secondary-btn" ${isConnectingSheet ? 'disabled' : ''}>기존 시트 선택</button>
             ` : `
@@ -57,7 +56,7 @@ export default function PlayerView() {
         </div>
         ${spreadsheetId ? renderPlayerManagementView() : ''}
     `;
-    
+
     const renderPlayerManagementView = () => `
         <div class="section">
             <h3>2. 새 플레이어 등록</h3>
@@ -100,7 +99,7 @@ export default function PlayerView() {
             </div>
         </div>
     `;
-    
+
     // --- 이벤트 핸들러 ---
 
     const attachEventListeners = () => {
@@ -113,12 +112,11 @@ export default function PlayerView() {
         if (e.target.id === 'add-player-form') await handleAddPlayerSubmit();
         if (e.target.id === 'temp-match-form') handleTempMatchSubmit();
     };
-    
+
     const handleViewClick = async (e) => {
         const target = e.target;
         try {
             if (target.id === 'google-signin-btn') GoogleApi.signIn();
-            // ★★★ 수정된 부분 3: connectSheet 호출은 그대로 유지, 내부 로직이 변경됨 ★★★
             if (target.id === 'ensure-sheet-btn') await connectSheet(true);
             if (target.id === 'pick-sheet-btn') await connectSheet(false);
             if (target.id === 'disconnect-sheet-btn') disconnectSheet();
@@ -127,41 +125,36 @@ export default function PlayerView() {
             if (target.classList.contains('player-checkbox')) handlePlayerSelection(target);
         } catch (err) {
             updateStatus('error', err.message);
-            // 에러 발생 시에도 isConnectingSheet가 false로 설정되어야 하므로 connectSheet 내부에서 처리
             render();
         }
     };
 
-    // ★★★ 수정된 부분 4: 시트 연결/생성 함수의 로직을 안정적으로 변경 ★★★
+    // ★★★ 수정된 부분 3: 성공 메시지 대신 다음 단계 안내 메시지로 변경 ★★★
     const connectSheet = async (allowCreate) => {
-        if (isConnectingSheet) return; // 중복 실행 방지
+        if (isConnectingSheet) return;
 
         isConnectingSheet = true;
         updateStatus('info', '시트 확인 및 연결 중입니다. 잠시만 기다려주세요...');
-        render(); // 로딩 UI 즉시 렌더링 (버튼 비활성화)
+        render();
         
         try {
-            // '시트 연결 및 확인'은 allowCreate=true 이므로 ensureSpreadsheetId를 호출.
-            // 이 함수는 폴더, 시트 파일, 4개의 탭, 헤더, 메타데이터까지 모두 자동으로 생성 및 확인합니다.
             const id = allowCreate 
                 ? await GoogleApi.ensureSpreadsheetId({ allowCreate: true })
                 : await GoogleApi.openSpreadsheetPicker();
             
-            // 성공 시, 최신 meta 데이터를 불러와 전역 상태 업데이트
             const newMeta = await GoogleApi.getConfigMap();
             setState({ spreadsheetId: id, meta: newMeta });
-            updateStatus('success', `✅ 시트가 성공적으로 준비되었습니다!`);
+
+            // 화면이 바로 전환되므로, 성공 메시지 대신 다음 행동을 안내하는 메시지로 변경
+            updateStatus('info', '플레이어를 등록하거나 목록을 불러오세요.');
 
         } catch (err) {
-            // 에러는 상위 핸들러에서 처리하지만, 여기서도 상태 메시지를 업데이트 할 수 있습니다.
             console.error("Sheet connection error:", err);
             updateStatus('error', `시트 연결에 실패했습니다: ${err.message}`);
-            throw err; // 에러를 다시 던져서 상위 catch 블록에서 최종 렌더링을 처리하도록 함
-
+            throw err;
         } finally {
-            // 성공하든 실패하든, 작업이 끝나면 로딩 상태를 해제
             isConnectingSheet = false;
-            // 여기서 render()를 호출하여 성공 시 바뀐 화면을 보여주거나, 실패 시 버튼을 다시 활성화
+            // 성공/실패와 관계없이 항상 마지막에 렌더링을 호출하여 화면을 갱신
             render();
         }
     };
@@ -175,6 +168,7 @@ export default function PlayerView() {
         render();
     };
 
+    // 이하 나머지 코드는 이전과 동일합니다.
     const loadPlayers = async () => {
         updateStatus('info', '플레이어 목록 로딩 중...');
         render();
