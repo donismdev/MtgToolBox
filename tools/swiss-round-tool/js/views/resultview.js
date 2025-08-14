@@ -38,15 +38,23 @@ export default function ResultView() {
 		statusDiv.textContent = '스프레드시트에 모든 결과를 기록하고 있습니다...';
 
 		try {
-			// --- STEP 1: 모든 라운드(Round) 기록 저장 ---
-			// 이벤트 자체는 이미 MatchSettingsView에서 생성되었으므로, 여기서는 라운드 결과만 추가합니다.
+			// ★★★ STEP 1: 이벤트 생성 및 실제 ID 확보 ★★★
+			// 모든 경기가 끝난 이 시점에 이벤트를 시트에 기록하고, 고유 ID를 부여받습니다.
+			const newEventId = await GoogleApi.addEvent({
+				date: currentEvent.date,
+				best_of: currentEvent.settings.bestOf,
+				event_format: currentEvent.settings.format,
+			});
+
+			// ★★★ STEP 2: 모든 라운드 기록 저장 ★★★
+			// 위에서 받은 실제 newEventId를 사용하여 라운드 기록을 저장합니다.
 			const allRoundLogs = [];
 			currentEvent.history.forEach((roundData, roundIndex) => {
 				const round_no = roundIndex + 1;
 				roundData.results.forEach((result, tableIndex) => {
 					const [p1, p2] = result.players;
 					allRoundLogs.push({
-						event_id: currentEvent.id,
+						event_id: newEventId, // <--- 확보한 새 이벤트 ID 사용
 						round_no: round_no,
 						table_no: tableIndex + 1,
 						playerA_id: getPlayerId(p1),
@@ -57,16 +65,18 @@ export default function ResultView() {
 			});
 			await GoogleApi.addRounds(allRoundLogs);
 
-			// --- STEP 2: 참가자(Player) 정보 업데이트 (last_updated) ---
+			// --- STEP 3: 참가자 정보 업데이트 (last_updated) ---
 			const participantIds = currentEvent.players.map(p => p.player_id);
 			await GoogleApi.updatePlayerTimestamps(participantIds);
 			
-			// --- STEP 3: 추가 메타(Meta) 정보 업데이트 ---
-			// event_id, date, event_count 등은 addEvent 시 이미 업데이트 되었으므로 여기서는 규모(size) 정보만 추가합니다.
+			// ★★★ STEP 4: size 카운터 버그 수정 ★★★
+			// 저장 직전에 시트에서 최신 meta 데이터를 다시 가져와서 계산합니다.
+			const freshMeta = await GoogleApi.getConfigMap();
 			const sizeKey = `size${currentEvent.players.length}_meets`;
-			if (meta.hasOwnProperty(sizeKey)) {
-				const newCount = String(parseInt(meta[sizeKey] || '0', 10) + 1);
-				await GoogleApi.setConfig(sizeKey, newCount); // setConfig로 단일 값만 업데이트
+			if (freshMeta.hasOwnProperty(sizeKey)) {
+				const currentCount = parseInt(freshMeta[sizeKey] || '0', 10);
+				const newCount = currentCount + 1;
+				await GoogleApi.setConfig(sizeKey, String(newCount));
 			}
 
 			// 최종 성공 처리
