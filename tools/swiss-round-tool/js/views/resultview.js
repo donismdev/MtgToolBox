@@ -2,7 +2,6 @@ import { getState, setState } from '../config.js';
 import { calculateStandings } from '../modules/utils.js';
 import * as GoogleApi from '../api/google.js';
 
-// 플레이어 객체에서 ID를 안전하게 추출하는 헬퍼 함수
 function getPlayerId(player) {
     if (!player) return null;
     return player.player_id || null;
@@ -10,82 +9,85 @@ function getPlayerId(player) {
 
 export default function ResultView() {
     const element = document.createElement('div');
+    const { currentEvent } = getState();
 
-    // 1. config.js에서 현재 이벤트의 모든 정보를 가져옵니다.
-    const { currentEvent, meta } = getState();
-
-    // 토너먼트 정보가 없으면 오류 메시지를 표시하고 종료합니다.
     if (!currentEvent) {
         element.innerHTML = `<h2>오류: 표시할 토너먼트 결과가 없습니다.</h2><a href="#/">처음으로 돌아가기</a>`;
         return element;
     }
 
-    // 2. 가져온 정보를 바탕으로 최종 순위를 계산합니다.
     const standings = calculateStandings(currentEvent.players, currentEvent.history);
+    let isSaved = false;
 
-    let isSaved = false; // 저장 완료 여부를 추적하는 상태 변수
+    // ★★★ 수정: 클립보드 복사 함수 추가
+    const handleCopyToClipboard = () => {
+        const statusDiv = element.querySelector('#save-status');
+        let text = `Tournament Results (${currentEvent.date})\n`;
+        text += `Format: ${currentEvent.settings.format}\n\n`;
+        text += `== Final Standings ==\n`;
+        standings.forEach(([player, data], index) => {
+            text += `${index + 1}. ${player} (Points: ${data.points}, Record: ${data.wins}-${data.losses}-${data.draws})\n`;
+        });
+        
+        navigator.clipboard.writeText(text).then(() => {
+            statusDiv.className = 'status-bar success';
+            statusDiv.textContent = '✅ 결과가 클립보드에 복사되었습니다!';
+        }, () => {
+            statusDiv.className = 'status-bar error';
+            statusDiv.textContent = '복사에 실패했습니다.';
+        });
+    };
 
-    // 3. "결과 저장하기" 버튼을 눌렀을 때 실행될 함수
     const handleSaveResults = async () => {
-		if (isSaved) return;
+        if (isSaved) return;
+        const saveButton = element.querySelector('#save-btn');
+        const statusDiv = element.querySelector('#save-status');
+        saveButton.disabled = true;
+        saveButton.textContent = '저장 중...';
+        statusDiv.className = 'status-bar info';
+        statusDiv.textContent = '스프레드시트에 모든 결과를 기록하고 있습니다...';
 
-		const saveButton = element.querySelector('#save-btn');
-		const statusDiv = element.querySelector('#save-status');
-
-		saveButton.disabled = true;
-		saveButton.textContent = '저장 중...';
-		statusDiv.className = 'status-bar info';
-		statusDiv.textContent = '스프레드시트에 모든 결과를 기록하고 있습니다...';
-
-		try {
-			// --- STEP 1: 이벤트 생성 및 실제 ID 확보 ---
-			const newEventId = await GoogleApi.addEvent({
-				date: currentEvent.date,
-				best_of: currentEvent.settings.bestOf,
-				event_format: currentEvent.settings.format,
-			});
-
-			// --- STEP 2: 모든 라운드 기록 저장 ---
-			const allRoundLogs = [];
-			currentEvent.history.forEach((roundData, roundIndex) => {
-				const round_no = roundIndex + 1;
-				roundData.results.forEach((result, tableIndex) => {
-					const [p1, p2] = result.players;
-					allRoundLogs.push({
-						event_id: newEventId,
-						round_no: round_no,
-						table_no: tableIndex + 1,
-						playerA_id: getPlayerId(p1),
-						playerB_id: getPlayerId(p2),
-						...result.report
-					});
-				});
-			});
-			await GoogleApi.addRounds(allRoundLogs);
-
-			// --- STEP 3: 참가자 정보 업데이트 (last_updated) ---
-			const participantIds = currentEvent.players.map(p => p.player_id);
-			await GoogleApi.updatePlayerTimestamps(participantIds);
-			
-			// ★★★ 수정: STEP 4 (size 카운터 로직) 완전 제거
-
-			// 최종 성공 처리
-			isSaved = true;
-			saveButton.textContent = '저장 완료';
-			statusDiv.className = 'status-bar success';
-			statusDiv.textContent = '✅ 모든 결과가 성공적으로 저장되었습니다!';
-
-		} catch (err) {
-			statusDiv.className = 'status-bar error';
-			statusDiv.textContent = `저장 실패: ${err.message}`;
-			saveButton.disabled = false;
-			saveButton.textContent = '토너먼트 결과 저장';
-		}
-	};
-
-    // 4. 화면 UI를 그리는 함수
+        try {
+            const freshMeta = await GoogleApi.getConfigMap();
+            const newEventId = await GoogleApi.addEvent({
+                date: currentEvent.date,
+                best_of: currentEvent.settings.bestOf,
+                event_format: currentEvent.settings.format,
+            });
+            const allRoundLogs = [];
+            currentEvent.history.forEach((roundData, roundIndex) => {
+                const round_no = roundIndex + 1;
+                roundData.results.forEach((result, tableIndex) => {
+                    const [p1, p2] = result.players;
+                    allRoundLogs.push({
+                        event_id: newEventId,
+                        round_no,
+                        table_no: tableIndex + 1,
+                        playerA_id: getPlayerId(p1),
+                        playerB_id: getPlayerId(p2),
+                        ...result.report
+                    });
+                });
+            });
+            await GoogleApi.addRounds(allRoundLogs);
+            const participantIds = currentEvent.players.map(p => p.player_id);
+            await GoogleApi.updatePlayerTimestamps(participantIds);
+            
+            isSaved = true;
+            saveButton.textContent = '저장 완료';
+            statusDiv.className = 'status-bar success';
+            statusDiv.textContent = '✅ 모든 결과가 성공적으로 저장되었습니다!';
+        } catch (err) {
+            statusDiv.className = 'status-bar error';
+            statusDiv.textContent = `저장 실패: ${err.message}`;
+            saveButton.disabled = false;
+            saveButton.textContent = '토너먼트 결과 저장';
+        }
+    };
+    
+    // ★★★ 수정: 임시/정규 경기에 따라 다른 버튼을 렌더링
     const render = () => {
-        const isTempEvent = String(currentEvent.id).startsWith('temp_');
+        const isTempEvent = String(currentEvent.id).startsWith('temp_') || currentEvent.players.some(p => String(p.player_id).startsWith('temp_'));
         
         element.innerHTML = `
             <h2>최종 순위</h2>
@@ -114,13 +116,12 @@ export default function ResultView() {
 
             <div class="section">
                 <h3>토너먼트 관리</h3>
-                <p>결과를 확인하고, 이상이 없다면 스프레드시트에 영구적으로 저장하세요.</p>
-                
-                ${isTempEvent 
-                    ? `<p class="status-bar info">임시 경기는 저장되지 않습니다.</p>`
-                    : `<button id="save-btn" class="primary-btn">토너먼트 결과 저장</button>`
+                ${isTempEvent
+                    ? `<p>임시 경기 결과는 저장되지 않습니다. 필요 시 결과를 복사하여 사용하세요.</p>
+                       <button id="copy-btn" class="primary-btn">결과 텍스트로 복사</button>`
+                    : `<p>결과를 확인하고, 이상이 없다면 스프레드시트에 영구적으로 저장하세요.</p>
+                       <button id="save-btn" class="primary-btn">토너먼트 결과 저장</button>`
                 }
-                
                 <button id="edit-btn" class="secondary">마지막 라운드 수정</button>
                 <div id="save-status"></div>
             </div>
@@ -130,17 +131,11 @@ export default function ResultView() {
         `;
     };
 
-    // 5. 이벤트 리스너 부착
     element.addEventListener('click', (e) => {
-        if (e.target.id === 'save-btn') {
-            handleSaveResults();
-        }
-        if (e.target.id === 'edit-btn') {
-            // 단순히 이전 게임 화면으로 돌아갑니다. 상태는 그대로 유지됩니다.
-            window.location.hash = '/game';
-        }
+        if (e.target.id === 'save-btn') handleSaveResults();
+        if (e.target.id === 'copy-btn') handleCopyToClipboard(); // ★★★ 추가된 핸들러
+        if (e.target.id === 'edit-btn') window.location.hash = '/game';
         if (e.target.id === 'restart-btn') {
-            // 상태를 깨끗하게 초기화하고 첫 화면으로 이동합니다.
             setState({ currentEvent: null, players: [], currentRound: 1 });
             window.location.hash = '/';
         }

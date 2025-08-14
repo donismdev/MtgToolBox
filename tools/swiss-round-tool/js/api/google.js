@@ -83,6 +83,15 @@ let spreadsheetId = null;
 // 전역 gapi 참조
 const gapi = window.gapi;
 
+function getFormattedDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}`;
+}
+
 // ================================
 // 1) 초기화 / 로그인
 // ================================
@@ -497,7 +506,7 @@ export async function addPlayers(newPlayers) {
 	const rows = [];
 	for (const p of newPlayers) {
 		const id = Number.isFinite(p.player_id) && p.player_id > 0 ? p.player_id : await getNextPlayerId();
-		const now = new Date().toISOString();
+		const now = getFormattedDateTime();
 		rows.push([
 			id,
 			p.name ?? "",
@@ -546,7 +555,7 @@ export async function addEvent(e) {
 	const id = Number.isFinite(e.event_id) && e.event_id > 0 ? e.event_id : await getNextEventId();
 	const row = [
 		id,
-		e.date ?? new Date().toISOString().slice(0, 10),	// YYYY-MM-DD
+		e.date ?? getFormattedDateTime(),
 		Number.isFinite(e.best_of) ? e.best_of : 3,
 		(e.event_format ?? "cube").toLowerCase()
 	];
@@ -649,7 +658,7 @@ export async function addRounds(newRounds) {
 export async function updatePlayerTimestamps(playerIds) {
     const players = await getPlayers(); // 기존 플레이어 데이터 로드
     const updates = [];
-    const now = new Date().toISOString();
+    const now = getFormattedDateTime();
 
     playerIds.forEach(id => {
         const rowIndex = players.findIndex(p => p.player_id === String(id));

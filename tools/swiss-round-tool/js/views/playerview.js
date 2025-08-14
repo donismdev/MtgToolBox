@@ -6,245 +6,228 @@ export default function PlayerView() {
     element.id = 'player-view-container';
 
     let localPlayers = [];
-    let status = { type: 'info', message: '환영합니다! 모드를 선택해주세요.' };
+    let selectedPlayers = [];
+    let status = { type: 'info', message: '환영합니다! 경기 방식을 선택해주세요.' };
     
     let isConnectingSheet = false;
-    let isAddingPlayer = false;
-    let isLoadingPlayers = false; 
-    let hasLoadedPlayers = false;
+    let isAddingPlayer = false; // "새 플레이어 등록" 로딩 상태
+    let isLoadingPlayers = false;
 
-    // --- 렌더링 함수 ---
     const render = () => {
         const { isSignedIn, spreadsheetId } = getState();
-
-        if (spreadsheetId && !hasLoadedPlayers && !isLoadingPlayers) {
+        if (spreadsheetId && localPlayers.length === 0 && !isLoadingPlayers) {
             setTimeout(loadPlayers, 0);
         }
-
         element.innerHTML = `
             <h2>참가자 설정</h2>
             <div class="status-bar ${status.type}">${status.message}</div>
-            ${!isSignedIn ? renderLoginView() : renderRegularMatchView({ spreadsheetId })}
+            <div class="mode-container">
+                <div class="mode-section">
+                    <h3>임시 경기로 빠른 시작</h3>
+                    <p>플레이어 이름을 직접 입력하여 참가 명단을 구성합니다.</p>
+                    ${renderParticipantManager('temp')}
+                </div>
+                <div class="mode-section">
+                    <h3>정규 경기 (Google 시트 연동)</h3>
+                    ${!isSignedIn 
+                        ? `<p>Google 계정으로 로그인하여 모든 기록을 시트에 저장하세요.</p><button id="google-signin-btn" class="primary-btn">Google 계정으로 로그인</button>`
+                        : renderSheetManager({ spreadsheetId })
+                    }
+                </div>
+            </div>
+            <style>
+                .mode-container { display: flex; gap: 2rem; align-items: flex-start; }
+                .mode-section { flex: 1; padding: 1.5rem; border: 1px solid #ddd; border-radius: 8px; }
+                #selected-players-list { list-style-type: none; padding: 0; margin-top: 1rem; }
+                #selected-players-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #eee; }
+                .remove-player-btn { background: #ff4d4d; color: white; border: none; cursor: pointer; border-radius: 4px; padding: 2px 6px;}
+            </style>
         `;
         attachEventListeners();
     };
 
-    // ★★★ 수정: 최소 인원을 3명으로 변경하고 안내 문구 수정
-    const renderLoginView = () => `
-        <div class="section">
-            <h3>임시 경기로 빠른 시작</h3>
-            <p>로그인 없이 바로 경기를 시작합니다. (최소 3명)</p>
-            <form id="temp-match-form">
-                <label for="player-count">참가 인원:</label>
-                <input type="number" id="player-count" min="3" value="4" required>
-                <button type="submit" class="secondary-btn">임시 경기로 시작</button>
-            </form>
-            <hr>
-            <h3>정규 경기로 시작</h3>
-            <p>Google 계정으로 로그인하여 모든 기록을 시트에 저장합니다.</p>
-            <button id="google-signin-btn" class="primary-btn">Google 계정으로 로그인</button>
-        </div>
-    `;
-
-    const renderRegularMatchView = ({ spreadsheetId }) => {
+    const renderSheetManager = ({ spreadsheetId }) => {
         if (!spreadsheetId) {
             return `
-                <div class="section">
-                    <h3>스프레드시트 연결</h3>
-                    <p>데이터를 저장할 스프레드시트를 선택하거나 생성하세요.</p>
-                    <button id="ensure-sheet-btn" class="primary-btn" ${isConnectingSheet ? 'disabled' : ''}>
-                        ${isConnectingSheet ? '시트 생성 및 연결 중...' : '시트 자동 생성 및 연결'}
-                    </button>
-                </div>
+                <p>데이터를 저장할 스프레드시트를 선택하거나 생성하세요.</p>
+                <button id="ensure-sheet-btn" class="primary-btn" ${isConnectingSheet ? 'disabled' : ''}>${isConnectingSheet ? '시트 생성 중...' : '새 시트 생성/연결'}</button>
+                <button id="pick-sheet-btn" class="secondary-btn" ${isConnectingSheet ? 'disabled' : ''}>기존 시트 선택</button>
             `;
         }
-        return renderPlayerManagementView();
-    };
-    
-    // ★★★ 수정: 선수 선택(checkbox) UI 및 로직 완전 제거
-    const renderPlayerManagementView = () => {
-        const sortedPlayers = [...localPlayers].sort((a, b) => {
-            const dateA = a.last_updated ? new Date(a.last_updated).getTime() : 0;
-            const dateB = b.last_updated ? new Date(b.last_updated).getTime() : 0;
-            if (dateB !== dateA) return dateB - dateA;
-            return parseInt(a.player_id, 10) - parseInt(b.player_id, 10);
-        });
-
         return `
+            <p><strong>연결된 시트:</strong> ${spreadsheetId.slice(0, 15)}...</p>
+            <button id="pick-sheet-btn" class="secondary-btn">다른 시트 선택</button>
+            <hr>
+            
             <div class="section">
-                <h3>새 플레이어 등록</h3>
+                <h4>시트에 새 플레이어 등록</h4>
                 <form id="add-player-form">
-                    <label for="player-names">새 플레이어 이름 (쉼표(,)로 여러 명 동시 등록 가능)</label>
-                    <textarea id="player-names" placeholder="김철수, 이영희, 박지성..." rows="3" ${isAddingPlayer ? 'disabled' : ''}></textarea>
-                    <button type="submit" ${isAddingPlayer ? 'disabled' : ''}>
-                        ${isAddingPlayer ? '추가하는 중...' : '플레이어 추가'}
-                    </button>
+                    <input type="text" id="new-player-name" placeholder="새 플레이어 이름 입력" ${isAddingPlayer ? 'disabled' : ''}>
+                    <button type="submit" ${isAddingPlayer ? 'disabled' : ''}>${isAddingPlayer ? '추가 중...' : '시트에 추가'}</button>
                 </form>
             </div>
+            <hr>
+            ${renderParticipantManager('regular')}
+        `;
+    };
 
-            <div class="section">
-                <h3>등록된 플레이어 목록</h3>
-                <p>시트에 등록된 모든 플레이어가 경기에 참여합니다. (최소 3명)</p>
+    const renderParticipantManager = (mode) => {
+        const isRegular = mode === 'regular';
+        return `
+            <div class="participant-manager">
+                ${isRegular ? `
+                    <p>${isLoadingPlayers ? '선수 목록 로딩 중...' : `${localPlayers.length}명의 선수가 로드됨.`} <button id="reload-players-btn" class="small-btn">새로고침</button></p>
+                    <form id="select-player-form">
+                        <label for="player-search">참가할 플레이어 선택:</label>
+                        <input type="text" id="player-search" list="player-datalist" placeholder="이름으로 검색..." autocomplete="off">
+                        <datalist id="player-datalist">${localPlayers.map(p => `<option value="${p.name}"></option>`).join('')}</datalist>
+                        <button type="submit">명단에 추가</button>
+                    </form>
+                ` : `
+                    <form id="add-temp-player-form">
+                        <label for="temp-player-name">참가할 플레이어 이름:</label>
+                        <input type="text" id="temp-player-name" placeholder="이름 입력 후 추가">
+                        <button type="submit">명단에 추가</button>
+                    </form>
+                `}
                 
-                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd;">
-                    ${(isLoadingPlayers) ? `<p>플레이어 목록을 불러오는 중입니다...</p>` : `
-                    <table>
-                        <thead><tr><th>ID</th><th>이름</th><th>최근 활동일</th></tr></thead>
-                        <tbody>
-                            ${sortedPlayers.map(p => `
-                                <tr>
-                                    <td>${p.player_id}</td>
-                                    <td>${p.name}</td>
-                                    <td>${p.last_updated ? p.last_updated.slice(0, 10) : p.created_date.slice(0, 10)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>`}
-                </div>
-
-                <div id="player-selection-actions" class="${localPlayers.length > 0 ? '' : 'hidden'}">
-                    <hr>
-                    <button id="start-match-btn" class="primary-btn" ${localPlayers.length < 3 ? 'disabled' : ''}>
-                        전체 ${localPlayers.length}명으로 매치 설정 시작
-                    </button>
-                </div>
+                <h4>참가 명단 (${selectedPlayers.length}명)</h4>
+                <ul id="selected-players-list">
+                    ${selectedPlayers.length === 0 ? `<li>참가할 선수를 추가해주세요.</li>` : ''}
+                    ${selectedPlayers.map((p, index) => `
+                        <li>
+                            <span>${p.name} ${p.player_id.startsWith('temp_') ? '(임시)' : `(ID:${p.player_id})`}</span>
+                            <button class="remove-player-btn" data-index="${index}">X</button>
+                        </li>
+                    `).join('')}
+                </ul>
+                <button class="start-match-btn primary-btn" ${selectedPlayers.length < 3 ? 'disabled' : ''}>${selectedPlayers.length}명으로 매치 설정 시작</button>
             </div>
         `;
     };
 
-    // --- 이벤트 핸들러 ---
     const attachEventListeners = () => {
-        element.addEventListener('click', handleViewClick);
-        element.addEventListener('submit', handleSubmit);
+        element.querySelector('#google-signin-btn')?.addEventListener('click', () => GoogleApi.signIn());
+        element.querySelector('#ensure-sheet-btn')?.addEventListener('click', () => connectSheet(true));
+        element.querySelector('#pick-sheet-btn')?.addEventListener('click', () => connectSheet(false));
+        element.querySelector('#reload-players-btn')?.addEventListener('click', () => loadPlayers());
+
+        element.querySelector('#add-player-form')?.addEventListener('submit', (e) => handleAddPlayerToSheet(e));
+        element.querySelector('#select-player-form')?.addEventListener('submit', (e) => handleSelectPlayer(e));
+        element.querySelector('#add-temp-player-form')?.addEventListener('submit', (e) => handleAddTempPlayer(e));
+
+        element.querySelectorAll('.remove-player-btn').forEach(btn => btn.addEventListener('click', (e) => handleRemovePlayer(e)));
+        element.querySelectorAll('.start-match-btn').forEach(btn => btn.addEventListener('click', () => startMatch()));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (e.target.id === 'add-player-form') await handleAddPlayerSubmit();
-        if (e.target.id === 'temp-match-form') handleTempMatchSubmit();
-    };
-
-    const handleViewClick = async (e) => {
-        const target = e.target;
-        if (target.disabled) return;
-        
+    const connectSheet = async (allowCreateOrPick) => {
+        isConnectingSheet = true; render();
         try {
-            if (target.id === 'google-signin-btn') GoogleApi.signIn();
-            if (target.id === 'ensure-sheet-btn') await connectSheet(true);
-            if (target.id === 'start-match-btn') startMatch();
-            // 선수 선택 체크박스 핸들러 제거
+            const id = allowCreateOrPick ? await GoogleApi.ensureSpreadsheetId({ allowCreate: true }) : await GoogleApi.openSpreadsheetPicker();
+            setState({ spreadsheetId: id });
+            localPlayers = [];
+            await loadPlayers();
         } catch (err) {
-            updateStatus('error', err.message);
-            render();
+            updateStatus('error', `시트 연결 실패: ${err.message}`);
+        } finally {
+            isConnectingSheet = false; render();
         }
     };
     
-    const connectSheet = async (allowCreate) => {
-        isConnectingSheet = true;
-        updateStatus('info', '시트 확인 및 연결 중입니다...');
-        render();
-        
-        try {
-            const id = await GoogleApi.ensureSpreadsheetId({ allowCreate });
-            const newMeta = await GoogleApi.getConfigMap();
-            setState({ spreadsheetId: id, meta: newMeta });
-            updateStatus('info', '시트 연결 완료! 이제 플레이어 목록을 자동으로 불러옵니다.');
-        } catch (err) {
-            updateStatus('error', `시트 연결에 실패했습니다: ${err.message}`);
-        } finally {
-            isConnectingSheet = false;
-            render();
-        }
-    };
-
     const loadPlayers = async () => {
         if (isLoadingPlayers) return;
+        isLoadingPlayers = true; render();
         try {
-            isLoadingPlayers = true;
-            updateStatus('info', '플레이어 목록을 불러오는 중...');
-            render();
-            const players = await GoogleApi.getPlayers();
-            localPlayers = players;
-            hasLoadedPlayers = true;
-            updateStatus('success', `총 ${localPlayers.length}명의 플레이어를 불러왔습니다. 3명 이상이면 경기를 시작할 수 있습니다.`);
+            localPlayers = await GoogleApi.getPlayers();
+            updateStatus('info', '정규 경기 선수 목록을 불러왔습니다.');
         } catch (err) {
-            hasLoadedPlayers = false;
-            updateStatus('error', `플레이어 로딩 실패: ${err.message}`);
+            updateStatus('error', `선수 목록 로딩 실패: ${err.message}`);
         } finally {
-            isLoadingPlayers = false;
-            render();
+            isLoadingPlayers = false; render();
         }
     };
-    
-    const handleAddPlayerSubmit = async () => {
+
+    // ★★★ 수정: 시트에만 플레이어를 추가하는 새로운 함수
+    const handleAddPlayerToSheet = async (e) => {
+        e.preventDefault();
         if (isAddingPlayer) return;
-        const namesInput = element.querySelector('#player-names');
-        const names = namesInput.value.split(',').map(name => name.trim()).filter(Boolean);
-        if (names.length === 0) {
-            updateStatus('error', '추가할 플레이어 이름을 입력하세요.');
+        const input = e.target.querySelector('#new-player-name');
+        const playerName = input.value.trim();
+        if (!playerName) {
+            updateStatus('error', '추가할 플레이어의 이름을 입력하세요.');
             render(); return;
         }
-
-        for (const name of names) {
-            const isEnglishLike = /^[a-zA-Z0-9\s-]*$/.test(name);
-            const limit = isEnglishLike ? 20 : 10;
-            if (name.length > limit) {
-                updateStatus('error', `이름이 너무 깁니다: "${name}" (${isEnglishLike ? '영문' : '한글'} ${limit}자까지)`);
-                render(); return;
-            }
-            if (localPlayers.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                updateStatus('error', `이미 등록된 이름입니다: "${name}"`);
-                render(); return;
-            }
+        if (localPlayers.some(p => p.name.toLowerCase() === playerName.toLowerCase())) {
+            updateStatus('error', `"${playerName}" 선수는 이미 시트에 등록되어 있습니다.`);
+            render(); return;
         }
-        isAddingPlayer = true;
-        render();
+        isAddingPlayer = true; render();
         try {
-            await GoogleApi.addPlayers(names.map(name => ({ name })));
-            namesInput.value = '';
-            hasLoadedPlayers = false; 
-            updateStatus('success', `✅ 이름이 등록되었습니다. 목록을 갱신합니다.`);
+            await GoogleApi.addPlayers([{ name: playerName }]);
+            input.value = '';
+            updateStatus('success', `✅ "${playerName}" 선수를 시트에 추가했습니다. 목록을 새로고침합니다.`);
+            await loadPlayers(); // 선수 풀 갱신
         } catch (err) {
-            updateStatus('error', `플레이어 추가 실패: ${err.message}`);
+            updateStatus('error', `선수 추가 실패: ${err.message}`);
         } finally {
-            isAddingPlayer = false;
-            render();
+            isAddingPlayer = false; render();
         }
-    };
-
-    // ★★★ 수정: 선택된 플레이어(selectedPlayers) 대신 전체 플레이어(localPlayers)를 사용
-    const startMatch = () => {
-        if (localPlayers.length < 3) {
-            updateStatus('error', '매치를 시작하려면 최소 3명 이상의 플레이어가 있어야 합니다.');
-            render();
-            return;
-        }
-        setState({ players: localPlayers });
-        window.location.hash = '/match';
-    };
-
-    // ★★★ 수정: 최소 인원을 3명으로 변경
-    const handleTempMatchSubmit = () => {
-        const countInput = element.querySelector('#player-count');
-        const count = parseInt(countInput.value, 10);
-        if (isNaN(count) || count < 3) {
-            updateStatus('error', '참가자는 최소 3명 이상이어야 합니다.');
-            render();
-            return;
-        }
-        const players = Array.from({ length: count }, (_, i) => ({ 
-            name: `Player ${i + 1}`, 
-            player_id: `temp_${i + 1}`
-        }));
-
-        setState({ players });
-        window.location.hash = '/match';
     };
     
-    const updateStatus = (type, message) => {
-        status = { type, message };
+    const handleSelectPlayer = (e) => {
+        e.preventDefault();
+        const input = e.target.querySelector('#player-search');
+        const playerName = input.value.trim();
+        if (!playerName) return;
+
+        const player = localPlayers.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+        if (!player) {
+            updateStatus('error', '등록되지 않은 이름입니다. 목록에서 선택하거나 새로 등록해주세요.');
+            render(); return;
+        }
+        if (selectedPlayers.some(p => p.player_id === player.player_id)) {
+            updateStatus('error', '이미 명단에 추가된 선수입니다.');
+            render(); return;
+        }
+        selectedPlayers.push(player);
+        input.value = '';
+        render();
     };
 
+    const handleAddTempPlayer = (e) => {
+        e.preventDefault();
+        const input = e.target.querySelector('#temp-player-name');
+        const playerName = input.value.trim();
+        if (!playerName) return;
+        if (selectedPlayers.some(p => p.name.toLowerCase() === playerName.toLowerCase())) {
+            updateStatus('error', '이미 명단에 추가된 이름입니다.');
+            render(); return;
+        }
+        selectedPlayers.push({ name: playerName, player_id: `temp_${Date.now()}` });
+        input.value = '';
+        render();
+    };
+
+    const handleRemovePlayer = (e) => {
+        const indexToRemove = parseInt(e.target.dataset.index, 10);
+        selectedPlayers.splice(indexToRemove, 1);
+        render();
+    };
+
+    const startMatch = () => {
+        if (selectedPlayers.length < 3) {
+            updateStatus('error', '매치를 시작하려면 최소 3명 이상의 선수가 필요합니다.');
+            render(); return;
+        }
+        setState({ players: selectedPlayers });
+        window.location.hash = '/match';
+    };
+
+    const updateStatus = (type, message) => { status = { type, message }; };
+
+    if (getState().spreadsheetId) {
+        setTimeout(loadPlayers, 0);
+    }
     render();
     return element;
 }
