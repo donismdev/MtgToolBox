@@ -185,6 +185,7 @@
 			"parent": "MTG",
 			"type": ["html"],
 			"displayName": "🎡 Garth-One-Eye",
+			"hide_header": true,
 			"enable": true
 		}
 	]
