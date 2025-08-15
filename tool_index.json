@@ -106,7 +106,7 @@
 			"type": ["html", "html_modal"],
 			"path": "tools/swiss-round-tool/",
 			"parent": "TOURNAMENT",
-			"modalIcon": "🏆 swiss tool",
+			"modalIcon": "🏆 Swiss Round Tool",
 			"hide_header": true,
 			"enable": true
 		},
@@ -115,7 +115,7 @@
 			"path": "tools/etc-mighty-helper/",
 			"parent": "ETC",
 			"type": ["html", "html_modal"],
-			"modalIcon": "🃏 mighty helper",
+			"modalIcon": "🃏 Mighty Helper",
 			"enable": true
 		},
 		{
@@ -123,7 +123,7 @@
 			"parent" : "ETC",
 			"path": "tools/etc-thegang-helper/",
 			"type": ["html", "html_modal"],
-			"modalIcon": "🕵️‍♂️ thegang helper",
+			"modalIcon": "🕵️‍♂️ The Gang Helper",
 			"enable": true
 		},
 
@@ -162,8 +162,8 @@
 			"name": "etc-lotto",
 			"path": "tools/etc-lotto/",
 			"parent": "ETC",
-			"type": ["html"],
-			"modalIcon": "Lotto",
+			"type": ["html", "html_modal"],
+			"modalIcon": "🎰 Lotto",
 			"hide_header": true,
 			"enable": true
 		}
