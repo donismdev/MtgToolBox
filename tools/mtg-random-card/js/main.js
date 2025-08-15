@@ -70,21 +70,21 @@ document.getElementById("filterForm").addEventListener("submit", async function 
         img.alt = card.name;
 
         img.onload = () => {
-            let html = `<h3>${card.name}</h3>`;
-            html += `<div class="card-container">${img.outerHTML}</div>`;
+			let html = `<h3>${card.name}</h3>`;
+			html += `<div class="card-container">${img.outerHTML}</div>`;
 
-            if (summary.length > 0) {
-                html += `<div class="filter-summary">${summary.join("<br>")}</div>`;
-            }
+			if (summary.length > 0) {
+				html += `<div class="filter-summary">${summary.join("<br>")}</div>`;
+			}
 
-            cardResultDiv.innerHTML = html;
-            // Add loaded class after a short delay to trigger transition
-            setTimeout(() => {
-                cardResultDiv.querySelector('.card-img').classList.add('loaded');
-            }, 50);
+			cardResultDiv.innerHTML = html;
+			setTimeout(() => {
+				cardResultDiv.querySelector('.card-img').classList.add('loaded');
+			}, 50);
 
-            document.querySelector('.container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        };
+			// 여기 변경
+			cardResultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		};
 
         img.onerror = () => {
             throw new Error("Failed to load card image.");
