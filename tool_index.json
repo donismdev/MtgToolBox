@@ -5,7 +5,6 @@
 			"parent": "MTG",
 			"description": "매직 더 개더링 JSON 카드 데이터를 150MB 단위로 분할 저장하는 툴입니다. Pyodide를 활용하여 브라우저에서도 실행됩니다.",
 			"path": "tools/mtg-json-splitter/",
-			"tags": ["json", "split", "mtg"],
 			"enable": false,
 			"desktopOnly": true,
 			"inputs": [
@@ -16,15 +15,37 @@
 			]
 		},
 		{
+			"name": "misc-modal-timer",
+			"type": ["html", "html_modal"],
+			"path": "tools/misc-modal-timer/",
+			"modalIcon": "⏱️",
+			"enable": false
+		},
+		{
 			"name": "gui-card-manager",
 			"parent": "MTG",
 			"description": "윈도우 GUI 기반 카드 관리 도구입니다. Python GUI 툴킷으로 작성되어 다운로드 후 실행 가능합니다.",
 			"path": "tools/gui-card-manager/",
-			"tags": ["gui", "mtg", "desktop"],
-			"enable": true,
+			"enable": false,
 			"desktopOnly": true,
 			"download": "gui-card-manager.zip"
 		},
+		{
+			"name": "misc-email-test",
+			"path": "tools/misc-email-test/",
+			"parent": "MISC",
+			"type": ["html"],
+			"enable": false
+		},
+		{
+			"name": "game-puzzle-match",
+			"path": "tools/game-puzzle-match/",
+			"parent": "GAME",
+			"type": ["html_modal"],
+			"modalIcon": "🧩",
+			"enable": false
+		},
+
 		{
 			"name": "cardkingdom-order-sorter",
 			"description": "CardKingdom 주문 내역을 시각적으로 정리하는 도구입니다.",
@@ -37,17 +58,17 @@
 			"name": "game-sudoku",
 			"path": "tools/game-sudoku/",
 			"parent": "GAME",
-			"type": ["html", "html_modal"],
+			"type": ["html_modal"],
 			"enable": true,
-			"modalIcon": "🎮",
-			"modalIconColor": "#007bff"
+			"modalIcon": "🎮 sudoku"
 		},
 		{
 			"name": "mtg-ability-finder",
 			"parent": "MTG",
 			"description": "MTG 카드의 능력을 찾는 도구입니다.",
 			"path": "tools/mtg-ability-finder/",
-			"type": ["html"],
+			"type": ["html", "html_modal"],
+			"modalIcon": "🔍 mtg keyword",
 			"enable": true
 		},
         {
@@ -58,8 +79,7 @@
 			"type": ["html", "html_modal"],
 			"enable": true,
 			"hide_header": true,
-            "modalIcon": "Life Counter",
-            "modalIconColor": "#dc3545"
+            "modalIcon": "❤️ Life Counter"
 		},
 		{
 			"name": "mtg-random-card",
@@ -67,9 +87,7 @@
 			"description": "필터 기반으로 랜덤 카드를 뽑을 수 있는 MTG 랜덤 카드 툴입니다. 타입, 컬러, 레어리티, 공방, 마나비용 등으로 세부 필터링이 가능합니다.",
 			"path": "tools/mtg-random-card/",
 			"type": ["html"],
-			"enable": true,
-			"modalIcon": "R",
-			"modalIconColor": "#20c997"
+			"enable": true
 		},
 		{
 			"name": "misc-dice",
@@ -78,25 +96,16 @@
 			"path": "tools/misc-dice/",
 			"type": ["html", "html_modal"],
 			"enable": true,
-			"modalIcon": "Dice",
-			"modalIconColor": "#17a2b8"
+			"modalIcon": "🎲 Dice"
 		},
-		{
-			"name": "misc-modal-timer",
-			"type": ["html", "html_modal"],
-			"path": "tools/misc-modal-timer/",
-			"modalIcon": "⏱️",
-			"modalIconColor": "#28a745",
-			"enable": false
-		},
+
 		{
 			"name": "swiss-round-tool",
 			"type": ["html", "html_modal"],
 			"path": "tools/swiss-round-tool/",
 			"parent": "Tournament",
-			"modalIcon": "🏆",
+			"modalIcon": "🏆 swiss tool",
 			"hide_header": true,
-			"modalIconColor": "#ffc107",
 			"enable": true
 		},
 		{
@@ -104,8 +113,7 @@
 			"path": "tools/etc-mighty-helper/",
 			"parent": "ETC",
 			"type": ["html", "html_modal"],
-			"modalIcon": "🃏",
-			"tags": ["game", "mighty", "card"],
+			"modalIcon": "🃏 mighty helper",
 			"enable": true
 		},
 		{
@@ -113,27 +121,16 @@
 			"parent" : "ETC",
 			"path": "tools/etc-thegang-helper/",
 			"type": ["html", "html_modal"],
-			"modalIcon": "G",
-			"tags": ["game", "thegang", "card"],
+			"modalIcon": "🕵️‍♂️ thegang helper",
 			"enable": true
 		},
-		{
-			"name": "etc-lotto",
-			"path": "tools/etc-lotto/",
-			"parent": "ETC",
-			"type": ["html", "html_modal"],
-			"modalIcon": "L",
-			"hide_header": true,
-			"tags": ["lotto"],
-			"enable": true
-		},
+
 		{
 			"name": "mtg-urza-tool",
 			"path": "tools/mtg-urza-tool/",
 			"parent": "MTG",
-			"type": ["html", "html_modal"],
-			"modalIcon": "U",
-			"modalIconColor": "#007bff",
+			"type": ["html"],
+			"modalIcon": "Urza Tool",
 			"enable": true,
 			"hide_header": true
 		},
@@ -142,8 +139,7 @@
 			"path": "tools/mtg-dungeons/",
 			"parent": "MTG",
 			"type": ["html", "html_modal"],
-			"modalIcon": "D",
-			"modalIconColor": "#6f42c1",
+			"modalIcon": "Dungeon",
 			"enable": true
 		},
 		{
@@ -161,28 +157,12 @@
 			"enable": true
 		},
 		{
-			"name": "misc-email-test",
-			"path": "tools/misc-email-test/",
-			"parent": "MISC",
-			"type": ["html"],
-			"enable": false
-		},
-		{
-			"name": "game-puzzle-match",
-			"path": "tools/game-puzzle-match/",
-			"parent": "GAME",
-			"type": ["html_modal"],
-			"modalIcon": "🧩",
-			"modalIconColor": "#28a745",
-			"enable": true
-		},
-		{
-			"name": "test_google_sheet",
-			"path": "tools/test_google_sheet/",
-			"parent": "TEST",
-			"type": ["html_modal"],
-			"modalIcon": "Test",
-			"modalIconColor": "#28a745",
+			"name": "etc-lotto",
+			"path": "tools/etc-lotto/",
+			"parent": "ETC",
+			"type": ["html", "html_modal"],
+			"modalIcon": "L",
+			"hide_header": true,
 			"enable": true
 		}
 	]

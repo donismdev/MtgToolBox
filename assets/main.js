@@ -321,28 +321,6 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 				}
 			}
 
-			// // 1. ModalTool 버튼 생성
-			// const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
-			// modalTools.forEach(tool => {
-			//     const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
-			//     const displayName = tool.modalIcon || tool.name;
-			//     modalToolDisplayNameMap[fullUrl] = displayName; // 아이콘/텍스트 정보 // 
-			//     const button = document.createElement('button');
-			//     button.className = 'btn modal-tool-button';
-			//     button.textContent = displayName;
-			//     button.dataset.modalUrl = fullUrl;
-			//     button.title = tool.name;
-			//     if (tool.modalIconColor) {
-			//         button.style.backgroundColor = tool.modalIconColor;
-			// 
-			//     button.onclick = () => {
-			//         toggleUiExpansion(true); // 버튼 클릭 시 확장 메뉴는 닫기
-			//         openModalTool(fullUrl, tool);
-			//     };
-			//     
-			//     fixedButtonsContainer.appendChild(button);
-			// });
-            
             // 2. EmbeddedTool 및 기타 툴 목록 (사이드바) 생성
             const toolsByParent = enabledTools.reduce((acc, tool) => {
                 const parent = tool.parent || "기타";
