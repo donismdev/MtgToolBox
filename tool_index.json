@@ -103,7 +103,7 @@
 			"name": "swiss-round-tool",
 			"type": ["html", "html_modal"],
 			"path": "tools/swiss-round-tool/",
-			"parent": "Tournament",
+			"parent": "TOURNAMENT",
 			"modalIcon": "🏆 swiss tool",
 			"hide_header": true,
 			"enable": true
@@ -139,7 +139,7 @@
 			"path": "tools/mtg-dungeons/",
 			"parent": "MTG",
 			"type": ["html", "html_modal"],
-			"modalIcon": "Dungeon",
+			"modalIcon": "🗺️ Dungeon",
 			"enable": true
 		},
 		{

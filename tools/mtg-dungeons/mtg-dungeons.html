@@ -1,117 +1,328 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
-    <title>MTG 던전 뷰어</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px;
-            background-color: #f0f0f0;
-        }
-        h1 {
-            color: #333;
-        }
-        select {
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        #dungeonImage {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #ccc;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #666;
-        }
-:root {
-    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
-}
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="color-scheme" content="light" />
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)" />
+	<title>MTG 던전 뷰어</title>
+	<style>
+		:root { color-scheme: light; }
+		html, body { background:#fff !important; color:#000 !important; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+		@media (prefers-color-scheme: dark) { :root{ color-scheme: light; } }
+		img, video, canvas, svg, iframe { filter:none !important; mix-blend-mode:normal !important; background-color:transparent; }
+		* { forced-color-adjust:none; }
+		a, [class*="bi-"] { color:#0d6efd !important; }
 
-/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
-html, body {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
+		body {
+			font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+			margin: 16px;
+			display: grid;
+			grid-template-rows: auto auto 1fr auto;
+			gap: 16px;
+			place-items: center;
+		}
+		h1 { margin: 4px 0 8px; font-weight: 700; color: #222; }
+		.subtitle { font-size: 0.95rem; color: #666; margin-bottom: 4px; }
 
-/* 다크 선호 환경에서도 라이트로 고정 */
- @media (prefers-color-scheme: dark) {
-    :root { color-scheme: light; }
-    html, body {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-}
+		/* 1행 툴바 */
+		.toolbar {
+			width: min(1100px, 96vw);
+			display: grid;
+			grid-template-columns: auto auto 1fr minmax(160px, 320px) minmax(200px, 420px);
+			align-items: center;
+			gap: 10px;
+			background: #f6f7fb;
+			border: 1px solid #e6e9f2;
+			border-radius: 12px;
+			padding: 10px;
+		}
+		@media (max-width: 920px) {
+			.toolbar { grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; }
+			#titleLeft, #select-category, #select-item { grid-column: 1 / -1; }
+		}
+		.cb { display: inline-flex; align-items: center; gap: 6px; font-size: 0.92rem; color: #444; font-weight: 700; white-space: nowrap; }
+		.title-left { font-weight: 800; color: #1f2937; font-size: 1rem; white-space: nowrap; }
+		.spacer { width: 100%; }
 
-/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
-img, video, canvas, svg, iframe {
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    background-color: transparent;
-}
+		select {
+			padding: 10px;
+			font-size: 15px;
+			border: 1px solid #cfd6e4;
+			border-radius: 8px;
+			background: #fff;
+			outline: none;
+		}
+		select:disabled { opacity: .55; cursor: not-allowed; }
 
-/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
-.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
+		.viewer {
+			width: min(1100px, 96vw);
+			background: #fff;
+			border: 1px solid #e6e9f2;
+			border-radius: 14px;
+			padding: 14px;
+			box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+		}
+		.viewer-header { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:10px; }
+		.viewer-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; }
+		.viewer-sub   { font-size: 0.9rem; color: #6b7280; }
 
-/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
-#modal-tool-iframe {
-    color-scheme: light;
-    background: #ffffff;
-}
-
-/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
-* { forced-color-adjust: none; }
-
-/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
-a, [class*="bi-"] { color: #0d6efd !important; }
-    </style>
+		/* ✅ 프레임은 화면 가용 높이에 맞춰 동적 높이 (JS로 설정) */
+		.viewer-frame {
+			position: relative;
+			width: 100%;
+			/* height는 JS에서 픽셀로 주입 */
+			background: repeating-conic-gradient(#fafafa 0% 25%, #f5f5f5 0% 50%) 50% / 16px 16px;
+			border: 1px dashed #e5e7eb;
+			border-radius: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden; /* 이미지가 프레임 안에서만 보이도록 */
+		}
+		/* ✅ 크롭 없이 전부 보이도록: 프레임을 넘기지 않게 최대값만 제한 */
+		#previewImage {
+			display: block;
+			max-width: 100%;
+			max-height: 100%;
+			width: auto;
+			height: auto;
+			object-fit: contain;
+		}
+		footer { font-size:12px; color:#666; margin-top:4px; }
+	</style>
 </head>
 <body>
-    <h1>MTG 던전</h1>
-    <select id="dungeonSelector">
-        <option value="">-- 던전을 선택하세요 --</option>
-        <option value="dungeon-of-the-mad-mage.jpg">Dungeon of the Mad Mage</option>
-        <option value="lost-mine-of-phandelver.jpg">Lost Mine of Phandelver</option>
-        <option value="tomb-of-annihilation.jpg">Tomb of Annihilation</option>
-        <option value="baldur-s-gate-wilderness.jpg">Baldur's Gate Wilderness</option>
-        <option value="undercity.jpg">Undercity</option>
-    </select>
-    <img id="dungeonImage" src="" alt="선택한 던전 이미지가 여기에 표시됩니다.">
-    <footer>
-        <p>이미지 출처: magiccards.info</p>
-    </footer>
-    <script>
-        const dungeonSelector = document.getElementById('dungeonSelector');
-        const dungeonImage = document.getElementById('dungeonImage');
+	<div style="text-align:center">
+		<h1>MTG 던전 포함 기타카드 뷰어</h1>
+		<div class="subtitle">PC는 기본 활성화(체크), 모바일/태블릿은 기본 비활성화. 아이템을 선택하기 전까지 이미지를 로드하지 않습니다.</div>
+	</div>
 
-        dungeonSelector.addEventListener('change', function() {
-            const selectedDungeon = this.value;
-            if (selectedDungeon) {
-                // 툴 내부의 상대 경로를 사용합니다.
-                const imageUrl = `assets/${selectedDungeon}`;
-                dungeonImage.src = imageUrl;
-                dungeonImage.alt = this.options[this.selectedIndex].text;
-            } else {
-                dungeonImage.src = "";
-                dungeonImage.alt = "선택한 던전 이미지가 여기에 표시됩니다.";
-            }
-        });
-    </script>
+	<!-- 1행 UI -->
+	<div class="toolbar" id="toolbar">
+		<label class="cb"><input type="checkbox" id="cb-enable" />활성화</label>
+		<div class="title-left" id="titleLeft">MTG - Dungeon</div>
+		<div class="spacer"></div>
+		<select id="select-category" aria-label="카테고리 선택"></select>
+		<select id="select-item" aria-label="카드 선택"></select>
+	</div>
+
+	<!-- 프리뷰 -->
+	<div class="viewer">
+		<div class="viewer-header">
+			<div class="viewer-title" id="viewerTitle">카테고리: -</div>
+			<div class="viewer-sub" id="viewerSub">선택: -</div>
+		</div>
+		<div class="viewer-frame" id="viewerFrame">
+			<img id="previewImage" src="" alt="선택한 카드/시트 이미지가 여기에 표시됩니다.">
+		</div>
+	</div>
+
+	<footer><p>이미지 출처: magiccards.info</p></footer>
+
+<script>
+	/* ===== 경로/라벨 유틸 ===== */
+	const BASE_PATHS = {
+		dungeon:    'assets/dungeon',
+		scheme:     'assets/scheme',
+		hero:       'assets/hero',
+		vanguard:   'assets/vanguard',
+		// plane:      'assets/plane',
+		// phenomenon: 'assets/phenomenon'
+	};
+	function labelToFileName(label) {
+		return (label || '').replace(/'/g, '-').toLowerCase()
+			.replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-') + '.jpg';
+	}
+	function fileToLabelName(file) {
+		if (!file) return '';
+		let base = String(file).replace(/\.[^.]+$/, '');
+		base = base.replace(/-s-/g, "'s-").replace(/-/g, ' ');
+		return base.replace(/\b\w/g, ch => ch.toUpperCase());
+	}
+	const prettyKey = k => k.replace(/_/g,' ').replace(/\b\w/g, ch => ch.toUpperCase());
+
+	/* ===== 데이터 소스 ===== */
+	const DATA_SOURCES = {
+		dungeon: [
+			'Dungeon of the Mad Mage',
+			'Lost Mine of Phandelver',
+			'Tomb of Annihilation',
+			"Baldur's Gate Wilderness",
+			'Undercity'
+		],
+		scheme: [],
+		hero: [
+			"axe-of-the-warmonger.jpg","bow-of-the-hunter.jpg","cloak-of-the-philosopher.jpg",
+			"enhancement-stickers.jpg","lash-of-the-tyrant.jpg","spear-of-the-general.jpg",
+			"the-avenger.jpg","the-champion.jpg","the-destined.jpg","the-explorer.jpg","the-general.jpg",
+			"the-harvester.jpg","the-hunter.jpg","the-philosopher.jpg","the-protector.jpg","the-provider.jpg",
+			"the-savant.jpg","the-slayer.jpg","the-tyrant.jpg","the-vanquisher.jpg","the-warmonger.jpg","the-warrior.jpg"
+		],
+		vanguard: [
+			"ashnod.jpg","barrin.jpg","crovax.jpg","eladamri.jpg","ertai.jpg","gerrard.jpg","gix.jpg",
+			"greven-il-vec.jpg","hanna.jpg","karn.jpg","lyna.jpg","maraxus.jpg","mirri.jpg","mishra.jpg",
+			"multani.jpg","oracle.jpg","orim.jpg","ral-s-vanguard.jpg","rofellos.jpg","selenia.jpg","serra.jpg",
+			"sidar-kondo.jpg","sisay.jpg","sliver-queen-brood-mother.jpg","squee.jpg","starke.jpg","tahngarth.jpg",
+			"takara.jpg","tawnos.jpg","titania.jpg","urza.jpg","volrath.jpg","xantcha.jpg"
+		],
+		// plane: [],
+		// phenomenon: []
+	};
+
+	/* ===== DOM ===== */
+	const cbEnable      = document.getElementById('cb-enable');
+	const titleLeft     = document.getElementById('titleLeft');
+	const selCategory   = document.getElementById('select-category');
+	const selItem       = document.getElementById('select-item');
+	const previewImage  = document.getElementById('previewImage');
+	const viewerTitle   = document.getElementById('viewerTitle');
+	const viewerSub     = document.getElementById('viewerSub');
+	const viewerFrame   = document.getElementById('viewerFrame');
+
+	/* ===== 디바이스 판별: PC면 true ===== */
+	function isDesktop() {
+		const ua = navigator.userAgent || '';
+		const isMobileUA = /Android|iPhone|iPad|iPod|Mobile|IEMobile|BlackBerry|Opera Mini/i.test(ua);
+		const hasTouch = navigator.maxTouchPoints && navigator.maxTouchPoints > 1;
+		return !(isMobileUA || hasTouch);
+	}
+
+	/* ===== 프레임 높이 동적 계산 ===== */
+	function resizeFrame() {
+		// 상단 제목/툴바/여백을 제외한 가용 높이
+		const topBlocks = [
+			document.querySelector('h1')?.offsetHeight || 0,
+			document.querySelector('.subtitle')?.offsetHeight || 0,
+			document.getElementById('toolbar')?.offsetHeight || 0,
+			64 // 여유 패딩/마진 버퍼
+		].reduce((a,b)=>a+b,0);
+
+		const available = Math.max(240, window.innerHeight - topBlocks);
+		// 너무 커지지 않도록 가드 (가로가 좁을 때는 폭 기준으로도 제한)
+		const width = viewerFrame.clientWidth || viewerFrame.offsetWidth || 800;
+		const widthBasedMax = Math.round(width * 1.6); // 세로형 카드 대비 약간 여유
+		const finalH = Math.min(available, widthBasedMax);
+
+		viewerFrame.style.height = finalH + 'px';
+	}
+	window.addEventListener('resize', resizeFrame);
+	window.addEventListener('orientationchange', resizeFrame);
+
+	/* ===== 옵션 빌더 ===== */
+	function buildCategoryOptions() {
+		selCategory.innerHTML = '';
+		for (const key of Object.keys(BASE_PATHS)) {
+			const opt = document.createElement('option');
+			opt.value = key;
+			opt.textContent = prettyKey(key);
+			selCategory.appendChild(opt);
+		}
+	}
+	function buildItemOptions(categoryKey) {
+		selItem.innerHTML = '';
+		// 플레이스홀더(자동 다운로드 방지)
+		const ph = document.createElement('option');
+		ph.value = '';
+		ph.textContent = `=== ${prettyKey(categoryKey)} ===`;
+		selItem.appendChild(ph);
+
+		const items = DATA_SOURCES[categoryKey] || [];
+		items.forEach(entry => {
+			let fileName, label;
+			if (typeof entry === 'string') {
+				if (entry.toLowerCase().endsWith('.jpg')) {
+					fileName = entry;
+					label = fileToLabelName(entry);
+				} else {
+					label = entry;
+					fileName = labelToFileName(entry);
+				}
+			} else {
+				label = entry.label;
+				fileName = entry.file || labelToFileName(entry.label);
+			}
+			const opt = document.createElement('option');
+			opt.value = fileName;
+			opt.dataset.file = fileName;
+			opt.textContent = label;
+			selItem.appendChild(opt);
+		});
+		selItem.selectedIndex = 0;
+	}
+
+	/* ===== 렌더/유틸 ===== */
+	function resolveUrl(category, optionEl) {
+		if (!optionEl) return '';
+		const file = optionEl.dataset.file || optionEl.value;
+		const base = BASE_PATHS[category] || '';
+		return file ? `${base}/${file}` : '';
+	}
+	function clearPreview() {
+		previewImage.src = '';
+		previewImage.alt = '선택한 카드/시트 이미지가 여기에 표시됩니다.';
+		viewerTitle.textContent = '카테고리: -';
+		viewerSub.textContent   = '선택: -';
+	}
+	function renderPreview(categoryKey, optionEl) {
+		if (!categoryKey || !optionEl || !optionEl.value) { clearPreview(); return; }
+		const url   = resolveUrl(categoryKey, optionEl);
+		const label = optionEl.textContent || optionEl.value;
+		previewImage.src = url;
+		previewImage.alt = label;
+		viewerTitle.textContent = `카테고리: ${prettyKey(categoryKey)}`;
+		viewerSub.textContent   = `선택: ${label}`;
+		titleLeft.textContent   = `MTG - ${prettyKey(categoryKey)}`;
+	}
+
+	/* ===== 이벤트 ===== */
+	cbEnable.addEventListener('change', () => {
+		const enabled = cbEnable.checked;
+		selCategory.disabled = !enabled;
+		selItem.disabled     = !enabled;
+		if (!enabled) clearPreview();
+		resizeFrame(); // 활성화 상태에서도 프레임 높이 갱신
+	});
+
+	selCategory.addEventListener('change', () => {
+		const cat = selCategory.value;
+		titleLeft.textContent = `MTG - ${prettyKey(cat)}`;
+		buildItemOptions(cat); // 플레이스홀더로 초기화
+		clearPreview();
+	});
+
+	selItem.addEventListener('change', () => {
+		const cat = selCategory.value;
+		const opt = selItem.options[selItem.selectedIndex];
+		if (opt && opt.value) renderPreview(cat, opt);
+		else clearPreview();
+	});
+
+	/* ===== 초기화 ===== */
+	function init() {
+		buildCategoryOptions();
+		const firstCat = 'dungeon';
+		selCategory.value = firstCat;
+		titleLeft.textContent = `MTG - ${prettyKey(firstCat)}`;
+
+		buildItemOptions(firstCat);
+		clearPreview();
+
+		// PC는 체크 ON, 그 외 OFF
+		const defaultEnabled = isDesktop();
+		cbEnable.checked = defaultEnabled;
+		selCategory.disabled = !defaultEnabled;
+		selItem.disabled     = !defaultEnabled;
+
+		// 최초 프레임 사이징
+		resizeFrame();
+	}
+	init();
+
+	function version() { return "1.0.0"; }
+	function printVersion() { console.log("도구 모음 버전: " + version()); }
+	printVersion();
+</script>
 </body>
 </html>
