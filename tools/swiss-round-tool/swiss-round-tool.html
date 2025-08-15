@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTG Swiss Tool</title>
-    
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://apis.google.com/js/api.js"></script>
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
     
@@ -167,7 +167,67 @@
 			.player-button { width: 100%; }
 		}
 
+		view-content { padding: 1.5rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 1rem; }
+		.initial-buttons { display: flex; flex-direction: column; gap: 1.5rem; }
+		.initial-buttons button { padding: 1.5rem; font-size: 1.2em; }
+		#selected-players-list { list-style-type: none; padding: 0; margin-top: 1rem; }
 		
+		/* --- 1. 참가 명단(선택된 사람) 스타일 수정 --- */
+		#selected-players-list li { 
+			display: flex; 
+			align-items: center; /* 세로 중앙 정렬 */
+			justify-content: space-between; 
+			padding: 0.5rem; 
+			border-bottom: 1px solid #eee; 
+			gap: 8px;
+		}
+		#selected-players-list li span { 
+			flex-grow: 1; /* 이름이 남은 공간을 모두 차지하도록 설정 */
+			white-space: nowrap; 
+			overflow: hidden; 
+			text-overflow: ellipsis; 
+		}
+		.remove-player-btn { 
+			background: #ff4d4d; 
+			color: white; 
+			border: none; 
+			cursor: pointer; 
+			border-radius: 4px; 
+			padding: 2px 8px; 
+			font-size: 0.8em; 
+			flex-shrink: 0; /* 버튼 크기가 줄어들지 않도록 고정 */
+		}
+		
+		.small-btn { padding: 0.25rem 0.6rem; font-size: 0.8em; vertical-align: middle; }
+		.back-btn { margin-bottom: 1rem; }
+
+		/* --- 2. 선수 목록(스프레드시트) 스타일 수정 --- */
+		.player-pool-list {
+			max-height: 250px;
+			overflow-y: auto;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			padding: 0.5rem;
+			margin: 1rem 0;
+		}
+		.player-pool-list label {
+			display: flex;         /* 체크박스와 이름을 가로로 정렬 */
+			align-items: center;   /* 세로 중앙으로 정렬 */
+			padding: 0.6rem 0.6rem; /* 클릭 영역 확보 */
+			cursor: pointer;
+			border-radius: 4px;
+		}
+		.player-pool-list label:hover {
+			background-color: #f0f0f0;
+		}
+		.player-pool-list input[type="checkbox"] {
+			transform: scale(1.4);      /* 체크박스 크기 키우기 */
+			margin-right: 1rem;      /* 체크박스와 이름 사이 간격 */
+			flex-shrink: 0;
+		}
+
+
+
     </style>
 </head>
 <body>

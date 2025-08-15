@@ -175,7 +175,6 @@ body.modal-open {
 #content {
 	margin-left: 0;
 	min-height: 100vh;
-	padding: 0.5rem;
 }
 
 /* ModalTool 전용 모달 */
