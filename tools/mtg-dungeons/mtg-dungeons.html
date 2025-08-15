@@ -91,12 +91,30 @@
 			object-fit: contain;
 		}
 		footer { font-size:12px; color:#666; margin-top:4px; }
+		html {
+			box-sizing: border-box;
+			overflow-x: hidden; /* 강제로 좌우 스크롤 방지 */
+		}
+		*, *::before, *::after {
+			box-sizing: inherit;
+		}
+		.toolbar,
+		.viewer {
+			width: min(1100px, calc(96vw - 2px));
+		}
+		body {
+			overflow-x: hidden;
+		}
+		img, video, canvas, iframe {
+			max-width: 100%;
+			height: auto;
+		}
 	</style>
 </head>
 <body>
 	<div style="text-align:center">
 		<h1>MTG 던전 포함 기타카드 뷰어</h1>
-		<div class="subtitle">PC는 기본 활성화(체크), 모바일/태블릿은 기본 비활성화. 아이템을 선택하기 전까지 이미지를 로드하지 않습니다.</div>
+		<div class="subtitle">다운로드</div>
 	</div>
 
 	<!-- 1행 UI -->

@@ -83,10 +83,12 @@
 		},
 		{
 			"name": "mtg-random-card",
-			"parent": "MTG",
+			"parent": "MISC",
 			"description": "필터 기반으로 랜덤 카드를 뽑을 수 있는 MTG 랜덤 카드 툴입니다. 타입, 컬러, 레어리티, 공방, 마나비용 등으로 세부 필터링이 가능합니다.",
 			"path": "tools/mtg-random-card/",
-			"type": ["html"],
+			"type": ["html", "html_modal"],
+			"hide_header": true,
+			"modalIcon": "🎴 random",
 			"enable": true
 		},
 		{
