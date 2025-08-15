@@ -88,7 +88,7 @@
 			"path": "tools/mtg-random-card/",
 			"type": ["html", "html_modal"],
 			"hide_header": true,
-			"modalIcon": "🎴 random",
+			"modalIcon": "🎴 Random MTG Card",
 			"enable": true
 		},
 		{
