@@ -11,6 +11,17 @@ function getPlayerName(player) {
 	return typeof player === 'object' ? player.name : player;
 }
 
+function _norm(n){ return n==null ? null : String(n).trim(); }
+function _hasPlayed(stats, a, b){
+  a = _norm(a); b = _norm(b);
+  if(!a || !b) return false;
+  const opps = stats[a]?.opponents || [];
+  // opponents에 공백/케이스 차이로 안 잡히는 경우 방지
+  for(const o of opps){ if(_norm(o) === b) return true; }
+  return false;
+}
+
+
 /**
  * 히스토리 전체에서 플레이어별 점수/상대/부전승 여부 집계
  * (전체 플레이어 기준: standings 용 보조)
@@ -62,145 +73,166 @@ function getPlayerStats(history) {
 	return stats;
 }
 
+export function getPlayerStatsForPairing(players, history) {
+  const stats = {};
+  // 초기화
+  players.forEach(p => {
+    const name = getPlayerName(p);
+    stats[name] = {
+      points: 0,
+      opponents: [],
+      hadBye: false,
+      byeCount: 0,
+      lastByeRound: 0,
+    };
+  });
+
+  (history || []).forEach((round, rIdx) => {
+    const roundNo = rIdx + 1;
+    (round?.results || []).forEach(match => {
+      const [p1, p2] = match?.players || [];
+      const p1Name = getPlayerName(p1);
+      const p2Name = getPlayerName(p2);
+      const report  = match?.report || {};
+
+      if (!p1Name) return;
+
+      // BYE
+      if (report.result_type === 'BYE' || p2Name === 'BYE') {
+        if (!stats[p1Name]) return;
+        stats[p1Name].points += 3;
+        stats[p1Name].hadBye = true;
+        stats[p1Name].byeCount += 1;
+        stats[p1Name].lastByeRound = Math.max(stats[p1Name].lastByeRound, roundNo);
+        return;
+      }
+
+      // 실제 매치
+      if (!p2Name) return;
+      if (stats[p1Name]) stats[p1Name].opponents.push(p2Name);
+      if (stats[p2Name]) stats[p2Name].opponents.push(p1Name);
+
+      const a = Number(report.a_wins || 0);
+      const b = Number(report.b_wins || 0);
+
+      if (a > b) {
+        if (stats[p1Name]) stats[p1Name].points += 3;
+      } else if (b > a) {
+        if (stats[p2Name]) stats[p2Name].points += 3;
+      } else {
+        if (stats[p1Name]) stats[p1Name].points += 1;
+        if (stats[p2Name]) stats[p2Name].points += 1;
+      }
+    });
+  });
+
+  return stats;
+}
+
 /**
  * 페어링용 집계: 활성 players만 대상으로 안전 집계
  * - opponents: 과거에 붙었던 상대 이름 목록(재매칭 회피용)
  * - points: 점수 정렬 기준
  */
-function getPlayerStatsForPairing(players, history) {
-	const stats = {};
-	const activeNames = new Set(players.map(getPlayerName).filter(Boolean));
-
-	// 활성 기준 초기화
-	players.forEach((p) => {
-		const name = getPlayerName(p);
-		if (!name) return;
-		stats[name] = { points: 0, opponents: [], hadBye: false };
-	});
-
-	// 과거 라운드 누적
-	(history || []).forEach((round) => {
-		const results = Array.isArray(round?.results) ? round.results : [];
-		results.forEach((match) => {
-			const pair = Array.isArray(match?.players) ? match.players : [];
-			const p1Name = getPlayerName(pair?.[0]);
-			const p2Name = getPlayerName(pair?.[1]);
-			const report = match?.report || {};
-
-			if (!p1Name) return;
-
-			// 필요 시 안전 초기화 (활성만)
-			if (activeNames.has(p1Name) && !stats[p1Name]) {
-				stats[p1Name] = { points: 0, opponents: [], hadBye: false };
-			}
-			if (activeNames.has(p2Name) && !stats[p2Name]) {
-				stats[p2Name] = { points: 0, opponents: [], hadBye: false };
-			}
-
-			// BYE 처리 (활성만 점수 반영)
-			if (report.result_type === 'BYE' || p2Name === 'BYE') {
-				if (activeNames.has(p1Name)) {
-					stats[p1Name].points += 3;
-					stats[p1Name].hadBye = true;
-				}
-				return;
-			}
-
-			// 실매치
-			if (!p2Name) return;
-
-			// 재매칭 회피용 opponents: 존재하는 쪽만 푸시
-			if (activeNames.has(p1Name)) stats[p1Name].opponents.push(p2Name);
-			if (activeNames.has(p2Name)) stats[p2Name].opponents.push(p1Name);
-
-			// 점수 반영 (활성만)
-			const aw = Number(report.a_wins) || 0;
-			const bw = Number(report.b_wins) || 0;
-
-			if (aw > bw) {
-				if (activeNames.has(p1Name)) stats[p1Name].points += 3;
-			} else if (bw > aw) {
-				if (activeNames.has(p2Name)) stats[p2Name].points += 3;
-			} else {
-				if (activeNames.has(p1Name)) stats[p1Name].points += 1;
-				if (activeNames.has(p2Name)) stats[p2Name].points += 1;
-			}
-		});
-	});
-
-	return stats;
-}
-
-/**
- * 새로운 스위스 페어링 알고리즘 (플레이어 객체 지원)
- * - players: 활성 플레이어 배열(드랍자 제외)
- * - history: [{ round, pairings, results }, ...] (지난 라운드)
- */
 export function createPairings(players, history) {
-	const stats = getPlayerStatsForPairing(players, history);
+  const stats = getPlayerStatsForPairing(players, history);
+  const getName = (p) => (p && typeof p === 'object' ? p.name : p);
 
-	// 점수 기준 정렬 (내림차순)
-	let unPairedPlayers = [...players].sort((a, b) => {
-		const an = getPlayerName(a);
-		const bn = getPlayerName(b);
-		const ap = stats[an]?.points ?? 0;
-		const bp = stats[bn]?.points ?? 0;
-		return bp - ap;
-	});
+  const shuffle = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  const hasPlayed = (a, b) => {
+    const A = getName(a), B = getName(b);
+    if (!A || !B) return false;
+    const opps = stats[A]?.opponents || [];
+    return opps.includes(B);
+  };
+  const pts = (p) => stats[getName(p)]?.points ?? 0;
 
-	const pairings = [];
+  // 1) 점수 그룹화 + 그룹 내부 셔플 → 상위 점수부터 풀 생성
+  const groups = new Map();
+  players.forEach(p => {
+    const key = pts(p);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  });
+  const pool = [];
+  Array.from(groups.keys()).sort((a, b) => b - a)
+    .forEach(k => pool.push(...shuffle(groups.get(k))));
 
-	// 홀수면 BYE 배정: 아직 BYE 없는 플레이어 우선
-	if (unPairedPlayers.length % 2 !== 0) {
-		let byeAssigned = false;
-		for (let i = unPairedPlayers.length - 1; i >= 0; i--) {
-			const p = unPairedPlayers[i];
-			const name = getPlayerName(p);
-			// stats[name]가 없을 수 있으니 방어
-			if (!stats[name]) stats[name] = { points: 0, opponents: [], hadBye: false };
-			if (stats[name].hadBye === false) {
-				pairings.push([p, 'BYE']);
-				unPairedPlayers.splice(i, 1);
-				byeAssigned = true;
-				break;
-			}
-		}
-		if (!byeAssigned) {
-			const last = unPairedPlayers.pop();
-			pairings.push([last, 'BYE']);
-		}
-	}
+  const pairings = [];
+  let active = [...pool];
 
-	// 재매칭 회피 우선 매칭
-	while (unPairedPlayers.length > 0) {
-		const p1 = unPairedPlayers.shift();
-		const p1Name = getPlayerName(p1);
-		if (!stats[p1Name]) stats[p1Name] = { points: 0, opponents: [], hadBye: false };
+  // 2) 홀수면 BYE 선정 (BYE 반복 최소화/연속 BYE 회피)
+  if (active.length % 2 === 1) {
+    const lastRoundNo = (history || []).length; // 직전 라운드 번호
+    const avail = (p) => active.reduce((acc, q) => (q !== p && getName(q) !== 'BYE' && !hasPlayed(p, q) ? acc + 1 : acc), 0);
 
-		let opponentIndex = -1;
-		for (let i = 0; i < unPairedPlayers.length; i++) {
-			const p2 = unPairedPlayers[i];
-			const p2Name = getPlayerName(p2);
-			// p2도 필요 시 방어 초기화
-			if (!stats[p2Name]) stats[p2Name] = { points: 0, opponents: [], hadBye: false };
+    const candidates = active.map(p => {
+      const n = getName(p);
+      const s = stats[n] || {};
+      return {
+        p,
+        byeCount: s.byeCount ?? (s.hadBye ? 1 : 0),
+        recentBye: (s.lastByeRound || 0) === lastRoundNo ? 1 : 0, // 직전 라운드 BYE였으면 불리
+        score: pts(p),
+        deg: avail(p), // 가용 상대 수
+      };
+    });
 
-			if (!stats[p1Name].opponents.includes(p2Name)) {
-				opponentIndex = i;
-				break;
-			}
-		}
+    // byeCount ↑ → recentBye ↑ → score ↑ → deg ↑
+    candidates.sort((a, b) =>
+      (a.byeCount - b.byeCount) ||
+      (a.recentBye - b.recentBye) ||
+      (a.score - b.score) ||
+      (a.deg - b.deg)
+    );
 
-		if (opponentIndex === -1) {
-			// 재매칭 회피 불가 → 첫 상대와 매칭
-			const p2 = unPairedPlayers.shift();
-			pairings.push([p1, p2]);
-		} else {
-			const p2 = unPairedPlayers.splice(opponentIndex, 1)[0];
-			pairings.push([p1, p2]);
-		}
-	}
+    const byeP = candidates[0].p;
+    active = active.filter(x => x !== byeP);
+    pairings.push([byeP, 'BYE']);
+  }
 
-	return pairings;
+  // 3) 1차 그리디: 가능한 '미대결' 상대 우선
+  const pairs = [];
+  const bag = [...active];
+  while (bag.length) {
+    const p1 = bag.shift();
+    let pick = -1;
+    for (let i = 0; i < bag.length; i++) {
+      if (!hasPlayed(p1, bag[i])) { pick = i; break; }
+    }
+    const p2 = pick >= 0 ? bag.splice(pick, 1)[0] : bag.shift(); // 없으면 재매치 허용
+    pairs.push([p1, p2]);
+  }
+
+  // 4) 얕은 수리(최대 3패스): 재매치인 테이블을 다른 테이블과 2-스왑 시도
+  const isRematch = ([a, b]) => (getName(a) !== 'BYE' && getName(b) !== 'BYE' && hasPlayed(a, b));
+  for (let pass = 0; pass < 3; pass++) {
+    let fixed = false;
+    for (let i = 0; i < pairs.length; i++) {
+      if (!isRematch(pairs[i])) continue;
+      const [a, b] = pairs[i];
+
+      for (let j = 0; j < pairs.length; j++) {
+        if (i === j) continue;
+        const [c, d] = pairs[j];
+        if (getName(c) === 'BYE' || getName(d) === 'BYE') continue;
+
+        // 스왑안1: b ↔ d  → [a,d], [c,b]
+        if (!hasPlayed(a, d) && !hasPlayed(c, b)) {
+          pairs[i] = [a, d]; pairs[j] = [c, b]; fixed = true; break;
+        }
+        // 스왑안2: b ↔ c  → [a,c], [b,d]
+        if (!hasPlayed(a, c) && !hasPlayed(b, d)) {
+          pairs[i] = [a, c]; pairs[j] = [b, d]; fixed = true; break;
+        }
+      }
+      if (fixed) break;
+    }
+    if (!fixed) break;
+  }
+
+  // BYE를 맨 뒤에 유지
+  return [...pairs, ...pairings];
 }
 
 /**

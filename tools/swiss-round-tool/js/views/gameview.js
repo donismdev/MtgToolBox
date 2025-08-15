@@ -15,6 +15,7 @@ function shuffle(arr) {
   return arr;
 }
 
+
 export default function GameView() {
 	const element = document.createElement('div');
 	const { currentEvent, currentRound } = getState();
