@@ -78,64 +78,68 @@ export default function GameView() {
 			const dropB = resultType === 'DROP_B';
 
 			const matchCard = document.createElement('div');
-			matchCard.className = `match-card ${isFinished ? 'finished' : ''}`;
+			matchCard.className = `match-card compact ${isFinished ? 'finished' : ''}`;
 			matchCard.dataset.matchIndex = index;
 
 			if (p2Name !== 'BYE') {
-				matchCard.innerHTML = `
-					<div class="match-title">
-						<span class="table-badge">Table ${index + 1}</span>
-					</div>
+			matchCard.innerHTML = `
+				<div class="match-title">
+				<span class="table-badge">Table ${index + 1}</span>
+				</div>
 
-					<div class="match-row">
-						<div class="name name-left">
-							${p1Name}
-							${dropA ? '<span class="drop-chip">드랍</span>' : ''}
-						</div>
+				<!-- 두 줄 레이아웃: 1행=이름 좌/우, 2행= -+ | 중앙 스코어 | -+ -->
+				<div class="match-grid-2row">
+				<!-- 1행 -->
+				<div class="cell a-name">
+					${p1Name}
+					${dropA ? '<span class="drop-chip">드랍</span>' : ''}
+				</div>
+				<div class="cell spacer"></div>
+				<div class="cell b-name">
+					${p2Name}
+					${dropB ? '<span class="drop-chip">드랍</span>' : ''}
+				</div>
 
-						<div class="win-controls">
-							<button class="player-button big" data-action="decrement-win" data-player="A" ${isFinished ? 'disabled' : ''}>−</button>
-							<button class="player-button big" data-action="increment-win" data-player="A" ${isFinished ? 'disabled' : ''}>＋</button>
-						</div>
+				<!-- 2행 -->
+				<div class="cell a-controls">
+					<button class="player-button big" data-action="decrement-win" data-player="A" ${isFinished ? 'disabled' : ''}>−</button>
+					<button class="player-button big" data-action="increment-win" data-player="A" ${isFinished ? 'disabled' : ''}>＋</button>
+				</div>
 
-						<div class="score center">
-							<span class="score-digit">${a_wins}</span>
-							<span>-</span>
-							<span class="score-digit">${b_wins}</span>
-						</div>
+				<div class="cell center-score">
+					<span class="score-digit">${a_wins}</span>
+					<span>-</span>
+					<span class="score-digit">${b_wins}</span>
+				</div>
 
-						<div class="win-controls">
-							<button class="player-button big" data-action="decrement-win" data-player="B" ${isFinished ? 'disabled' : ''}>−</button>
-							<button class="player-button big" data-action="increment-win" data-player="B" ${isFinished ? 'disabled' : ''}>＋</button>
-						</div>
+				<div class="cell b-controls">
+					<button class="player-button big" data-action="decrement-win" data-player="B" ${isFinished ? 'disabled' : ''}>−</button>
+					<button class="player-button big" data-action="increment-win" data-player="B" ${isFinished ? 'disabled' : ''}>＋</button>
+				</div>
+				</div>
 
-						<div class="name name-right">
-							${p2Name}
-							${dropB ? '<span class="drop-chip">드랍</span>' : ''}
-						</div>
-					</div>
-
-					<div class="actions-bar">
-						<select class="result-type-select" aria-label="결과 유형 선택" ${isFinished ? 'disabled' : ''}>
-							<option value="OK" ${resultType === 'OK' ? 'selected' : ''}>정상 종료</option>
-							<option value="TIME_OUT" ${resultType === 'TIME_OUT' ? 'selected' : ''}>시간 종료</option>
-							<option value="ID" ${resultType === 'ID' ? 'selected' : ''}>의도적 무승부</option>
-							<option value="DROP_A" ${resultType === 'DROP_A' ? 'selected' : ''}>${p1Name} 드랍</option>
-							<option value="DROP_B" ${resultType === 'DROP_B' ? 'selected' : ''}>${p2Name} 드랍</option>
-						</select>
-						${!isFinished
-							? `<button class="confirm-btn" title="결과 확정" data-action="confirm-result">✓</button>`
-							: `<button class="edit-btn" title="결과 수정" data-action="edit-result">✎</button>`
-						}
-					</div>
-				`;
+				<!-- 하단: 결과 선택 + 확정/수정 -->
+				<div class="actions-bar">
+				<select class="result-type-select" aria-label="결과 유형 선택" ${isFinished ? 'disabled' : ''}>
+					<option value="OK" ${resultType === 'OK' ? 'selected' : ''}>정상 종료</option>
+					<option value="TIME_OUT" ${resultType === 'TIME_OUT' ? 'selected' : ''}>시간 종료</option>
+					<option value="ID" ${resultType === 'ID' ? 'selected' : ''}>의도적 무승부</option>
+					<option value="DROP_A" ${resultType === 'DROP_A' ? 'selected' : ''}>${p1Name} 드랍</option>
+					<option value="DROP_B" ${resultType === 'DROP_B' ? 'selected' : ''}>${p2Name} 드랍</option>
+				</select>
+				${!isFinished
+					? `<button class="confirm-btn" title="결과 확정" data-action="confirm-result">✓</button>`
+					: `<button class="edit-btn" title="결과 수정" data-action="edit-result">✎</button>`
+				}
+				</div>
+			`;
 			} else {
-				matchCard.innerHTML = `
-					<div class="match-title">
-						<span class="table-badge">Table ${index + 1}</span>
-					</div>
-					<div class="bye-notice">${p1Name} 님의 부전승</div>
-				`;
+			matchCard.innerHTML = `
+				<div class="match-title">
+				<span class="table-badge">Table ${index + 1}</span>
+				</div>
+				<div class="bye-notice">${p1Name} 님의 부전승</div>
+			`;
 			}
 
 			matchupsContainer.appendChild(matchCard);
@@ -143,6 +147,7 @@ export default function GameView() {
 
 		startTimer(timerMinutes * 60, element.querySelector('#timer'));
 	};
+
 
 	// --- 이벤트 핸들러 ---
 
