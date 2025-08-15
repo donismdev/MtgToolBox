@@ -126,6 +126,7 @@
 			"parent": "BOARD GAME",
 			"type": ["html", "html_modal"],
 			"modalIcon": "🃏 Mighty Helper",
+			"hide_header": true,
 			"enable": true
 		},
 		{
@@ -134,6 +135,7 @@
 			"path": "tools/etc-thegang-helper/",
 			"type": ["html", "html_modal"],
 			"modalIcon": "🕵️‍♂️ The Gang Helper",
+			"hide_header": true,
 			"enable": true
 		},
 
@@ -169,6 +171,7 @@
 			"parent": "ETC",
 			"type": ["html"],
 			"modalIcon": "♠️ Blackjack",
+			"hide_header": true,
 			"enable": true
 		},
 		{
