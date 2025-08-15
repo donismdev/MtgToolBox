@@ -9,7 +9,7 @@ export default function PlayerView() {
     // --- 뷰의 내부 상태 (이전과 동일) ---
     let localPlayers = [];
     let selectedPlayers = [];
-    let status = { type: 'info', message: '환영합니다! 경기 방식을 선택해주세요.' };
+    let status = { type: 'info', message: '스프레드 시트를 선택하세요.' };
     let currentView = 'initial';
     let isLoading = false;
 
@@ -41,107 +41,11 @@ export default function PlayerView() {
         attachEventListeners();
     };
 
-	/*
-    const render = () => {
-        const { isSignedIn, spreadsheetId } = getState();
-
-        if (currentView === 'initial' && isSignedIn) {
-            currentView = spreadsheetId ? 'regular' : 'sheet';
-        }
-
-        let content = '';
-        switch (currentView) {
-            case 'quick':
-                content = renderParticipantManager('temp');
-                break;
-            case 'sheet':
-                content = renderSheetManager();
-                break;
-            case 'regular':
-                content = renderParticipantManager('regular');
-                break;
-            case 'initial':
-            default:
-                content = renderInitialView();
-                break;
-        }
-
-        element.innerHTML = `
-            ${currentView !== 'initial' ? `<button class="back-btn secondary-btn small-btn" data-target="initial">← 처음으로</button>` : ''}
-            <h2>참가자 설정</h2>
-            <div class="status-bar ${status.type}">${status.message}</div>
-            <div class="view-content">
-                ${content}
-            </div>
-            
-            <style>
-                .view-content { padding: 1.5rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 1rem; }
-                .initial-buttons { display: flex; flex-direction: column; gap: 1.5rem; }
-                .initial-buttons button { padding: 1.5rem; font-size: 1.2em; }
-                #selected-players-list { list-style-type: none; padding: 0; margin-top: 1rem; }
-                
-                #selected-players-list li { 
-                    display: flex; 
-                    align-items: center;
-                    gap: 8px;
-                    padding: 0.5rem; 
-                    border-bottom: 1px solid #eee; 
-                }
-                #selected-players-list li span { 
-                    flex: 1 1 auto;
-                    white-space: nowrap; 
-                    overflow: hidden; 
-                    text-overflow: ellipsis;
-                    color: #1c1e21;
-                }
-                .remove-player-btn { 
-                    flex: 0 0 auto;
-                    background: #ff4d4d; 
-                    color: white; 
-                    border: none; 
-                    cursor: pointer; 
-                    border-radius: 4px; 
-                    padding: 2px 8px; 
-                    font-size: 0.8em; 
-                }
-                
-                .small-btn { padding: 0.25rem 0.6rem; font-size: 0.8em; vertical-align: middle; }
-                .back-btn { margin-bottom: 1rem; }
-
-                .player-pool-list {
-                    max-height: 250px;
-                    overflow-y: auto;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                    padding: 0.5rem;
-                    margin: 1rem 0;
-                }
-                .player-pool-list label {
-                    display: flex;
-                    align-items: center;
-                    padding: 0.6rem;
-                    cursor: pointer;
-                    border-radius: 4px;
-                    color: #1c1e21;
-                }
-                .player-pool-list label:hover {
-                    background-color: #f0f0f0;
-                }
-                .player-pool-list input[type="checkbox"] {
-                    transform: scale(1.4);
-                    margin-right: 1rem;
-                    flex-shrink: 0;
-                }
-            </style>
-        `;
-        attachEventListeners();
-    };
-	*/
 
     const renderInitialView = () => `
         <div class="initial-buttons">
-            <button id="show-quick-match-btn" class="secondary-btn">빠른 경기 시작 (로그인 불필요)</button>
-            <button id="google-signin-btn" class="primary-btn">Google 로그인 (정규 경기 시작)</button>
+            <button id="show-quick-match-btn" class="secondary-btn">빠른 경기 시작</button>
+            <button id="google-signin-btn" class="primary-btn">정규 경기 시작 (Google 로그인)</button>
         </div>
     `;
 
@@ -198,7 +102,7 @@ export default function PlayerView() {
     // --- 이하 나머지 함수들은 이전과 동일합니다 ---
 
     const renderSheetManager = () => `
-        <h3>정규 경기: 스프레드시트 선택</h3>
+        <h3>스프레드시트 선택</h3>
         <p>데이터를 저장할 스프레드시트를 선택하거나 생성하세요.</p>
         <button id="ensure-sheet-btn" class="primary-btn" ${isLoading ? 'disabled' : ''}>${isLoading ? '시트 생성 중...' : '새 시트 생성/연결'}</button>
         <button id="pick-sheet-btn" class="secondary-btn" ${isLoading ? 'disabled' : ''}>기존 시트 선택</button>
