@@ -286,8 +286,9 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
             });
 
 			const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
+			const categoryOrder = Array.isArray(data.category_order) ? data.category_order : [];
 
-			buildLauncher(modalTools);
+			buildLauncher(modalTools, categoryOrder);
 
 			// 2) 캡션 드롭다운 채우기
 			const captionMenu = document.getElementById('caption-modal-menu');
@@ -489,64 +490,64 @@ function closeLauncher(){ document.getElementById('tool-launcher-overlay')?.clas
   ov?.querySelector('[data-launcher="close"]')?.addEventListener('click', closeLauncher);
 })();
 
-function buildLauncher(tools){
-  const byParent = tools.reduce((acc, t)=>{
-    const parent = t.parent || '기타';
-    (acc[parent] ||= []).push(t);
-    return acc;
-  }, {});
-  const root = document.getElementById('launcher-accordion');
-  if(!root) return;
-  root.innerHTML = '';
+	function buildLauncher(tools){
+		const byParent = tools.reduce((acc, t)=>{
+			const parent = t.parent || '기타';
+			(acc[parent] ||= []).push(t);
+			return acc;
+		}, {});
+		const root = document.getElementById('launcher-accordion');
+		if(!root) return;
+		root.innerHTML = '';
 
-  let idx = 0;
-  for(const [parent, list] of Object.entries(byParent)){
-    const id = `cat-${idx++}`;
-    const wrap = document.createElement('div');
-    wrap.className = 'cat';
-    wrap.innerHTML = `
-      <button type="button" class="cat-btn" data-cat="${id}">
-        <span>${parent}</span>
-        <i class="bi bi-chevron-down"></i>
-      </button>
-      <div class="tool-grid" id="${id}" style="display:${idx<=3 ? 'grid':'none'};"></div>
-    `;
-    root.appendChild(wrap);
-    const grid = wrap.querySelector('.tool-grid');
+		let idx = 0;
+		for(const [parent, list] of Object.entries(byParent)){
+			const id = `cat-${idx++}`;
+			const wrap = document.createElement('div');
+			wrap.className = 'cat';
+			wrap.innerHTML = `
+			<button type="button" class="cat-btn" data-cat="${id}">
+				<span>${parent}</span>
+				<i class="bi bi-chevron-down"></i>
+			</button>
+			<div class="tool-grid" id="${id}" style="display:${idx<=3 ? 'grid':'none'};"></div>
+			`;
+			root.appendChild(wrap);
+			const grid = wrap.querySelector('.tool-grid');
 
-    list.forEach(tool=>{
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'tool';
-      btn.textContent = tool.name;
-      btn.addEventListener('click', (e)=>{
-        closeLauncher();
-        if (tool.type === 'html' || (Array.isArray(tool.type) && tool.type.includes('html'))) {
-          renderEmbeddedTool(tool);
-        } else if (tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal'))) {
-          const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
-          openModalTool(fullUrl, tool);
-        } else {
-          // 다른 타입은 임베디드로 처리 (필요시 분기 확장)
-          renderEmbeddedTool(tool);
-        }
-      });
-      grid.appendChild(btn);
-    });
-  }
+			list.forEach(tool=>{
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'tool';
+			btn.textContent = tool.name;
+			btn.addEventListener('click', (e)=>{
+				closeLauncher();
+				if (tool.type === 'html' || (Array.isArray(tool.type) && tool.type.includes('html'))) {
+				renderEmbeddedTool(tool);
+				} else if (tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal'))) {
+				const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
+				openModalTool(fullUrl, tool);
+				} else {
+				// 다른 타입은 임베디드로 처리 (필요시 분기 확장)
+				renderEmbeddedTool(tool);
+				}
+			});
+			grid.appendChild(btn);
+			});
+		}
 
-  // 아코디언 토글
-  root.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.cat-btn');
-    if(!btn) return;
-    const pane = document.getElementById(btn.dataset.cat);
-    const icon = btn.querySelector('i');
-    const open = pane.style.display !== 'none';
-    pane.style.display = open ? 'none' : 'grid';
-    icon.classList.toggle('bi-chevron-down', open);
-    icon.classList.toggle('bi-chevron-up', !open);
-  }, { passive: true });
-}
+		// 아코디언 토글
+		root.addEventListener('click', (e)=>{
+			const btn = e.target.closest('.cat-btn');
+			if(!btn) return;
+			const pane = document.getElementById(btn.dataset.cat);
+			const icon = btn.querySelector('i');
+			const open = pane.style.display !== 'none';
+			pane.style.display = open ? 'none' : 'grid';
+			icon.classList.toggle('bi-chevron-down', open);
+			icon.classList.toggle('bi-chevron-up', !open);
+		}, { passive: true });
+	}
 
 		// --- End of new code ---
 

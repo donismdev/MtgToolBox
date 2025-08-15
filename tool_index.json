@@ -1,4 +1,12 @@
 {
+	"category_order" : [
+		"MTG",
+		"TOURNAMENT",
+		"GAME",
+		"BOARD GAME",
+		"MISC",
+		"ETC"
+	],
 	"tools": [
 		{
 			"name": "mtg-json-splitter",
@@ -113,14 +121,14 @@
 		{
 			"name": "etc-mighty-helper",
 			"path": "tools/etc-mighty-helper/",
-			"parent": "ETC",
+			"parent": "BOARD GAME",
 			"type": ["html", "html_modal"],
 			"modalIcon": "🃏 Mighty Helper",
 			"enable": true
 		},
 		{
 			"name": "etc-thegang-helper",
-			"parent" : "ETC",
+			"parent" : "BOARD GAME",
 			"path": "tools/etc-thegang-helper/",
 			"type": ["html", "html_modal"],
 			"modalIcon": "🕵️‍♂️ The Gang Helper",
