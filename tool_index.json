@@ -68,7 +68,7 @@
 			"description": "MTG 카드의 능력을 찾는 도구입니다.",
 			"path": "tools/mtg-ability-finder/",
 			"type": ["html", "html_modal"],
-			"modalIcon": "🔍 mtg keyword",
+			"modalIcon": "🔍 MTG Keyword",
 			"enable": true
 		},
         {
