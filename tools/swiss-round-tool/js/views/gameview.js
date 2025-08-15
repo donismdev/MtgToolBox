@@ -191,7 +191,10 @@ export default function GameView() {
 		if (resultType === 'TIME_OUT') {
 			finalReport.a_draws = 1; finalReport.b_draws = 1;
 		} else if (resultType === 'ID') {
-			Object.assign(finalReport, { a_wins: 0, a_draws: 0, a_losses: 0, b_wins: 0, b_draws: 0, b_losses: 0 });
+			Object.assign(finalReport, {
+				a_wins: 0, a_draws: 3, a_losses: 0,
+				b_wins: 0, b_draws: 3, b_losses: 0
+			});
 		}
 		// DROP_A / DROP_B 는 점수 그대로 유지 (기존과 동일)
 

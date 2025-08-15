@@ -13,6 +13,35 @@ export default function PlayerView() {
     let currentView = 'initial';
     let isLoading = false;
 
+	// --- 헬퍼 함수들 ---
+	function updateSelectionHUD() {
+		const cnt = element.querySelector('#selected-count');
+		const btn = element.querySelector('#start-match-btn');
+		if (cnt) cnt.textContent = `참가 명단 (${selectedPlayers.length}명)`;
+		if (btn) {
+			btn.disabled = selectedPlayers.length < 3;
+		btn.textContent = `${selectedPlayers.length}명으로 매치 설정 시작`;
+  		}
+	}
+
+	function addSelectedPlayerDOM(player) {
+		const ul = element.querySelector('#selected-players-list');
+		if (!ul) return;
+		const li = document.createElement('li');
+		const idx = selectedPlayers.length - 1; // 막 추가된 인덱스
+		li.innerHTML = `
+			<span>${player.name}</span>
+			<button class="remove-player-btn" data-index="${idx}">X</button>
+		`;
+		ul.appendChild(li);
+	}
+
+	function rebuildSelectedListIndices() {
+		// 삭제 후 data-index를 재배열
+		element.querySelectorAll('#selected-players-list .remove-player-btn')
+			.forEach((btn, i) => btn.dataset.index = String(i));
+	}
+
     // --- 렌더링 로직 ---
     const render = () => {
         const { isSignedIn, spreadsheetId } = getState();
@@ -48,6 +77,8 @@ export default function PlayerView() {
             <button id="google-signin-btn" class="primary-btn">정규 경기 시작 (Google 로그인)</button>
         </div>
     `;
+
+
 
     const renderParticipantManager = (mode) => {
         const isRegular = mode === 'regular';
@@ -85,7 +116,7 @@ export default function PlayerView() {
                 </form>
             `}
             
-            <h4>참가 명단 (${selectedPlayers.length}명)</h4>
+            <h4 id="selected-count">참가 명단 (${selectedPlayers.length}명)</h4>
             <ul id="selected-players-list">
                 ${selectedPlayers.length === 0 ? `<li>참가할 선수를 추가해주세요. (최소 3명)</li>` : ''}
                 ${selectedPlayers.map((p, index) => `
@@ -95,7 +126,7 @@ export default function PlayerView() {
                     </li>
                 `).join('')}
             </ul>
-            <button class="start-match-btn primary-btn" ${selectedPlayers.length < 3 ? 'disabled' : ''}>${selectedPlayers.length}명으로 매치 설정 시작</button>
+            <button id="start-match-btn" class="start-match-btn primary-btn" ${selectedPlayers.length < 3 ? 'disabled' : ''}>${selectedPlayers.length}명으로 매치 설정 시작</button>
         `;
     };
 
@@ -123,7 +154,23 @@ export default function PlayerView() {
         element.querySelectorAll('.player-checkbox').forEach(box => box.addEventListener('change', (e) => handlePlayerCheckboxChange(e)));
         element.querySelector('#add-temp-player-form')?.addEventListener('submit', (e) => handleAddTempPlayer(e));
 
-        element.querySelectorAll('.remove-player-btn').forEach(btn => btn.addEventListener('click', (e) => handleRemovePlayer(e)));
+		const selList = element.querySelector('#selected-players-list');
+		selList?.addEventListener('click', (e) => {
+		  const btn = e.target.closest('.remove-player-btn');
+		  if (!btn) return;
+		  const idx = parseInt(btn.dataset.index, 10);
+		  const removed = selectedPlayers.splice(idx, 1)[0];
+		  // 체크박스가 있는 모드라면 체크 해제
+		  if (removed?.player_id) {
+		    const cb = element.querySelector(`.player-checkbox[data-player-id="${removed.player_id}"]`);
+		    if (cb) cb.checked = false;
+		  }
+		  // DOM에서 해당 li 제거
+		  btn.parentElement?.remove();
+		  rebuildSelectedListIndices();
+		  updateSelectionHUD();
+		});		
+
         element.querySelectorAll('.start-match-btn').forEach(btn => btn.addEventListener('click', () => startMatch()));
     };
 
@@ -161,36 +208,44 @@ export default function PlayerView() {
 		}
 	};
     
-    const handlePlayerCheckboxChange = (e) => {
-        const checkbox = e.target;
-        const playerId = checkbox.dataset.playerId;
-        
-        if (checkbox.checked) {
-            const playerToAdd = localPlayers.find(p => p.player_id === playerId);
-            if (playerToAdd && !selectedPlayers.some(p => p.player_id === playerId)) {
-                selectedPlayers.push(playerToAdd);
-            }
-        } else {
-            const indexToRemove = selectedPlayers.findIndex(p => p.player_id === playerId);
-            if (indexToRemove > -1) {
-                selectedPlayers.splice(indexToRemove, 1);
-            }
-        }
-        render();
-    };
+	const handlePlayerCheckboxChange = (e) => {
+		const cb = e.target;
+		const playerId = cb.dataset.playerId;
+		if (cb.checked) {
+		const player = localPlayers.find(p => p.player_id === playerId);
+		if (player && !selectedPlayers.some(p => p.player_id === playerId)) {
+			selectedPlayers.push(player);
+			addSelectedPlayerDOM(player);
+			rebuildSelectedListIndices();
+		}
+		} else {
+		const idx = selectedPlayers.findIndex(p => p.player_id === playerId);
+		if (idx > -1) {
+			selectedPlayers.splice(idx, 1);
+			const ul = element.querySelector('#selected-players-list');
+			ul?.children[idx]?.remove();
+			rebuildSelectedListIndices();
+		}
+		}
+		updateSelectionHUD();
+	};
 
-    const handleAddTempPlayer = (e) => {
-        e.preventDefault();
-        const input = e.target.querySelector('#temp-player-name');
-        const playerName = input.value.trim();
-        if (!playerName) return;
-        if (selectedPlayers.some(p => p.name.toLowerCase() === playerName.toLowerCase())) {
-            updateStatus('error', '이미 명단에 추가된 이름입니다.'); render(); return;
-        }
-        selectedPlayers.push({ name: playerName, player_id: `temp_${Date.now()}` });
-        input.value = '';
-        render();
-    };
+	const handleAddTempPlayer = (e) => {
+		e.preventDefault();
+		const input = e.target.querySelector('#temp-player-name');
+		const name = (input.value || '').trim();
+		if (!name) return;
+		if (selectedPlayers.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+		  updateStatus('error', '이미 명단에 추가된 이름입니다.');
+		  return;
+		}
+		const player = { name, player_id: `temp_${Date.now()}` };
+		selectedPlayers.push(player);
+		addSelectedPlayerDOM(player);
+		rebuildSelectedListIndices();
+		updateSelectionHUD();
+		input.value = '';
+	};
 
     const handleRemovePlayer = (e) => {
         const indexToRemove = parseInt(e.target.dataset.index, 10);

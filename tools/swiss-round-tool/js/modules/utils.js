@@ -239,118 +239,108 @@ export function createPairings(players, history) {
  * 최종 순위 및 타이브레이커 계산 (플레이어 객체 지원)
  */
 export function calculateStandings(players, history) {
-	const standings = {};
+  const getName = p => (p && typeof p === 'object') ? p.name : p;
 
-	// 초기화
-	players.forEach((p) => {
-		const name = getPlayerName(p);
-		if (!name) return;
-		standings[name] = {
-			points: 0, matches: 0, wins: 0, losses: 0, draws: 0,
-			gamePoints: 0, totalGames: 0, opponents: []
-		};
-	});
+  const S = {};
+  players.forEach(p => {
+    const n = getName(p);
+    S[n] = {
+      points: 0,
+      matches: 0,
+      wins: 0, losses: 0, draws: 0,
+      // 게임 포인트/가능 포인트(=3*게임수)로 GWP 계산
+      gamePoints: 0,
+      gamePointsPossible: 0,
+      opponents: [], // 'BYE'도 넣되, 나중 평균에서 제외
+    };
+  });
 
-	(history || []).forEach((round) => {
-		const results = Array.isArray(round?.results) ? round.results : [];
-		results.forEach((match) => {
-			const pair = Array.isArray(match?.players) ? match.players : [];
-			const p1Name = getPlayerName(pair?.[0]);
-			const p2Name = getPlayerName(pair?.[1]);
-			const report = match?.report || {};
+  // 라운드 누적
+  history.forEach(round => {
+    (round.results || []).forEach(res => {
+      const [pa, pb] = res.players || [];
+      const A = getName(pa), B = getName(pb);
+      if (!A) return;
+      const r = res.report || {};
 
-			if (!p1Name) return;
+      // BYE
+      if (r.result_type === 'BYE' || B === 'BYE') {
+        S[A].matches += 1;
+        S[A].wins += 1;
+        S[A].points += 3;
+        // BYE는 2-0 승으로 간주: 게임포인트 6, 가능 포인트 3*2=6
+        S[A].gamePoints += 6;
+        S[A].gamePointsPossible += 6;
+        S[A].opponents.push('BYE');
+        return;
+      }
 
-			// 안전 초기화
-			if (!standings[p1Name]) standings[p1Name] = { points: 0, matches: 0, wins: 0, losses: 0, draws: 0, gamePoints: 0, totalGames: 0, opponents: [] };
-			if (p2Name && !standings[p2Name]) standings[p2Name] = { points: 0, matches: 0, wins: 0, losses: 0, draws: 0, gamePoints: 0, totalGames: 0, opponents: [] };
+      if (!B) return;
 
-			// 실매치
-			if (report.result_type !== 'BYE' && p2Name) {
-				standings[p1Name].matches++;
-				standings[p2Name].matches++;
-				standings[p1Name].opponents.push(p2Name);
-				standings[p2Name].opponents.push(p1Name);
+      // 상대 기록
+      S[A].matches += 1;
+      S[B].matches += 1;
+      S[A].opponents.push(B);
+      S[B].opponents.push(A);
 
-				// 매치 승패/무 (게임 스코어 기준)
-				const aw = Number(report.a_wins) || 0;
-				const bw = Number(report.b_wins) || 0;
-				const ad = Number(report.a_draws) || 0;
-				const bd = Number(report.b_draws) || 0;
-				const al = Number(report.a_losses) || 0;
-				const bl = Number(report.b_losses) || 0;
+      // 매치 승/무/패
+      if (r.a_wins > r.b_wins) {
+        S[A].wins += 1; S[B].losses += 1; S[A].points += 3;
+      } else if (r.b_wins > r.a_wins) {
+        S[B].wins += 1; S[A].losses += 1; S[B].points += 3;
+      } else {
+        S[A].draws += 1; S[B].draws += 1; S[A].points += 1; S[B].points += 1;
+      }
 
-				if (aw > bw) {
-					standings[p1Name].wins++;
-					standings[p2Name].losses++;
-				} else if (bw > aw) {
-					standings[p2Name].wins++;
-					standings[p1Name].losses++;
-				} else {
-					standings[p1Name].draws++;
-					standings[p2Name].draws++;
-				}
+      // 게임 포인트/가능 포인트 누적 (GWP용)
+      const aGP = (r.a_wins * 3) + (r.a_draws * 1) + (r.a_losses * 0);
+      const bGP = (r.b_wins * 3) + (r.b_draws * 1) + (r.b_losses * 0);
+      const aGPP = 3 * (r.a_wins + r.a_draws + r.a_losses);
+      const bGPP = 3 * (r.b_wins + r.b_draws + r.b_losses);
 
-				// 게임 포인트 / 총 게임 수
-				standings[p1Name].gamePoints += aw;
-				standings[p1Name].totalGames += (aw + ad + al);
+      S[A].gamePoints += aGP; S[A].gamePointsPossible += aGPP;
+      S[B].gamePoints += bGP; S[B].gamePointsPossible += bGPP;
+    });
+  });
 
-				standings[p2Name].gamePoints += bw;
-				standings[p2Name].totalGames += (bw + bd + bl);
-			} else if (report.result_type === 'BYE') {
-				// BYE 처리
-				standings[p1Name].matches++;
-				standings[p1Name].wins++;
-				standings[p1Name].opponents.push('BYE');
-			}
-		});
-	});
+  // 개인 GWP (0.33 하한)
+  Object.keys(S).forEach(n => {
+    const gp = S[n].gamePoints;
+    const gpp = S[n].gamePointsPossible;
+    const raw = gpp > 0 ? gp / gpp : 0;  // 게임이 하나도 없으면 0으로
+    S[n].gwp = Math.max(0.33, raw);      // MTR: 0.33 floor
+  });
 
-	// 승점 = 3*승 + 1*무
-	players.forEach((p) => {
-		const n = getPlayerName(p);
-		if (!n || !standings[n]) return;
-		standings[n].points = (standings[n].wins * 3) + (standings[n].draws * 1);
-	});
+  // OMW%: 각 상대의 매치 승률 평균 (상대별 0.33 하한, BYE 제외)
+  const MWP = name => {
+    const st = S[name];
+    const denom = st.matches * 3;
+    const raw = denom > 0 ? st.points / denom : 0;
+    return Math.max(0.33, raw);
+  };
+  Object.keys(S).forEach(n => {
+    const opps = S[n].opponents.filter(x => x && x !== 'BYE');
+    if (opps.length === 0) { S[n].omw = 0; return; }
+    const avg = opps.reduce((sum, o) => sum + MWP(o), 0) / opps.length;
+    S[n].omw = avg;
+  });
 
-	// OMW% (상대 매치 승률)
-	players.forEach((p) => {
-		const n = getPlayerName(p);
-		if (!n || !standings[n]) return;
-		const opps = standings[n].opponents.filter((o) => o && o !== 'BYE');
-		if (opps.length === 0) {
-			standings[n].omw = 0;
-			return;
-		}
-		let sum = 0;
-		opps.forEach((opp) => {
-			const os = standings[opp];
-			if (!os || os.matches === 0) {
-				sum += 0.33; // 최소 33% 보정
-				return;
-			}
-			const oppPoints = (os.wins * 3) + (os.draws * 1);
-			const mwp = oppPoints / (os.matches * 3);
-			sum += Math.max(0.33, mwp);
-		});
-		standings[n].omw = sum / opps.length;
-	});
+  // OGW%: 각 상대의 GWP 평균 (상대별 0.33 하한, BYE 제외)
+  Object.keys(S).forEach(n => {
+    const opps = S[n].opponents.filter(x => x && x !== 'BYE');
+    if (opps.length === 0) { S[n].ogw = 0; return; }
+    const avg = opps.reduce((sum, o) => sum + Math.max(0.33, S[o].gwp || 0), 0) / opps.length;
+    S[n].ogw = avg;
+  });
 
-	// GWP (게임 승률)
-	players.forEach((p) => {
-		const n = getPlayerName(p);
-		if (!n || !standings[n]) return;
-		const s = standings[n];
-		s.gwp = s.totalGames > 0 ? (s.gamePoints / s.totalGames) : 0;
-	});
-
-	// 정렬: 승점 > OMW > GWP
-	return Object.entries(standings).sort(([, a], [, b]) => {
-		if (b.points !== a.points) return b.points - a.points;
-		if (b.omw !== a.omw) return b.omw - a.omw;
-		if (b.gwp !== a.gwp) return b.gwp - a.gwp;
-		return 0;
-	});
+  // 최종 정렬: 승점 > OMW > GWP > OGW
+  return Object.entries(S).sort(([,a],[,b]) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.omw   !== a.omw  ) return b.omw   - a.omw;
+    if (b.gwp   !== a.gwp  ) return b.gwp   - a.gwp;
+    if (b.ogw   !== a.ogw  ) return b.ogw   - a.ogw;
+    return 0;
+  });
 }
 
 export { getPlayerStats };
