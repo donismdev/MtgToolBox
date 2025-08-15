@@ -116,7 +116,7 @@
 			"type": ["html", "html_modal"],
 			"path": "tools/swiss-round-tool/",
 			"parent": "TOURNAMENT",
-			"modalIcon": "🏆 Swiss Round Tool",
+			"modalIcon": "🏆 Swiss Round",
 			"hide_header": true,
 			"enable": true
 		},
@@ -125,7 +125,7 @@
 			"path": "tools/etc-mighty-helper/",
 			"parent": "BOARD GAME",
 			"type": ["html", "html_modal"],
-			"modalIcon": "🃏 Mighty Helper",
+			"modalIcon": "🃏 Mighty",
 			"hide_header": true,
 			"enable": true
 		},
@@ -134,7 +134,7 @@
 			"parent" : "BOARD GAME",
 			"path": "tools/etc-thegang-helper/",
 			"type": ["html", "html_modal"],
-			"modalIcon": "🕵️‍♂️ The Gang Helper",
+			"modalIcon": "🕵️‍♂️ The Gang",
 			"hide_header": true,
 			"enable": true
 		},
