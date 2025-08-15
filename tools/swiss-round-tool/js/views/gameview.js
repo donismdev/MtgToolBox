@@ -121,11 +121,17 @@ export default function GameView() {
 				<!-- 하단: 결과 선택 + 확정/수정 -->
 				<div class="actions-bar">
 				<select class="result-type-select" aria-label="결과 유형 선택" ${isFinished ? 'disabled' : ''}>
-					<option value="OK" ${resultType === 'OK' ? 'selected' : ''}>정상 종료</option>
-					<option value="TIME_OUT" ${resultType === 'TIME_OUT' ? 'selected' : ''}>시간 종료</option>
-					<option value="ID" ${resultType === 'ID' ? 'selected' : ''}>의도적 무승부</option>
-					<option value="DROP_A" ${resultType === 'DROP_A' ? 'selected' : ''}>${p1Name} 드랍</option>
-					<option value="DROP_B" ${resultType === 'DROP_B' ? 'selected' : ''}>${p2Name} 드랍</option>
+				<option value="OK" ${resultType === 'OK' ? 'selected' : ''}>정상 종료</option>
+				<option value="TIME_OUT" ${resultType === 'TIME_OUT' ? 'selected' : ''}>시간 종료</option>
+				<option value="ID" ${resultType === 'ID' ? 'selected' : ''}>의도적 무승부</option>
+
+				<!-- A 쪽 드랍/해제 -->
+				<option value="DROP_A" ${resultType === 'DROP_A' ? 'selected' : ''}>${p1Name} 드랍</option>
+				${dropA ? `<option value="UNDO_DROP_A">${p1Name} 드랍해제</option>` : ''}
+
+				<!-- B 쪽 드랍/해제 -->
+				<option value="DROP_B" ${resultType === 'DROP_B' ? 'selected' : ''}>${p2Name} 드랍</option>
+				${dropB ? `<option value="UNDO_DROP_B">${p2Name} 드랍해제</option>` : ''}
 				</select>
 				${!isFinished
 					? `<button class="confirm-btn" title="결과 확정" data-action="confirm-result">✓</button>`
@@ -155,9 +161,21 @@ export default function GameView() {
 		const result = matchResults[matchIndex] || {};
 		let report = result.report || { a_wins: 0, b_wins: 0 };
 		const card = element.querySelector(`.match-card[data-match-index="${matchIndex}"]`);
-		let resultType = card.querySelector('.result-type-select')?.value || 'OK';
 
+		const selectVal = card.querySelector('.result-type-select')?.value || 'OK';
+		let resultType = selectVal;
+
+		const isUndoDrop = (selectVal === 'UNDO_DROP_A' || selectVal === 'UNDO_DROP_B');
+
+		// 승수로 종결 여부 판단
 		const isMatchFinishedByScore = report.a_wins >= winsNeeded || report.b_wins >= winsNeeded;
+
+		// 드랍 해제 선택 시 -> 정규 결과로 되돌림
+		if (isUndoDrop) {
+			resultType = 'OK';
+		}
+
+		// 스코어로 승부 안 났는데 OK면 TIME_OUT으로 보정 (기존 규칙 유지)
 		if (!isMatchFinishedByScore && resultType === 'OK') {
 			resultType = 'TIME_OUT';
 		}
@@ -174,8 +192,9 @@ export default function GameView() {
 		} else if (resultType === 'ID') {
 			Object.assign(finalReport, { a_wins: 0, a_draws: 0, a_losses: 0, b_wins: 0, b_draws: 0, b_losses: 0 });
 		}
-		// DROP_A / DROP_B 는 점수 그대로 유지
+		// DROP_A / DROP_B 는 점수 그대로 유지 (기존과 동일)
 
+		// 승자 결정
 		let winner = null;
 		if (finalReport.a_wins > finalReport.b_wins) winner = getPlayerName(pairings[matchIndex][0]);
 		else if (finalReport.b_wins > finalReport.a_wins) winner = getPlayerName(pairings[matchIndex][1]);
@@ -186,10 +205,11 @@ export default function GameView() {
 			winner,
 			report: finalReport,
 			scores: {
-				[getPlayerName(pairings[matchIndex][0])]: finalReport.a_wins,
-				[getPlayerName(pairings[matchIndex][1])]: finalReport.b_wins
+			[getPlayerName(pairings[matchIndex][0])]: finalReport.a_wins,
+			[getPlayerName(pairings[matchIndex][1])]: finalReport.b_wins
 			}
 		};
+
 		render();
 	};
 
@@ -302,15 +322,13 @@ export default function GameView() {
 		const matchIndex = Number(card.dataset.matchIndex);
 		if (Number.isNaN(matchIndex)) return;
 
-		// 드랍 선택 시 즉시 확정
 		const val = target.value;
-		if (val === 'DROP_A' || val === 'DROP_B') {
-			// 점수는 그대로 두고, handleConfirmResult가 winner/보고서 작성
+
+		// 드랍 및 드랍해제 선택 시 즉시 확정
+		if (val === 'DROP_A' || val === 'DROP_B' || val === 'UNDO_DROP_A' || val === 'UNDO_DROP_B') {
 			handleConfirmResult(matchIndex);
-		} else {
-			// 드랍 이외로 바뀌면 자동 확정하지 않음(기존 UX 유지)
-			// 필요하면 여기서도 자동 확정하도록 handleConfirmResult(matchIndex) 호출 가능
 		}
+		// 그 외(OK/TIME_OUT/ID)는 기존 UX: 수동으로 ✓ 눌러 확정
 	});
 
 	// --- 초기 데이터 로드 ---
