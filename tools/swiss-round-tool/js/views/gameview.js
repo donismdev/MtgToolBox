@@ -7,6 +7,14 @@ function getPlayerName(player) {
 	return player.name || player;
 }
 
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 export default function GameView() {
 	const element = document.createElement('div');
 	const { currentEvent, currentRound } = getState();
@@ -309,19 +317,36 @@ export default function GameView() {
 	} else {
 		// 이전 라운드까지 드랍한 플레이어는 제외하고 페어링
 		const droppedUpToPrev = getDroppedSetUpTo(currentRound - 1);
-		const activePlayers = players.filter((p) => !droppedUpToPrev.has(getPlayerName(p)));
-		pairings = createPairings(activePlayers, history.slice(0, currentRound - 1));
+		let activePlayers = players.filter((p) => !droppedUpToPrev.has(getPlayerName(p)));
+
+		if (currentRound === 1) {
+			// ✅ 1라운드는 무조건 랜덤 페어링
+			const pool = shuffle([...activePlayers]);
+			pairings = [];
+			while (pool.length > 1) {
+			pairings.push([pool.shift(), pool.shift()]);
+			}
+			// 홀수면 마지막 한 명 BYE
+			if (pool.length === 1) {
+			pairings.push([pool[0], 'BYE']);
+			}
+		} else {
+			// ✅ 2라운드부터는 결과(히스토리) 기반
+			pairings = createPairings(activePlayers, history.slice(0, currentRound - 1));
+		}
+
+		// 매치 결과 초기화(+ BYE 자동 확정)
 		pairings.forEach((match, index) => {
 			const [p1, p2] = match;
 			matchResults[index] = { scores: {}, winner: null, report: { a_wins: 0, b_wins: 0 }, players: match, drop: {} };
 			if (getPlayerName(p2) === 'BYE') {
-				matchResults[index] = {
-					players: match,
-					winner: getPlayerName(p1),
-					scores: { [getPlayerName(p1)]: winsNeeded },
-					report: { result_type: 'BYE', a_wins: winsNeeded, a_draws: 0, a_losses: 0, b_wins: 0, b_draws: 0, b_losses: 0 },
-					drop: {}
-				};
+			matchResults[index] = {
+				players: match,
+				winner: getPlayerName(p1),
+				scores: { [getPlayerName(p1)]: winsNeeded },
+				report: { result_type: 'BYE', a_wins: winsNeeded, a_draws: 0, a_losses: 0, b_wins: 0, b_draws: 0, b_losses: 0 },
+				drop: {}
+			};
 			}
 		});
 	}
