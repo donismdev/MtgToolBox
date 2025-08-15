@@ -2,6 +2,7 @@
 	"category_order" : [
 		"MTG",
 		"TOURNAMENT",
+		"MTG ORDER",
 		"GAME",
 		"BOARD GAME",
 		"MISC",
@@ -53,9 +54,10 @@
 			"modalIcon": "🧩",
 			"enable": false
 		},
-
 		{
 			"name": "cardkingdom-order-sorter",
+			"displayName" : "CK Order Sorter",
+			"parent": "MTG ORDER",
 			"description": "CardKingdom 주문 내역을 시각적으로 정리하는 도구입니다.",
 			"path": "tools/cardkingdom-order-sorter/",
 			"type": "html",
@@ -96,7 +98,7 @@
 			"path": "tools/mtg-random-card/",
 			"type": ["html", "html_modal"],
 			"hide_header": true,
-			"modalIcon": "🎴 Random MTG Card",
+			"modalIcon": "🎴 Random Card",
 			"enable": true
 		},
 		{
@@ -157,6 +159,7 @@
 			"path": "tools/etc-poker/",
 			"parent": "ETC",
 			"type": ["html"],
+			"modalIcon": "♠️ Poker",
 			"enable": true
 		},
 		{
@@ -164,6 +167,7 @@
 			"path": "tools/etc-blackjack/",
 			"parent": "ETC",
 			"type": ["html"],
+			"modalIcon": "♠️ Blackjack",
 			"enable": true
 		},
 		{
@@ -173,6 +177,14 @@
 			"type": ["html", "html_modal"],
 			"modalIcon": "🎰 Lotto",
 			"hide_header": true,
+			"enable": true
+		},
+		{
+			"name": "mtg-garth-tool",
+			"path": "tools/mtg-garth-tool/",
+			"parent": "MTG",
+			"type": ["html"],
+			"displayName": "🎡 Garth-One-Eye",
 			"enable": true
 		}
 	]

@@ -29,7 +29,7 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
     // ModalTool 관련 요소
     const modalToolOverlay = document.getElementById('modal-tool-overlay');
     const modalTool = document.getElementById('modal-tool-iframe');
-        
+
     // --- 상태 관리 변수 ---
     let currentOpenModalUrl = null;
     const modalToolDisplayNameMap = {}; // { "url": "icon" } 형식으로 ModalTool 버튼의 텍스트 저장
@@ -65,6 +65,12 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
         return "bi-tools"; // 기본 아이콘
     }
 
+	function getDisplayName(tool){
+		return tool.displayName || tool.modalIcon || tool.name;
+	}
+
+	const hasType = (tool, t) => tool.type === t || (Array.isArray(tool.type) && tool.type.includes(t));
+
     /**
      * 메인 콘텐츠 영역(#content)에 EmbeddedTool을 렌더링합니다.
      * @param {object} tool - 렌더링할 툴 정보 객체
@@ -79,13 +85,13 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 
         let html = "";
 		if (tool.hide_header !== true) {
-			html += `<h1 class="display-5 text-light mb-4">${tool.name}</h1>`;
+			html += `<h1 class="display-5 text-light mb-4">${getDisplayName(tool)}</h1>`;
 		}
         let isIframe = false;
 
         // 툴 타입이 'html' (EmbeddedTool)인 경우 iframe으로 렌더링합니다.
         if (tool.type === "html" || (Array.isArray(tool.type) && tool.type.includes("html"))) {
-            const htmlPath = `${tool.path}${tool.name}.html`;
+            const htmlPath = `${tool.path}${tool.name}.html?v=${Date.now()}`;
             html += `<iframe id="embedded-tool-iframe" src="${htmlPath}" class="w-100" style="height: 100%; border: none; border-radius: 8px;"></iframe>`;
             isIframe = true;
         } else {
@@ -274,21 +280,28 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 
     // --- 데이터 로딩 및 동적 UI 생성 ---
 
-    fetch(toolIndexUrl)
+    fetch(`${toolIndexUrl}?v=${Date.now()}`, { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
             // 활성화된 툴만 필터링 (플랫폼 조건 포함)
             const enabledTools = data.tools.filter(tool => {
-                if (tool.enable === false) return false;
-                if (tool.mobileOnly === true && !isMobile) return false;
-                if (tool.desktopOnly === true && isMobile) return false;
-                return true;
+
+				const bResult = !((tool.enable === false) 
+					|| (tool.mobileOnly === true && !isMobile)
+					|| (tool.desktopOnly === true && isMobile));
+
+				// if (bResult === false) {
+				// 	// console.warn(`툴 비활성화: ${tool.name} (${tool.path}${tool.name}.html)`);
+				// }
+
+				return bResult;
             });
 
-			const modalTools = enabledTools.filter(tool => tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal')));
+			const embeddedTools = enabledTools.filter(t => hasType(t, 'html'));        // 사이드바용
+			const modalTools    = enabledTools.filter(t => hasType(t, 'html_modal'));   // 모달 런처/드롭다운용
 			const categoryOrder = Array.isArray(data.category_order) ? data.category_order : [];
 
-			buildLauncher(modalTools, categoryOrder);
+			buildLauncher(embeddedTools, categoryOrder);
 
 			// 2) 캡션 드롭다운 채우기
 			const captionMenu = document.getElementById('caption-modal-menu');
@@ -306,7 +319,7 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 					const a = document.createElement('a');
 					a.href = '#';
 					a.className = 'dropdown-item';
-					a.textContent = tool.modalIcon || tool.name;
+					a.textContent = getDisplayName(tool);
 
 					a.addEventListener('click', (e) => {
 						e.preventDefault();
@@ -317,13 +330,13 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 					captionMenu.appendChild(li);
 
 					// (선택) 기존 매핑 유지
-					modalToolDisplayNameMap[fullUrl] = tool.modalIcon || tool.name;
+					modalToolDisplayNameMap[fullUrl] = getDisplayName(tool);
 					});
 				}
 			}
 
             // 2. EmbeddedTool 및 기타 툴 목록 (사이드바) 생성
-            const toolsByParent = enabledTools.reduce((acc, tool) => {
+            const toolsByParent = embeddedTools.reduce((acc, tool) => {
                 const parent = tool.parent || "기타";
                 if (!acc[parent]) acc[parent] = [];
                 acc[parent].push(tool);
@@ -351,7 +364,7 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
                     const link = document.createElement('a');
                     link.href = '#';
                     link.className = 'nav-link link-dark';
-                    link.innerHTML = `<i class="bi ${getIconForTool(tool)} me-2"></i>${tool.name}`;
+                    link.innerHTML = `<i class="bi ${getIconForTool(tool)} me-2"></i>${getDisplayName(tool)}`;
                     
                     link.onclick = (e) => {
                         e.preventDefault();
@@ -490,53 +503,80 @@ function closeLauncher(){ document.getElementById('tool-launcher-overlay')?.clas
   ov?.querySelector('[data-launcher="close"]')?.addEventListener('click', closeLauncher);
 })();
 
-	function buildLauncher(tools){
+	function buildLauncher(tools, categoryOrder = []){
 		const byParent = tools.reduce((acc, t)=>{
 			const parent = t.parent || '기타';
 			(acc[parent] ||= []).push(t);
 			return acc;
 		}, {});
+
 		const root = document.getElementById('launcher-accordion');
 		if(!root) return;
 		root.innerHTML = '';
 
+		// 1) 우선순위 맵 (O(1) 조회)
+		const orderMap = new Map(categoryOrder.map((cat, i) => [cat, i]));
+
+		// 2) 출력할 카테고리 목록 구성: 
+		//    - category_order에 나온 순서대로
+		//    - 그 외 남은 카테고리는 이름 오름차순으로 뒤에 붙이기
+		const listed = new Set();
+		const orderedCats = [];
+
+		// 2-1) 명시된 순서
+		categoryOrder.forEach(cat => {
+			if (byParent[cat] && byParent[cat].length > 0) {
+				orderedCats.push(cat);
+				listed.add(cat);
+			}
+		});
+
+		// 2-2) 누락된(=order에 없던) 나머지 카테고리들
+		Object.keys(byParent)
+			.filter(cat => !listed.has(cat) && byParent[cat] && byParent[cat].length > 0)
+			.sort((a, b) => a.localeCompare(b))
+			.forEach(cat => orderedCats.push(cat));
+
 		let idx = 0;
-		for(const [parent, list] of Object.entries(byParent)){
+		for (const parent of orderedCats){
+			const list = byParent[parent];
 			const id = `cat-${idx++}`;
 			const wrap = document.createElement('div');
 			wrap.className = 'cat';
 			wrap.innerHTML = `
-			<button type="button" class="cat-btn" data-cat="${id}">
-				<span>${parent}</span>
-				<i class="bi bi-chevron-down"></i>
-			</button>
-			<div class="tool-grid" id="${id}" style="display:${idx<=3 ? 'grid':'none'};"></div>
+				<button type="button" class="cat-btn" data-cat="${id}">
+					<span>${parent}</span>
+					<i class="bi bi-chevron-down"></i>
+				</button>
+				<div class="tool-grid" id="${id}" style="display:${idx<=3 ? 'grid':'none'};"></div>
 			`;
 			root.appendChild(wrap);
 			const grid = wrap.querySelector('.tool-grid');
 
+			// (선택) 툴 이름 기준 정렬 원하면 아래 한 줄 주석 해제
+			// list.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+
 			list.forEach(tool=>{
-			const btn = document.createElement('button');
-			btn.type = 'button';
-			btn.className = 'tool';
-			btn.textContent = tool.name;
-			btn.addEventListener('click', (e)=>{
-				closeLauncher();
-				if (tool.type === 'html' || (Array.isArray(tool.type) && tool.type.includes('html'))) {
-				renderEmbeddedTool(tool);
-				} else if (tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal'))) {
-				const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
-				openModalTool(fullUrl, tool);
-				} else {
-				// 다른 타입은 임베디드로 처리 (필요시 분기 확장)
-				renderEmbeddedTool(tool);
-				}
-			});
-			grid.appendChild(btn);
+				const btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'tool';
+				btn.textContent = getDisplayName(tool);
+				btn.addEventListener('click', ()=>{
+					closeLauncher();
+					if (tool.type === 'html' || (Array.isArray(tool.type) && tool.type.includes('html'))) {
+						renderEmbeddedTool(tool);
+					} else if (tool.type === 'html_modal' || (Array.isArray(tool.type) && tool.type.includes('html_modal'))) {
+						const fullUrl = `${tool.path}${tool.name}.html?modal=true`;
+						openModalTool(fullUrl, tool);
+					} else {
+						renderEmbeddedTool(tool);
+					}
+				});
+				grid.appendChild(btn);
 			});
 		}
 
-		// 아코디언 토글
+		// 아코디언 토글 유지
 		root.addEventListener('click', (e)=>{
 			const btn = e.target.closest('.cat-btn');
 			if(!btn) return;

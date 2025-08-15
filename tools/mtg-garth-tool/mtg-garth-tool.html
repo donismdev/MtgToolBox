@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>MTG Garth One-Eye Tool</title>
+	<style>
+		:root{
+			--bg:#0f1115; --panel:#171a21; --text:#e6e6e6; --muted:#a7a7a7;
+			--on:#30d158; --off:#555; --border:#2a2f3a;
+			--btn:#232833; --btn-hover:#2b3140; --btn-on:#2a3a2f; --btn-view:#2a2f3a;
+			--radius:14px; --shadow:0 10px 28px rgba(0,0,0,.35);
+			--gap:14px;
+		}
+		html,body{height:100%}
+		body{
+			margin:0; background:var(--bg); color:var(--text);
+			font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Apple SD Gothic Neo, "맑은 고딕", "Malgun Gothic", sans-serif;
+			display:flex; justify-content:center; align-items:flex-start; padding:20px;
+		}
+		.app{ width:min(980px, 96vw); display:flex; flex-direction:column; gap:var(--gap); }
+
+		/* 헤더 */
+		.header{
+			display:flex; align-items:center; gap:var(--gap);
+			justify-content:space-between;
+			background:var(--panel); border:1px solid var(--border);
+			border-radius:var(--radius); padding:14px; box-shadow:var(--shadow);
+		}
+		.header-left{ display:flex; align-items:center; gap:var(--gap); min-width:0; }
+		.header img{
+			width:90px; height:auto; border-radius:10px; border:1px solid var(--border); flex:0 0 auto;
+		}
+		.meta{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+		.title{ font-size:20px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+		.sub{ color:var(--muted) }
+
+		.view-btn{
+			flex:0 0 auto;
+			padding:10px 12px; border-radius:12px; background:var(--btn-view);
+			border:1px solid var(--border); color:#d7e7ff; cursor:pointer;
+		}
+		.view-btn:hover{ filter:brightness(1.1) }
+		.view-btn:active{ transform:translateY(1px) }
+
+		/* 카드 리스트 */
+		.grid{ display:grid; grid-template-columns:1fr; gap:var(--gap); }
+		.card-row{
+			display:flex; align-items:center; gap:10px;
+			background:var(--panel); border:1px solid var(--border);
+			border-radius:var(--radius); padding:10px 12px;
+		}
+		.card-name-btn{
+			flex:1 1 auto;
+			display:inline-flex; align-items:center; justify-content:space-between; gap:10px;
+			padding:12px 14px; background:var(--btn); border:1px solid var(--border);
+			border-radius:12px; color:#cfcfcf; cursor:pointer; user-select:none;
+			transition:transform .05s ease, background .15s ease, border-color .15s ease;
+		}
+		.card-name-btn:hover{ background:var(--btn-hover) }
+		.card-name-btn:active{ transform:translateY(1px) }
+		.card-name-btn[data-state="chosen"]{
+			background:var(--btn-on); border-color:#38533f; color:#e8ffe8;
+			box-shadow:inset 0 0 0 1px rgba(48,209,88,.15);
+			cursor:not-allowed;
+		}
+		.card-name{ font-weight:600; letter-spacing:.2px; }
+		.dot{
+			width:10px; height:10px; border-radius:99px; background:var(--off); flex:0 0 10px;
+			box-shadow:0 0 0 2px rgba(0,0,0,.2) inset;
+		}
+		.card-name-btn[data-state="chosen"] .dot{ background:var(--on) }
+
+		/* 하단 */
+		.footer{ display:flex; justify-content:flex-end; align-items:center; gap:10px; }
+		.reset-btn{
+			padding:10px 14px; border-radius:12px; background:#2b2830; color:#ffdee8;
+			border:1px solid #4a3b45; cursor:pointer;
+		}
+		.reset-btn:hover{ filter:brightness(1.05) }
+		.reset-btn:active{ transform:translateY(1px) }
+
+		/* 라이트박스 */
+		.lightbox-overlay{
+			position:fixed; inset:0; background:rgba(0,0,0,.92);
+			display:none; align-items:center; justify-content:center;
+			z-index:9999;
+		}
+		.lightbox-overlay.show{ display:flex; }
+		.lightbox-overlay img{
+			max-width:96vw; max-height:96vh; border-radius:10px;
+			box-shadow:0 0 24px rgba(0,0,0,.6);
+		}
+		.lightbox-overlay .close-btn{
+			position:absolute; top:20px; right:20px;
+			background:none; border:none; font-size:28px; color:#fff; cursor:pointer;
+		}
+
+		@media (max-width:560px){
+			.header img{ width:76px }
+			.title{ font-size:18px }
+		}
+	</style>
+</head>
+<body>
+	<div class="app">
+		<header class="header">
+			<div class="header-left">
+				<img src="./assets/garth-one-eye.jpg" alt="Garth One-Eye">
+				<div class="meta">
+					<div class="title">Garth One-Eye — Ability Helper</div>
+					<div class="sub">Choose a card name that hasn’t been chosen among the six. Create a copy. You may cast it. (Pay its costs.)</div>
+				</div>
+			</div>
+			<button class="view-btn" id="viewGarthBtn">View</button>
+		</header>
+
+		<section class="grid" id="cardGrid"></section>
+
+		<footer class="footer">
+			<button class="reset-btn" id="resetBtn">Reset (선택 초기화)</button>
+		</footer>
+	</div>
+
+	<!-- 라이트박스 -->
+	<div class="lightbox-overlay" id="lightbox" aria-hidden="true">
+		<button class="close-btn" title="닫기" aria-label="닫기">&times;</button>
+		<img src="" alt="Card Image">
+	</div>
+
+	<script>
+		/* 필수: 버전 로깅 */
+		function version(){ return "1.0.0"; }
+		function printVersion(){ console.log("도구 모음 버전: " + version()); }
+		printVersion();
+
+		/* 이미지 매핑 (경로는 필요한 대로 수정) */
+		const CARD_IMAGES = {
+			"Disenchant": "assets/disenchant.jpg",
+			"Braingeyser": "assets/braingeyser.jpg",
+			"Terror": "assets/terror.jpg",
+			"Shivan Dragon": "assets/shivan-dragon.jpg",
+			"Regrowth": "assets/regrowth.jpg",
+			"Black Lotus": "assets/black-lotus.jpg"
+		};
+
+		const CARD_NAMES = [
+			"Disenchant",
+			"Braingeyser",
+			"Terror",
+			"Shivan Dragon",
+			"Regrowth",
+			"Black Lotus"
+		];
+
+		const chosen = new Set();
+		const grid = document.getElementById("cardGrid");
+		const resetBtn = document.getElementById("resetBtn");
+
+		/* 라이트박스 */
+		const lightbox = document.getElementById('lightbox');
+		const lbImg = lightbox.querySelector('img');
+		const lbClose = lightbox.querySelector('.close-btn');
+
+		function openLightbox(src){
+			lbImg.src = src || "";
+			lightbox.classList.add('show');
+			lightbox.setAttribute('aria-hidden', 'false');
+		}
+		function closeLightbox(){
+			lightbox.classList.remove('show');
+			lightbox.setAttribute('aria-hidden', 'true');
+			lbImg.src = "";
+		}
+		lightbox.addEventListener('click', e=>{
+			if(e.target === lightbox || e.target === lbClose){ closeLightbox(); }
+		}, { passive:true });
+		document.addEventListener('keydown', e=>{
+			if(e.key === 'Escape'){ closeLightbox(); }
+		});
+
+		/* 헤더의 View 버튼: Garth 원본 이미지 전체화면 */
+		document.getElementById('viewGarthBtn').addEventListener('click', ()=>{
+			openLightbox('./assets/garth-one-eye.jpg');
+		});
+
+		/* 유틸 */
+		function el(tag, cls, text){
+			const e = document.createElement(tag);
+			if(cls) e.className = cls;
+			if(text != null) e.textContent = text;
+			return e;
+		}
+		function showCardImage(cardName){
+			const src = CARD_IMAGES[cardName];
+			if(!src){ alert(`이미지 매핑이 없습니다: ${cardName}`); return; }
+			openLightbox(src);
+		}
+
+		/* 카드 행 만들기 */
+		function makeRow(cardName){
+			const row = el("div", "card-row");
+
+			const mainBtn = el("button", "card-name-btn");
+			mainBtn.dataset.state = chosen.has(cardName) ? "chosen" : "idle";
+			mainBtn.title = "카드 선택(한 번만)";
+			mainBtn.addEventListener("click", () => {
+				if(chosen.has(cardName)){ return; }
+				chosen.add(cardName);
+				mainBtn.dataset.state = "chosen";
+			});
+
+			const nameSpan = el("span", "card-name", cardName);
+			const dot = el("span", "dot");
+			mainBtn.appendChild(nameSpan);
+			mainBtn.appendChild(dot);
+
+			const viewBtn = el("button", "view-btn", "View");
+			viewBtn.title = "카드 이미지 전체화면";
+			viewBtn.addEventListener("click", () => showCardImage(cardName));
+
+			row.appendChild(mainBtn);
+			row.appendChild(viewBtn);
+			return row;
+		}
+
+		function render(){
+			grid.innerHTML = "";
+			CARD_NAMES.forEach((name) => grid.appendChild(makeRow(name)));
+		}
+
+		/* Reset: 선택 상태만 초기화 (View 상태는 유지할 필요 없음) */
+		resetBtn.addEventListener("click", () => {
+			chosen.clear();
+			grid.querySelectorAll(".card-name-btn").forEach(btn => btn.dataset.state = "idle");
+		});
+
+		render();
+
+		/* 임베디드/모달 훅 */
+		window.onModalOpen = () => {};
+		window.onEmbeddedOpen = () => {};
+	</script>
+</body>
+</html>
