@@ -45,21 +45,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateDisplay() {
-        diceContainer.innerHTML = '';
-        for (let i = 0; i < currentCount; i++) {
-            if (currentMode === 'dice') {
-                const diceScene = createDice();
-                // Set initial placeholder numbers
-                const faces = diceScene.querySelectorAll('.face');
-                faces.forEach(face => {
-                    face.textContent = Math.floor(Math.random() * currentSides) + 1;
-                });
-                diceContainer.appendChild(diceScene);
-            } else {
-                diceContainer.appendChild(createCoin());
-            }
-        }
-    }
+		diceContainer.innerHTML = '';
+		for (let i = 0; i < currentCount; i++) {
+			if (currentMode === 'dice') {
+				const diceScene = createDice();
+				const faces = diceScene.querySelectorAll('.face');
+				faces.forEach(face => {
+					face.textContent = Math.floor(Math.random() * currentSides) + 1;
+				});
+				diceContainer.appendChild(diceScene);
+			} else {
+				diceContainer.appendChild(createCoin());
+			}
+		}
+
+		// ✅ 개수에 따라 크기 단계 자동 전환
+		diceContainer.classList.remove('compact', 'dense');
+		if (currentCount >= 5 && currentCount <= 6) {
+			diceContainer.classList.add('compact'); // 5~6개 → 살짝 축소
+		} else if (currentCount >= 7) {
+			diceContainer.classList.add('dense');   // 7개 이상 → 한 단계 더 축소
+		}
+
+		// ✅ 가로 흔들림 방지 안전장치 (혹시라도…)
+		diceContainer.scrollLeft = 0;
+	}
 
     function setMode(mode, sides = 6) {
         currentMode = mode;
