@@ -109,6 +109,22 @@
 			max-width: 100%;
 			height: auto;
 		}
+		.fullscreen-overlay{
+			position: fixed; inset: 0;
+			display: none; align-items: center; justify-content: center;
+			background: rgba(0,0,0,0.92);
+			z-index: 9999;
+			touch-action: pinch-zoom; /* 모바일 핀치 확대 허용 */
+		}
+		.fullscreen-overlay.open{ display: flex; }
+		.fullscreen-img{
+			max-width: 98vw; max-height: 98vh;
+			object-fit: contain;
+			border-radius: 10px;
+			box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+			cursor: zoom-out;
+		}
+		#previewImage{ cursor: zoom-in; }
 	</style>
 </head>
 <body>
@@ -138,6 +154,10 @@
 	</div>
 
 	<footer><p>이미지 출처: magiccards.info</p></footer>
+
+	<div id="fsOverlay" class="fullscreen-overlay" aria-hidden="true" role="dialog" aria-label="카드 전체보기">
+		<img id="fsImage" class="fullscreen-img" alt="">
+	</div>
 
 <script>
 	/* ===== 경로/라벨 유틸 ===== */
@@ -509,6 +529,50 @@
 	const viewerTitle   = document.getElementById('viewerTitle');
 	const viewerSub     = document.getElementById('viewerSub');
 	const viewerFrame   = document.getElementById('viewerFrame');
+
+	const fsOverlay = document.getElementById('fsOverlay');
+	const fsImage   = document.getElementById('fsImage');
+
+	function openFullscreen(src, alt='') {
+		if (!src) return;
+		fsImage.src = src;
+		fsImage.alt = alt || '카드 이미지 전체보기';
+		fsOverlay.classList.add('open');
+		fsOverlay.setAttribute('aria-hidden', 'false');
+
+		// 배경 스크롤 잠금 (모바일 포함)
+		document.documentElement.style.overflow = 'hidden';
+		document.body.style.overflow = 'hidden';
+	}
+	function closeFullscreen() {
+		fsOverlay.classList.remove('open');
+		fsOverlay.setAttribute('aria-hidden', 'true');
+
+		document.documentElement.style.overflow = '';
+		document.body.style.overflow = '';
+		// 메모리 절약 원하면 ↓ 주석 해제
+		// fsImage.src = '';
+	}
+
+	// 이미지 클릭 → 전체보기
+	previewImage.addEventListener('click', () => {
+		if (previewImage.src && selItem.value) {
+			openFullscreen(previewImage.src, previewImage.alt);
+		}
+	});
+
+	// 오버레이 아무 곳이나 클릭 → 닫기
+	fsOverlay.addEventListener('click', closeFullscreen);
+
+	// ESC로 닫기
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') { closeFullscreen(); }
+	});
+
+	const _origResize = resizeFrame;
+	window.resizeFrame = function() {
+		if (!fsOverlay.classList.contains('open')) { _origResize(); }
+	};
 
 	/* ===== 디바이스 판별: PC면 true ===== */
 	function isDesktop() {
