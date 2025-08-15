@@ -152,6 +152,7 @@
 			"parent": "MTG",
 			"type": ["html", "html_modal"],
 			"modalIcon": "🗺️ Dungeon",
+			"hide_header": true,
 			"enable": true
 		},
 		{
