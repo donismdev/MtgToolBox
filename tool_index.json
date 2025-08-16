@@ -71,7 +71,7 @@
 			"type": ["html_modal"],
 			"hide_header": true,
 			"enable": true,
-			"modalIcon": "🎮 sudoku"
+			"modalIcon": "🎮 Sudoku"
 		},
 		{
 			"name": "mtg-ability-finder",

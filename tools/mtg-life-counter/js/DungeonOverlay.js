@@ -1,3 +1,5 @@
+import { Player } from './player.js';
+
 const uiText = {
     dungeonTitle: "Undercity",
     enterRoomButton: "Enter",
@@ -264,6 +266,9 @@ export class DungeonOverlay {
                 
                 const currentRoomIndex = this.getCurrentRoomIndex(pData);
                 const currentRoom = undercity.rooms.find(r => r.index === currentRoomIndex);
+
+				window.dataSpace.settings.initiativeIndex = p.getPlayerIndex();
+   				Player.updateAllPlayerIcons();
                 
                 if (currentRoom && currentRoom.nextRoomIndex.length === 0) {
                     pData.completions = (pData.completions || 0) + 1;

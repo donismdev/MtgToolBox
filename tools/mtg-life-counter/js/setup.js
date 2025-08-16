@@ -123,12 +123,8 @@ export function setupEventListeners() {
 
 			initiativeManager.resetAll();
 
-			window.dataSpace.settings.initiativeIndex = -1;
-			window.dataSpace.settings.monarchIndex = -1;
-			Player.updateAllPlayerIcons();
-	
 			window.players.forEach(p => {
-				p.setLife(window.localSettings.lifeMax, true);
+				p.resetLife(window.localSettings.lifeMax, true);
 			});
 			
 			btn.textContent = '라이프 초기화';
@@ -179,7 +175,7 @@ export function setupEventListeners() {
 		
 		const showLifeMenu = () => showMenu(window.lifeMaxMenu, `시작 라이프 (현재 ${window.localSettings.lifeMax})`, [20, 30, 40], (life) => {
             window.localSettings.lifeMax = life;
-            window.players.forEach(p => p.setLife(life));
+            window.players.forEach(p => p.resetLife(life));
             hideAllOverlays();
         });
 

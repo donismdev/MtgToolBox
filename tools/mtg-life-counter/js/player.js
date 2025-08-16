@@ -40,7 +40,6 @@ export class Player {
         window.players.forEach(p => p.updateIcons());
     }
 
-
 	constructor(id, initialLife, initialRotation, themeName) {
 
 		console.log('[Player] constructor - 1');
@@ -756,6 +755,8 @@ export class Player {
 			setting.enabled = true;
 			this.rebuildPlayerButtons(); // UI 업데이트
 		}
+
+		this.updateIcons();
 	}
 
 	executeButtonAction(buttonId) {
@@ -955,6 +956,8 @@ export class Player {
 			}
 		});
         container.appendChild(fragment);
+
+		this.updateIcons();
 	}
 
     showOptionsModal() {
@@ -1117,20 +1120,41 @@ export class Player {
 		}
 	}
 
-	setLife(newLife, isReset = false) {
+	// 라이프 초기화
+	resetLife(newLife, isReset = false) {
         this.life = newLife;
-        if (isReset) {
-            this.lifeLog = [];
 
-			this.counterSettings.forEach(setting => {
-            	setting.count = 0;
-			});
+		// isReset == true : 라이프 초기화버튼
+		// isReset == false : 맥스 라이프 설정 변경
 
-            this.logEvent('reset', { lifeAfter: this.life });
-            this.updateDisplay(true); // Ensure display is updated on reset
-        } else {
-            this.updateDisplay(true);
-        }
+		// 1) 타이머가 동작 중이거나 배지가 보이면 모두 정지/숨김
+		//    (stopTimer(false) == 정지 + 배지 숨김)
+		this.stopTimer(false);
+
+		// 2) Day/Night 배경이 켜져 있었다면 끄기
+		if (this.elements?.area?.classList.contains('celestial-enabled') || this.isNight === true) {
+			this.elements.area.classList.remove('celestial-enabled', 'is-day', 'is-night');
+			this.isNight = false;
+			this.isCelestialTransitioning = false;
+			this.updateCelestialToggleIcon(); // 아이콘도 낮(해) 기준으로 갱신
+		}
+
+		window.dataSpace.settings.initiativeIndex = -1;
+		window.dataSpace.settings.monarchIndex = -1;
+
+		this.updateIcons();
+
+		this.lifeLog = [];
+
+		this.counterSettings.forEach(setting => {
+			setting.count = 0;
+		});
+
+		this.genericCounters.forEach(setting => {
+			setting.count = 0;
+		});
+
+		this.logEvent('reset', { lifeAfter: this.life });
     }
 
 	playIntroAnimation() {

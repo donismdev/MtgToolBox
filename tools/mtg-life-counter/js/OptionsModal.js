@@ -35,10 +35,11 @@ export class OptionsModal {
 		counterTabBtn.className = 'options-tab-button';
 		counterTabBtn.textContent = 'Counters';
 
+		// 옵션 탭 버튼. 기존 Buttons -> Tools
 		const buttonsTabBtn = document.createElement('button');
 		buttonsTabBtn.className = 'options-tab-button active';
-		buttonsTabBtn.textContent = 'Buttons';
-		
+		buttonsTabBtn.textContent = 'Tools';
+
 		tabContainer.append(buttonsTabBtn, counterTabBtn);
 
 		// --- 4. 스크롤될 콘텐츠 영역 생성 ---
