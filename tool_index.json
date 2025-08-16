@@ -147,7 +147,7 @@
 			"path": "tools/mtg-urza-tool/",
 			"parent": "MTG",
 			"type": ["html"],
-			"modalIcon": "Urza Tool",
+			"modalIcon": "❓ Urza Tool",
 			"enable": true,
 			"hide_header": true
 		},
