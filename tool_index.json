@@ -204,6 +204,15 @@
 			"modalIcon": "🏆 Round Viewer",
 			"hide_header": true,
 			"enable": true
+		},
+		{
+			"name": "mtg-archenemy-tool",
+			"path": "tools/mtg-archenemy-tool/",
+			"parent": "MTG",
+			"type": ["html"],
+			"modalIcon": "🃏 Archenemy",
+			"hide_header": true,
+			"enable": true
 		}
 	]
 }
