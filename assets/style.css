@@ -453,6 +453,20 @@ html[data-ad="on"][data-ad-pos="right"] #ad-slot {
 #caption-bar .caption-center{ flex: 1; justify-content: center; }
 #caption-bar .caption-right { justify-content: flex-end; }
 
+#caption-bar .caption-center{
+	min-width:0;				/* flex 수축 허용 */
+	overflow-x:auto;			/* 가로 스크롤 */
+	overflow-y:hidden;
+	white-space:nowrap;			/* 2줄 금지 */
+	-webkit-overflow-scrolling:touch; /* iOS 관성 스크롤 */
+}
+
+#caption-bar .caption-title{
+	display:inline-block;
+	line-height:1.2;			/* 두께 고정, 줄바꿈 방지 */
+	padding:0 .25rem;			/* 좌우 약간의 여백 */
+}
+
 /* 캡션 토글: data-caption="on"이면 보임 */
 html[data-caption="on"] #caption-bar { display: flex; }
 #caption-bar .dropdown-menu { z-index: 1700; }

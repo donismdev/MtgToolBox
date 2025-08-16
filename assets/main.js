@@ -113,6 +113,10 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
 				if (iframeWindow && typeof iframeWindow.onEmbeddedOpen === 'function') {
                     iframeWindow.onEmbeddedOpen();
                 }
+
+				lastEmbeddedTitle = getToolTitle(tool);
+				currentModalTitle = null;
+				setCaptionTitle(lastEmbeddedTitle);
             };
             // 안전장치: 8초 후에도 로딩이 완료되지 않으면 강제로 로더를 숨깁니다.
             setTimeout(() => {
@@ -159,6 +163,9 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
             } catch (e) {
                 console.error("Iframe 접근 오류:", e);
             }
+
+			currentModalTitle = getToolTitle(tool);
+			setCaptionTitle(`${currentModalTitle} (modal)`);
         };
 
         // 모달을 열기 전 UI 상태를 설정합니다.
@@ -198,6 +205,13 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
         modalTool.src = 'about:blank'; // ModalTool 비우기
         clearActiveModalToolButtonState(); // 모든 ModalTool 버튼 활성 상태 해제
         currentOpenModalUrl = null;
+
+		currentModalTitle = null;
+		if (lastEmbeddedTitle && lastEmbeddedTitle.length > 0){
+			setCaptionTitle(lastEmbeddedTitle);
+		} else {
+			setCaptionTitle(DEFAULT_CAPTION);
+		}
 
         // history.back()으로 닫는 경우를 처리합니다.
         if (pushStateBack && history.state?.modal) {
@@ -259,12 +273,7 @@ const defaultAdW = 250;             // 우측 광고 기본 폭(로드 전 임�
     // --- 이벤트 리스너 설정 ---
 
     // 전체화면 버튼
-    document.addEventListener('fullscreenchange', () => {
-		const isFullscreen = !!document.fullscreenElement;
-		const fullscreenIcon = fullscreenBtn.querySelector('i');
-		fullscreenIcon.classList.toggle('bi-arrows-fullscreen', !isFullscreen);
-		fullscreenIcon.classList.toggle('bi-arrows-angle-contract', isFullscreen);
-	});
+    document.addEventListener('fullscreenchange', () => { updateFullscreenIcon() });
 
     // 모달 오버레이 클릭 시 닫기
     // modalToolOverlay.addEventListener('click', (event) => {
@@ -614,3 +623,25 @@ function closeLauncher(){ document.getElementById('tool-launcher-overlay')?.clas
 				setCaption(bShowCaption);
 			}
 		});
+
+// --- 캡션 타이틀 상태 ---
+const DEFAULT_CAPTION = "MtgToolBox";
+let lastEmbeddedTitle = null;	// 마지막 임베디드 툴 제목
+let currentModalTitle = null;	// 현재 열린 모달 제목
+
+function setCaptionTitle(text){
+	const el = document.getElementById("caption-title");
+	if (el == null) return;
+	el.textContent = text || DEFAULT_CAPTION;
+	el.title = el.textContent;		// 길면 툴팁
+	// 긴 제목이 갱신되면 왼쪽부터 보이도록 스크롤 리셋
+	el.parentElement && (el.parentElement.scrollLeft = 0);
+}
+
+function getToolTitle(tool){
+	try { return getDisplayName(tool); } catch { return ""; }
+}
+
+// 초기 기본값
+setCaptionTitle(DEFAULT_CAPTION);
+
