@@ -43,6 +43,17 @@ export default function ResultView() {
 	const rvBuildTSV = () => {
 		const lines = [];
 
+		// ── Event meta (요청: date / best_of / event_format) ──
+		const { date, settings } = currentEvent;
+		const bestOf = settings?.bestOf ?? '';
+		const eventFormat = settings?.format ?? '';
+
+		lines.push(`== Event ==`);
+		lines.push(`date\t${date || ''}`);
+		lines.push(`best_of\t${bestOf}`);
+		lines.push(`event_format\t${eventFormat}`);
+		lines.push(''); // 구분용 빈 줄
+
 		// Standings 섹션
 		lines.push(`== Standings ==`);
 		lines.push(`Rank\tPlayer\tPoints\tW-L-D\tGWP\tOMW%\tDropped`);
