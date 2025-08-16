@@ -69,6 +69,7 @@
 			"path": "tools/game-sudoku/",
 			"parent": "GAME",
 			"type": ["html_modal"],
+			"hide_header": true,
 			"enable": true,
 			"modalIcon": "🎮 sudoku"
 		},
@@ -79,6 +80,7 @@
 			"path": "tools/mtg-ability-finder/",
 			"type": ["html", "html_modal"],
 			"modalIcon": "🔍 MTG Keyword",
+			"hide_header": true,
 			"enable": true
 		},
         {
@@ -107,8 +109,9 @@
 			"description": "다양한 주사위(D4~D20)와 동전 던지기 기능을 지원하는 MTG용 간단한 주사위 도구입니다.",
 			"path": "tools/misc-dice/",
 			"type": ["html", "html_modal"],
-			"enable": true,
-			"modalIcon": "🎲 Dice"
+			"modalIcon": "🎲 Dice",
+			"hide_header": true,
+			"enable": true
 		},
 
 		{
@@ -163,6 +166,7 @@
 			"parent": "ETC",
 			"type": ["html"],
 			"modalIcon": "♠️ Poker",
+			"hide_header": true,
 			"enable": true
 		},
 		{
@@ -189,6 +193,15 @@
 			"parent": "MTG",
 			"type": ["html"],
 			"displayName": "🎡 Garth-One-Eye",
+			"hide_header": true,
+			"enable": true
+		},
+		{
+			"name": "swiss-round-viewer",
+			"path": "tools/swiss-round-viewer/",
+			"parent": "TOURNAMENT",
+			"type": ["html", "html_modal"],
+			"modalIcon": "🏆 Round Viewer",
 			"hide_header": true,
 			"enable": true
 		}

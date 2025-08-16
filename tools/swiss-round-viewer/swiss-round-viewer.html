@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTG Google Sheets Result Viewer</title>
+  <meta name="color-scheme" content="light" />
+  <style>
+    :root{
+      --bg:#0f1115; --panel:#171a21; --text:#e6e6e6; --muted:#a7a7a7; --accent:#4ea1ff; --danger:#ff5d5d;
+      --ok:#4caf50; --warn:#f0ad4e; --card:#1b2230; --border:#2a2f3a; --good:#9fe7a4; --bad:#ff8ea1;
+    }
+    html,body{height:100%}
+    body{ margin:0; background:var(--bg); color:var(--text); font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Pretendard,Apple SD Gothic Neo,Noto Sans KR,Helvetica,Arial,sans-serif; }
+    .container{max-width:1280px; margin:24px auto; padding:0 16px;}
+    h1{font-size:22px; margin:0 0 12px}
+    .small{font-size:12px; color:var(--muted)}
+    .toolbar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:12px 0 18px}
+    .btn{appearance:none; border:1px solid var(--border); background:#202736; color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer}
+    .btn:hover{filter:brightness(1.1)}
+    .btn[disabled]{opacity:.5; cursor:not-allowed}
+    .badge{display:inline-block; padding:2px 8px; border:1px solid var(--border); border-radius:999px; font-size:12px; color:var(--muted)}
+    .grid{display:grid; grid-template-columns:1fr; gap:16px}
+    @media(min-width:1000px){ .grid{ grid-template-columns: 1fr 1fr; } }
+    .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px}
+    .card h2{font-size:16px; margin:0 0 8px}
+    .kv{display:flex; gap:8px; flex-wrap:wrap}
+    .kv div{background:#121824; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px}
+    table{width:100%; border-collapse:collapse; font-size:13px}
+    th, td{border-bottom:1px solid var(--border); padding:8px 10px; text-align:left}
+    th{color:#c9d4e5; background:#141a26; position:sticky; top:0; z-index:1}
+    .table-wrap{max-height:360px; overflow:auto; border:1px solid var(--border); border-radius:12px}
+    .code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background:#111722; border:1px solid var(--border); padding:6px 8px; border-radius:8px}
+    .status-ok{color:var(--ok)} .status-warn{color:var(--warn)} .status-bad{color:var(--danger)} .status-id{color:#7dd3fc}
+    .footer{margin-top:18px; color:var(--muted); font-size:12px}
+
+    /* Tabs */
+    .tabs{display:flex; gap:8px; border-bottom:1px solid var(--border); margin:12px 0}
+    .tab{padding:10px 12px; border:1px solid var(--border); border-bottom:none; border-radius:10px 10px 0 0; background:#141a26; cursor:pointer}
+    .tab.active{background:#0f1523}
+    .tabpanes > div{display:none}
+    .tabpanes > div.active{display:block}
+    .filterrow{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0 12px}
+    select, .input{background:#121824; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 8px}
+    .badge-pill{padding:2px 8px; border:1px solid var(--border); border-radius:999px; font-size:11px;}
+    .rank-1 td{background:rgba(79,192,141,0.08)}
+    .rank-2 td{background:rgba(100,181,246,0.06)}
+    .rank-3 td{background:rgba(255,213,79,0.06)}
+
+    /* Loading overlay */
+    .loading{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); backdrop-filter: blur(2px); z-index:9999}
+    .loading .box{background:var(--card); border:1px solid var(--border); padding:14px 18px; border-radius:12px; display:flex; align-items:center; gap:10px}
+    .loading .dot{width:8px; height:8px; border-radius:50%; background:var(--accent); animation:blip .9s infinite ease-in-out}
+    .loading .dot:nth-child(2){ animation-delay: .15s }
+    .loading .dot:nth-child(3){ animation-delay: .3s }
+    @keyframes blip { 0%,80%,100%{opacity:.2; transform: translateY(0)} 40%{opacity:1; transform: translateY(-4px)} }
+    .loading .loading-text{ font-size:14px; color:var(--text); }
+
+    /* Modal */
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.55); z-index:10000}
+    .modal .panel{background:var(--card); border:1px solid var(--border); border-radius:14px; width:min(960px,92vw); max-height:86vh; overflow:auto; padding:16px}
+    .modal .head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+    .modal .title{font-size:16px; font-weight:600}
+    .modal .close{appearance:none; border:1px solid var(--border); background:#202736; color:var(--text); padding:6px 10px; border-radius:8px; cursor:pointer}
+    .chips{display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 12px}
+    .chip{border:1px solid var(--border); background:#121824; padding:6px 10px; border-radius:999px; font-size:12px}
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading" class="loading"><div class="box"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span class="loading-text">불러오는 중…</span></div></div>
+
+  <!-- Event Detail Modal -->
+  <div id="eventModal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <div class="head">
+        <div class="title" id="eventModalTitle">이벤트 상세</div>
+        <button class="close" id="btnCloseEvent">닫기</button>
+      </div>
+      <div id="eventDetailBody"></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>MTG Google Sheets Result Viewer <span class="small">v<span id="ver">2.2.0</span></span></h1>
+    <div class="toolbar">
+      <button id="btnSignIn" class="btn">Google 로그인</button>
+      <button id="btnSignOut" class="btn" disabled>로그아웃</button>
+      <button id="btnPick" class="btn" disabled>스프레드시트 선택</button>
+      <span id="sheetBadge" class="badge"></span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>모임 정보</h2>
+        <div class="kv" id="kvMeta"></div>
+      </div>
+      <div class="card">
+        <h2>빠른 안내</h2>
+        <div class="kv">
+          <div>좌측 탭에서 스탠딩/상대전적을 조회하세요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="standings">Standings</div>
+      <div class="tab" data-tab="h2h">상대전적</div>
+      <div class="tab" data-tab="players">Players</div>
+      <div class="tab" data-tab="events">Events</div>
+      <div class="tab" data-tab="rounds">Rounds</div>
+    </div>
+
+    <div class="tabpanes">
+      <!-- Standings -->
+      <div id="pane-standings" class="active">
+        <div class="filterrow">
+          <label>포맷</label>
+          <select id="formatFilter"></select>
+          <span class="badge-pill" id="badgeScope">전체 데이터 기준</span>
+        </div>
+        <div class="table-wrap"><table>
+          <thead>
+            <tr><th>#</th><th>Player</th><th>Pts</th><th>W-L-D</th><th>MWP%</th><th>OMW%</th><th>GWP%</th><th>ELO</th></tr>
+          </thead>
+          <tbody id="rowsStandings"></tbody>
+        </table></div>
+      </div>
+
+      <!-- H2H -->
+      <div id="pane-h2h">
+        <div class="filterrow">
+          <select id="selA"></select>
+          <select id="selB"></select>
+          <select id="selFmtH2H"></select>
+          <button id="btnH2H" class="btn">조회</button>
+          <span id="h2hSummary" class="badge-pill"></span>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>event</th><th>round</th><th>format</th><th>A</th><th>a_w-d-l</th><th>B</th><th>b_w-d-l</th><th>type</th></tr></thead>
+          <tbody id="rowsH2H"></tbody>
+        </table></div>
+        <div style="margin-top:8px" class="small">* 최근 10경기 기준</div>
+      </div>
+
+      <!-- Players -->
+      <div id="pane-players">
+        <div class="table-wrap"><table>
+          <thead><tr><th>ID</th><th>Name</th><th>참여횟수(이벤트)</th><th>최초 참여</th><th>최근 참여</th></tr></thead>
+          <tbody id="rowsPlayers"></tbody>
+        </table></div>
+      </div>
+
+      <!-- Events -->
+      <div id="pane-events">
+        <div class="table-wrap"><table>
+          <thead><tr><th>ID</th><th>Date</th><th>참여인원</th><th>Bo</th><th>Format</th><th>상세</th></tr></thead>
+          <tbody id="rowsEvents"></tbody>
+        </table></div>
+      </div>
+
+      <!-- Rounds (raw) -->
+      <div id="pane-rounds">
+        <div class="table-wrap"><table>
+          <thead>
+            <tr><th>event</th><th>round</th><th>table</th><th>A</th><th>a_w</th><th>a_d</th><th>a_l</th><th>B</th><th>b_w</th><th>b_d</th><th>b_l</th><th>type</th></tr>
+          </thead>
+          <tbody id="rowsRounds"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="footer">Google 로그인 → 스프레드시트 선택 → 자동 새로고침. 오류는 브라우저 콘솔 참고.</div>
+  </div>
+
+  <!-- Google APIs -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://www.gstatic.com/picker/1/picker.js"></script>
+
+  <script type="module">
+    import {
+      initGoogleClient, signIn, signOut,
+      openSpreadsheetPicker,
+      getConfigMap, getPlayers, getEvents, getRounds, getCurrentSpreadsheetId
+    } from './js/google.js';
+
+    // ========== Utilities ==========
+    const $ = (s)=>document.querySelector(s);
+    const els = {
+      btnSignIn:$('#btnSignIn'), btnSignOut:$('#btnSignOut'), btnPick:$('#btnPick'),
+      sheetBadge:$('#sheetBadge'), kvMeta:$('#kvMeta'),
+      rowsPlayers:$('#rowsPlayers'), rowsEvents:$('#rowsEvents'), rowsRounds:$('#rowsRounds'),
+      rowsStandings:$('#rowsStandings'), formatFilter:$('#formatFilter'), badgeScope:$('#badgeScope'),
+      tabs:[...document.querySelectorAll('.tab')], panes:{
+        standings:$('#pane-standings'), rounds:$('#pane-rounds'), players:$('#pane-players'), events:$('#pane-events'), h2h:$('#pane-h2h')
+      }, selA:$('#selA'), selB:$('#selB'), rowsH2H:$('#rowsH2H'), h2hSummary:$('#h2hSummary'), selFmtH2H:$('#selFmtH2H'),
+      loading:$('#loading'), eventModal:$('#eventModal'), eventModalTitle:$('#eventModalTitle'), eventDetailBody:$('#eventDetailBody'), btnCloseEvent:$('#btnCloseEvent')
+    };
+
+    const DEFAULT_ELO=1500, K=24;
+    let players=[], events=[], rounds=[];
+
+    const KNOWN_FORMATS = ['all','cube draft','standard','modern','pioneer','legacy','vintage','pauper','commander','custom'];
+
+    function setLoading(on,msg='불러오는 중…'){
+      els.loading.querySelector('.loading-text').textContent = msg;
+      els.loading.style.display = on ? 'flex' : 'none';
+    }
+    function setAuthedUI(authed){
+      els.btnSignOut.disabled = !authed;
+      els.btnPick.disabled = !authed;
+      els.btnSignIn.disabled = authed;
+    }
+    function setSheetBadge(){
+      // const signedIn = !els.btnSignIn.disabled;
+      // const id=getCurrentSpreadsheetId();
+      // if(!signedIn){
+      //   els.sheetBadge.textContent='로그인 필요';
+      //   els.sheetBadge.style.color='#f88';
+      // } else if(!id){
+      //   els.sheetBadge.textContent='시트 선택 안됨';
+      //   els.sheetBadge.style.color='#f0c674';
+      // } else {
+      //   els.sheetBadge.textContent='연결됨';
+      //   els.sheetBadge.style.color='#9fe7a4';
+      // }
+    }
+    function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+    function RESULT_BADGE(t){
+      const up=String(t||'').toUpperCase();
+      if(up==='OK') return `<span class="badge-pill status-ok">OK</span>`;
+      if(up==='TIME_OUT') return `<span class="badge-pill status-warn">TIME_OUT</span>`;
+      if(up==='DROP' || up==='DROPPED') return `<span class="badge-pill status-bad">DROP</span>`;
+      if(up==='ID' || up==='INTENTIONAL_DRAW') return `<span class="badge-pill status-id">ID</span>`;
+      if(up==='BYE') return `<span class="badge-pill">BYE</span>`;
+      return `<span class="badge-pill">${up}</span>`;
+    }
+
+    // Tabs
+    els.tabs.forEach(t=>t.addEventListener('click',()=>{
+      els.tabs.forEach(x=>x.classList.remove('active'));
+      Object.values(els.panes).forEach(p=>p.classList.remove('active'));
+      t.classList.add('active');
+      els.panes[t.dataset.tab].classList.add('active');
+    }));
+
+    // ========== Renderers ==========
+    function renderMeta(meta){
+      els.kvMeta.innerHTML='';
+      const map = { first_game_date:'최초 모임', last_game_date:'최근 모임', event_count:'이벤트 수' };
+      for(const k of Object.keys(map)){
+        const v=meta?.[k]??'';
+        const div=document.createElement('div');
+        div.textContent=`${map[k]}: ${v}`;
+        els.kvMeta.appendChild(div);
+      }
+    }
+
+    function fillFormatFilter(){
+      const formats = new Set(KNOWN_FORMATS);
+      events.forEach(e=>{ if(e.event_format) formats.add(String(e.event_format)); });
+      const arr=[...formats];
+      els.formatFilter.innerHTML = arr.map(f=>`<option value="${escapeHtml(f)}">${f}</option>`).join('');
+      els.formatFilter.value='all';
+      // H2H format select (same options, default all)
+      const arr2=[...formats];
+      els.selFmtH2H.innerHTML = arr2.map(f=>`<option value="${escapeHtml(f)}">${f}</option>`).join('');
+      els.selFmtH2H.value='all';
+    }
+
+    function renderEvents(){
+      const eventIdToParticipants = buildEventParticipants();
+      els.rowsEvents.innerHTML = events.map(e=>{
+        const n = (eventIdToParticipants.get(String(e.event_id))||new Set()).size;
+        return `<tr>
+          <td>${e.event_id}</td><td>${e.date||''}</td><td>${n}명</td><td>${e.best_of||''}</td><td>${escapeHtml(e.event_format||'')}</td>
+          <td><button class="btn btnDetail" data-eid="${e.event_id}">보기</button></td>
+        </tr>`;
+      }).join('');
+      // wire detail buttons
+      document.querySelectorAll('.btnDetail').forEach(btn=>{
+        btn.addEventListener('click',()=> openEventDetail(String(btn.dataset.eid)) );
+      });
+    }
+
+    function renderPlayers(){
+      const {participation, firstDate, lastDate} = buildParticipationIndex();
+      const rows = players.map(p=>{
+        const pid=String(p.player_id);
+        const count = participation.get(pid)?.size || 0;
+        const first = firstDate.get(pid) || '';
+        const last = lastDate.get(pid) || '';
+        return `<tr><td>${p.player_id}</td><td>${escapeHtml(p.name)}</td><td>${count}</td><td>${first}</td><td>${last}</td></tr>`;
+      }).join('');
+      els.rowsPlayers.innerHTML = rows;
+      fillPlayerSelects();
+    }
+
+    function renderRounds(){
+      const nameById=new Map(players.map(p=>[String(p.player_id), p.name]));
+      els.rowsRounds.innerHTML = rounds.map(r=>`<tr>
+        <td>${r.event_id}</td><td>${r.round_no}</td><td>${r.table_no}</td>
+        <td>${escapeHtml(nameById.get(String(r.playerA_id))||r.playerA_id)}</td>
+        <td>${r.a_wins}</td><td>${r.a_draws}</td><td>${r.a_losses}</td>
+        <td>${escapeHtml(nameById.get(String(r.playerB_id))||r.playerB_id||'')}</td>
+        <td>${r.b_wins}</td><td>${r.b_draws}</td><td>${r.b_losses}</td>
+        <td>${RESULT_BADGE(r.result_type)}</td>
+      </tr>`).join('');
+    }
+
+    function fillPlayerSelects(){
+      const opts = players.map(p=>`<option value="${p.player_id}">${escapeHtml(p.name)} (#${p.player_id})</option>`).join('');
+      els.selA.innerHTML = `<option value="">Player A</option>`+opts;
+      els.selB.innerHTML = `<option value="">Player B</option>`+opts;
+    }
+
+    function calcStandings({format='all'}={}){
+      const eventById = new Map(events.map(e=>[String(e.event_id), e]));
+      const filtered = rounds.filter(r=>{
+        const ev=eventById.get(String(r.event_id)); if(!ev) return false;
+        return format==='all' ? true : String(ev.event_format)===format;
+      });
+      const P=new Map(); const opponents=new Map(); const elo=new Map(players.map(p=>[String(p.player_id), DEFAULT_ELO]));
+      const nameById=new Map(players.map(p=>[String(p.player_id), p.name]));
+      function ensure(id){ if(!P.has(id)) P.set(id,{id, name:nameById.get(id)||id, pts:0,mw:0,ml:0,md:0,gw:0,gl:0,gd:0,matches:0,games:0}); if(!opponents.has(id)) opponents.set(id,new Set()); }
+      function addMatch(aId,bId,a_w,a_d,a_l,b_w,b_d,b_l){
+        ensure(aId); if(bId) ensure(bId);
+        const A=P.get(aId),B=bId?P.get(bId):null;
+        const aW=+a_w||0,aD=+a_d||0,aL=+a_l||0; const bW=+b_w||0,bD=+b_d||0,bL=+b_l||0;
+        if(aW>bW){A.pts+=3;A.mw++;B&&B.ml++;} else if(aW<bW){B&& (B.pts+=3); A.ml++; B&&B.mw++;} else {A.pts+=1; B&& (B.pts+=1); A.md++; B&&B.md++;}
+        A.matches++;A.gw+=aW;A.gd+=aD;A.gl+=aL;A.games+=aW+aD+aL;
+        if(B){B.matches++;B.gw+=bW;B.gd+=bD;B.gl+=bL;B.games+=bW+bD+bL; opponents.get(aId).add(bId); opponents.get(bId).add(aId);
+          const Ra=elo.get(aId)||DEFAULT_ELO, Rb=elo.get(bId)||DEFAULT_ELO; const Ea=1/(1+Math.pow(10,(Rb-Ra)/400)), Eb=1-Ea; const aRes = aW>bW?1:(aW<bW?0:0.5); const bRes = 1-aRes; elo.set(aId, Ra + K*(aRes - Ea)); elo.set(bId, Rb + K*(bRes - Eb));
+        }
+      }
+      [...filtered].sort((x,y)=> (Number(x.event_id)-Number(y.event_id))||(Number(x.round_no)-Number(y.round_no))||(Number(x.table_no)-Number(y.table_no))).forEach(r=>{
+        const a=String(r.playerA_id||''); const b= r.playerB_id? String(r.playerB_id): null; addMatch(a,b, r.a_wins,r.a_draws,r.a_losses, r.b_wins,r.b_draws,r.b_losses);
+      });
+      for(const s of P.values()){
+        s.mwp = s.matches>0 ? (s.pts / (s.matches*3)) : 0;
+        s.gwp = s.games>0 ? ((s.gw + 0.5*s.gd) / s.games) : 0;
+        s.elo = Math.round(elo.get(String(s.id))||DEFAULT_ELO);
+      }
+      for(const s of P.values()){
+        const opp=[...(opponents.get(s.id)||[])]; if(opp.length===0){ s.omw=0; continue; }
+        let sum=0; let cnt=0; for(const oid of opp){ const o=P.get(oid); if(!o) continue; const mwp=o.matches>0 ? Math.max(1/3, o.pts/(o.matches*3)) : 1/3; sum+=mwp; cnt++; }
+        s.omw = cnt>0 ? (sum/cnt) : 0;
+      }
+      const arr=[...P.values()].sort((a,b)=> b.pts-a.pts || b.omw-a.omw || b.gwp-a.gwp || (b.elo-a.elo));
+      arr.forEach((s,i)=> s.rank=i+1); return arr;
+    }
+
+    function renderStandings(){
+      const fmt=els.formatFilter.value||'all';
+      const list=calcStandings({format:fmt});
+      els.badgeScope.textContent = fmt==='all' ? '전체 데이터 기준' : `${fmt} 기준`;
+      els.rowsStandings.innerHTML = list.map(s=>`<tr class="rank-${s.rank}">
+        <td>${s.rank}</td><td>${escapeHtml(s.name)}</td><td>${s.pts}</td>
+        <td>${s.mw}-${s.ml}-${s.md}</td>
+        <td>${(s.mwp*100).toFixed(2)}%</td>
+        <td>${(s.omw*100).toFixed(2)}%</td>
+        <td>${(s.gwp*100).toFixed(2)}%</td>
+        <td>${s.elo}</td>
+      </tr>`).join('');
+    }
+
+    function renderH2H(){
+      const a=els.selA.value, b=els.selB.value; const fmt=els.selFmtH2H.value||'all';
+      if(!a||!b||a===b){ els.rowsH2H.innerHTML=''; els.h2hSummary.textContent=''; return; }
+      const eventById=new Map(events.map(e=>[String(e.event_id),e])); const nameById=new Map(players.map(p=>[String(p.player_id), p.name]));
+      let vs = rounds.filter(r=>{ const A=String(r.playerA_id||''); const B=String(r.playerB_id||''); const ev=eventById.get(String(r.event_id)); if(!ev) return false; const okFmt = (fmt==='all') || (String(ev.event_format)===fmt); return okFmt && ((A===a && B===b) || (A===b && B===a)); });
+      vs = vs.slice(-10);
+      let aW=0,aD=0,aL=0,bW=0,bD=0,bL=0;
+      els.rowsH2H.innerHTML = vs.map(r=>{
+        const ev=eventById.get(String(r.event_id)); const A=String(r.playerA_id||'');
+        const row = (A===a) ? r : { event_id:r.event_id, round_no:r.round_no, table_no:r.table_no, playerA_id:r.playerB_id, playerB_id:r.playerA_id, a_wins:r.b_wins, a_draws:r.b_draws, a_losses:r.b_losses, b_wins:r.a_wins, b_draws:r.a_draws, b_losses:r.a_losses, result_type:r.result_type };
+        aW+=+row.a_wins||0; aD+=+row.a_draws||0; aL+=+row.a_losses||0; bW+=+row.b_wins||0; bD+=+row.b_draws||0; bL+=+row.b_losses||0;
+        return `<tr><td>${row.event_id}</td><td>${row.round_no}</td><td>${ev?.event_format||''}</td><td>${escapeHtml(nameById.get(a)||a)}</td><td>${row.a_wins}-${row.a_draws}-${row.a_losses}</td><td>${escapeHtml(nameById.get(b)||b)}</td><td>${row.b_wins}-${row.b_draws}-${row.b_losses}</td><td>${RESULT_BADGE(row.result_type)}</td></tr>`;
+      }).join('');
+      const total=aW+aD+aL; const winRate = total ? (((aW + 0.5*aD) / total) * 100).toFixed(1) : '0.0';
+      els.h2hSummary.textContent = `최근10경기 합계: ${escapeHtml(nameById.get(a)||a)} ${aW}-${aD}-${aL} (${winRate}%)`;
+    }
+
+    // ========== Index builders ==========
+    function buildEventParticipants(){
+      const map = new Map(); // eventId -> Set(playerId)
+      rounds.forEach(r=>{
+        const eid=String(r.event_id);
+        if(!map.has(eid)) map.set(eid,new Set());
+        const S=map.get(eid);
+        if(r.playerA_id) S.add(String(r.playerA_id));
+        if(r.playerB_id) S.add(String(r.playerB_id));
+      });
+      return map;
+    }
+
+    function buildParticipationIndex(){
+      const eventById=new Map(events.map(e=>[String(e.event_id), e]));
+      const participation=new Map(); // pid -> Set(eventId)
+      const firstDate=new Map();
+      const lastDate=new Map();
+      rounds.forEach(r=>{
+        const eid=String(r.event_id); const ev=eventById.get(eid); const d=ev?.date||'';
+        const touch=(pid)=>{
+          if(!pid) return; const k=String(pid);
+          if(!participation.has(k)) participation.set(k,new Set());
+          participation.get(k).add(eid);
+          if(d){
+            if(!firstDate.has(k) || firstDate.get(k)>d) firstDate.set(k,d);
+            if(!lastDate.has(k) || lastDate.get(k)<d) lastDate.set(k,d);
+          }
+        };
+        touch(r.playerA_id); touch(r.playerB_id);
+      });
+      return { participation, firstDate, lastDate };
+    }
+
+    // ========== Event detail modal ==========
+    function openEventDetail(eid){
+      const e = events.find(x=> String(x.event_id)===String(eid));
+      if(!e) return;
+      const nameById=new Map(players.map(p=>[String(p.player_id), p.name]));
+      const vs = rounds.filter(r=> String(r.event_id)===String(eid));
+      const pls = new Set(); vs.forEach(r=>{ if(r.playerA_id) pls.add(String(r.playerA_id)); if(r.playerB_id) pls.add(String(r.playerB_id)); });
+      const plist = [...pls].map(pid=> escapeHtml(nameById.get(pid)||pid)).sort((a,b)=> a.localeCompare(b));
+      els.eventModalTitle.textContent = `이벤트 #${e.event_id} • ${e.date} • ${e.event_format}`;
+      const participantsHtml = `<div class="chips">${plist.map(n=>`<span class="chip">${n}</span>`).join('')||'<span class="chip">(참여자 없음)</span>'}</div>`;
+      const roundsHtml = `<div class="table-wrap" style="margin-top:10px"><table>
+        <thead><tr><th>round</th><th>table</th><th>A</th><th>a_w-d-l</th><th>B</th><th>b_w-d-l</th><th>type</th></tr></thead>
+        <tbody>
+          ${vs.map(r=>{
+            const A=nameById.get(String(r.playerA_id))||r.playerA_id; const B=nameById.get(String(r.playerB_id))||r.playerB_id||'';
+            return `<tr><td>${r.round_no}</td><td>${r.table_no}</td><td>${escapeHtml(A)}</td><td>${r.a_wins}-${r.a_draws}-${r.a_losses}</td><td>${escapeHtml(B)}</td><td>${r.b_wins}-${r.b_draws}-${r.b_losses}</td><td>${RESULT_BADGE(r.result_type)}</td></tr>`;
+          }).join('')}
+        </tbody></table></div>`;
+      els.eventDetailBody.innerHTML = `<div class="kv"><div>참여자 수: ${plist.length}명</div><div>Best of: ${e.best_of||''}</div><div>Format: ${escapeHtml(e.event_format||'')}</div></div>${participantsHtml}${roundsHtml}`;
+      els.eventModal.style.display='flex';
+      els.eventModal.setAttribute('aria-hidden','false');
+    }
+    els.btnCloseEvent.addEventListener('click',()=>{ els.eventModal.style.display='none'; els.eventModal.setAttribute('aria-hidden','true'); });
+    els.eventModal.addEventListener('click',(ev)=>{ if(ev.target===els.eventModal){ els.btnCloseEvent.click(); } });
+
+    // ========== Load/Init ==========
+    async function refreshAll(){
+      setSheetBadge(); setLoading(true,'시트에서 데이터 불러오는 중…');
+      try{
+        const [meta,p,e,r] = await Promise.all([ getConfigMap(), getPlayers(), getEvents(), getRounds() ]);
+        players=p; events=e; rounds=r;
+        renderMeta(meta); renderPlayers(); renderEvents(); renderRounds(); fillFormatFilter(); renderStandings();
+      }catch(err){ console.error(err); alert('데이터 로딩 실패: '+(err?.message||err)); }
+      finally{ setLoading(false); }
+    }
+
+    // Wire up
+    initGoogleClient((signed)=>{ setAuthedUI(signed); setSheetBadge(); });
+    els.btnSignIn.addEventListener('click', ()=>signIn('consent'));
+    els.btnSignOut.addEventListener('click', ()=>{ signOut(); setAuthedUI(false); setSheetBadge(); });
+    els.btnPick.addEventListener('click', async()=>{
+      try{
+        // Picker는 먼저 띄우고(오버레이 없음), 선택이 끝난 뒤 로딩 표시
+        await openSpreadsheetPicker({title:'스프레드시트 선택'});
+        setLoading(true,'시트에서 데이터 불러오는 중…');
+        setSheetBadge();
+        await refreshAll(); // 자동 새로고침
+      }catch(e){
+        console.error(e);
+        alert('선택 취소/실패: '+(e?.message||e));
+      }finally{
+        setLoading(false);
+      }
+    });
+
+    // interactions
+    document.getElementById('formatFilter').addEventListener('change', renderStandings);
+    document.getElementById('btnH2H').addEventListener('click', renderH2H);
+
+  </script>
+</body>
+</html>
