@@ -40,6 +40,10 @@ export class Player {
         window.players.forEach(p => p.updateIcons());
     }
 
+	static closeAllPlayerOptionModals() {
+        window.players.forEach(p => p.hideOptionModal());
+    }
+
 	constructor(id, initialLife, initialRotation, themeName) {
 
 		console.log('[Player] constructor - 1');
@@ -369,8 +373,6 @@ export class Player {
 	}
 
 	toggleCounterForSplitView(counterId, isAdding) {
-		console.log(`[1] toggleCounterForSplitView 호출됨: ${counterId}, 추가?: ${isAdding}`);
-		console.log(`[2] 변경 전 카운터 목록:`, [...this.splitViewCounters]);
 
 		// 대응되는 counter setting 찾기
 		const setting = this.counterSettings.find(s => s.id === counterId);
@@ -380,8 +382,6 @@ export class Player {
 		if (isAdding && index === -1) {
 			if (this.splitViewCounters.length < 4) {
 				this.splitViewCounters.push(counterId);
-				// ⬇️ 헤더 버튼(메인 버튼)에도 노출되도록 enable
-				if (setting != null) setting.enabled = true;
 			} else {
 				alert("분할 화면에는 최대 4개의 카운터만 추가할 수 있습니다.");
 				if (this.optionsModal) {
@@ -391,14 +391,7 @@ export class Player {
 			}
 		} else if (!isAdding && index > -1) {
 			this.splitViewCounters.splice(index, 1);
-			// ⬇️ 분할뷰에서 뺐으면 헤더 버튼도 숨기고 싶다면 꺼준다(필요 없으면 이 줄은 주석)
-			if (setting != null) setting.enabled = false;
 		}
-
-		console.log(`[3] 변경 후 카운터 목록:`, [...this.splitViewCounters]);
-
-		// ⬇️ 헤더 버튼(메인 버튼) 최신화
-		this.rebuildPlayerButtons();
 
 		// 분할 뷰 토글
 		if (this.splitViewCounters.length > 0) {
@@ -966,21 +959,24 @@ export class Player {
             this.elements.area.appendChild(this.optionsModal.elements.optionsModalOverlay);
         }
         
-        // This is a hypothetical addition to your OptionsModal rendering logic.
-        // You would add a checkbox that controls the split view.
-        // For example, in your OptionsModal's `renderGeneralSettings` method:
-        /*
-            const splitViewToggle = document.createElement('input');
-            splitViewToggle.type = 'checkbox';
-            splitViewToggle.checked = this.player.isSplitViewActive;
-            splitViewToggle.addEventListener('change', (e) => {
-                this.player.setSplitViewActive(e.target.checked);
-            });
-            // ... append this toggle to a label and the settings list ...
-        */
+        // 토글 메뉴/오버레이 등은 모두 닫아두기
+		if (typeof hideAllOverlays === 'function') hideAllOverlays();
+
+		// ✅ 센터 버튼들은 숨기고, 중앙 토글만 보이게
+		const centerButtons = document.getElementById('center-buttons');
+		const toggleButtonContainer = document.getElementById('toggle-button-container');
+		if (centerButtons) centerButtons.style.display = 'none';
+		if (toggleButtonContainer) toggleButtonContainer.style.display = 'block';
         
         this.optionsModal.show();
     }
+
+	hideOptionModal()
+	{
+		if (this.optionsModal) {
+			this.optionsModal.hide();
+		}
+	}
 
 	getPlayerIndex() {
 		return window.players.findIndex(p => p.id === this.id);
@@ -1134,10 +1130,11 @@ export class Player {
 		// 2) Day/Night 배경이 켜져 있었다면 끄기
 		if (this.elements?.area?.classList.contains('celestial-enabled') || this.isNight === true) {
 			this.elements.area.classList.remove('celestial-enabled', 'is-day', 'is-night');
-			this.isNight = false;
-			this.isCelestialTransitioning = false;
-			this.updateCelestialToggleIcon(); // 아이콘도 낮(해) 기준으로 갱신
 		}
+
+		this.isNight = false;
+		this.isCelestialTransitioning = false;
+		this.updateCelestialToggleIcon(); // 아이콘도 낮(해) 기준으로 갱신
 
 		window.dataSpace.settings.initiativeIndex = -1;
 		window.dataSpace.settings.monarchIndex = -1;
@@ -1153,6 +1150,25 @@ export class Player {
 		this.genericCounters.forEach(setting => {
 			setting.count = 0;
 		});
+
+		// 잔여 피드백 정리
+		clearTimeout(this.lifeChangeTimeout);
+		this.lifeChangeAmount = 0;
+		if (this.cumulativeFeedbackEl) {
+			this.cumulativeFeedbackEl.remove();
+			this.cumulativeFeedbackEl = null;
+		}
+
+		// 5) 분할 화면 갱신
+		if (this.splitViewCounters.length > 0) {
+			this.rebuildSplitView();   // 선택은 유지, 값만 리셋된 상태로 다시 그림
+			this._activateSplitView();
+		} else {
+			this._deactivateSplitView();
+		}
+
+		this.rebuildPlayerButtons();
+		this.updateDisplay(false);
 
 		this.logEvent('reset', { lifeAfter: this.life });
     }

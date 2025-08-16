@@ -46,6 +46,9 @@ export function hideAllOverlays() {
     }
 
     window.activeUI = null;
+
+	const pickers = document.querySelectorAll('.card-picker-container, .number-picker-container');
+	pickers.forEach(el => el.remove());
 }
 
 export function showMenu(container, labelText, options, onSelect) {
@@ -73,62 +76,111 @@ export function applyLifeFontSize(size) {
     window.localSettings.lifeFontSize = size;
 }
 
+function ensureRangeStyles() {
+  if (document.getElementById('range-fix-styles')) return;
+  const css = `
+  .number-picker-container input[type="range"]{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:18px; background:transparent;
+    opacity:1 !important;               /* 혹시 전역에서 0으로 만든 경우 대비 */
+    pointer-events:auto !important;
+  }
+  /* WebKit (Chrome/Safari/Edge Chromium) */
+  .number-picker-container input[type="range"]::-webkit-slider-runnable-track{
+    height:6px; background:rgba(255,255,255,.28); border-radius:999px;
+  }
+  .number-picker-container input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:18px; height:18px; border-radius:50%; background:#fff; border:none;
+    margin-top:-6px; /* 트랙 높이 6px 기준 중앙 정렬 */
+    box-shadow:0 1px 3px rgba(0,0,0,.35);
+  }
+  /* Firefox */
+  .number-picker-container input[type="range"]::-moz-range-track{
+    height:6px; background:rgba(255,255,255,.28); border-radius:999px;
+  }
+  .number-picker-container input[type="range"]::-moz-range-thumb{
+    width:18px; height:18px; border-radius:50%; background:#fff; border:none;
+    box-shadow:0 1px 3px rgba(0,0,0,.35);
+  }
+  /* Old Edge/IE */
+  .number-picker-container input[type="range"]::-ms-track{
+    height:6px; background:transparent; border-color:transparent; color:transparent;
+  }
+  .number-picker-container input[type="range"]::-ms-fill-lower,
+  .number-picker-container input[type="range"]::-ms-fill-upper{
+    background:rgba(255,255,255,.28); border-radius:999px;
+  }
+  .number-picker-container input[type="range"]::-ms-thumb{
+    width:18px; height:18px; border-radius:50%; background:#fff; border:none;
+  }
+  `;
+  const style = document.createElement('style');
+  style.id = 'range-fix-styles';
+  style.textContent = css;
+  document.head.appendChild(style);
+}
+
 // 1. 숫자 뽑기 UI 생성 및 로직 처리
 export function showNumberSelector() {
-    hideAllOverlays();
-    window.overlay.style.display = 'block';
-    window.activeUI = 'number-picker';
+  hideAllOverlays();
+  window.overlay.style.display = 'block';
+  window.activeUI = 'number-picker';
 
-    const container = document.createElement('div');
-    container.className = 'number-picker-container';
+  // ✅ 슬라이더 스타일 보장
+  ensureRangeStyles();
 
-    const title = document.createElement('div');
-    title.className = 'number-picker-title';
-    title.textContent = '최대 숫자 선택';
-    
-    const sliderWrapper = document.createElement('div');
-    sliderWrapper.className = 'slider-wrapper';
-    
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.min = 0;
-    slider.max = 50;
-    slider.value = 20;
+  const container = document.createElement('div');
+  container.className = 'number-picker-container';
+  // (필요시 가시성 강화용 배경 등)
+  Object.assign(container.style, {
+    position:'fixed', left:'50%', top:'50%', transform:'translate(-50%,-50%)',
+    zIndex:'10002', background:'rgba(24,26,32,.98)', borderRadius:'12px',
+    padding:'16px 18px', boxShadow:'0 12px 40px rgba(0,0,0,.5)',
+    maxWidth:'420px', width:'min(90%, 420px)'
+  });
 
-    const valueDisplay = document.createElement('span');
-    valueDisplay.textContent = slider.value;
-    
-    slider.oninput = () => { valueDisplay.textContent = slider.value; };
-    
-    valueDisplay.onclick = () => {
-        const newValue = prompt('최대값을 직접 입력하세요 (0~999):', slider.value);
-        if (newValue !== null && !isNaN(newValue) && newValue >= 0 && newValue < 1000) {
-            slider.max = newValue;
-            slider.value = newValue;
-            valueDisplay.textContent = newValue;
-        }
-    };
+  const title = document.createElement('div');
+  title.className = 'number-picker-title';
+  title.textContent = '최대 숫자 선택';
 
-    sliderWrapper.append(slider, valueDisplay);
+  const sliderWrapper = document.createElement('div');
+  sliderWrapper.className = 'slider-wrapper';
+  Object.assign(sliderWrapper.style, { width:'100%', gap:'8px', display:'flex', alignItems:'center' });
 
-    const randomButton = document.createElement('button');
-    randomButton.className = 'random-number-button';
-    randomButton.textContent = '뽑기';
-    
-    randomButton.onclick = () => {
-        const max = parseInt(slider.value, 10);
-        const result = Math.floor(Math.random() * (max + 1));
-        
-        // 기존 주사위 UI를 재활용하여 결과 표시
-        // rollDiceVisual 함수가 세 번째 인자로 미리 정해진 결과를 받을 수 있도록 수정이 필요할 수 있습니다.
-        // 예: rollDiceVisual(1, max, [result]);
-        rollDiceVisual(1, max, [result]); // 
-        
-        container.remove(); // 숫자 뽑기 창은 닫기
-    };
-    
-    container.append(title, sliderWrapper, randomButton);
-    document.body.appendChild(container);
+  const slider = document.createElement('input');
+  slider.type = 'range';
+  slider.min = 0; slider.max = 50; slider.value = 20;
+  slider.style.flex = '1 1 auto';   // ✅ 너비 확보
+
+  const valueDisplay = document.createElement('span');
+  valueDisplay.textContent = slider.value;
+
+  slider.oninput = () => { valueDisplay.textContent = slider.value; };
+
+  valueDisplay.onclick = () => {
+    const newValue = prompt('최대값을 직접 입력하세요 (0~999):', slider.value);
+    if (newValue !== null && !isNaN(newValue) && newValue >= 0 && newValue < 1000) {
+      slider.max = newValue;
+      slider.value = newValue;
+      valueDisplay.textContent = newValue;
+    }
+  };
+
+  sliderWrapper.append(slider, valueDisplay);
+
+  const randomButton = document.createElement('button');
+  randomButton.className = 'random-number-button';
+  randomButton.textContent = '뽑기';
+  randomButton.onclick = () => {
+    const max = parseInt(slider.value, 10);
+    const result = Math.floor(Math.random() * (max + 1));
+    rollDiceVisual(1, max, [result]);
+    container.remove(); // 숫자 뽑기 창 닫기 (overlay는 기존 로직대로 다른 곳에서 닫음)
+  };
+
+  container.append(title, sliderWrapper, randomButton);
+  document.body.appendChild(container);
 }
 
 // 2. 카드 뽑기 UI 생성 및 로직 처리

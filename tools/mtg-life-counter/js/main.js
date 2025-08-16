@@ -1,12 +1,16 @@
 import { initializePlayers, setupEventListeners } from './setup.js';
 import { applyLifeFontSize } from './ui.js';
 
+import { Player } from './player.js';
+
+import { hideAllOverlays } from './ui.js';
+
 
 // document.addEventListener('click', (e) => {
 // 	console.log('[click path]', e.composedPath().map(n => n.id || n.className || n.tagName));
 // }, { capture: true });
 
-	document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 		// [수정] 상위 창의 session_data 객체에 안정적으로 연결하고, 없으면 생성합니다.
 		const parentWindow = window.parent || window;
 		if (!parentWindow.session_data) {
@@ -90,6 +94,9 @@ import { applyLifeFontSize } from './ui.js';
     }
 
     window.toggleButton.addEventListener('click', () => {
+
+		Player.closeAllPlayerOptionModals();
+
         const centerButtons = document.getElementById('center-buttons');
         const toggleButtonContainer = document.getElementById('toggle-button-container');
         centerButtons.style.display = 'flex';
@@ -104,6 +111,17 @@ import { applyLifeFontSize } from './ui.js';
 		toggleButtonContainer.style.display = 'block';
 
 		window.overlay.style.display = 'none'; 
+
+		const pickers = document.querySelectorAll('.card-picker-container, .number-picker-container');
+		pickers.forEach(el => el.remove());
+
+		const resetButton = document.getElementById('reset-button');
+	
+		if (resetButton.classList.contains('confirm-animation')) {
+		
+			resetButton.textContent = '라이프 초기화';
+			resetButton.classList.remove('confirm-animation');
+		}
     });
 
     setupEventListeners();
