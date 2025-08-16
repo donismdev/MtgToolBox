@@ -6,25 +6,19 @@
 <meta name="color-scheme" content="light">
 <title>Archenemy Scheme Deck Helper</title>
 <style>
-	:root{
-		--bg:#0f1115; --panel:#171a21; --panel2:#1d2430; --text:#e6e6e6; --muted:#a7b0c0;
-		--accent:#6aa0ff; --accent2:#3bd1a7; --danger:#ff6a6a; --border:#283241; --chip:#232c3a;
-	}
+	:root{ --bg:#0f1115; --panel:#171a21; --panel2:#1d2430; --text:#e6e6e6; --muted:#a7b0c0; --accent:#6aa0ff; --border:#283241; --chip:#232c3a; --danger:#ff6a6a;}
 	html,body{height:100%}
 	body{margin:0; background:var(--bg); color:var(--text); font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Apple SD Gothic Neo, sans-serif;}
 	.container{max-width:1100px; margin:0 auto; padding:14px;}
-
-	/* Header */
 	.header{display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--panel); border-radius:16px; border:1px solid var(--border); position:sticky; top:0; z-index:5}
-	.header h1{font-size:18px; margin:0; letter-spacing:.2px}
+	.header h1{font-size:18px; margin:0}
 	.header .sp{flex:1}
 	.tab-btn{background:var(--chip); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 12px; font-size:14px; cursor:pointer}
 	.tab-btn.active{background:linear-gradient(180deg, #3e7bff, #2a57c7); border-color:#2b57c8}
 	.select{background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 10px; font-size:14px}
-
 	.grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px}
 	.card{background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden}
-	.card .title{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); background:linear-gradient(180deg, rgba(255,255,255,0.03), transparent)}
+	.card .title{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border)}
 	.card .title h2{font-size:16px; margin:0}
 	.card .body{padding:12px 14px}
 	.controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
@@ -33,49 +27,41 @@
 	.btn{background:var(--chip); color:var(--text); border:1px solid var(--border); border-radius:12px; padding:10px 14px; font-size:14px; cursor:pointer}
 	.btn:hover{background:#202b3a}
 	.btn.primary{background:linear-gradient(180deg, #3e7bff, #2a57c7); border-color:#2b57c8}
-	.btn.primary:hover{filter:brightness(1.05)}
-	.btn.success{background:linear-gradient(180deg, #25d59e, #1aa17a); border-color:#1aa17a}
-	.btn.danger{background:linear-gradient(180deg, #ff6a6a, #e35353); border-color:#e35353}
-	.badge{background:#263348; color:#cfe0ff; border:1px solid var(--border); padding:4px 8px; border-radius:999px; font-size:12px}
+	.btn.success{background:linear-gradient(180deg, #25d59e, #1aa17a)}
+	.btn.danger{background:linear-gradient(180deg, #ff6a6a, #e35353)}
 	.small{font-size:12px; color:var(--muted)}
 	.chips{display:flex; gap:6px; flex-wrap:wrap}
-	.chip{background:var(--chip); border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:12px; color:var(--muted)}
+	.chip{background:var(--chip); border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:12px; color:#cfe0ff}
 
-	/* Builder */
 	.builder-rows{display:flex; flex-direction:column; gap:12px}
 	.section{background:var(--panel2); border:1px solid var(--border); border-radius:12px}
 	.section .head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
-	.section .head .title{font-size:13px; color:#cfe0ff}
-	.section .head .right{display:flex; align-items:center; gap:8px}
+	.section .title{font-size:13px; color:#cfe0ff}
 	.section .content{max-height:420px; overflow:auto}
-	.list .row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.04)}
+	.list .row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
 	.list .row:last-child{border-bottom:0}
 	.row .name{font-size:13px; color:#e8eefb; cursor:pointer}
 	.row .actions{display:flex; align-items:center; gap:6px}
 	.count{min-width:28px; text-align:center; font-variant-numeric:tabular-nums}
 
-	/* Sim */
 	.sim-output{display:grid; grid-template-columns:1fr; gap:10px}
 	.revealed{background:var(--panel2); border:1px dashed var(--border); border-radius:12px; padding:12px}
 	.revealed h3{margin:0 0 6px 0; font-size:15px}
-	.thumb{max-width:160px; max-height:230px; width:auto; height:auto; border-radius:8px; border:1px solid var(--border); cursor:pointer; display:block}
+	.thumb{max-width:160px; max-height:230px; border-radius:8px; border:1px solid var(--border); cursor:pointer; display:block}
 	.zone{display:flex; gap:8px; flex-wrap:wrap}
-	.ongoing-item{position:relative; background:#223046; border:1px solid var(--border); color:#d5e4ff; padding:6px 32px 6px 10px; border-radius:10px; font-size:12px; cursor:pointer; line-height:1.2}
+	.ongoing-item{position:relative; background:#223046; border:1px solid var(--border); color:#d5e4ff; padding:6px 32px 6px 10px; border-radius:10px; font-size:12px; cursor:pointer}
 	.ongoing-item .close{position:absolute; right:6px; top:4px; width:20px; height:20px; border-radius:6px; border:1px solid #3b4b66; background:#1b2638; color:#cfe0ff; font-size:14px; line-height:18px; text-align:center; cursor:pointer}
 
-	/* Image Viewer (fullscreen) */
 	.viewer{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.85); z-index:9999}
-	.viewer img{max-width:92vw; max-height:92vh; width:auto; height:auto; border-radius:10px; border:1px solid #2a3a52}
+	.viewer img{max-width:92vw; max-height:92vh; border-radius:10px; border:1px solid #2a3a52}
 	.viewer.show{display:flex}
 	.viewer .close{position:absolute; top:16px; right:16px; font-size:28px; background:#101824; border:1px solid #2a3a52; color:#e6f2ff; border-radius:12px; padding:6px 12px; cursor:pointer}
 
-	/* Toast */
 	.toast{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#101824; color:#e6f2ff; border:1px solid #2a3a52; padding:10px 14px; border-radius:12px; box-shadow:0 6px 22px rgba(0,0,0,.35); z-index:10000}
 </style>
 </head>
 <body>
 <div class="container">
-	<!-- Header -->
 	<div class="header">
 		<h1>Archenemy Scheme Deck Helper</h1>
 		<div class="sp"></div>
@@ -93,10 +79,7 @@
 		<div class="card" id="builderCard">
 			<div class="title">
 				<h2>덱 빌더</h2>
-				<div class="chips">
-					<span class="chip" id="deckStatus">0 / 0</span>
-					<span class="chip" id="slotInfo">슬롯 1</span>
-				</div>
+				<div class="chips"><span class="chip" id="deckStatus">0 / 0</span><span class="chip" id="slotInfo">슬롯 1</span></div>
 			</div>
 			<div class="body">
 				<div class="controls" style="margin-bottom:10px">
@@ -114,22 +97,18 @@
 				</div>
 
 				<div class="builder-rows">
-					<!-- Scheme List -->
 					<div class="section">
 						<div class="head">
 							<div class="title">스킴 목록 (탭=미리보기 / + - = 추가·제거)</div>
-							<div class="right">
-								<button class="btn" id="toggleList">접기</button>
-							</div>
+							<button class="btn" id="toggleList">접기</button>
 						</div>
 						<div class="content list" id="schemeList"></div>
 					</div>
 
-					<!-- Current Deck -->
 					<div class="section">
 						<div class="head">
 							<div class="title">현재 덱</div>
-							<div class="right">
+							<div>
 								<button class="btn success" id="saveDeck">저장</button>
 								<button class="btn" id="loadDeck">불러오기</button>
 								<button class="btn danger" id="clearDeck">초기화</button>
@@ -145,10 +124,7 @@
 		<div class="card" id="simCard" style="display:none">
 			<div class="title">
 				<h2>시뮬레이션</h2>
-				<div class="chips">
-					<!-- 남은 L / 전체 T · 버린 D  (T는 ‘현재 슬롯의 덱 장수 - Ongoing 수’) -->
-					<span class="chip" id="simSummary">남은 0 / 전체 0 · 버린 0</span>
-				</div>
+				<div class="chips"><span class="chip" id="simSummary">남은 0 / 전체 0 · 버린 0</span></div>
 			</div>
 			<div class="body">
 				<div class="controls" style="margin-bottom:10px">
@@ -158,7 +134,7 @@
 				</div>
 
 				<div class="sim-output">
-					<div class="revealed" id="revealedBox">
+					<div class="revealed">
 						<h3>현재 공개된 스킴</h3>
 						<div id="revealedName" class="small" style="margin-bottom:6px">(없음)</div>
 						<img id="revealedThumb" class="thumb" style="display:none" alt="revealed">
@@ -172,7 +148,7 @@
 							<div class="small">Ongoing</div>
 							<div id="ongoingZone"></div>
 						</div>
-						<!-- 버린 리스트는 미표시 (숫자만 칩에 노출) -->
+						<!-- 버린 목록은 표시하지 않고 숫자만 칩에 표시 -->
 					</div>
 				</div>
 			</div>
@@ -187,9 +163,8 @@
 </div>
 
 <script>
-/* ===== Version ===== */
-function version(){ return "1.3.0"; }
-function printVersion(){ console.log("도구 모음 버전: " + version()); }
+function version(){ return "1.4.0"; }
+function printVersion(){ console.log("도구 모음 버전:", version()); }
 
 /* ===== Data ===== */
 
@@ -298,24 +273,24 @@ function printVersion(){ console.log("도구 모음 버전: " + version()); }
 			"Your Will Is Not Your Own.jpg"
 		];
 	
-const DATA_SOURCES = (window.DATA_SOURCES && Array.isArray(window.DATA_SOURCES) && window.DATA_SOURCES.length>0)
-	? window.DATA_SOURCES : DEFAULT_DATA_SOURCES;
+const DATA_SOURCES = (window.DATA_SOURCES && Array.isArray(window.DATA_SOURCES) && window.DATA_SOURCES.length>0) ? window.DATA_SOURCES : DEFAULT_DATA_SOURCES;
 
 /* ===== State ===== */
 const state = {
-	builder:{ maxSize:10, maxCopies:1, name:"", slot:1, cards:{} },
+	builder:{ maxSize:10, maxCopies:1, name:"", slot:1, cards:{} }, // cards: { "index": count }
 	sim:null,
 	ui:{ listCollapsed:false }
 };
 
 /* ===== Utils ===== */
 const $ = (id)=>document.getElementById(id);
-const nameOf = (file)=>file.replace(/\.jpg$/i, "");
-const imgPath = (file)=>`assets/${file}`;
 const deckKey = (slot)=>`archenemy_scheme_deck_slot_${slot}`;
+const lastSlotKey = `archenemy_last_slot`;
+const imgPath = (file)=>`assets/${file}`;
+const nameOf = (file)=>file.replace(/\.jpg$/i, "");
 function totalCards(){ return Object.values(state.builder.cards).reduce((a,b)=>a+b,0); }
-function toast(msg, ms=1400){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms); }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function toast(msg, ms=1400){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms); }
 
 /* ===== Builder Render ===== */
 function updateDeckStatus(){
@@ -325,113 +300,101 @@ function updateDeckStatus(){
 function renderSchemeList(){
 	const wrap = $("schemeList"); wrap.innerHTML = "";
 	if(state.ui.listCollapsed){
-		const mini = document.createElement("div");
-		mini.style.padding="10px"; mini.className="small";
-		mini.textContent = "목록이 접혀 있습니다 (펴기 버튼으로 열기)";
-		wrap.append(mini); return;
+		const mini=document.createElement("div"); mini.style.padding="10px"; mini.className="small";
+		mini.textContent="목록이 접혀 있습니다 (펴기 버튼으로 열기)"; wrap.append(mini); return;
 	}
 	const q = $("search").value.toLowerCase();
 	DATA_SOURCES.forEach((f, idx)=>{
 		const nm = nameOf(f);
 		if(q && !nm.toLowerCase().includes(q)) return;
 		const row = document.createElement("div"); row.className="row";
-		const left = document.createElement("div"); left.className="name"; left.textContent=nm;
-		left.title="클릭: 이미지 미리보기"; left.onclick = ()=> openViewer(imgPath(f));
+		const left = document.createElement("div"); left.className="name"; left.textContent=nm; left.title="클릭: 이미지 미리보기";
+		left.onclick = ()=> openViewer(imgPath(f));
 		const right = document.createElement("div"); right.className="actions";
 		const minus = document.createElement("button"); minus.className="btn"; minus.textContent="-";
 		const cnt = document.createElement("div"); cnt.className="count"; cnt.textContent=state.builder.cards[idx]||0;
 		const plus = document.createElement("button"); plus.className="btn"; plus.textContent="+";
 		minus.onclick = ()=> adjustCard(idx, -1, cnt);
 		plus.onclick = ()=> adjustCard(idx, +1, cnt);
-		right.append(minus, cnt, plus);
-		row.append(left, right); wrap.append(row);
+		right.append(minus, cnt, plus); row.append(left, right); wrap.append(row);
 	});
 }
 function renderDeckList(){
 	const wrap = $("deckList"); wrap.innerHTML="";
 	const entries = Object.entries(state.builder.cards).filter(([i,c])=>c>0).sort((a,b)=>Number(a[0])-Number(b[0]));
 	entries.forEach(([i,c])=>{
-		const idx=Number(i); const nm = nameOf(DATA_SOURCES[idx]);
-		const row = document.createElement("div"); row.className="row";
-		const left = document.createElement("div"); left.className="name"; left.textContent=nm;
-		left.title="클릭: 이미지 미리보기"; left.onclick = ()=> openViewer(imgPath(DATA_SOURCES[idx]));
-		const right = document.createElement("div"); right.className="actions";
-		const minus = document.createElement("button"); minus.className="btn"; minus.textContent="-";
-		const cnt = document.createElement("div"); cnt.className="count"; cnt.textContent=c;
-		const plus = document.createElement("button"); plus.className="btn"; plus.textContent="+";
-		minus.onclick = ()=> adjustCard(idx, -1, cnt);
-		plus.onclick = ()=> adjustCard(idx, +1, cnt);
-		right.append(minus, cnt, plus);
-		row.append(left, right); wrap.append(row);
+		const idx=Number(i), nm=nameOf(DATA_SOURCES[idx]);
+		const row=document.createElement("div"); row.className="row";
+		const left=document.createElement("div"); left.className="name"; left.textContent=nm; left.onclick=()=> openViewer(imgPath(DATA_SOURCES[idx]));
+		const right=document.createElement("div"); right.className="actions";
+		const minus=document.createElement("button"); minus.className="btn"; minus.textContent="-";
+		const cnt=document.createElement("div"); cnt.className="count"; cnt.textContent=c;
+		const plus=document.createElement("button"); plus.className="btn"; plus.textContent="+";
+		minus.onclick=()=> adjustCard(idx, -1, cnt);
+		plus.onclick=()=> adjustCard(idx, +1, cnt);
+		right.append(minus,cnt,plus); row.append(left,right); wrap.append(row);
 	});
 }
 function adjustCard(idx, delta, cntEl){
-	const maxSize = state.builder.maxSize;
-	const maxCopies = state.builder.maxCopies;
-	const currentTotal = totalCards();
-	const current = state.builder.cards[idx] || 0;
+	const maxSize=state.builder.maxSize, maxCopies=state.builder.maxCopies;
+	const currentTotal=totalCards(), current=state.builder.cards[idx]||0;
 	if(delta>0){
-		if(currentTotal >= maxSize) return;
-		if(current >= maxCopies) return;
-		state.builder.cards[idx] = current + 1;
+		if(currentTotal>=maxSize) return;
+		if(current>=maxCopies) return;
+		state.builder.cards[idx]=current+1;
 	}else{
 		if(current<=0) return;
-		state.builder.cards[idx] = current - 1;
-		if(state.builder.cards[idx]===0) delete state.builder.cards[idx];
+		state.builder.cards[idx]=current-1; if(state.builder.cards[idx]===0) delete state.builder.cards[idx];
 	}
-	if(cntEl) cntEl.textContent = state.builder.cards[idx] || 0;
-	updateDeckStatus();
-	renderDeckList();
+	if(cntEl) cntEl.textContent=state.builder.cards[idx]||0;
+	updateDeckStatus(); renderDeckList();
 }
 
-/* ===== Save/Load/Clear ===== */
+/* ===== Save / Load ===== */
 function saveDeck(){
-	const payload = {
-		name: state.builder.name || `Slot ${state.builder.slot}`,
-		maxSize: state.builder.maxSize,
-		maxCopies: state.builder.maxCopies,
-		cards: state.builder.cards
-	};
-	localStorage.setItem(deckKey(state.builder.slot), JSON.stringify(payload));
-	toast(`슬롯 ${state.builder.slot}에 저장됨`);
+	const slot = state.builder.slot;
+	const payload={ name: state.builder.name||`Slot ${slot}`, maxSize: state.builder.maxSize, maxCopies: state.builder.maxCopies, cards: state.builder.cards };
+	localStorage.setItem(deckKey(slot), JSON.stringify(payload));
+	localStorage.setItem(lastSlotKey, String(slot)); // 마지막 슬롯 기억
+	toast(`슬롯 ${slot}에 저장됨`);
 }
-function loadDeck(slot = state.builder.slot){
+function loadDeck(slot){
 	const raw = localStorage.getItem(deckKey(slot));
-	if(!raw){ toast(`슬롯 ${slot}에 저장된 덱이 없습니다`); return false; }
+	$("deckSlot").value = String(slot);
+	state.builder.slot = slot;
+	if(!raw){
+		// 빈 덱으로 초기화
+		state.builder.name = `Slot ${slot}`;
+		state.builder.maxSize = 10;
+		state.builder.maxCopies = 1;
+		state.builder.cards = {};
+		$("deckName").value = state.builder.name;
+		$("maxSize").value = state.builder.maxSize;
+		$("maxCopies").value = state.builder.maxCopies;
+		updateDeckStatus(); renderSchemeList(); renderDeckList();
+		return false;
+	}
 	try{
 		const data = JSON.parse(raw);
-		state.builder.slot = slot;
 		state.builder.name = data.name || `Slot ${slot}`;
 		state.builder.maxSize = Number(data.maxSize)||10;
 		state.builder.maxCopies = Number(data.maxCopies)||1;
 		state.builder.cards = data.cards || {};
-		$("deckSlot").value = String(slot);
 		$("deckName").value = state.builder.name;
 		$("maxSize").value = state.builder.maxSize;
 		$("maxCopies").value = state.builder.maxCopies;
-		fullRerender();
-		toast(`슬롯 ${slot} 불러오기 완료`);
+		updateDeckStatus(); renderSchemeList(); renderDeckList();
 		return true;
 	}catch(e){
 		console.error(e);
-		toast("불러오기 실패");
 		return false;
 	}
 }
-function clearDeck(){
-	state.builder.cards = {};
-	fullRerender();
-}
 
-/* ===== Simulator ===== */
-function buildSimDeckArrayFromBuilder(){
+/* ===== Sim ===== */
+function buildSimDeckArray(){
 	const arr=[]; Object.entries(state.builder.cards).forEach(([i,c])=>{ for(let k=0;k<c;k++) arr.push(Number(i)); });
 	return arr;
-}
-function effectiveTotal(){ // 전체 T = 현재 슬롯 덱 장수 - ongoing 수
-	const base = totalCards();
-	const og = state.sim ? state.sim.ongoing.length : 0;
-	return Math.max(0, base - og);
 }
 function setSimButtons(running){
 	$("nextScheme").disabled = !running;
@@ -439,22 +402,22 @@ function setSimButtons(running){
 	$("markOngoing").disabled = true;
 	$("discardNow").disabled = true;
 }
+function effectiveTotal(){ // 전체 T = 빌더 덱 총장수 - ongoing 수
+	const base = totalCards();
+	const og = state.sim ? state.sim.ongoing.length : 0;
+	return Math.max(0, base - og);
+}
 function updateSimSummary(){
 	const left = state.sim ? state.sim.library.length : 0;
 	const disc = state.sim ? state.sim.discard.length : 0;
-	const totalT = effectiveTotal();
-	$("simSummary").textContent = `남은 ${left} / 전체 ${totalT} · 버린 ${disc}`;
+	$("simSummary").textContent = `남은 ${left} / 전체 ${effectiveTotal()} · 버린 ${disc}`;
 }
 function startSim(){
-	const list = buildSimDeckArrayFromBuilder();
-	if(list.length===0){ toast("덱이 비었습니다"); return; }
-	state.sim = {
-		slot: state.builder.slot,
-		library: shuffle(list.slice()),
-		discard: [],
-		ongoing: [],
-		current: null
-	};
+	const list = buildSimDeckArray();
+	if(list.length===0){ toast("덱이 비었습니다"); // 시작 불가, 완전 리셋 표기 방지
+		state.sim = null; setSimButtons(false); setRevealed(null); $("ongoingZone").innerHTML=""; updateSimSummary(); return;
+	}
+	state.sim = { slot: state.builder.slot, library: shuffle(list.slice()), discard: [], ongoing: [], current: null };
 	setSimButtons(true);
 	setRevealed(null);
 	$("ongoingZone").innerHTML = "";
@@ -469,28 +432,19 @@ function resetSim(){
 	updateSimSummary();
 }
 function reshuffleExcludingOngoingAndDrawOne(){
-	// 새 덱 = 현재 슬롯의 빌더 덱(전체) - ongoing 개수만큼 해당 인덱스를 제외
-	// discard/기존 library는 모두 초기화해서 반영
-	let base = buildSimDeckArrayFromBuilder(); // 전체 복원
-	// ongoing 제거: ongoing 배열의 각 idx마다 1장씩 제거
+	let base = buildSimDeckArray(); // 전체 복원
 	state.sim.ongoing.forEach((ogIdx)=>{
 		const pos = base.indexOf(ogIdx);
-		if(pos>=0) base.splice(pos, 1);
+		if(pos>=0) base.splice(pos,1);
 	});
-	state.sim.discard = [];         // 버린 더미 초기화
-	state.sim.library = shuffle(base); // 새 라이브러리
+	state.sim.discard = [];
+	state.sim.library = shuffle(base);
 	toast("덱 리셋 (Ongoing 제외)");
-	// 바로 1장 뽑기
-	if(state.sim.library.length===0){
-		updateSimSummary();
-		toast("리셋했지만 남은 카드가 없습니다");
-		return null;
-	}
+	if(state.sim.library.length===0){ updateSimSummary(); toast("리셋했지만 남은 카드가 없습니다"); return null; }
 	return state.sim.library.pop();
 }
 function nextScheme(){
 	if(!state.sim) return;
-
 	let idx = null;
 	if(state.sim.library.length>0){
 		idx = state.sim.library.pop();
@@ -498,121 +452,78 @@ function nextScheme(){
 		idx = reshuffleExcludingOngoingAndDrawOne();
 		if(idx===null) return;
 	}
-
-	setRevealed(idx);
-	updateSimSummary();
+	setRevealed(idx); updateSimSummary();
 }
 function setRevealed(idx){
-	if(!$("revealedName")) return;
-	if(idx===null){
-		state.sim && (state.sim.current=null);
-		$("revealedName").textContent="(없음)";
-		const th=$("revealedThumb"); th.style.display="none"; th.src="";
-		$("markOngoing").disabled = true;
-		$("discardNow").disabled = true;
-		return;
-	}
+	const nameEl=$("revealedName"), th=$("revealedThumb");
+	if(idx===null){ if(state.sim) state.sim.current=null; nameEl.textContent="(없음)"; th.style.display="none"; th.src=""; $("markOngoing").disabled=true; $("discardNow").disabled=true; return; }
 	state.sim.current = idx;
 	const file = DATA_SOURCES[idx];
-	$("revealedName").textContent = nameOf(file);
-	const th=$("revealedThumb");
-	th.src = imgPath(file);
-	th.style.display="block";
-	th.onclick = ()=> openViewer(imgPath(file));
-	$("markOngoing").disabled = false;
-	$("discardNow").disabled = false;
+	nameEl.textContent = nameOf(file);
+	th.src = imgPath(file); th.style.display="block"; th.onclick = ()=> openViewer(imgPath(file));
+	$("markOngoing").disabled=false; $("discardNow").disabled=false;
 }
 function renderOngoing(){
 	const oz=$("ongoingZone"); oz.innerHTML="";
-	(state.sim?.ongoing||[]).forEach((idx, k)=>{
-		const file = DATA_SOURCES[idx];
-		const item=document.createElement("div"); item.className="ongoing-item"; item.title="클릭: 이미지 미리보기";
-		item.textContent = nameOf(file);
-		item.onclick = (e)=>{ if(e.target.classList.contains("close")) return; openViewer(imgPath(file)); };
+	(state.sim?.ongoing||[]).forEach((idx,k)=>{
+		const file=DATA_SOURCES[idx];
+		const item=document.createElement("div"); item.className="ongoing-item"; item.textContent=nameOf(file);
+		item.title="클릭: 이미지 미리보기"; item.onclick=(e)=>{ if(e.target.classList.contains("close")) return; openViewer(imgPath(file)); };
 		const x=document.createElement("button"); x.className="close"; x.textContent="×"; x.title="버리기";
-		x.onclick = (e)=>{ e.stopPropagation(); abandonOngoingAt(k); };
+		x.onclick=(e)=>{ e.stopPropagation(); abandonOngoingAt(k); };
 		item.append(x); oz.append(item);
 	});
-	updateSimSummary(); // ongoing 변동 시 전체 T 재계산
+	updateSimSummary();
 }
 function abandonOngoingAt(index){
 	if(!state.sim) return;
-	const [idx] = state.sim.ongoing.splice(index,1);
+	const [idx]=state.sim.ongoing.splice(index,1);
 	state.sim.discard.push(idx);
 	renderOngoing();
-	updateSimSummary();
-}
-function markOngoing(){
-	if(!state.sim || state.sim.current===null) return;
-	state.sim.ongoing.push(state.sim.current);
-	renderOngoing();
-	setRevealed(null);
-}
-function discardNow(){
-	if(!state.sim || state.sim.current===null) return;
-	state.sim.discard.push(state.sim.current);
-	updateSimSummary();
-	setRevealed(null);
 }
 
 /* ===== Image Viewer ===== */
-function openViewer(src){
-	const v=$("imgViewer"), img=$("viewerImg");
-	img.src = src; v.classList.add("show");
+function openViewer(src){ const v=$("imgViewer"), img=$("viewerImg"); img.src=src; v.classList.add("show"); }
+function closeViewer(){ $("imgViewer").classList.remove("show"); $("viewerImg").src=""; }
+
+/* ===== Tabs & Slot ===== */
+function setActiveTab(tab){
+	const isBuilder = (tab==="builder");
+	$("tabBuilder").classList.toggle("active", isBuilder);
+	$("tabSim").classList.toggle("active", !isBuilder);
+	$("builderCard").style.display = isBuilder ? "" : "none";
+	$("simCard").style.display = isBuilder ? "none" : "";
 }
-function closeViewer(){
-	$("imgViewer").classList.remove("show");
-	$("viewerImg").src="";
+function hardResetToSlot(slot){
+	// 1) 시뮬 완전 리셋
+	resetSim(); // 이 함수가 버튼 상태/요약/뷰 정리
+	// 2) 빌더 로딩 (없으면 빈 덱)
+	loadDeck(slot);
+	// 3) 저장된 마지막 슬롯 갱신
+	localStorage.setItem(lastSlotKey, String(slot));
+	// 4) 헤더 드롭다운 동기
+	$("deckSlot").value = String(slot);
+	toast(`슬롯 ${slot}으로 전환 및 전체 리셋`);
 }
 
-/* ===== Tabs & Slot Sync ===== */
-function setActiveTab(tab){ // "builder" | "sim"
-	const b = (tab==="builder");
-	$("tabBuilder").classList.toggle("active", b);
-	$("tabSim").classList.toggle("active", !b);
-	$("builderCard").style.display = b ? "" : "none";
-	$("simCard").style.display = b ? "none" : "";
-}
-function applySlot(slot){
-	// 빌더에 즉시 적용 + 자동 로드 시도
-	const ok = loadDeck(slot);
-	if(!ok){
-		state.builder.slot = slot;
-		$("deckSlot").value = String(slot);
-		updateDeckStatus();
-	}
-	// 시뮬 표기(요약칩)는 새 슬롯의 덱 장수 기반으로 갱신
-	updateSimSummary();
-	if(state.sim){ toast(`슬롯 ${slot}으로 전환됨 (진행 중인 시뮬은 유지)`); }
-}
-
-/* ===== Rerender helpers ===== */
-function fullRerender(){
-	updateDeckStatus();
-	renderSchemeList();
-	renderDeckList();
-	renderOngoing();
-	updateSimSummary();
-}
-
-/* ===== Wire Up ===== */
+/* ===== Init & Events ===== */
 document.addEventListener("DOMContentLoaded", ()=>{
 	printVersion();
 
 	$("tabBuilder").onclick = ()=> setActiveTab("builder");
 	$("tabSim").onclick = ()=> setActiveTab("sim");
-	$("deckSlot").addEventListener("change", (e)=> applySlot(Number(e.target.value)));
+	$("deckSlot").addEventListener("change", (e)=> hardResetToSlot(Number(e.target.value)));
 
 	$("deckName").addEventListener("input", (e)=>{ state.builder.name=e.target.value; });
-	$("maxSize").addEventListener("input", (e)=>{ 
+	$("maxSize").addEventListener("input", (e)=>{
 		state.builder.maxSize = Math.max(1, Math.min(99, Number(e.target.value)||10));
-		// 넘치면 뒤에서부터 잘라냄
+		// 초과분 잘라내기
 		let total=totalCards();
 		if(total > state.builder.maxSize){
 			const order = Object.keys(state.builder.cards).sort((a,b)=> Number(b)-Number(a));
 			for(const k of order){
 				if(total<=state.builder.maxSize) break;
-				const take = Math.min(state.builder.cards[k], total - state.builder.maxSize);
+				const take=Math.min(state.builder.cards[k], total-state.builder.maxSize);
 				state.builder.cards[k]-=take; if(state.builder.cards[k]<=0) delete state.builder.cards[k];
 				total-=take;
 			}
@@ -622,7 +533,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 	$("maxCopies").addEventListener("change", (e)=>{
 		state.builder.maxCopies = Number(e.target.value)||1;
 		Object.keys(state.builder.cards).forEach(k=>{
-			if(state.builder.cards[k] > state.builder.maxCopies){ state.builder.cards[k] = state.builder.maxCopies; }
+			if(state.builder.cards[k] > state.builder.maxCopies) state.builder.cards[k] = state.builder.maxCopies;
 		});
 		renderSchemeList(); renderDeckList(); updateSimSummary();
 	});
@@ -635,20 +546,25 @@ document.addEventListener("DOMContentLoaded", ()=>{
 	};
 
 	$("saveDeck").onclick = saveDeck;
-	$("loadDeck").onclick = ()=> loadDeck(state.builder.slot);
-	$("clearDeck").onclick = ()=>{ clearDeck(); updateSimSummary(); };
+	$("loadDeck").onclick = ()=>{ const ok=loadDeck(state.builder.slot); toast(ok?`슬롯 ${state.builder.slot} 불러오기 완료`:`슬롯 ${state.builder.slot}에 저장된 덱이 없습니다`); };
+	$("clearDeck").onclick = ()=>{ state.builder.cards={}; updateDeckStatus(); renderSchemeList(); renderDeckList(); updateSimSummary(); };
 
 	$("startSim").onclick = startSim;
-	$("nextScheme").onclick = nextScheme;
+	$("nextScheme").onclick  = nextScheme;
 	$("resetSim").onclick = resetSim;
-	$("markOngoing").onclick = markOngoing;
-	$("discardNow").onclick = discardNow;
+	$("markOngoing").onclick = ()=>{ if(!state.sim||state.sim.current===null) return; state.sim.ongoing.push(state.sim.current); renderOngoing(); setRevealed(null); };
+	$("discardNow").onclick = ()=>{ if(!state.sim||state.sim.current===null) return; state.sim.discard.push(state.sim.current); updateSimSummary(); setRevealed(null); };
 
 	$("closeViewer").onclick = closeViewer;
 	$("imgViewer").addEventListener("click", (e)=>{ if(e.target.id==="imgViewer") closeViewer(); });
 
-	fullRerender();
+	// === 자동 로딩: 마지막 슬롯을 복구 ===
+	const last = Number(localStorage.getItem(lastSlotKey) || 1);
+	$("deckSlot").value = String(last);
+	hardResetToSlot(last); // 전체 리셋 + 해당 슬롯 로드
+	setActiveTab("builder"); // 기본 진입은 빌더
 });
 </script>
 </body>
 </html>
+
