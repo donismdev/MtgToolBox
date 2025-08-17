@@ -1,6 +1,11 @@
 body {
-	height: 100vh;
-	overflow: hidden;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f0f0f0;
 }
 
 #content {
@@ -37,7 +42,7 @@ body {
 }
 
 /* 임베디드 iframe */
-#embedded-tool-iframe { min-height: 85vh; }
+#embedded-tool-iframe { display: block; }
 
 /* 커스텀 툴팁 */
 .custom-tooltip {
@@ -171,11 +176,7 @@ body.modal-open {
   pointer-events: auto;
 }
 
-/* 컨텐츠 영역 */
-#content {
-	margin-left: 0;
-	min-height: 100vh;
-}
+
 
 /* ModalTool 전용 모달 */
 #modal-tool-overlay {

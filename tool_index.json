@@ -62,6 +62,7 @@
 			"path": "tools/cardkingdom-order-sorter/",
 			"type": "html",
 			"desktopOnly": true,
+			"hide_header": true,
 			"enable": true
 		},
 		{
