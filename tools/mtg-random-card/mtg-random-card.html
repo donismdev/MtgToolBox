@@ -1,4 +1,117 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title></title><link rel="stylesheet" href="css/style.css"></head><body><div class="container"><form id="filterForm"><fieldset><legend>Data Usage</legend><label id="wifiConfirmLabel"><input type="checkbox" id="wifiConfirm"> <span><strong>데이터 사용 동의</strong></span></label></fieldset><fieldset><legend>Card Types</legend><div class="filter-group"><label><input type="checkbox" name="type" value="Land"><span>Land</span></label> <label><input type="checkbox" name="type" value="Creature"><span>Creature</span></label> <label><input type="checkbox" name="type" value="Artifact"><span>Artifact</span></label> <label><input type="checkbox" name="type" value="Enchantment"><span>Enchantment</span></label> <label><input type="checkbox" name="type" value="Planeswalker"><span>Planeswalker</span></label> <label><input type="checkbox" name="type" value="Battle"><span>Battle</span></label> <label><input type="checkbox" name="type" value="Instant"><span>Instant</span></label> <label><input type="checkbox" name="type" value="Sorcery"><span>Sorcery</span></label></div></fieldset><fieldset><legend>Colors</legend><div class="filter-group"><label><input type="checkbox" name="color" value="W"><span>White</span></label> <label><input type="checkbox" name="color" value="U"><span>Blue</span></label> <label><input type="checkbox" name="color" value="B"><span>Black</span></label> <label><input type="checkbox" name="color" value="R"><span>Red</span></label> <label><input type="checkbox" name="color" value="G"><span>Green</span></label></div></fieldset><fieldset><legend>Rarity</legend><div class="filter-group"><label><input type="checkbox" name="rarity" value="common"><span>Common</span></label> <label><input type="checkbox" name="rarity" value="uncommon"><span>Uncommon</span></label> <label><input type="checkbox" name="rarity" value="rare"><span>Rare</span></label> <label><input type="checkbox" name="rarity" value="mythic"><span>Mythic</span></label></div></fieldset><fieldset><legend>Properties</legend><div class="filter-group"><label><input type="checkbox" id="excludeBasic"><span>No Basic Lands</span></label></div></fieldset><fieldset><legend>Converted Mana Cost (CMC)</legend><div class="cmc-controls"><select id="cmcOperator"><option value="=">=</option><option value="<=">&le;</option><option value=">=">&ge;</option></select> <input type="number" id="cmcValue" placeholder="Enter CMC" min="0"></div></fieldset><button type="submit">Get Random Card</button></form><div id="cardResult"></div></div><div class="toast" id="toastBox"></div><script src="js/main.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<meta name="color-scheme" content="light">
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
+	<title>Random MTG Card</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+	<div class="container">
+		<form id="filterForm">
+			<fieldset>
+				<legend>Data Usage</legend>
+				<label id="wifiConfirmLabel">
+					<input type="checkbox" id="wifiConfirm">
+					<span><strong>데이터 사용 동의</strong></span>
+				</label>
+			</fieldset>
+
+			<fieldset>
+				<legend>Card Types</legend>
+				<div class="filter-group">
+					<label><input type="checkbox" name="type" value="Land"><span>Land</span></label>
+					<label><input type="checkbox" name="type" value="Creature"><span>Creature</span></label>
+					<label><input type="checkbox" name="type" value="Artifact"><span>Artifact</span></label>
+					<label><input type="checkbox" name="type" value="Enchantment"><span>Enchantment</span></label>
+					<label><input type="checkbox" name="type" value="Planeswalker"><span>Planeswalker</span></label>
+					<label><input type="checkbox" name="type" value="Battle"><span>Battle</span></label>
+					<label><input type="checkbox" name="type" value="Instant"><span>Instant</span></label>
+					<label><input type="checkbox" name="type" value="Sorcery"><span>Sorcery</span></label>
+				</div>
+			</fieldset>
+
+			<fieldset>
+				<legend>Colors</legend>
+				<div class="filter-group">
+					<label><input type="checkbox" name="color" value="W"><span>White</span></label>
+					<label><input type="checkbox" name="color" value="U"><span>Blue</span></label>
+					<label><input type="checkbox" name="color" value="B"><span>Black</span></label>
+					<label><input type="checkbox" name="color" value="R"><span>Red</span></label>
+					<label><input type="checkbox" name="color" value="G"><span>Green</span></label>
+				</div>
+			</fieldset>
+
+			<fieldset>
+				<legend>Rarity</legend>
+				<div class="filter-group">
+					<label><input type="checkbox" name="rarity" value="common"><span>Common</span></label>
+					<label><input type="checkbox" name="rarity" value="uncommon"><span>Uncommon</span></label>
+					<label><input type="checkbox" name="rarity" value="rare"><span>Rare</span></label>
+					<label><input type="checkbox" name="rarity" value="mythic"><span>Mythic</span></label>
+				</div>
+			</fieldset>
+
+			<fieldset>
+				<legend>Properties</legend>
+				<div class="filter-group">
+                    <label><input type="checkbox" id="excludeBasic"><span>No Basic Lands</span></label>
+				</div>
+			</fieldset>
+
+			<fieldset>
+				<legend>Converted Mana Cost (CMC)</legend>
+				<div class="cmc-controls">
+					<select id="cmcOperator">
+						<option value="=">=</option>
+						<option value="<=">&le;</option>
+						<option value=">=">&ge;</option>
+					</select>
+					<input type="number" id="cmcValue" placeholder="Enter CMC" min="0" inputmode="numeric">
+				</div>
+			</fieldset>
+
+			<!-- ✅ 분리: Power -->
+			<fieldset>
+				<legend>Power</legend>
+				<div class="cmc-controls">
+					<select id="powerOperator">
+						<option value="">(any)</option>
+						<option value="=">=</option>
+						<option value="<=">&le;</option>
+						<option value=">=">&ge;</option>
+					</select>
+					<input type="number" id="powerValue" placeholder="Enter Power" min="0" inputmode="numeric">
+				</div>
+			</fieldset>
+
+			<!-- ✅ 분리: Toughness -->
+			<fieldset>
+				<legend>Toughness</legend>
+				<div class="cmc-controls">
+					<select id="toughnessOperator">
+						<option value="">(any)</option>
+						<option value="=">=</option>
+						<option value="<=">&le;</option>
+						<option value=">=">&ge;</option>
+					</select>
+					<input type="number" id="toughnessValue" placeholder="Enter Toughness" min="0" inputmode="numeric">
+				</div>
+				<div style="margin-top:0.5rem">
+					<label><input type="checkbox" id="numericPTOnly"> <span>숫자형 P/T만 (별/분수 제외)</span></label>
+				</div>
+			</fieldset>
+
+			<button type="submit">Get Random Card</button>
+		</form>
+
+		<div id="cardResult"></div>
+	</div>
+
+	<div class="toast" id="toastBox"></div>
+	<script src="js/main.js"></script>
+</body>
+</html>

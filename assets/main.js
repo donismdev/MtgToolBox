@@ -636,11 +636,140 @@ function setCaptionTitle(text){
 	el.title = el.textContent;		// 길면 툴팁
 	// 긴 제목이 갱신되면 왼쪽부터 보이도록 스크롤 리셋
 	el.parentElement && (el.parentElement.scrollLeft = 0);
+
+	CAPTION_MARQUEE.restart?.();
 }
 
 function getToolTitle(tool){
 	try { return getDisplayName(tool); } catch { return ""; }
 }
+
+// === Caption Marquee Controller ============================================
+const CAPTION_MARQUEE = {
+	elWrap: null,
+	reqId: null,
+	state: 'idle', // 'idle' | 'dwellStart' | 'scrolling' | 'dwellEnd' | 'rewind'
+	cfg: {
+		dwellStartMs: 3000, // 시작 지점 정지
+		dwellEndMs: 1500,   // 끝 지점 정지
+		pixelsPerSec: 80,   // 스크롤 속도 (px/s)
+		rewindMs: 400,      // 처음으로 돌아갈 때의 스무스 시간
+		resumeAfterUserMs: 5000, // 유저가 스크롤 만지면 일시중지 후 재개 지연
+		minOverflowPx: 8,   // 이 값보다 작게 넘치면 마키 비활성
+	},
+	_t0: 0,
+	_userPausedUntil: 0,
+
+	init() {
+		this.elWrap = document.querySelector('#caption-bar .caption-center');
+		if (!this.elWrap) return;
+		// 유저 인터랙션 시 잠시 자동 스크롤 멈춤
+		const pause = () => { this._userPausedUntil = performance.now() + this.cfg.resumeAfterUserMs; };
+		this.elWrap.addEventListener('pointerdown', pause, { passive: true });
+		this.elWrap.addEventListener('wheel', pause, { passive: true });
+
+		// 탭 전환/복귀 시 안전 처리
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'visible') {
+				this.restart();
+			} else {
+				this.stop();
+			}
+		});
+		window.addEventListener('resize', () => this.restart());
+	},
+
+	start() {
+		if (!this.elWrap) this.init();
+		if (!this.elWrap) return;
+
+		// overflow가 없으면 종료
+		const overflow = this.elWrap.scrollWidth - this.elWrap.clientWidth;
+		if (overflow <= this.cfg.minOverflowPx) { this.stop(); return; }
+
+		// 시작 상태로 세팅
+		this.state = 'dwellStart';
+		this._t0 = performance.now();
+		this.loop();
+	},
+
+	stop() {
+		if (this.reqId) cancelAnimationFrame(this.reqId);
+		this.reqId = null;
+		this.state = 'idle';
+	},
+
+	restart() {
+		// 현재 글자가 바뀌거나 리사이즈되면 처음부터
+		this.stop();
+		if (this.elWrap) this.elWrap.scrollLeft = 0;
+		this.start();
+	},
+
+	loop() {
+		this.reqId = requestAnimationFrame((now) => {
+			// 유저가 최근에 만졌으면 대기
+			if (now < this._userPausedUntil) {
+				this._t0 = now; // 경과시간 리셋
+				return this.loop();
+			}
+
+			const el = this.elWrap;
+			if (!el) return;
+
+			const max = el.scrollWidth - el.clientWidth; // 끝 위치
+			switch (this.state) {
+				case 'dwellStart': {
+					if (now - this._t0 >= this.cfg.dwellStartMs) {
+						this.state = 'scrolling';
+						this._t0 = now;
+					}
+					break;
+				}
+				case 'scrolling': {
+					const speed = this.cfg.pixelsPerSec / 1000; // px/ms
+					const dx = (now - this._t0) * speed;
+					this._t0 = now;
+					el.scrollLeft = Math.min(max, el.scrollLeft + dx);
+
+					if (el.scrollLeft >= max - 0.5) {
+						this.state = 'dwellEnd';
+						this._t0 = now;
+					}
+					break;
+				}
+				case 'dwellEnd': {
+					if (now - this._t0 >= this.cfg.dwellEndMs) {
+						this.state = 'rewind';
+						this._t0 = now;
+					}
+					break;
+				}
+				case 'rewind': {
+					// 부드럽게 처음으로 복귀 (ease-out)
+					const t = Math.min(1, (now - this._t0) / this.cfg.rewindMs);
+					const ease = 1 - Math.pow(1 - t, 3);
+					el.scrollLeft = max * (1 - ease); // max → 0
+					if (t >= 1) {
+						this.state = 'dwellStart';
+						this._t0 = now;
+						el.scrollLeft = 0;
+					}
+					break;
+				}
+			}
+			this.loop();
+		});
+	}
+};
+// ===========================================================================
+
+// 초기화 타이밍(이미 window.load 리스너가 있으면 그 안에서 호출해도 OK)
+window.addEventListener('load', () => {
+	CAPTION_MARQUEE.init();
+	// 제목 초기 세팅 이후 자동 시작을 원하면 여기서 start
+	CAPTION_MARQUEE.start();
+});
 
 // 초기 기본값
 setCaptionTitle(DEFAULT_CAPTION);
