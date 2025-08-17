@@ -2635,3 +2635,24 @@ flex-basis: 50%;
     margin-top: -2px;
 }
 
+/* Options Modal "Tools" Tab Height Adjustment */
+
+.button-setting-item {
+    min-height: 38px; /* Reduced from 48px by ~20% */
+    padding: 4px 0; /* Reduced from 8px */
+}
+
+.button-setting-item .label-button {
+    padding: 4px 0; /* Reduced from 8px */
+    font-size: 0.9rem; /* Slightly smaller font */
+}
+
+.button-setting-item .drag-handle {
+    font-size: 1rem; /* Adjust handle size to match */
+}
+
+.button-setting-item input[type="checkbox"] {
+    transform: scale(1.1); /* Slightly smaller checkbox */
+}
+
+
