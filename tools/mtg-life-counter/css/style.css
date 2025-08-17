@@ -1355,7 +1355,7 @@
 .counters-viewer-modal {
     width: 90%;
     max-width: 400px;
-    height: 70vh;
+    height: 95%;
     background-color: #2c2c2c;
     border-radius: 10px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.4);
@@ -2571,4 +2571,61 @@ flex-basis: 50%;
 @keyframes pulse {
     from { transform: translate(-50%, -50%) scale(1); }
     to { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+#countersViewerModal .modal-header {
+    padding-top: 0.5rem;
+    padding-bottom: 0.25rem;
+}
+
+#countersViewerModal .modal-body {
+    padding-top: 0.25rem;
+    padding-bottom: 0.5rem;
+}
+
+#countersViewerModal .modal-title {
+    margin-bottom: 0;
+}
+
+/* Counters Viewer Modal Adjustments */
+
+/* Reduce modal padding */
+.counters-viewer-modal {
+    padding: 10px;
+}
+
+/* Reduce header size - overriding inline styles */
+.counters-viewer-header {
+    padding: 5px 15px !important;
+}
+
+.counters-viewer-header h2 {
+    font-size: 1.1rem !important;
+    margin: 0 !important;
+}
+
+/* Reduce size of elements in each counter row */
+.counter-item {
+    padding: 2px 5px;
+    min-height: 0; /* Let content define height */
+}
+
+.counter-change-btn, .counter-label-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+}
+
+.counter-icon-area {
+    height: 32px;
+    margin: 0 5px;
+}
+
+.counter-icon-count {
+    font-size: 1.3rem;
+}
+
+.counter-icon-label {
+    font-size: 0.65rem;
+    margin-top: -2px;
 }

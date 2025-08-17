@@ -14,17 +14,49 @@ export class CountersViewerModal {
         modal.addEventListener('pointerdown', e => e.stopPropagation());
 
         const modalHeader = document.createElement('div');
-        modalHeader.className = 'modal-header-fixed';
-        modalHeader.innerHTML = `<h2 class="modal-title-fixed">Counters</h2>`;
+        modalHeader.className = 'counters-viewer-header'; 
+        Object.assign(modalHeader.style, {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '15px 20px',
+            borderBottom: '1px solid #444',
+            flexShrink: '0'
+        });
+
+        const title = document.createElement('h2');
+        title.textContent = 'Counters';
+        Object.assign(title.style, {
+            margin: '0',
+            fontSize: '1.25rem',
+            color: '#f1f1f1'
+        });
 
         const closeButtonText = document.createElement('button');
-        closeButtonText.className = 'close-button-text';
         closeButtonText.textContent = 'Close';
         closeButtonText.onclick = () => this.hide();
+        Object.assign(closeButtonText.style, {
+            background: 'none',
+            border: 'none',
+            color: '#fff',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            opacity: '0.7'
+        });
+        closeButtonText.onmouseover = () => closeButtonText.style.opacity = '1';
+        closeButtonText.onmouseout = () => closeButtonText.style.opacity = '0.7';
+
+        modalHeader.appendChild(title);
         modalHeader.appendChild(closeButtonText);
 
         const scrollContainer = document.createElement('div');
         scrollContainer.className = 'modal-content-scrollable';
+        Object.assign(scrollContainer.style, {
+            flexGrow: '1',
+            overflowY: 'auto',
+            padding: '10px 15px'
+        });
 
         const listContainer = document.createElement('ul');
         listContainer.className = 'counters-list';
