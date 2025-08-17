@@ -2604,28 +2604,34 @@ flex-basis: 50%;
     margin: 0 !important;
 }
 
-/* Reduce size of elements in each counter row */
+/* Adjust size of elements in each counter row */
 .counter-item {
     padding: 2px 5px;
-    min-height: 0; /* Let content define height */
+    min-height: 0;
+    display: flex; /* Ensure it's a flex container */
+    align-items: center; /* Vertically center items */
+    gap: 3px; /* Control spacing between items */
 }
 
 .counter-change-btn, .counter-label-btn {
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px; /* Increased height from 30px */
     font-size: 0.9rem;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
 }
 
 .counter-icon-area {
-    height: 32px;
-    margin: 0 5px;
+    height: 37px; /* Increased height from 32px */
+    margin: 0; /* Remove margin, use gap on parent instead */
+    flex-grow: 1; /* Allow icon area to take up remaining space */
 }
 
 .counter-icon-count {
-    font-size: 1.3rem;
+    font-size: 1.5rem; /* Increased font size */
 }
 
 .counter-icon-label {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     margin-top: -2px;
 }
+
