@@ -1,53 +1,41 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title>Card List Parser</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><style>body{font-family:'Segoe UI',sans-serif}.container{max-width:900px;margin:auto;background-color:#1e1e1e;padding:2rem;border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,.5)}input[type=text],textarea{background-color:#2c2c2c;color:#f1f1f1;border:1px solid #444;border-radius:5px;padding:.5rem;width:100%;margin-bottom:1rem}button,select{margin:.25rem}#toastMessage{visibility:hidden;min-width:250px;background-color:#333;color:#fff;text-align:center;border-radius:5px;padding:16px;position:fixed;z-index:1000;left:50%;bottom:30px;font-size:1.2rem;transform:translateX(-50%)}.card-entry{padding:.75rem;border-bottom:1px solid #444}.card-entry:hover{background-color:#2a2a2a}.card-entry strong{font-weight:700;color:#fff}.card-entry span{color:#fff}.custom-list-button{min-width:6em;max-width:10em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-:root {
-    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
-}
-
-/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
-html, body {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
-
-/* 다크 선호 환경에서도 라이트로 고정 */
- @media (prefers-color-scheme: dark) {
-    :root { color-scheme: light; }
-    html, body {
-        background-color: #ffffff !important;
-        color: #000000 !important;
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title>Card List Parser</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><style>
+    body {
+        /* The main app provides padding, so none is needed here */
     }
-}
-
-/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
-img, video, canvas, svg, iframe {
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    background-color: transparent;
-}
-
-/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
-.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
-#modal-tool-iframe {
-    color-scheme: light;
-    background: #ffffff;
-}
-
-/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
-* { forced-color-adjust: none; }
-
-/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
-a, [class*="bi-"] { color: #0d6efd !important; }
-</style></head><body><div class="container"><h2 class="mb-4">🧾 Card List Parser</h2><div class="mb-3"><select id="listSelector" class="form-select d-inline w-auto"></select> <input type="text" id="customListName" placeholder="New list name" class="form-control d-inline w-auto"> <button id="addListButton" class="btn btn-secondary">+ List</button></div><div class="form-check mb-2"><input type="checkbox" class="form-check-input" id="toggleEditor"> <label class="form-check-label" for="toggleEditor">Hide Text Editor</label></div><textarea id="textInput" rows="10" placeholder="💡 카드킹덤 주문 리스트 페이지에서 전체 복사 (Ctrl + A → Ctrl + C) 한 내용을 여기에 붙여넣으세요."></textarea><div class="mb-3"><button id="applyButton" class="btn btn-success">Apply</button> <button id="resetButton" class="btn btn-warning">Reset</button></div><div class="mb-3"><input type="file" id="fileInput" class="form-control"></div><div class="form-check mb-3"><input type="checkbox" class="form-check-input" id="toggleInfo"> <label class="form-check-label" for="toggleInfo">Show card names only</label></div><div class="mb-3"><button id="copyToClipboard" class="btn btn-outline-light">📋 Copy Names</button> <button id="copyToClipboardSum" class="btn btn-outline-info">📊 Copy Summary</button><div id="customListButtons" class="mb-3"></div></div><div id="cardListOutput"></div></div><div id="toastMessage">✅ 클립보드에 저장되었습니다.</div><script>document.getElementById("listSelector").addEventListener("change",function(){var t=this.value;switch(t){case"parsedList":var e=getParsedList();sortCards(e),currentDisplayList=e,listType="parsedList";break;case"addedList":e=getAddedList();sortCards(e),currentDisplayList=e,listType="addedList";break;case"removedList":e=getRemoveList();sortCards(e),currentDisplayList=e,listType="removedList";break;default:t in cardListPool.customLists&&(sortCards(cardListPool.customLists[t]),currentDisplayList=cardListPool.customLists[t],listType=t)}displayCards(currentDisplayList,!1,listType)}),document.getElementById("toggleEditor").addEventListener("change",function(){let e=this.checked;[document.getElementById("textInput"),document.getElementById("applyButton"),document.getElementById("resetButton")].forEach(t=>{t.style.display=e?"none":"block"})}),document.getElementById("fileInput").addEventListener("change",handleFileSelect,!1),document.getElementById("toggleInfo").addEventListener("change",handleToggleChange,!1),document.getElementById("applyButton").addEventListener("click",function(){applyText(document.getElementById("textInput").value)}),document.getElementById("resetButton").addEventListener("click",function(){document.getElementById("textInput").value="",document.getElementById("cardListOutput").innerHTML="",cardListPool.parsedList=[],cardListPool.addedList=[],cardListPool.removedList=[],cardListPool.customLists={},updateCustomListUI()}),document.getElementById("addListButton").addEventListener("click",function(){var t=document.getElementById("customListName").value.trim();t?(addCustomList(t),document.getElementById("customListName").value=""):alert("Please enter a valid list name.")}),document.getElementById("copyToClipboard").addEventListener("click",function(){var t=currentDisplayList.map(t=>t.name).join("\n");navigator.clipboard.writeText(t).then(()=>{let t=document.getElementById("toastMessage");t.style.visibility="visible",setTimeout(()=>t.style.visibility="hidden",2500)}).catch(t=>{console.error("클립보드 복사 실패:",t)})}),document.getElementById("copyToClipboardSum").addEventListener("click",function(){let i=0,s=0,t="";"parsedList"!=listType&&"addedList"!=listType&&"removedList"!=listType&&(t=`List: ${listType}
+    
+    #toastMessage {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #333; /* Keep it dark, it's a toast */
+        color: #fff;
+        text-align: center;
+        border-radius: 5px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        font-size: 1.2rem;
+        transform: translateX(-50%);
+    }
+    .card-entry {
+        padding: .75rem;
+        border-bottom: 1px solid #dee2e6; /* Use bootstrap's default border color */
+    }
+    .card-entry:hover {
+        background-color: #f8f9fa; /* Use bootstrap's default hover color */
+    }
+    .custom-list-button {
+        min-width: 6em;
+        max-width: 10em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style></head><body><div class="container-fluid"><h2 class="mb-4">🧾 Card List Parser</h2><div class="mb-3"><select id="listSelector" class="form-select d-inline w-auto"></select> <input type="text" id="customListName" placeholder="New list name" class="form-control d-inline w-auto"> <button id="addListButton" class="btn btn-secondary">+ List</button></div><div class="form-check mb-2"><input type="checkbox" class="form-check-input" id="toggleEditor"> <label class="form-check-label" for="toggleEditor">Hide Text Editor</label></div><textarea id="textInput" rows="10" placeholder="💡 카드킹덤 주문 리스트 페이지에서 전체 복사 (Ctrl + A → Ctrl + C) 한 내용을 여기에 붙여넣으세요." class="w-100"></textarea><div class="mb-3"><button id="applyButton" class="btn btn-success">Apply</button> <button id="resetButton" class="btn btn-warning">Reset</button></div><div class="mb-3"><input type="file" id="fileInput" class="form-control"></div><div class="form-check mb-3"><input type="checkbox" class="form-check-input" id="toggleInfo"> <label class="form-check-label" for="toggleInfo">Show card names only</label></div><div class="mb-3"><button id="copyToClipboard" class="btn btn-outline-light">📋 Copy Names</button> <button id="copyToClipboardSum" class="btn btn-outline-info">📊 Copy Summary</button><div id="customListButtons" class="mb-3"></div></div><div id="cardListOutput"></div></div><div id="toastMessage">✅ 클립보드에 저장되었습니다.</div><script>document.getElementById("listSelector").addEventListener("change",function(){var t=this.value;switch(t){case"parsedList":var e=getParsedList();sortCards(e),currentDisplayList=e,listType="parsedList";break;case"addedList":e=getAddedList();sortCards(e),currentDisplayList=e,listType="addedList";break;case"removedList":e=getRemoveList();sortCards(e),currentDisplayList=e,listType="removedList";break;default:t in cardListPool.customLists&&(sortCards(cardListPool.customLists[t]),currentDisplayList=cardListPool.customLists[t],listType=t)}displayCards(currentDisplayList,!1,listType)}),document.getElementById("toggleEditor").addEventListener("change",function(){let e=this.checked;[document.getElementById("textInput"),document.getElementById("applyButton"),document.getElementById("resetButton")].forEach(t=>{t.style.display=e?"none":"block"})}),document.getElementById("fileInput").addEventListener("change",handleFileSelect,!1),document.getElementById("toggleInfo").addEventListener("change",handleToggleChange,!1),document.getElementById("applyButton").addEventListener("click",function(){applyText(document.getElementById("textInput").value)}),document.getElementById("resetButton").addEventListener("click",function(){document.getElementById("textInput").value="",document.getElementById("cardListOutput").innerHTML="",cardListPool.parsedList=[],cardListPool.addedList=[],cardListPool.removedList=[],cardListPool.customLists={},updateCustomListUI()}),document.getElementById("addListButton").addEventListener("click",function(){var t=document.getElementById("customListName").value.trim();t?(addCustomList(t),document.getElementById("customListName").value=""):alert("Please enter a valid list name.")}),document.getElementById("copyToClipboard").addEventListener("click",function(){var t=currentDisplayList.map(t=>t.name).join("\n");navigator.clipboard.writeText(t).then(()=>{let t=document.getElementById("toastMessage");t.style.visibility="visible",setTimeout(()=>t.style.visibility="hidden",2500)}).catch(t=>{console.error("클립보드 복사 실패:",t)})}),document.getElementById("copyToClipboardSum").addEventListener("click",function(){let i=0,s=0,t="";"parsedList"!=listType&&"addedList"!=listType&&"removedList"!=listType&&(t=`List: ${listType}
 `);var e=currentDisplayList.map(t=>{var e=t.quantity*t.price,e=(i+=t.quantity,s+=e,("$"+e.toFixed(2)).padEnd(10," "));return""+e+(t.quantity+"장").padEnd(6," ")+t.name.padEnd(30," ")}).join("\n"),n=`총 계 ${i}장, $`+s.toFixed(2);t=(t+=e)+"\n--------------------------------------------------------------------------------------------\n"+n,navigator.clipboard.writeText(t).then(()=>{let t=document.getElementById("toastMessage");t.style.visibility="visible",setTimeout(()=>t.style.visibility="hidden",2500)}).catch(t=>{console.error("클립보드 복사 실패:",t)})});let cardListPool={parsedList:[],addedList:[],removedList:[],customLists:{}},currentDisplayList=getParsedList(),listType="parsedList";function applyText2(t){clearCardList();var e=getParsedList();parseCardList(e,t),sortCards(e),displayCards(e,!1,listType)}function parseCardListFromFullPage(t){t=t.split("\n");let a=[],d=/^(.+?):\s*(.+?)\t(NM|EX|G|VG)\t(\d+)\t\$(\d+\.\d{2})\t\$(\d+\.\d{2})$/;return t.forEach(t=>{var e,i,s,n,o,t=t.match(d);t&&(e=t[1].trim(),i=t[2].trim(),s=t[3].trim(),n=parseInt(t[4],10),o=parseFloat(t[5]),t=parseFloat(t[6]),a.push({name:e,edition:i,condition:s,quantity:n,price:o,total:t}))}),a}function applyText(t){clearCardList();var e=getParsedList(),t=parseCardListFromFullPage(t);e.push(...t),sortCards(e),displayCards(e,!1,listType)}function switchToCustomList(t){var e=getCustomList(t);e&&(sortCards(e),currentDisplayList=e,listType=t,displayCards(currentDisplayList,document.getElementById("toggleInfo").checked,listType))}function getParsedList(){return cardListPool.parsedList}function getAddedList(){return cardListPool.addedList}function getRemoveList(){return cardListPool.removedList}function getCustomList(t){return t in cardListPool.customLists?cardListPool.customLists[t]:(console.warn(`List '${t}' does not exist.`),null)}function clearCardList(){getParsedList().length=0,getRemoveList().length=0,getAddedList().length=0,Object.keys(cardListPool.customLists).forEach(t=>{cardListPool.customLists[t].length=0})}function updateCustomListUI(){let s=document.getElementById("customListButtons");s.innerHTML="";var t=Object.keys(cardListPool.customLists);if(["parsedList","addedList","removedList"].forEach(t=>{var e=cardListPool[t].reduce((t,e)=>t+e.quantity,0),i=document.createElement("button");i.textContent=t+` (${e})`,i.className="btn btn-outline-light custom-list-button",i.onclick=()=>{sortCards(cardListPool[t]),currentDisplayList=cardListPool[t],listType=t,displayCards(currentDisplayList,document.getElementById("toggleInfo").checked,listType)},s.appendChild(i)}),t.length<=5)t.forEach(t=>{var e=cardListPool.customLists[t].reduce((t,e)=>t+e.quantity,0),i=document.createElement("button");i.textContent=`${4<t.length?t.slice(0,4)+"…":t} (${e})`,i.title=t,i.className="btn btn-outline-primary custom-list-button",i.onclick=()=>switchToCustomList(t),s.appendChild(i)});else{let i=document.createElement("select");i.className="form-select d-inline w-auto me-1",t.forEach(t=>{var e=document.createElement("option");e.value=t,e.textContent=t,i.appendChild(e)});var t=cardListPool.customLists[i.value]?.reduce((t,e)=>t+e.quantity,0)||0,e=document.createElement("button");e.className="btn btn-outline-primary custom-list-button",e.textContent=`Go (${t})`,e.onclick=()=>switchToCustomList(i.value),s.appendChild(i),s.appendChild(e)}}function addCustomList(t){cardListPool.customLists[t]||(cardListPool.customLists[t]=[],updateCustomListUI(),0<currentDisplayList.length&&displayCards(currentDisplayList,document.getElementById("toggleInfo").checked,listType))}function addAllButtonsToCards(t){displayCards(currentDisplayList,document.getElementById("toggleInfo").checked,listType)}function initializeComboBox(){let i=document.getElementById("listSelector");["parsedList","addedList","removedList"].forEach(t=>{var e=document.createElement("option");e.value=t,e.textContent=t,i.appendChild(e)})}function handleFileSelect(t){var e,t=t.target.files[0];t&&((e=new FileReader).onload=function(t){applyText(t.target.result)},e.readAsText(t))}function handleToggleChange(){var t=document.getElementById("toggleInfo").checked;displayCards(currentDisplayList,t,listType)}function displayCards(t,a,d){let l=document.getElementById("cardListOutput");l.innerHTML="",t.forEach((s,n)=>{var t=document.createElement("div"),e=(t.className="card-entry",{1:"white",2:"blue",3:"green",4:"orange",5:"red"}[s.quantity]||"white");a?t.textContent=s.name+` (${s.quantity})`:(e=`<strong style="color:${e}">${s.name}</strong> <span style="color: white;">(${s.quantity})</span>`,i=`<small style="color: white;">${s.edition} | ${s.condition} | $${s.price.toFixed(2)} x ${s.quantity} = $${s.total.toFixed(2)}</small>`,t.innerHTML=`
 							${e}<br>
 							${i}
