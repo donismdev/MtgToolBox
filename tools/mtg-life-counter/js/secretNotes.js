@@ -28,6 +28,8 @@ function showNoteActions(player, buttonElement, noteIndex) {
     const menu = document.createElement('div');
     menu.className = 'note-action-menu';
 
+    menu.classList.add('menu-above');
+
     const btnEdit = document.createElement('button');
     btnEdit.textContent = '수정';
     btnEdit.onclick = (e) => {

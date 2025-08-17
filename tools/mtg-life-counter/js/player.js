@@ -129,7 +129,7 @@ export class Player {
             { id: 'battle',   imageName: 'battle',   count: 0, label: '' },
         ];
 
-		this.secretNotes = Array(5).fill(null).map(() => secretNotes.createDefaultNote());
+		this.secretNotes = Array(4).fill(null).map(() => secretNotes.createDefaultNote());
 
         // Modals and Overlays (lazy loaded)
         this.optionsModal = null;

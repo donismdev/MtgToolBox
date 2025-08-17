@@ -1758,7 +1758,7 @@ body,html{
     font-weight: bold;
 }
 .note-editor-cancel {
-    background-color: transparent;
+    /* background-color: transparent; */ /* Removed transparency */
 }
 
 
@@ -2653,6 +2653,13 @@ flex-basis: 50%;
 
 .button-setting-item input[type="checkbox"] {
     transform: scale(1.1); /* Slightly smaller checkbox */
+}
+
+/* Position action menu above the note slot for the bottom row */
+.note-action-menu.menu-above {
+    top: auto;
+    bottom: 100%;
+    transform: translateX(-50%) translateY(-8px); /* Add a small gap */
 }
 
 
