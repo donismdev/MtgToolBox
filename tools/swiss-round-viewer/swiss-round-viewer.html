@@ -181,8 +181,9 @@
   <script type="module">
     import {
       initGoogleClient, signIn, signOut,
-      openSpreadsheetPicker,
-      getConfigMap, getPlayers, getEvents, getRounds, getCurrentSpreadsheetId
+      openSpreadsheetPicker, ensureSignedIn,
+      getConfigMap, getPlayers, getEvents, getRounds, getCurrentSpreadsheetId, getAllData,
+	  isGoogleInited
     } from './js/google.js';
 
     // ========== Utilities ==========
@@ -198,6 +199,49 @@
       loading:$('#loading'), eventModal:$('#eventModal'), eventModalTitle:$('#eventModalTitle'), eventDetailBody:$('#eventDetailBody'), btnCloseEvent:$('#btnCloseEvent')
     };
 
+	els.btnSignIn.disabled = true; // 초기화 전 클릭 방지
+
+
+		function waitForGoogleScripts(timeout = 10000) {
+		return new Promise((resolve, reject) => {
+			const t0 = Date.now();
+			(function tick(){
+			if (window.gapi && window.google && window.google.accounts && window.google.picker) return resolve();
+			if (Date.now() - t0 > timeout) return reject(new Error('Google API 스크립트 로드 지연'));
+			setTimeout(tick, 50);
+			})();
+		});
+		}
+
+		initGoogleClient(
+		(signed)=>{ setAuthedUI(signed); setSheetBadge(); },
+		{ readOnly: true, lazyPicker: true }
+		).then(async ()=>{
+		// 제로클릭: 기존 토큰 있으면 자동 로딩
+		const ok = await ensureSignedIn({ interactive: false });
+		if (ok && getCurrentSpreadsheetId()) {
+			await refreshAll();
+		}
+		}).catch(e=>{
+		console.warn('[viewer boot]', e);
+		});
+
+		// 페이지 로드 시 1회: 스크립트 로드 대기 → initGoogleClient → 사일런트 로그인 → 자동 새로고침
+		(async () => {
+		try {
+			await waitForGoogleScripts();
+			els.btnSignIn.disabled = false; // 이제 클릭 가능
+
+			// 조용히 토큰 시도(같은 브라우저/세션이면 바로 붙음)
+			const ok = await ensureSignedIn({ interactive: false });
+			if (ok && getCurrentSpreadsheetId()) await refreshAll();
+		} catch (e) {
+			console.warn('[viewer boot]', e);
+			els.btnSignIn.disabled = false; // 실패해도 수동 로그인은 가능해야 함
+		}
+		})();
+
+
     const DEFAULT_ELO=1500, K=24;
     let players=[], events=[], rounds=[];
 
@@ -208,9 +252,10 @@
       els.loading.style.display = on ? 'flex' : 'none';
     }
     function setAuthedUI(authed){
-      els.btnSignOut.disabled = !authed;
-      els.btnPick.disabled = !authed;
-      els.btnSignIn.disabled = authed;
+		els.btnSignOut.disabled = !authed;
+		els.btnSignIn.disabled  = authed;
+		// 뷰어는 선택 버튼은 항상 눌러서 로그인 유도 → 피커 띄우게 함
+		els.btnPick.disabled    = false;
     }
     function setSheetBadge(){
       // const signedIn = !els.btnSignIn.disabled;
@@ -443,33 +488,51 @@
 
     // ========== Load/Init ==========
     async function refreshAll(){
-      setSheetBadge(); setLoading(true,'시트에서 데이터 불러오는 중…');
-      try{
-        const [meta,p,e,r] = await Promise.all([ getConfigMap(), getPlayers(), getEvents(), getRounds() ]);
-        players=p; events=e; rounds=r;
-        renderMeta(meta); renderPlayers(); renderEvents(); renderRounds(); fillFormatFilter(); renderStandings();
-      }catch(err){ console.error(err); alert('데이터 로딩 실패: '+(err?.message||err)); }
-      finally{ setLoading(false); }
+		setSheetBadge(); setLoading(true,'시트에서 데이터 불러오는 중…');
+		try{
+			const { meta, players: p, events: e, rounds: r } = await getAllData();
+			players=p; events=e; rounds=r;
+			renderMeta(meta); renderPlayers(); renderEvents(); renderRounds(); fillFormatFilter(); renderStandings();
+		}catch(err){ console.error(err); alert('데이터 로딩 실패: '+(err?.message||err)); }
+		finally{ setLoading(false); }
     }
 
     // Wire up
-    initGoogleClient((signed)=>{ setAuthedUI(signed); setSheetBadge(); });
-    els.btnSignIn.addEventListener('click', ()=>signIn('consent'));
+    els.btnSignIn.addEventListener('click', async () => {
+		try{
+			const ok = await ensureSignedIn({ interactive: true });
+			if (!ok) return;
+
+			// 시트가 이미 있으면 바로 로딩, 없으면 피커 자동 오픈
+			const has = getCurrentSpreadsheetId();
+			if (!has) {
+			await openSpreadsheetPicker({ title: '스프레드시트 선택' });
+			}
+			await refreshAll();
+		}catch(err){
+			console.error(err);
+			alert('로그인/선택 실패: ' + (err?.message || err));
+		}
+	});
+
     els.btnSignOut.addEventListener('click', ()=>{ signOut(); setAuthedUI(false); setSheetBadge(); });
-    els.btnPick.addEventListener('click', async()=>{
-      try{
-        // Picker는 먼저 띄우고(오버레이 없음), 선택이 끝난 뒤 로딩 표시
-        await openSpreadsheetPicker({title:'스프레드시트 선택'});
-        setLoading(true,'시트에서 데이터 불러오는 중…');
-        setSheetBadge();
-        await refreshAll(); // 자동 새로고침
-      }catch(e){
-        console.error(e);
-        alert('선택 취소/실패: '+(e?.message||e));
-      }finally{
-        setLoading(false);
-      }
-    });
+    els.btnPick.addEventListener('click', async () => {
+	try{
+		// 항상 시도: 비로그인 상태에서도 이 버튼으로 즉시 로그인 유도
+		const ok = await ensureSignedIn({ interactive: true });
+		if (!ok) return;
+
+		await openSpreadsheetPicker({ title: '스프레드시트 선택' });
+		setLoading(true, '시트에서 데이터 불러오는 중…');
+		setSheetBadge();
+		await refreshAll();
+	}catch(e){
+		console.error(e);
+		alert('선택 취소/실패: ' + (e?.message || e));
+	}finally{
+		setLoading(false);
+	}
+	});
 
     // interactions
     document.getElementById('formatFilter').addEventListener('change', renderStandings);

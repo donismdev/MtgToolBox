@@ -17,6 +17,16 @@ const SCOPES = [
 	"https://www.googleapis.com/auth/spreadsheets",
 ].join(" ");
 
+const SCOPES_EDIT = [
+  "https://www.googleapis.com/auth/drive.file",
+  "https://www.googleapis.com/auth/spreadsheets",
+].join(" ");
+
+const SCOPES_VIEW = [
+  "https://www.googleapis.com/auth/drive.file",          // Picker로 고른 파일은 이걸로 읽기 가능
+  "https://www.googleapis.com/auth/spreadsheets.readonly"// 시트 읽기 전용
+].join(" ");
+
 const MIME = {
 	folder: "application/vnd.google-apps.folder",
 	spreadsheet: "application/vnd.google-apps.spreadsheet",
@@ -80,6 +90,80 @@ let tokenClient = null;
 let accessToken = null;
 let spreadsheetId = null;
 
+let authChangeCb = () => {};
+let refreshTimerId = null;
+let tokenExpiresAt = 0;
+
+let initPromise = null;
+let selectedScopes = null;
+
+function ensureInitCore() {
+  if (gapiLoaded !== true || tokenClient == null) {
+    throw new Error("Google API가 아직 초기화되지 않았습니다. initGoogleClient()를 먼저 호출하세요.");
+  }
+}
+
+function requestTokenPromise(opts = {}) {
+  return new Promise((resolve, reject) => {
+    tokenClient.callback = (resp) => {
+      if (resp && resp.access_token) {
+        accessToken = resp.access_token;
+        gapi.client.setToken({ access_token: accessToken });
+        const expiresIn = Number(resp.expires_in || 3600);
+        tokenExpiresAt = Date.now() + (expiresIn * 1000);
+        scheduleSilentRefresh(expiresIn);
+        authChangeCb?.(true);
+        resolve(resp);
+      } else {
+        const err = resp?.error || new Error('Token error');
+        authChangeCb?.(false);
+        reject(err);
+      }
+    };
+    try {
+      tokenClient.requestAccessToken(opts); // opts: { prompt: '', hint: email? }
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+export function isGoogleInited() {
+  return gapiLoaded === true && !!tokenClient;
+}
+
+export function ensureSignedIn({ interactive = false } = {}) {
+  if (gapiLoaded !== true || tokenClient == null) {
+    // 아직 init 전이면 조용히 실패
+    return Promise.resolve(false);
+  }
+
+  const tk = gapi.client.getToken();
+  if (tk?.access_token) return Promise.resolve(true);
+
+  if (!interactive) return Promise.resolve(false);
+
+  return new Promise((resolve) => {
+    tokenClient.callback = (resp) => {
+      accessToken = resp?.access_token || null;
+      if (accessToken) gapi.client.setToken({ access_token: accessToken });
+      resolve(!!accessToken);
+    };
+    // 클릭 이벤트 핸들러 안에서 바로 호출되어야 팝업 차단을 피함
+    tokenClient.requestAccessToken({ prompt: "consent" });
+  });
+}
+
+function scheduleSilentRefresh(expiresInSec) {
+  clearTimeout(refreshTimerId);
+  // 만료 2분 전 사일런트 리프레시
+  const delay = Math.max(30_000, (expiresInSec - 120) * 1000);
+  refreshTimerId = setTimeout(() => {
+    // 실패해도 UI 흔들지 않음(다음 액션에서 인터랙티브로 폴백)
+    ensureSignedIn({ interactive: false }).catch(() => {});
+  }, delay);
+}
+
 // 전역 gapi 참조
 const gapi = window.gapi;
 
@@ -96,60 +180,86 @@ function getFormattedDateTime() {
 // 1) 초기화 / 로그인
 // ================================
 
+export async function ensurePickerLoaded() {
+  if (pickerLoaded === true) return;
+  ensureInitCore();
+  await new Promise((resolve) => { gapi.load("picker", resolve); });
+  pickerLoaded = true;
+}
+
 /**
  * Google API Client + Picker 모듈을 초기화하고,
  * GIS 토큰 클라이언트를 준비한다.
  * @param {(signedIn: boolean) => void} onAuthChange 토큰 보유 여부 콜백
  */
-export async function initGoogleClient(onAuthChange = () => {}) {
-	// gapi client / picker 로딩
-	await new Promise((resolve) => {
-		gapi.load("client:picker", resolve);
-	});
-	gapiLoaded = true;
-	pickerLoaded = true;
+export async function initGoogleClient(onAuthChange = () => {}, opts = {}) {
+  const { readOnly = false, lazyPicker = true } = opts;
+  if (initPromise) {
+    await initPromise;
+    onAuthChange(accessToken != null);
+    return;
+  }
 
-	// gapi client 초기화
-	await gapi.client.init({ discoveryDocs: DISCOVERY_DOCS });
+  selectedScopes = readOnly
+    ? [ "https://www.googleapis.com/auth/spreadsheets.readonly" ].join(" ")
+    : [ "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/spreadsheets" ].join(" ");
 
-	// GIS 토큰 클라이언트 준비
-	tokenClient = window.google.accounts.oauth2.initTokenClient({
-		client_id: CLIENT_ID,
-		scope: SCOPES,
-		callback: (resp) => {
-			accessToken = resp.access_token || null;
-			if (accessToken != null) {
-				gapi.client.setToken({ access_token: accessToken });
-			}
-			onAuthChange(accessToken != null);
-		},
-	});
+  initPromise = (async () => {
+    // picker 로딩은 나중에(필요할 때)
+    await new Promise((resolve) => { gapi.load("client", resolve); });
+    gapiLoaded = true;
 
-	// 앱 재진입 시 저장된 spreadsheetId 복구
-	const savedId = window.localStorage.getItem(STORAGE_KEY);
-	if (savedId != null && savedId.length > 0) {
-		spreadsheetId = savedId;
-	}
+    await gapi.client.init({ discoveryDocs: DISCOVERY_DOCS });
 
-	// 초기 상태 통지(토큰은 아직 없음)
-	onAuthChange(accessToken != null);
+    tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: selectedScopes,
+      callback: (resp) => {
+        accessToken = resp?.access_token || null;
+        if (accessToken) gapi.client.setToken({ access_token: accessToken });
+        onAuthChange(!!accessToken);
+      },
+    });
+
+    // 저장된 spreadsheetId 복구
+    const savedId = window.localStorage.getItem(STORAGE_KEY);
+    if (savedId) spreadsheetId = savedId;
+
+    onAuthChange(!!(gapi.client.getToken()?.access_token || accessToken));
+  })();
+
+  await initPromise;
+
+  // 지연 로딩 옵션이 false면 지금 바로 picker도 불러옴
+  if (lazyPicker !== true) await ensurePickerLoaded();
 }
 
 /** 로그인(액세스 토큰 요청) */
-export function signIn(prompt = "consent") {
-	ensureInit();
-	tokenClient.requestAccessToken({ prompt }); // 'consent' | 'select_account' | 'none'
+export async function signIn({ preferAccount, forceConsent = false } = {}) {
+  ensureInit();
+  // forceConsent가 true면 바로 동의창 띄우고, 아니면 사일런트 → 폴백
+  if (forceConsent) {
+    await requestTokenPromise({ prompt: 'consent', ...(preferAccount ? { hint: preferAccount } : {}) });
+    return;
+  }
+  try {
+    await requestTokenPromise({ prompt: '', ...(preferAccount ? { hint: preferAccount } : {}) });
+  } catch (_e) {
+    await requestTokenPromise({ prompt: 'select_account', ...(preferAccount ? { hint: preferAccount } : {}) });
+  }
 }
 
-/** 로그아웃(토큰 폐기 및 상태 초기화) */
 export function signOut() {
-	if (accessToken != null) {
-		window.google.accounts.oauth2.revoke(accessToken, () => {});
-	}
-	accessToken = null;
-	gapi.client.setToken(null);
-	spreadsheetId = null;
-	window.localStorage.removeItem(STORAGE_KEY);
+  if (accessToken != null) {
+    window.google.accounts.oauth2.revoke(accessToken, () => {});
+  }
+  accessToken = null;
+  tokenExpiresAt = 0;
+  clearTimeout(refreshTimerId);
+  gapi.client.setToken(null);
+  spreadsheetId = null;
+  window.localStorage.removeItem(STORAGE_KEY);
+  authChangeCb?.(false);
 }
 
 /** 내부: 초기화 보장 */
@@ -178,39 +288,99 @@ export function setCurrentSpreadsheetId(id) {
 	}
 }
 
-/** Google Picker로 스프레드시트 선택 후 ID 저장/반환 */
-export function openSpreadsheetPicker({ title = "스프레드시트 선택" } = {}) {
-	ensureInit();
+let _preparedFor = null;
 
-	return new Promise((resolve, reject) => {
-		const oauthToken = gapi.client.getToken()?.access_token || accessToken;
-		if (oauthToken == null) {
-			reject(new Error("토큰이 없습니다. signIn() 후 다시 시도하세요."));
-			return;
-		}
+export async function prepareCurrentSpreadsheet() {
+	const ssId = await ensureSpreadsheetId({ allowCreate: true });
+	if (_preparedFor === ssId) return; // 이미 준비 완료
+	await ensureSheetsAndHeaders();
+	await ensureMetaDefaults();
+	_preparedFor = ssId;
+}
+	async function gapiCallWithBackoff(doCall, { label = 'request', maxAttempts = 5, baseDelay = 400 } = {}) {
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		try {
+			return await doCall();
+		} catch (e) {
+			const status = e?.status || e?.result?.error?.code;
+			const errMsg = e?.result?.error?.message || e?.message || String(e);
+			const retryAfter = Number(e?.headers?.get?.('Retry-After')) || null;
 
-		const view = new window.google.picker.View(window.google.picker.ViewId.SPREADSHEETS);
-		const picker = new window.google.picker.PickerBuilder()
-			.setTitle(title)
-			.setOAuthToken(oauthToken)
-			.addView(view)
-			.setCallback((data) => {
-				if (data.action === window.google.picker.Action.PICKED) {
-					const doc = data.docs && data.docs[0];
-					const id = doc?.id || null;
-					if (id != null) {
-						setCurrentSpreadsheetId(id);
-						resolve(id);
-					} else {
-						reject(new Error("선택된 문서에서 ID를 찾지 못했습니다."));
-					}
-				} else if (data.action === window.google.picker.Action.CANCEL) {
-					reject(new Error("사용자가 선택을 취소했습니다."));
+			if (status === 429 || status === 503) {
+				const delay = retryAfter ? retryAfter * 1000 : Math.min(8000, baseDelay * Math.pow(2, attempt - 1)) + Math.floor(Math.random() * 200);
+				if (attempt < maxAttempts) {
+					console.warn(`[${label}] ${status} ${errMsg} → ${attempt}회차 백오프 ${delay}ms`);
+					await new Promise(r => setTimeout(r, delay));
+					continue;
 				}
-			})
-			.build();
-		picker.setVisible(true);
+			}
+			throw e;
+		}
+	}
+}
+
+export async function getNextPlayerIdRange(count) {
+	const cfg = await getConfigMap();
+	const last = parseInt(cfg["last_player_id"] ?? "0", 10) || 0;
+	const start = last + 1;
+	const end = last + count;
+	// 한 번만 meta 업데이트
+	await setConfig("last_player_id", String(end));
+	return Array.from({ length: count }, (_, i) => start + i);
+}
+
+export async function addPlayers(newPlayers) {
+	// 준비는 1회 캐시
+	await prepareCurrentSpreadsheet();
+
+	const rows = [];
+	const count = newPlayers.length;
+	const idPool = await getNextPlayerIdRange(count); // 한 번에 ID 확보
+	const now = getFormattedDateTime();
+
+	newPlayers.forEach((p, idx) => {
+		const id = Number.isFinite(p.player_id) && p.player_id > 0 ? p.player_id : idPool[idx];
+		rows.push([ id, (p.name ?? ""), (p.created_date ?? now), (p.last_updated ?? now) ]);
 	});
+
+	// append 1회로 끝
+	return gapiCallWithBackoff(
+		() => appendSheetData(PLAYERS_SHEET, rows),
+		{ label: 'append players', maxAttempts: 5 }
+	);
+}
+
+/** Google Picker로 스프레드시트 선택 후 ID 저장/반환 */
+export async function openSpreadsheetPicker({ title = "스프레드시트 선택" } = {}) {
+  ensureInitCore();
+  await ensurePickerLoaded();
+
+  return new Promise((resolve, reject) => {
+    const oauthToken = gapi.client.getToken()?.access_token || accessToken;
+    if (!oauthToken) {
+      reject(new Error("토큰이 없습니다. signIn() 또는 ensureSignedIn() 후 다시 시도하세요."));
+      return;
+    }
+
+    const view = new window.google.picker.View(window.google.picker.ViewId.SPREADSHEETS);
+    const picker = new window.google.picker.PickerBuilder()
+      .setTitle(title)
+      .setOAuthToken(oauthToken)
+      .addView(view)
+      .setCallback((data) => {
+        if (data.action === window.google.picker.Action.PICKED) {
+          const id = data.docs?.[0]?.id || null;
+          if (id) {
+            setCurrentSpreadsheetId(id);
+            resolve(id);
+          } else reject(new Error("선택된 문서에서 ID를 찾지 못했습니다."));
+        } else if (data.action === window.google.picker.Action.CANCEL) {
+          reject(new Error("사용자가 선택을 취소했습니다."));
+        }
+      })
+      .build();
+    picker.setVisible(true);
+  });
 }
 
 /** mtg-tool-box 폴더를 찾거나 생성 후 ID 반환 */
@@ -373,7 +543,10 @@ async function ensureMetaDefaults() {
 export async function getSheetData(range) {
 	const ssId = await ensureSpreadsheetId();
 	try {
-		const res = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: ssId, range });
+		const res = await gapiCallWithBackoff(
+			() => gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: ssId, range }),
+			{ label: `values.get ${range}` }
+		);
 		return res.result.values || [];
 	} catch (err) {
 		console.error(`getSheetData 실패(${range}):`, err?.result?.error?.message || err.message);
@@ -497,25 +670,6 @@ export async function getNextPlayerId() {
 	return next;
 }
 
-/** Players 행 append (연속 ID 자동 부여 옵션) */
-export async function addPlayers(newPlayers) {
-	await ensureSpreadsheetId({ allowCreate: true });
-	await ensureSheetsAndHeaders();
-	await ensureMetaDefaults();
-
-	const rows = [];
-	for (const p of newPlayers) {
-		const id = Number.isFinite(p.player_id) && p.player_id > 0 ? p.player_id : await getNextPlayerId();
-		const now = getFormattedDateTime();
-		rows.push([
-			id,
-			p.name ?? "",
-			p.created_date ?? now,
-			p.last_updated ?? now,
-		]);
-	}
-	return appendSheetData(PLAYERS_SHEET, rows);
-}
 
 // -------- Events --------
 
@@ -702,6 +856,42 @@ export async function batchUpdateMeta(newMeta) {
     }
 }
 
+export async function getAllData() {
+  const ssId = await ensureSpreadsheetId();
+  const res = await gapiCallWithBackoff(
+    () => gapi.client.sheets.spreadsheets.values.batchGet({
+      spreadsheetId: ssId,
+      ranges: ['meta', 'players', 'events', 'rounds'],
+    }),
+    { label: 'values.batchGet' }
+  );
+  // 배열 파싱
+  const byTitle = new Map(res.result.valueRanges.map(v => [v.range.split('!')[0].toLowerCase(), v.values || []]));
+  const metaRows = byTitle.get('meta') || [];
+  const playersRows = byTitle.get('players') || [];
+  const eventsRows = byTitle.get('events') || [];
+  const roundsRows = byTitle.get('rounds') || [];
+
+  const parse = (rows) => {
+    if (rows.length < 2) return [];
+    const header = rows[0];
+    return rows.slice(1).map(r => {
+      const obj = {}; header.forEach((k,i)=> obj[k]=r[i]??''); return obj;
+    });
+  };
+
+  const meta = (()=> {
+    if (metaRows.length < 2) return {};
+    const h = metaRows[0], v = metaRows[1], o={}; h.forEach((k,i)=> o[k]=v[i]??''); return o;
+  })();
+
+  return {
+    meta,
+    players: parse(playersRows),
+    events: parse(eventsRows),
+    rounds: parse(roundsRows),
+  };
+}
 
 /*
 사용 팁 요약
