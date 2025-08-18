@@ -178,6 +178,68 @@ export function setCurrentSpreadsheetId(id) {
 	}
 }
 
+let _preparedFor = null;
+
+export async function prepareCurrentSpreadsheet() {
+	const ssId = await ensureSpreadsheetId({ allowCreate: true });
+	if (_preparedFor === ssId) return; // 이미 준비 완료
+	await ensureSheetsAndHeaders();
+	await ensureMetaDefaults();
+	_preparedFor = ssId;
+}
+	async function gapiCallWithBackoff(doCall, { label = 'request', maxAttempts = 5, baseDelay = 400 } = {}) {
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		try {
+			return await doCall();
+		} catch (e) {
+			const status = e?.status || e?.result?.error?.code;
+			const errMsg = e?.result?.error?.message || e?.message || String(e);
+			const retryAfter = Number(e?.headers?.get?.('Retry-After')) || null;
+
+			if (status === 429 || status === 503) {
+				const delay = retryAfter ? retryAfter * 1000 : Math.min(8000, baseDelay * Math.pow(2, attempt - 1)) + Math.floor(Math.random() * 200);
+				if (attempt < maxAttempts) {
+					console.warn(`[${label}] ${status} ${errMsg} → ${attempt}회차 백오프 ${delay}ms`);
+					await new Promise(r => setTimeout(r, delay));
+					continue;
+				}
+			}
+			throw e;
+		}
+	}
+}
+
+export async function getNextPlayerIdRange(count) {
+	const cfg = await getConfigMap();
+	const last = parseInt(cfg["last_player_id"] ?? "0", 10) || 0;
+	const start = last + 1;
+	const end = last + count;
+	// 한 번만 meta 업데이트
+	await setConfig("last_player_id", String(end));
+	return Array.from({ length: count }, (_, i) => start + i);
+}
+
+export async function addPlayers(newPlayers) {
+	// 준비는 1회 캐시
+	await prepareCurrentSpreadsheet();
+
+	const rows = [];
+	const count = newPlayers.length;
+	const idPool = await getNextPlayerIdRange(count); // 한 번에 ID 확보
+	const now = getFormattedDateTime();
+
+	newPlayers.forEach((p, idx) => {
+		const id = Number.isFinite(p.player_id) && p.player_id > 0 ? p.player_id : idPool[idx];
+		rows.push([ id, (p.name ?? ""), (p.created_date ?? now), (p.last_updated ?? now) ]);
+	});
+
+	// append 1회로 끝
+	return gapiCallWithBackoff(
+		() => appendSheetData(PLAYERS_SHEET, rows),
+		{ label: 'append players', maxAttempts: 5 }
+	);
+}
+
 /** Google Picker로 스프레드시트 선택 후 ID 저장/반환 */
 export function openSpreadsheetPicker({ title = "스프레드시트 선택" } = {}) {
 	ensureInit();
@@ -199,8 +261,12 @@ export function openSpreadsheetPicker({ title = "스프레드시트 선택" } = 
 					const doc = data.docs && data.docs[0];
 					const id = doc?.id || null;
 					if (id != null) {
-						setCurrentSpreadsheetId(id);
-						resolve(id);
+						(async () => {
+							setCurrentSpreadsheetId(id);
+							await ensureSheetsAndHeaders();
+							await ensureMetaDefaults();
+							resolve(id);
+						})().catch((e) => reject(e));
 					} else {
 						reject(new Error("선택된 문서에서 ID를 찾지 못했습니다."));
 					}
@@ -373,7 +439,10 @@ async function ensureMetaDefaults() {
 export async function getSheetData(range) {
 	const ssId = await ensureSpreadsheetId();
 	try {
-		const res = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: ssId, range });
+		const res = await gapiCallWithBackoff(
+			() => gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: ssId, range }),
+			{ label: `values.get ${range}` }
+		);
 		return res.result.values || [];
 	} catch (err) {
 		console.error(`getSheetData 실패(${range}):`, err?.result?.error?.message || err.message);
@@ -497,25 +566,6 @@ export async function getNextPlayerId() {
 	return next;
 }
 
-/** Players 행 append (연속 ID 자동 부여 옵션) */
-export async function addPlayers(newPlayers) {
-	await ensureSpreadsheetId({ allowCreate: true });
-	await ensureSheetsAndHeaders();
-	await ensureMetaDefaults();
-
-	const rows = [];
-	for (const p of newPlayers) {
-		const id = Number.isFinite(p.player_id) && p.player_id > 0 ? p.player_id : await getNextPlayerId();
-		const now = getFormattedDateTime();
-		rows.push([
-			id,
-			p.name ?? "",
-			p.created_date ?? now,
-			p.last_updated ?? now,
-		]);
-	}
-	return appendSheetData(PLAYERS_SHEET, rows);
-}
 
 // -------- Events --------
 
