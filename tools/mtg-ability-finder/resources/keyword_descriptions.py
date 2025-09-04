@@ -189,7 +189,7 @@ keywordTexts = {
 	"spectacle": "Spectacle [Cost] (You may cast this card for its spectacle cost if an opponent lost life this turn.)",
 	"sunburst": "Sunburst (This permanent enters the battlefield with a +1/+1 or charge counter for each color of mana spent to cast it.)",
 	"surge": "Surge [Cost] (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)",
-	"suspect": "Suspect (Mark a creature as suspect. It can’t block while suspected.)",
+	"suspect": "Suspect — To suspect a creature, it becomes suspected. A suspected creature has menace and can’t block. It remains suspected until it leaves the battlefield or an effect causes it to no longer be suspected.",
 	"sweep": "Sweep — Return any number of [type]s you control to their owner’s hand. [Effect per card returned.]",
 	"transform": "Transform (Turn a double-faced card to its other side. This action is often linked to triggers or conditions.)",
 	"treasure": "Treasure — Artifact tokens with 'T, Sacrifice this artifact: Add one mana of any color.'",
@@ -223,7 +223,7 @@ keywordTexts = {
 	"encore": "Encore [Cost] (Exile this card from your graveyard. For each opponent, create a token copy that attacks that opponent this turn if able. Sacrifice them at end of combat. Activate only as a sorcery.)",
 	"evolve": "Evolve — When a creature with greater power or toughness enters under your control, put a +1/+1 counter on this creature.",
 	"exalted": "Exalted — Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.",
-	"explore": "Explore — Reveal the top card of your library. If it’s a land card, put it onto the battlefield tapped. Otherwise, put it into your hand.",
+	"explore": "Explore — Reveal the top card of your library. Put that card into your hand if it's a land card. Otherwise, put a +1/+1 counter on this creature. Then you may put that card into your graveyard.",
 	"forestcycling": "Forestcycling [Cost] — Discard this card: Search library for a Forest, put it into your hand.",
 	"forestwalk": "Forestwalk — This creature can’t be blocked as long as defending player controls a Forest.",
 	"hellbent": "Hellbent — Effect is active if you have no cards in hand.",
@@ -241,6 +241,8 @@ keywordTexts = {
 	"manifest dread": "Manifest dread — Look at the top two cards of your library. Manifest one face down as a 2/2 creature and put the other into your graveyard.",
 	"warp": "Warp — You may cast this spell for its warp cost; it enters the battlefield. At the beginning of the next end step, exile it. You may later cast it from exile for its mana cost.",
 	"station": "Station — [Ability] Tap an untapped creature you control: Put charge counters equal to that creature’s power on this permanent. Activate only as a sorcery. At a specified number, this permanent becomes a creature with abilities.",
+	"commit_a_crime": "Commit a crime — You commit a crime as you cast a spell, activate an ability, or put a triggered ability on the stack that targets an opponent, a permanent, spell, or ability an opponent controls, or a card in an opponent’s graveyard. It counts as committed when the action is initiated, regardless of whether it resolves.",
+
 
 	# arena only keywords
 	"perpetual": "Perpetual (Effects with this keyword apply permanently, even across zone changes.)",
@@ -299,7 +301,7 @@ keywordActions ={
 	"food": "Food — Artifact tokens with 'T, Sacrifice this artifact: You gain 3 life.'",
 	"collect evidence": "Collect evidence — Arena-specific: Create a Clue token.",
 	"discover": "Discover — Arena-specific: Reveal cards until you find a nonland, then put it into your hand.",
-	"demonstrate": "(설명 없음) – 모르는 항목입니다.",
+	"demonstrate": "Demonstrate — When you cast this spell, you may copy it. If you do, choose an opponent. That player also copies the spell. Players may choose new targets for their copies.",
 
 	"goad": "Goad — Until your next turn, this creature attacks each combat if able and attacks a player other than you if able.",
 
@@ -353,6 +355,8 @@ abilityWords = {
 
 	"council's dilemma": "Council's dilemma — When this enters, players vote for options; effects resolve based on votes.",
 	"grandeur": "Grandeur — Discard another card with the same name: [effect].",
+
+	"modified": "Modified — A creature you control is modified if it has a counter on it, is equipped, or is enchanted by an Aura you control.",
 
 	# role tokens
 	"role token": "Roles are colorless Aura enchantment tokens with 'Enchant creature'. Only one Role per creature per player can be attached at a time. If another Role is created for the same creature by the same player, the old Role is put into the graveyard.",
