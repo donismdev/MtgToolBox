@@ -29,13 +29,15 @@ KEYWORD_TEXTS.update({k.strip().lower(): v for k, v in abilityWords.items()})
 EVERGREEN_SET = {
 	"deathtouch", "defender", "double strike", "enchant", "equip", "first strike",
 	"flash", "flying", "haste", "hexproof", "indestructible", "lifelink",
-	"menace", "reach", "shroud", "trample", "vigilance", "ward", "protection"
+	"menace", "reach", "shroud", "trample", "vigilance", "ward", "protection",
+	"surveil", "scry"
 }
 
 # ====== Arena 전용 키워드 정의 ======
 ARENA_ONLY_SET = {
 	"seek", "conjure", "perpetual", "spellbook", "intensity", "materialize",
 }
+
 
 arena_missing_in_json = [
 	"perpetual", "spellbook", "intensity", "materialize"
