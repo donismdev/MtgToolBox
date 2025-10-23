@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://emblog.github.io/MtgToolBox/sitemap.xml
