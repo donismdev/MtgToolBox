@@ -171,18 +171,18 @@ keywordTexts = {
 	"parley": "Parley — Each player reveals the top card of their library. For each nonland revealed this way, [effect].",
 	"plainscycling": "Plainscycling [Cost] ([Cost], Discard this card: Search your library for a Plains card, reveal it, put it into your hand, then shuffle.)",
 	"plainswalk": "Plainswalk (Unblockable if defending player controls a Plains.)",
-	"plot": "Plot [Cost] (You may pay [Cost] and exile this card. You may cast it on a later turn for free.)",
+
 	"provoke": "Provoke (When this attacks, you may have target creature defending player controls untap and block it if able.)",
 	"rally": "Rally — Whenever [subtype] enters the battlefield under your control, [effect].",
 	"ravenous": "Ravenous (This creature enters the battlefield with X +1/+1 counters. If X is 5 or more, draw a card.)",
 	"reinforce": "Reinforce N — [Cost] ([Cost], Discard this card: Put N +1/+1 counters on target creature.)",
 	"retrace": "Retrace (You may cast this card from your graveyard by discarding a land card in addition to its other costs.)",
 	"ripple": "Ripple N (When you cast this spell, you may reveal the top N cards of your library. You may cast any of them with the same name.)",
-	"saddle": "Saddle [Cost] (You may tap a creature you control to help pay for this card’s saddle cost.)",
+
 	"skulk": "Skulk (This creature can’t be blocked by creatures with greater power.)",
 	"slivercycling": "Slivercycling [Cost] ([Cost], Discard this card: Search for a Sliver card, reveal it, put it into your hand, then shuffle.)",
 	"specialize": "Specialize [Cost] ([Cost], Discard a card: Transform this card. Activate only as a sorcery.)",
-	"spree": "Spree — You may pay additional costs for multiple effects as you cast this spell.",
+
 	"squad": "Squad N (As an additional cost, you may pay [Cost] any number of times. Create N token copies of this spell.)",
 	"spectacle": "Spectacle [Cost] (You may cast this card for its spectacle cost if an opponent lost life this turn.)",
 	"sunburst": "Sunburst (This permanent enters the battlefield with a +1/+1 or charge counter for each color of mana spent to cast it.)",
@@ -229,9 +229,6 @@ keywordTexts = {
 	"vote": "Vote — Players choose among options; result based on majority, sometimes with multiple votes allowed.",
 	"manifest": "Manifest (Put a card from your library onto the battlefield face down as a 2/2 creature. It can be turned face up if it’s a creature card.)",
 
-
-	"commit a crime": "Commit a crime — You commit a crime as you cast a spell, activate an ability, or put a triggered ability on the stack that targets an opponent, a permanent, spell, or ability an opponent controls, or a card in an opponent’s graveyard. It counts as committed when the action is initiated, regardless of whether it resolves.",
-
 	"daybound": "Daybound — If a player casts no spells during their own turn, the day becomes night; transforms related cards.",
 	"nightbound": "Nightbound (If a player cast no spells during their own turn, it becomes night next turn.)",
 
@@ -240,7 +237,7 @@ keywordTexts = {
 
 	###############################
 	# arena only keywords
-	"heist": "Heist — ",
+	"heist": "Heist — Look at three random nonland cards from target opponent’s library. Exile one of them face down. You may look at and cast that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast it. (Performing a heist is committing a crime.)",
 	"perpetual": "Perpetual (Effects with this keyword apply permanently, even across zone changes.)",
 	"spellbook": "Spellbook (When triggered, you may choose one of several predefined cards to conjure into your hand.)",
 	"intensity": "Intensity — An Arena-only numeric value that starts at a defined number (Starting Intensity) and increases as specified by the card. The card’s effects scale with its current intensity, which updates visually in-game.",
@@ -253,6 +250,11 @@ keywordTexts = {
 
 	#
 	###############################
+
+	# OTJ - 2024-04-19
+	"spree": "Spree — As you cast this spell, choose one or more modes. You can’t choose any mode more than once. Each chosen mode has an additional cost that must be paid. If you cast this spell without paying its mana cost, you must still pay the additional costs. The spell’s mana value is based only on its mana cost.",
+	"plot": "Plot [cost] — As a sorcery, you may pay [cost] and exile this card from your hand plotted. On a later turn, you may cast it from exile without paying its mana cost, only as a sorcery. Cards that become plotted by any effect follow the same timing and can’t be cast the same turn they became plotted.",
+	"saddle": "Saddle N — Activate only as a sorcery. Tap any number of untapped creatures you control other than this creature with total power N or greater: This Mount becomes saddled until end of turn. Other abilities on this card may refer to it being saddled.",
 
 	# MH3 - 2024-06-14
 	"umbra armor": "Umbra armor — If enchanted creature would be destroyed, instead destroy this Aura and remove all damage from that creature. (New name for the mechanic previously called totem armor.)",
@@ -415,6 +417,10 @@ specialWords = {
     "initiative": "The Initiative is a designation a player can have. When you take the Initiative, you venture into the Undercity. If you already have the Initiative, you instead venture deeper. The Initiative can be stolen by dealing combat damage to the player who currently has it.",
     "city blessing": "The City's Blessing is a status you gain once you control ten or more permanents. Once you have it, you keep it for the rest of the game. Some cards have Ascend and become stronger if you have the City’s Blessing.",
 
+	# OTJ - 2024-04-19
+	"commit a crime": "Commit a crime — You commit a crime as you cast a spell, activate an ability, or put a triggered ability on the stack that targets an opponent, a permanent, spell, or ability an opponent controls, or a card in an opponent’s graveyard. It counts as committed when the action is initiated, regardless of whether it resolves.",
+	"outlaws": "Outlaws — A permanent with one or more of the following creature types: Assassin, Mercenary, Pirate, Rogue, or Warlock. “An outlaw you control” refers only to permanents on the battlefield.",
+	
 	# MH3 - 2024-06-14
 	"kindred": "Kindred — Card type name replacing the former ‘tribal’ card type; allows noncreature cards to have creature types. Older tribal cards are updated to kindred.",
 
