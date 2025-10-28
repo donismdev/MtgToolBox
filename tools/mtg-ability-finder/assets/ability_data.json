@@ -1,1681 +1,1347 @@
 {
   "meta": {
-    "date": "2025-10-27",
+    "date": "2025-10-28",
     "version": "SPM-2025-09-26",
     "source": "local resources/keyword_descriptions.py"
   },
   "abilities": {
     "deathtouch": {
       "text": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "defender": {
       "text": "Defender (This creature can’t attack.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "double strike": {
       "text": "Double strike (This creature deals both first‑strike and regular combat damage.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "enchant": {
       "text": "Enchant — [the enchanted permanent type] (This Aura enters the battlefield attached to that permanent.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "equip": {
       "text": "Equip [cost] (Attach this to target creature you control. Activate only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "first strike": {
       "text": "First strike (This creature deals combat damage before creatures without first strike.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "flash": {
       "text": "Flash (You may cast this spell any time you could cast an instant.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "flying": {
       "text": "Flying (This creature can only be blocked by creatures with flying or reach.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "haste": {
       "text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "hexproof": {
       "text": "Hexproof (This permanent can’t be the target of spells or abilities your opponents control.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "indestructible": {
       "text": "Indestructible (Effects that say “destroy” don’t destroy this.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "lifelink": {
       "text": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "menace": {
       "text": "Menace (This creature can’t be blocked except by two or more creatures.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "reach": {
       "text": "Reach (This creature can block creatures with flying.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "shroud": {
       "text": "Shroud (This permanent can’t be the target of any spells or abilities.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "trample": {
       "text": "Trample (This creature can deal excess combat damage to the player or planeswalker it’s attacking.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "vigilance": {
       "text": "Vigilance (Attacking doesn’t cause this creature to tap.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "cascade": {
       "text": "Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card with lesser mana value. You may cast that card without paying its mana cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "madness": {
       "text": "Madness [cost] (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "ninjutsu": {
       "text": "Ninjutsu [cost] ([cost], Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "escape": {
       "text": "Escape [cost] (You may cast this card from your graveyard for its escape cost by exiling other cards from your graveyard.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "embalm": {
       "text": "Embalm [cost] ([Cost], Exile this card from your graveyard: Create a token that’s a copy of it, except it’s a white Zombie with no mana cost. Embalm only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "eternalize": {
       "text": "Eternalize [cost] ([Cost], Exile this card from your graveyard: Create a 4/4 black Zombie token with no mana cost. Eternalize only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "mutate": {
       "text": "Mutate [cost] (If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "modular": {
       "text": "Modular N (This creature enters the battlefield with N +1/+1 counters on it. When it dies, you may put its +1/+1 counters on target artifact creature.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "persist": {
       "text": "Persist (When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner’s control with a -1/-1 counter on it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "undying": {
       "text": "Undying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner’s control with a +1/+1 counter on it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "aftermath": {
       "text": "Aftermath (Cast this spell only from your graveyard. Then exile it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "suspend": {
       "text": "Suspend N—[cost] (Rather than cast this card from your hand, pay [cost] and exile it with N time counters. At the beginning of your upkeep, remove a counter. When the last is removed, cast it without paying its mana cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "foretell": {
       "text": "Foretell [cost] (During your turn, you may pay {2} and exile this card from your hand face down. Cast it later for its foretell cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "bestow": {
       "text": "Bestow [cost] (If you cast this card for its bestow cost, it’s an Aura spell with enchant creature. If it’s not attached to a creature, it becomes a creature again.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "awaken": {
       "text": "Awaken N—[cost] (If you cast this spell for [cost], also put N +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "dash": {
       "text": "Dash [cost] (You may cast this spell for its dash cost. If you do, it gains haste, and return it from the battlefield to its owner’s hand at the beginning of the next end step.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "riot": {
       "text": "Riot (This creature enters the battlefield with your choice of a +1/+1 counter or haste.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "mentor": {
       "text": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "protection": {
       "text": "Protection from [quality] (This can’t be damaged, enchanted, equipped, blocked or targeted by anything [quality].)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "ward": {
       "text": "Ward [cost] (Whenever this permanent becomes the target of a spell or ability an opponent controls, counter it unless that player pays [cost].)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "flashback": {
       "text": "Flashback [cost] (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "cycling": {
       "text": "Cycling [cost] ([Cost], Discard this card: Draw a card.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "buyback": {
       "text": "Buyback [cost] (You may pay an additional [cost] as you cast this spell. If you do, put it into your hand instead of your graveyard as it resolves.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "kicker": {
       "text": "Kicker [Cost] (You may pay an additional [cost] as you cast this spell. If you do, [effect].)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "convoke": {
       "text": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature’s color.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "affinity": {
       "text": "Affinity for [type] (This spell costs {1} less to cast for each [type] you control.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "prowl": {
       "text": "Prowl [cost] (You may cast this for its prowl cost if you dealt combat damage to a player with a [subtype] this turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "spectacle": {
       "text": "Spectacle [Cost] (You may cast this card for its spectacle cost if an opponent lost life this turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "evoke": {
       "text": "Evoke [cost] (You may cast this spell for its evoke cost. If you do, it's sacrificed when it enters the battlefield.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "split second": {
       "text": "Split second (As long as this spell is on the stack, players can’t cast spells or activate abilities that aren’t mana abilities.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "unleash": {
       "text": "Unleash (You may have this creature enter the battlefield with a +1/+1 counter. It can’t block as long as it has a +1/+1 counter on it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "overload": {
       "text": "Overload [cost] (You may cast this spell for its overload cost. If you do, change its text by replacing all instances of “target” with “each.”)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "scavenge": {
       "text": "Scavenge [cost] ([Cost], Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card’s power on target creature. Scavenge only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "soulbond": {
       "text": "Soulbond (You may pair this creature with another unpaired creature when either enters the battlefield. They remain paired as long as you control both.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "morph": {
       "text": "Morph [cost] (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "megamorph": {
       "text": "Megamorph [cost] (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost with a +1/+1 counter.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "exploit": {
       "text": "Exploit (When this creature enters the battlefield, you may sacrifice a creature.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "intimidate": {
       "text": "Intimidate (This creature can’t be blocked except by artifact creatures and/or creatures that share a color with it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "extort": {
       "text": "Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "vanishing": {
       "text": "Vanishing N (This permanent enters with N time counters. At the beginning of your upkeep, remove one. Sacrifice it when the last is removed.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "fading": {
       "text": "Fading N (This permanent enters with N fade counters. Remove one at the beginning of your upkeep. Sacrifice it when the last is removed.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "storm": {
       "text": "Storm (When you cast this spell, copy it for each other spell cast this turn. You may choose new targets for the copies.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "myriad": {
       "text": "Myriad (When this creature attacks, for each opponent other than defending player, create a copy that’s tapped and attacking that opponent or a planeswalker they control. Exile the copies at end of combat.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "renown": {
       "text": "Renown N (When this creature deals combat damage to a player, if it isn’t renowned, put N +1/+1 counters on it and it becomes renowned.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "prowess": {
       "text": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "changeling": {
       "text": "Changeling (This card is every creature type.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "outlast": {
       "text": "Outlast [cost] ([Cost]: Put a +1/+1 counter on this creature. Activate only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "rebound": {
       "text": "Rebound (If you cast this spell from your hand, exile it as it resolves. At the beginning of your next upkeep, you may cast it without paying its mana cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "miracle": {
       "text": "Miracle [cost] (You may cast this card for its miracle cost when you draw it if it’s the first card you drew this turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "transmute": {
       "text": "Transmute [cost] ([Cost], Discard this card: Search your library for a card with the same mana value, reveal it, put it into your hand, then shuffle. Transmute only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "graft": {
       "text": "Graft N (This creature enters the battlefield with N +1/+1 counters on it. Whenever another creature enters the battlefield, you may move a +1/+1 counter from this creature onto it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "forecast": {
       "text": "Forecast — [Cost], Reveal this card from your hand: [Effect]. Activate only during your upkeep and only once each turn.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "replicate": {
       "text": "Replicate [cost] (When you cast this spell, copy it for each time you paid its replicate cost. You may choose new targets for the copies.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "recover": {
       "text": "Recover [cost] (When a creature is put into your graveyard from the battlefield, you may pay [cost]. If you do, return this card from your graveyard to your hand. Otherwise, exile this card.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "soulshift": {
       "text": "Soulshift N (When this creature dies, you may return target Spirit card with mana value N or less from your graveyard to your hand.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "level up": {
       "text": "Level up [cost] ([Cost]: Put a level counter on this. Level up only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "totem armor": {
       "text": "Totem armor (If enchanted permanent would be destroyed, instead remove all damage from it and destroy this Aura.) - obsolated",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "phasing": {
       "text": "Phasing (This permanent phases in or out during its controller’s untap step. It is treated as though it doesn’t exist while phased out.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "transfigure": {
       "text": "Transfigure [cost] ([Cost], Sacrifice this creature: Search your library for a creature card with the same mana value, put it onto the battlefield, then shuffle. Transfigure only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "poisonous": {
       "text": "Poisonous N (Whenever this creature deals combat damage to a player, that player gets N poison counters.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "wither": {
       "text": "Wither (This deals damage to creatures in the form of -1/-1 counters.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "infect": {
       "text": "Infect (This creature deals damage to creatures in the form of -1/-1 counters and to players in the form of poison counters.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "bushido": {
       "text": "Bushido N (When this blocks or becomes blocked, it gets +N/+N until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "rampage": {
       "text": "Rampage N (Whenever this creature becomes blocked, it gets +N/+N until end of turn for each creature blocking it beyond the first.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "flanking": {
       "text": "Flanking (Whenever a creature without flanking blocks this creature, the blocking creature gets -1/-1 until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "horsemanship": {
       "text": "Horsemanship (This creature can’t be blocked except by creatures with horsemanship.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "shadow": {
       "text": "Shadow (This creature can block or be blocked only by creatures with shadow.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "amplify": {
       "text": "Amplify N (As this creature enters the battlefield, reveal any number of cards in your hand that share a creature type with it. This creature enters the battlefield with N +1/+1 counters for each card revealed this way.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "banding": {
       "text": "Banding (Any creatures with banding, and up to one without, can attack in a band. Bands are blocked as a group. You choose how combat damage is assigned.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "cumulative upkeep": {
       "text": "Cumulative upkeep [cost] (At the beginning of your upkeep, put an age counter on this permanent. Then sacrifice it unless you pay its upkeep cost for each age counter on it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "meld": {
       "text": "Meld (You may meld two specific cards if you both own and control them. They form a single oversized card with combined characteristics.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "crew": {
       "text": "Crew N (Tap any number of creatures you control with total power N or more: This Vehicle becomes an artifact creature until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "assist": {
       "text": "Assist (Another player can help you cast this spell. They can pay up to half of its mana cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "devour": {
       "text": "Devour N (As this enters the battlefield, you may sacrifice any number of creatures. It enters the battlefield with N +1/+1 counters for each creature sacrificed.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "tribute": {
       "text": "Tribute N (As this creature enters the battlefield, an opponent may put N +1/+1 counters on it. If they don’t, [effect].)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "dredge": {
       "text": "Dredge N (If you would draw a card, you may instead put exactly N cards from the top of your library into your graveyard. If you do, return this card from your graveyard to your hand.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "delve": {
       "text": "Delve (Each card you exile from your graveyard while casting this spell pays for {1}.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "emerge": {
       "text": "Emerge [cost] (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature’s mana value.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "escalate": {
       "text": "Escalate [cost] (Pay this cost for each mode chosen beyond the first.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "cipher": {
       "text": "Cipher (Then you may exile this spell encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "splice": {
       "text": "Splice onto Arcane [cost] (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card’s effects to that spell.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "conspire": {
       "text": "Conspire (As you cast this spell, you may tap two untapped creatures you control that share a color with it. When you do, copy it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "entwine": {
       "text": "Entwine [cost] (Choose both if you pay the entwine cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "epic": {
       "text": "Epic (For the rest of the game, you can’t cast spells. At the beginning of each of your upkeeps, copy this spell except for its epic ability.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "hideaway": {
       "text": "Hideaway N (This enters the battlefield tapped. When it does, look at the top N cards of your library, exile one face down, then put the rest on the bottom. You may play the exiled card later under certain conditions.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "fabricate": {
       "text": "Fabricate N (When this creature enters the battlefield, put N +1/+1 counters on it or create N 1/1 Servo artifact creature tokens.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "craft": {
       "text": "Craft with [type] — [Cost] (You may exile this permanent and other permanents of the specified type to transform it. Activate only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "training": {
       "text": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "disturb": {
       "text": "Disturb [cost] (You may cast this card from your graveyard transformed for its disturb cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "decayed": {
       "text": "Decayed (This creature can’t block, and when it attacks, sacrifice it at end of combat.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "read ahead": {
       "text": "Read ahead (You may start this Saga on any chapter. Skip all previous chapters when it enters the battlefield.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "backup": {
       "text": "Backup N (When this creature enters the battlefield, put N +1/+1 counters on target creature. If it's another creature, it gains the listed abilities until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "bargain": {
       "text": "Bargain (You may sacrifice an artifact, enchantment, or token as you cast this spell for additional effect.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "toxic": {
       "text": "Toxic N (Players dealt combat damage by this creature also get N poison counters.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "prototype": {
       "text": "Prototype (You may cast this spell with different mana cost, power, and toughness. It retains its abilities and types.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "reconfigure": {
       "text": "Reconfigure [cost] ([Cost]: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "double agenda": {
       "text": "Double agenda (Hidden agenda variant allowing two conspiracies to affect the same card.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "hidden agenda": {
       "text": "Hidden agenda (Start the game with this conspiracy face down. You may turn it face up at any time to affect a named card.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "absorb": {
       "text": "Absorb N (If a source would deal damage to this creature, prevent N of that damage.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "afflict": {
       "text": "Afflict N (Whenever this creature becomes blocked, defending player loses N life.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "afterlife": {
       "text": "Afterlife N (When this creature dies, create N 1/1 white and black Spirit creature tokens with flying.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "annihilator": {
       "text": "Annihilator N (Whenever this creature attacks, defending player sacrifices N permanents.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "ascend": {
       "text": "Ascend (If you control ten or more permanents, you get the city’s blessing for the rest of the game.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "augment": {
       "text": "Augment [Cost] ([Cost]: Combine this creature with a host to create a new creature. Activate only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "aura swap": {
       "text": "Aura swap [Cost] ([Cost]: Exchange this Aura with an Aura card in your hand.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "battle cry": {
       "text": "Battle cry (Whenever this creature attacks, each other attacking creature gets +1/+0 until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "blitz": {
       "text": "Blitz [Cost] (You may cast this spell for its blitz cost. If you do, it gains haste and “When this creature dies, draw a card.” Sacrifice it at end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "bloodrush": {
       "text": "Bloodrush — [Cost], Discard this card: Target attacking creature gets +X/+Y and gains [ability] until end of turn.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "bloodthirst": {
       "text": "Bloodthirst N (If an opponent was dealt damage this turn, this creature enters the battlefield with N +1/+1 counters.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "boast": {
       "text": "Boast — [Cost]: Activate only if this creature attacked this turn and only once each turn.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "champion": {
       "text": "Champion a [Type] (When this enters the battlefield, sacrifice it unless you exile another [Type] you control. When this leaves the battlefield, return that card.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "cleave": {
       "text": "Cleave [Cost] (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "commander ninjutsu": {
       "text": "Commander ninjutsu [Cost] ([Cost], Return an unblocked attacker you control to hand: Put this card onto the battlefield tapped and attacking.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "compleated": {
       "text": "Compleated (This planeswalker can be cast for {P} mana instead of colored mana. If life was paid, it enters with fewer loyalty counters.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "double team": {
       "text": "Double team (When this creature attacks, if it’s not a token, conjure a duplicate into your hand. It loses double team.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "echo": {
       "text": "Echo [Cost] (At the beginning of your upkeep, if you didn’t pay this card’s echo cost, sacrifice it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "enlist": {
       "text": "Enlist (As this creature attacks, you may tap a non-attacking creature you control without summoning sickness. Add its power to this creature’s until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "fear": {
       "text": "Fear (This creature can’t be blocked except by artifact creatures and/or black creatures.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "for mirrodin!": {
       "text": "For Mirrodin! (When this Equipment enters the battlefield, create a 2/2 red Rebel creature token and attach it to it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "fortify": {
       "text": "Fortify [Cost] ([Cost]: Attach to target land you control. Fortify only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "frenzy": {
       "text": "Frenzy N (Whenever this creature attacks and isn’t blocked, it gets +N/+0 until end of turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "fuse": {
       "text": "Fuse (You may cast one or both halves of this split card from your hand.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "gravestorm": {
       "text": "Gravestorm (When you cast this spell, copy it for each permanent put into a graveyard this turn. You may choose new targets.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "haunt": {
       "text": "Haunt (When this dies, exile it haunting target creature. When that creature dies, [effect].)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "hexproof from": {
       "text": "Hexproof from [Quality] (This permanent can’t be the target of [Quality] spells or abilities your opponents control.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "improvise": {
       "text": "Improvise (Your artifacts can help cast this spell. Each artifact you tap pays for {1}.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "ingest": {
       "text": "Ingest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "islandcycling": {
       "text": "Islandcycling [Cost] ([Cost], Discard this card: Search your library for an Island card, reveal it, put it into your hand, then shuffle.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "jump-start": {
       "text": "Jump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "kinship": {
       "text": "Kinship — At the beginning of your upkeep, you may look at the top card of your library. If it shares a creature type with this, you may reveal it. If you do, [effect].",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "landwalk": {
       "text": "Landwalk (This creature can't be blocked as long as defending player controls a land with the specified land type.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "legacy": {
       "text": "Legacy (A variant ability from Un-sets, often treated like a static or triggered ability.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "legendary landwalk": {
       "text": "Legendary landwalk (Unblockable if defending player controls a legendary land.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "lieutenant": {
       "text": "Lieutenant — As long as you control your commander, [effect].",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "living metal": {
       "text": "Living metal (As long as it's your turn, this Vehicle is also a creature.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "living weapon": {
       "text": "Living weapon (When this Equipment enters the battlefield, create a 0/0 black Germ creature token, then attach this to it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "melee": {
       "text": "Melee (Whenever this creature attacks, it gets +1/+1 until end of turn for each opponent you attacked this combat.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "monstrosity": {
       "text": "Monstrosity N — [Cost] (If this creature isn’t monstrous, put N +1/+1 counters on it and it becomes monstrous.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "more than meets the eye": {
       "text": "More Than Meets the Eye [Cost] (You may cast this card converted for its alternate form and cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "mountaincycling": {
       "text": "Mountaincycling [Cost] ([Cost], Discard this card: Search your library for a Mountain card, put it into your hand, then shuffle.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "mountainwalk": {
       "text": "Mountainwalk (Unblockable as long as defending player controls a Mountain.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "multikicker": {
       "text": "Multikicker [Cost] (You may pay an additional [cost] any number of times as you cast this spell. [Effect per payment].)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "nonbasic landwalk": {
       "text": "Nonbasic landwalk (Unblockable if defending player controls a nonbasic land.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "offering": {
       "text": "Offering — You may cast this spell as though it had flash by sacrificing a [type] and paying the difference in mana cost.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "parley": {
       "text": "Parley — Each player reveals the top card of their library. For each nonland revealed this way, [effect].",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "plainscycling": {
       "text": "Plainscycling [Cost] ([Cost], Discard this card: Search your library for a Plains card, reveal it, put it into your hand, then shuffle.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "plainswalk": {
       "text": "Plainswalk (Unblockable if defending player controls a Plains.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "provoke": {
       "text": "Provoke (When this attacks, you may have target creature defending player controls untap and block it if able.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "rally": {
       "text": "Rally — Whenever [subtype] enters the battlefield under your control, [effect].",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "ravenous": {
       "text": "Ravenous (This creature enters the battlefield with X +1/+1 counters. If X is 5 or more, draw a card.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "reinforce": {
       "text": "Reinforce N — [Cost] ([Cost], Discard this card: Put N +1/+1 counters on target creature.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "retrace": {
       "text": "Retrace (You may cast this card from your graveyard by discarding a land card in addition to its other costs.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "ripple": {
       "text": "Ripple N (When you cast this spell, you may reveal the top N cards of your library. You may cast any of them with the same name.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "skulk": {
       "text": "Skulk (This creature can’t be blocked by creatures with greater power.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "slivercycling": {
       "text": "Slivercycling [Cost] ([Cost], Discard this card: Search for a Sliver card, reveal it, put it into your hand, then shuffle.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "specialize": {
       "text": "Specialize [Cost] ([Cost], Discard a card: Transform this card. Activate only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "squad": {
       "text": "Squad N (As an additional cost, you may pay [Cost] any number of times. Create N token copies of this spell.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "sunburst": {
       "text": "Sunburst (This permanent enters the battlefield with a +1/+1 or charge counter for each color of mana spent to cast it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "surge": {
       "text": "Surge [Cost] (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "suspect": {
       "text": "Suspect — To suspect a creature, it becomes suspected. A suspected creature has menace and can’t block. It remains suspected until it leaves the battlefield or an effect causes it to no longer be suspected.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "sweep": {
       "text": "Sweep — Return any number of [type]s you control to their owner’s hand. [Effect per card returned.]",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "transform": {
       "text": "Transform (Turn a double-faced card to its other side. This action is often linked to triggers or conditions.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "typecycling": {
       "text": "Typecycling [Cost] ([Cost], Discard this card: Search your library for a card with the given type, reveal it, put it into your hand, then shuffle.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "undaunted": {
       "text": "Undaunted (This spell costs {1} less to cast for each opponent.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "underdog": {
       "text": "Underdog — If you have less life than an opponent, [effect].",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "unearth": {
       "text": "Unearth [Cost] ([Cost]: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "void": {
       "text": "Void — If a nonland permanent left the battlefield this turn or a spell was warped this turn, [effect].",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "double": {
       "text": "Double — When this permanent enters, double a certain stat, value, or count. (Appears on specific cards with alternate effects.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "adapt": {
       "text": "Adapt N — [Cost]: If this creature has no +1/+1 counters on it, put N +1/+1 counters on it.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "basic landcycling": {
       "text": "Basic landcycling [Cost] — Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "casualty": {
       "text": "Casualty N — As you cast this spell, you may sacrifice a creature with power N. If you do, it triggers an additional effect.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "channel": {
       "text": "Channel — [Cost], Discard this card: [Effect]. Activate only as a sorcery.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "chroma": {
       "text": "Chroma — Effect is based on count of colored mana symbols among permanents you control.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "converge": {
       "text": "Converge — Effect is based on number of colors of mana spent to cast this spell.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "desertwalk": {
       "text": "Desertwalk — This creature can’t be blocked as long as defending player controls a Desert.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "dethrone": {
       "text": "Dethrone — Whenever this creature attacks the player with the greatest life total (or tied), put a +1/+1 counter on it.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "devoid": {
       "text": "Devoid — This card is colorless, regardless of its mana cost.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "eminence": {
       "text": "Eminence — While this is on the battlefield, if it’s not on the battlefield, you get an effect as long as you control it.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "encore": {
       "text": "Encore [Cost] (Exile this card from your graveyard. For each opponent, create a token copy that attacks that opponent this turn if able. Sacrifice them at end of combat. Activate only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "evolve": {
       "text": "Evolve — When a creature with greater power or toughness enters under your control, put a +1/+1 counter on this creature.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "exalted": {
       "text": "Exalted — Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "explore": {
       "text": "Explore — Reveal the top card of your library. Put that card into your hand if it's a land card. Otherwise, put a +1/+1 counter on this creature. Then you may put that card into your graveyard.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "forestcycling": {
       "text": "Forestcycling [Cost] — Discard this card: Search library for a Forest, put it into your hand.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "forestwalk": {
       "text": "Forestwalk — This creature can’t be blocked as long as defending player controls a Forest.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "hellbent": {
       "text": "Hellbent — Effect is active if you have no cards in hand.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "imprint": {
       "text": "Imprint — Exile a card to grant abilities to a permanent as long as it remains exiled.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "islandwalk": {
       "text": "Islandwalk — This creature can’t be blocked as long as defending player controls an Island.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "join forces": {
       "text": "Join forces — Players in turn order may pay any amount of mana; total mana increases effect symmetrically.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "landcycling": {
       "text": "Landcycling [Cost] — Discard this card: Search library for a land card, put it into your hand.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "radiance": {
       "text": "Radiance — Target something, effect applies to all permanents of same type that share a color with that target.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "strive": {
       "text": "Strive — You may pay extra as you cast this spell to target additional targets.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "support": {
       "text": "Support — Put +1/+1 counter on target creature and/or another creature.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "swampcycling": {
       "text": "Swampcycling [Cost] — Discard this card: Search library for a Swamp, put it into your hand.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "swampwalk": {
       "text": "Swampwalk — This creature can’t be blocked as long as defending player controls a Swamp.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "vote": {
       "text": "Vote — Players choose among options; result based on majority, sometimes with multiple votes allowed.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "manifest": {
       "text": "Manifest (Put a card from your library onto the battlefield face down as a 2/2 creature. It can be turned face up if it’s a creature card.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "daybound": {
       "text": "Daybound — If a player casts no spells during their own turn, the day becomes night; transforms related cards.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "nightbound": {
       "text": "Nightbound (If a player cast no spells during their own turn, it becomes night next turn.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "modified": {
       "text": "Modified — A creature you control is modified if it has a counter on it, is equipped, or is enchanted by an Aura you control.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "impending": {
       "text": "Impending N — [cost]: This permanent enters with N time counters and isn't a creature until the last is removed. At the beginning of your end step, remove a time counter.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "spree": {
       "text": "Spree — As you cast this spell, choose one or more modes. You can’t choose any mode more than once. Each chosen mode has an additional cost that must be paid. If you cast this spell without paying its mana cost, you must still pay the additional costs. The spell’s mana value is based only on its mana cost.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "plot": {
       "text": "Plot [cost] — As a sorcery, you may pay [cost] and exile this card from your hand plotted. On a later turn, you may cast it from exile without paying its mana cost, only as a sorcery. Cards that become plotted by any effect follow the same timing and can’t be cast the same turn they became plotted.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "saddle": {
       "text": "Saddle N — Activate only as a sorcery. Tap any number of untapped creatures you control other than this creature with total power N or greater: This Mount becomes saddled until end of turn. Other abilities on this card may refer to it being saddled.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "umbra armor": {
       "text": "Umbra armor — If enchanted creature would be destroyed, instead destroy this Aura and remove all damage from that creature. (New name for the mechanic previously called totem armor.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "freerunning": {
       "text": "Freerunning [cost] — An alternative cost you may pay to cast this spell if earlier in the turn an Assassin you controlled or a commander you controlled dealt combat damage to a player. Paying the freerunning cost doesn’t change the spell’s mana value.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "offspring": {
       "text": "Offspring [cost] — As you cast this creature, you may pay its offspring cost. When it enters, create a 1/1 token copy of it (same name, types, mana cost/value, and abilities, but power/toughness 1/1).",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "gift": {
       "text": "Gift [effect] — As you cast this spell, you may promise a gift to one opponent. They receive the gift when the spell resolves or the permanent enters. Additional effects may depend on whether a gift was promised.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "manifest dread": {
       "text": "Manifest dread — Look at the top two cards of your library. Manifest one face down as a 2/2 creature and put the other into your graveyard. (A manifested creature card can be turned face up by paying its mana cost as a special action.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "start your engines!": {
       "text": "Start your engines! — When you first control a permanent with start your engines!, your speed becomes 1. Whenever one or more opponents lose life during your turn, if your speed is less than 4, increase it by 1 (only once each turn).",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "max speed": {
       "text": "Max speed — As long as your speed is 4, this permanent has the listed ability.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "exhaust": {
       "text": "Exhaust — Activated abilities that can only be used once per object. Often marked by a counter or token creation. If the permanent leaves and re-enters, it is a new object and the exhaust ability can be used again.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "endure": {
       "text": "Endure N — When a creature with endure N enters the battlefield or otherwise gains endure N, choose one: put N +1/+1 counters on that creature, or create an N/N white Spirit creature token. If the endure ability resolves while the creature isn’t on the battlefield, create the Spirit token instead.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "renew": {
       "text": "Renew — An activated ability usable only from your graveyard. As part of the cost, exile the card. Effects typically add +1/+1 counters or grant other bonuses.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "mobilize": {
       "text": "Mobilize N — Whenever this creature attacks, create N 1/1 red Warrior creature tokens tapped and attacking. Sacrifice those tokens at the beginning of the next end step.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "harmonize": {
       "text": "Harmonize [cost] — You may cast this card from your graveyard by paying its harmonize cost. If you tap an untapped creature you control while casting it, reduce the generic portion of the cost by that creature’s power.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "job select": {
       "text": "Job Select — When an Equipment with job select enters the battlefield, create a 1/1 colorless Hero creature token, then attach that Equipment to the newly created token.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "tiered": {
       "text": "Tiered [cost] — This keyword appears on modal spells with three different modes. You choose one mode and pay its additional cost. Mana value is based only on the card’s mana cost, not any additional cost.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "warp": {
       "text": "Warp [cost] (You may cast this spell for its warp cost. If you do, it enters the battlefield. At the beginning of the next end step, exile it. You may later cast it from exile for its mana cost.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "station": {
       "text": "Station — [Ability] Tap an untapped creature you control: Put charge counters equal to that creature’s power on this permanent. Activate only as a sorcery. When a threshold is reached, this permanent becomes a creature with abilities.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "spacecraft": {
       "text": "Spacecraft — A new artifact subtype. Many spacecraft have station abilities that let them transform into artifact creatures once enough charge counters are placed.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "planet": {
       "text": "Planet — A new land subtype. Planets often provide unique mana abilities or effects tied to their planetary type.",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "cast": {
       "text": "To cast a spell, you put it on the stack, choose modes, targets, and pay its mana and additional costs. It then resolves or gets countered.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "counter": {
       "text": "To counter a spell or ability is to cancel it before it resolves. A countered spell goes to the graveyard.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "create": {
       "text": "To create a token is to put it onto the battlefield. Tokens can be creatures, treasures, clues, food, etc.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "destroy": {
       "text": "To destroy a permanent is to put it into its owner’s graveyard. Indestructible permanents cannot be destroyed.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "discard": {
       "text": "To discard a card is to put it from your hand into your graveyard. Some effects require discarding as a cost or effect.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "exile": {
       "text": "To exile a card is to put it outside the game. It stays exiled unless another effect brings it back.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "play": {
       "text": "To play a land or cast a spell is to put it into action. Playing a land doesn’t use the stack.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "regenerate": {
       "text": "To regenerate is to prevent a creature from dying. The next time it would be destroyed, it taps and is removed from combat instead.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "reveal": {
       "text": "To reveal a card is to show it to all players, usually from your hand or the top of your library.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "sacrifice": {
       "text": "To sacrifice a permanent is to put it into its owner's graveyard. Sacrificing can’t be prevented.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "shuffle": {
       "text": "To shuffle means to randomize the order of cards in a library or other zone. Often done after searches.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "tap": {
       "text": "To tap a card is to turn it sideways to indicate it’s been used. Commonly used for mana or attacking.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "untap": {
       "text": "To untap is to rotate a tapped card back to its upright position. Happens during the untap step or via effects.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "surveil": {
       "text": "Surveil N (Look at the top N cards of your library, then put any number into your graveyard and the rest back on top in any order.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "connive": {
       "text": "Connive (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "venture into the dungeon": {
       "text": "Venture into the dungeon (Enter the first room of a dungeon or advance to the next room if already inside one.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "exert": {
       "text": "Exert (When you exert a creature, it won’t untap during your next untap step. In exchange, it usually gets a bonus.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "investigate": {
       "text": "Investigate (Create a colorless Clue artifact token with '2, Sacrifice this: Draw a card.')",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "proliferate": {
       "text": "Proliferate (Choose any number of permanents and/or players with counters, then give each another of those counters.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "mill": {
       "text": "Mill N (Put the top N cards of a player’s library into their graveyard.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "learn": {
       "text": "Learn (You may reveal a Lesson card from outside the game and put it into your hand, or discard a card to draw a card.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "scry": {
       "text": "Scry N (Look at the top N cards of your library. Put any number on the bottom and the rest on top in any order.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "populate": {
       "text": "Populate (Create a token that’s a copy of a creature token you control.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "detain": {
       "text": "Detain (Until your next turn, target nonland permanent an opponent controls can’t attack, block, or activate its abilities.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "amass": {
       "text": "Amass N (Put N +1/+1 counters on an Army you control. If you don’t control one, create a 0/0 black Army creature token first.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "incubate": {
       "text": "Incubate N (Create an Incubator token with N +1/+1 counters. You may transform it later into a 0/0 Phyrexian artifact creature.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "clash": {
       "text": "Clash (Each clashing player reveals the top card of their library, then puts it on top or bottom. Higher mana value wins the clash.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "fateseal": {
       "text": "Fateseal N (Look at the top N cards of an opponent’s library. You may put any number of them on the bottom and the rest on top in any order.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "planeswalk": {
       "text": "Planeswalk (Move to a new plane card. Triggers planechase abilities.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "time travel": {
       "text": "Time travel (Un-set only: advance or rewind turns. For silver-border formats only.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "set in motion": {
       "text": "Set in motion (Start a phenomenon card’s effect at the beginning of a Planechase game.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "abandon": {
       "text": "Abandon (Move away from the current plane card without triggering a planeswalk effect.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "assemble": {
       "text": "Assemble (Put a Contraption card into one of your sprockets.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "bolster": {
       "text": "Bolster N (Choose a creature you control with the least toughness and put N +1/+1 counters on it.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "cloak": {
       "text": "Cloak (To cloak a card is to put it onto the battlefield face down as a 2/2 creature with ward {2}. It can be turned face up if it's a creature card.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "convert": {
       "text": "Convert (Transform this double-faced card.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "forage": {
       "text": "Forage — As an additional cost, either exile three cards from your graveyard or sacrifice a Food. Triggered abilities that care about 'whenever you forage' only look for this instruction, not generic exiling or sacrificing.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "open an attraction": {
       "text": "Open an Attraction (Reveal cards from your attraction deck until you reveal one that isn’t already open. Put it onto the battlefield.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "roll to visit your attractions": {
       "text": "Roll to visit your Attractions (At the beginning of your main phase, roll a six-sided die to see which attractions you visit.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "activate": {
       "text": "Activate — See rule 601.2: Pay costs to activate an activated ability; put it on the stack.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "attach": {
       "text": "Attach — The action of putting an Aura or Equipment onto a permanent.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "exchange": {
       "text": "Exchange — Swap control or characteristics of two permanent or cards as instructed.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "fight": {
       "text": "Fight — Two target creatures deal damage equal to their power to each other.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "collect evidence": {
       "text": "Collect evidence — Arena-specific: Create a Clue token.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "discover": {
       "text": "Discover — Arena-specific: Reveal cards until you find a nonland, then put it into your hand.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "demonstrate": {
       "text": "Demonstrate — When you cast this spell, you may copy it. If you do, choose an opponent. That player also copies the spell. Players may choose new targets for their copies.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "goad": {
       "text": "Goad — Until your next turn, this creature attacks each combat if able and attacks a player other than you if able.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "behold": {
       "text": "Behold X — As you cast a spell with behold, either reveal a X card from your hand or choose a X you control. The spell checks whether you beheld a X for additional effects.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "behold a dragon": {
       "text": "Behold a Dragon (As an additional cost or condition on some spells, either choose a Dragon you control or reveal a Dragon card from your hand. Some effects check whether you beheld a Dragon.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "web-slinging": {
       "text": "Web-slinging [cost] (You may cast this spell for its web-slinging cost if you return a tapped creature you control to its owner's hand. Returning the tapped creature is part of the cost. This does not change when you can cast the spell.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "enweb": {
       "text": "Enweb [cost] (You may cast this spell for its enweb cost if you return a tapped creature you control to its owner's hand. Returning the tapped creature is part of the cost. This does not change when you can cast the spell.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "mayhem": {
       "text": "Mayhem [cost] (You may cast this card from your graveyard for its mayhem cost if you discarded it this turn. Normal timing rules apply.)",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "infinity": {
       "text": "Infinity (∞) — This permanent has the listed ability only while it is harnessed.",
-      "type": "keywordAction",
-      "image": null
+      "type": "keywordAction"
     },
     "landfall": {
       "text": "Landfall — Whenever a land enters the battlefield under your control, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "delirium": {
       "text": "Delirium — If there are four or more card types among cards in your graveyard, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "raid": {
       "text": "Raid — If you attacked with a creature this turn, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "morbid": {
       "text": "Morbid — If a creature died this turn, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "metalcraft": {
       "text": "Metalcraft — If you control three or more artifacts, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "spell mastery": {
       "text": "Spell mastery — If there are two or more instant or sorcery cards in your graveyard, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "ferocious": {
       "text": "Ferocious — If you control a creature with power 4 or greater, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "formidable": {
       "text": "Formidable — If creatures you control have total power 8 or greater, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "fateful hour": {
       "text": "Fateful hour — If you have 5 or less life, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "domain": {
       "text": "Domain — Effect based on number of basic land types among lands you control.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "constellation": {
       "text": "Constellation — Whenever an enchantment enters the battlefield under your control, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "heroic": {
       "text": "Heroic — Whenever you cast a spell that targets this creature, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "threshold": {
       "text": "Threshold — As long as seven or more cards are in your graveyard, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "battalion": {
       "text": "Battalion — Whenever this and at least two other creatures attack, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "undergrowth": {
       "text": "Undergrowth — Effect based on number of creature cards in your graveyard.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "magecraft": {
       "text": "Magecraft — Whenever you cast or copy an instant or sorcery spell, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "pack tactics": {
       "text": "Pack tactics — If you attack with creatures with total power 6 or greater, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "coven": {
       "text": "Coven — If you control three or more creatures with different powers, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "adamant": {
       "text": "Adamant — If at least three mana of the same color was spent to cast this spell, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "alliance": {
       "text": "Alliance — Whenever another creature enters the battlefield under your control, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "celebration": {
       "text": "Celebration — If two or more nonland permanents entered the battlefield under your control this turn, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "descend": {
       "text": "Descend — If a permanent card was put into your graveyard this turn, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "fathomless descent": {
       "text": "Fathomless Descent — Effects based on the number of permanent cards in your graveyard.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "corrupted": {
       "text": "Corrupted — If an opponent has three or more poison counters, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "survival": {
       "text": "Survival — If you control no other creatures, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "paradox": {
       "text": "Paradox — If you cast a spell from anywhere other than your hand this turn, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "enrage": {
       "text": "Enrage — Whenever this creature is dealt damage, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "will of the planeswalkers": {
       "text": "Will of the Planeswalkers — Starting with you, each player votes for chaos or stability. Then effects happen based on the majority vote.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "secret council": {
       "text": "Secret council — Players vote in secret, then reveal simultaneously. Effects trigger based on vote outcomes.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "addendum": {
       "text": "Addendum — If you cast this spell during your main phase, it gains an additional effect.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "choose a background": {
       "text": "Choose a background — You select a Background enchantment to pair with a partner creature.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "revolt": {
       "text": "Revolt — If a permanent you controlled left the battlefield this turn, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "teamwork": {
       "text": "Teamwork — Whenever this creature and another attack together, [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "tempting offer": {
       "text": "Tempting offer — When you cast this spell, each opponent may copy it and choose a target. For each one who does, [bonus effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "will of the council": {
       "text": "Will of the Council — Players vote for options; the majority determines the outcome, but minority options may still trigger.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "council's dilemma": {
       "text": "Council's dilemma — When this enters, players vote for options; effects resolve based on votes.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "grandeur": {
       "text": "Grandeur — Discard another card with the same name: [effect].",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "valiant": {
       "text": "Valiant — Ability word marking abilities that trigger whenever a creature becomes the target of a spell or ability you control.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     },
     "flurry": {
       "text": "Flurry — Ability word marking abilities that trigger when you cast your second spell each turn.",
-      "type": "abilityWord",
-      "image": null
+      "type": "abilityWord"
     }
   },
   "arena": {
     "heist": {
       "text": "Heist (Exile the top card of your library. You may play that card this turn if you attacked this turn.)",
-      "type": "arenaOnly",
-      "image": null
+      "type": "arenaOnly"
     },
     "perpetual": {
       "text": "Perpetual (Effects with this keyword apply permanently, even across zone changes.)",
-      "type": "arenaOnly",
-      "image": null
+      "type": "arenaOnly"
     },
     "spellbook": {
       "text": "Spellbook (When triggered, you may choose one of several predefined cards to conjure into your hand.)",
-      "type": "arenaOnly",
-      "image": null
+      "type": "arenaOnly"
     },
     "intensity": {
       "text": "Intensity — An Arena-only numeric value that starts at a defined number (Starting Intensity) and increases as specified by the card. The card’s effects scale with its current intensity, which updates visually in-game.",
-      "type": "arenaOnly",
-      "image": null
+      "type": "arenaOnly"
     }
   },
   "special": {
@@ -1693,9 +1359,11 @@
     "harnessed": "Harnessed — A designation a permanent can have after you harness it. The ∞ ability functions only while it is harnessed. Copies are not harnessed. If it leaves the battlefield and returns, it is no longer harnessed."
   },
   "special_counters": {
-    "finality": "Finality Counter — If a permanent with a finality counter would die, exile it instead.",
+    "poison": "Poison Counter — A counter a player can have. A player with ten or more poison counters loses the game. (This is a state-based action.)",
     "shield": "Shield Counter — If this permanent would be destroyed or dealt damage, remove a shield counter instead.",
-    "stun": "Stun Counter — If a permanent with a stun counter would untap, remove one instead."
+    "stun": "Stun Counter — (Can be placed on untapped permanents.) If a tapped permanent with one or more stun counters would untap, it stays tapped and one stun counter is removed from it instead.",
+    "finality": "Finality Counter — If a permanent with a finality counter would die, exile it instead.",
+    "rad": "Rad Counter — At the beginning of your precombat main phase, if you have any rad counters, mill that many cards. For each nonland card milled this way, you lose 1 life and remove one rad counter."
   },
   "special_tokens": {
     "blood": "Blood Token — Artifact token with “{1}, {T}, Discard a card, Sacrifice this artifact: Draw a card.” Introduced in Innistrad: Crimson Vow (2021).",
@@ -1706,121 +1374,93 @@
     "food": "Food Token — Artifact token with “{2}, {T}, Sacrifice this artifact: You gain 3 life.” First appeared in Throne of Eldraine (2019).",
     "incubator": "Incubator Token — Artifact token with “{2}: Transform this artifact.” It transforms into a 0/0 Phyrexian artifact creature with N +1/+1 counters on it.",
     "powerstone": "Powerstone Token — Artifact token with “{T}: Add {C}. This mana can’t be spent to cast a nonartifact spell.” Introduced in The Brothers' War (2022).",
-    "junk": "Junk Token — Artifact token with “{T}, Sacrifice this artifact: Exile the top card of your library. You may play that card this turn.”",
     "shard": "Shard Token — Enchantment token with “{2}, Sacrifice this enchantment: Scry 1, then draw a card.” Created by the Constellation mechanic (Kaldheim Commander decks).",
     "role": "Role Token — Enchantment Aura token with various keywords and abilities. Created by cards in Wilds of Eldraine (2023). Only one Role per creature per controller.",
-    "cursed": "Cursed — Enchanted creature has base power and toughness 1/1. {{ROLE}}",
-    "monster": "Monster — Enchanted creature gets +1/+1 and has trample. {{ROLE}}",
-    "royal": "Royal — Enchanted creature gets +1/+1 and has ward {1}. {{ROLE}}",
-    "sorcerer": "Sorcerer — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, scry 1.' {{ROLE}}",
-    "wicked": "Wicked — Enchanted creature gets +1/+1. When this Aura is put into a graveyard from the battlefield, each opponent loses 1 life. {{ROLE}}",
-    "young hero": "Young Hero — Enchanted creature has 'Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.' {{ROLE}}",
-    "virtuous": "Virtuous — Enchanted creature gets +1/+1 for each enchantment you control. {{ROLE}}",
-    "chef": "Chef — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, create a Food token.' {{ROLE}}",
-    "huntsman": "Huntsman — Enchanted creature gets +1/+1 and has '{T}: Add {G}.' {{ROLE}}",
-    "questing": "Questing — Enchanted creature has all abilities of Questing Beast. {{ROLE}}",
-    "lander": "Lander Token — Artifact token with “{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.”"
+    "junk": "Junk Token — Artifact token with “{T}, Sacrifice this artifact: Exile the top card of your library. You may play that card this turn.”",
+    "meteorite": "Meteorite Token — Artifact token with “When Meteorite enters the battlefield, it deals 2 damage to any target.” and “{T}: Add one mana of any color.”",
+    "lander": "Lander Token — Artifact token with “{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.”",
+    "munitions": "Munitions Token — Artifact token with “When this token leaves the battlefield, it deals 2 damage to any target.”"
   },
   "evergreen": {
     "deathtouch": {
       "text": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "defender": {
       "text": "Defender (This creature can’t attack.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "double strike": {
       "text": "Double strike (This creature deals both first‑strike and regular combat damage.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "enchant": {
       "text": "Enchant — [the enchanted permanent type] (This Aura enters the battlefield attached to that permanent.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "equip": {
       "text": "Equip [cost] (Attach this to target creature you control. Activate only as a sorcery.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "first strike": {
       "text": "First strike (This creature deals combat damage before creatures without first strike.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "flash": {
       "text": "Flash (You may cast this spell any time you could cast an instant.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "flying": {
       "text": "Flying (This creature can only be blocked by creatures with flying or reach.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "haste": {
       "text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "hexproof": {
       "text": "Hexproof (This permanent can’t be the target of spells or abilities your opponents control.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "indestructible": {
       "text": "Indestructible (Effects that say “destroy” don’t destroy this.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "lifelink": {
       "text": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "menace": {
       "text": "Menace (This creature can’t be blocked except by two or more creatures.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "reach": {
       "text": "Reach (This creature can block creatures with flying.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "scry": {
       "text": "Scry N (Look at the top N cards of your library. Put any number on the bottom and the rest on top in any order.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "shroud": {
       "text": "Shroud (This permanent can’t be the target of any spells or abilities.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "surveil": {
       "text": "Surveil N (Look at the top N cards of your library, then put any number into your graveyard and the rest back on top in any order.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "trample": {
       "text": "Trample (This creature can deal excess combat damage to the player or planeswalker it’s attacking.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "vigilance": {
       "text": "Vigilance (Attacking doesn’t cause this creature to tap.)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     },
     "ward": {
       "text": "Ward [cost] (Whenever this permanent becomes the target of a spell or ability an opponent controls, counter it unless that player pays [cost].)",
-      "type": "keywordAbility",
-      "image": null
+      "type": "keywordAbility"
     }
   },
   "deckbuilding": {
@@ -1830,18 +1470,48 @@
     "partner with": "Partner with [name] (When this creature enters the battlefield, target player may search their library for [name], reveal it, put it into their hand, then shuffle.)",
     "friends forever": "Friends forever (You can have two commanders if both have friends forever.)"
   },
-  "roles": [
-    "chef",
-    "cursed",
-    "huntsman",
-    "monster",
-    "questing",
-    "royal",
-    "sorcerer",
-    "virtuous",
-    "wicked",
-    "young hero"
-  ],
+  "roles": {
+    "cursed": {
+      "text": "Cursed — Enchanted creature has base power and toughness 1/1. \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "monster": {
+      "text": "Monster — Enchanted creature gets +1/+1 and has trample. \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "royal": {
+      "text": "Royal — Enchanted creature gets +1/+1 and has ward {1}. \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "sorcerer": {
+      "text": "Sorcerer — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, scry 1.' \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "wicked": {
+      "text": "Wicked — Enchanted creature gets +1/+1. When this Aura is put into a graveyard from the battlefield, each opponent loses 1 life. \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "young hero": {
+      "text": "Young Hero — Enchanted creature has 'Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.' \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "virtuous": {
+      "text": "Virtuous — Enchanted creature gets +1/+1 for each enchantment you control. \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "chef": {
+      "text": "Chef — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, create a Food token.' \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "huntsman": {
+      "text": "Huntsman — Enchanted creature gets +1/+1 and has '{T}: Add {G}.' \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    },
+    "questing": {
+      "text": "Questing — Enchanted creature has all abilities of Questing Beast. \n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)",
+      "type": "role"
+    }
+  },
   "history": [
     {
       "code": "MH3",

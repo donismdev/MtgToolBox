@@ -25,8 +25,8 @@ from resources.keyword_descriptions import (
 def _norm_key(s: str) -> str:
 	return s.strip().lower()
 
-def _mk_entry(text: str, type_: str, image=None) -> dict:
-	return {"text": text, "type": type_, "image": image}
+def _mk_entry(text: str, type_: str) -> dict:
+	return {"text": text, "type": type_}
 
 # ====== 에버그린 / 아레나-온리 정의 ======
 EVERGREEN_SET = {
@@ -35,7 +35,7 @@ EVERGREEN_SET = {
 	"vigilance","ward","surveil","scry"
 }
 
-# Arena only 키워드: (요청 반영) heist 포함
+# Arena only 키워드
 ARENA_ONLY_SET = {
 	"seek", "conjure", "perpetual", "spellbook", "intensity", "materialize", "heist"
 }
@@ -85,10 +85,8 @@ for kw in sorted(EVERGREEN_SET):
 	if key in abilities:
 		text = abilities[key]["text"]
 	elif key in arena_only:
-		# 에버그린이 아레나 전용일 리는 거의 없지만 혹시
 		text = arena_only[key]["text"]
 	else:
-		# 원문 사전에서 직접 찾아보기
 		text = keywordTexts.get(key) or abilityWords.get(key) or keywordActions.get(key)
 		if text is None:
 			not_found.append(kw)
@@ -100,12 +98,25 @@ special = { _norm_key(k): v.strip() for k, v in specialWords.items() }
 special_counters = { _norm_key(k): v.strip() for k, v in specialCounters.items() }
 special_tokens = { _norm_key(k): v.strip() for k, v in specialTokens.items() }
 deckbuilding = { _norm_key(k): v.strip() for k, v in deckbuildingKeywords.items() }
-roles = sorted({ _norm_key(r) for r in role })
+
+# Role 공통 꼬리문구 (WOE 규칙 요약)
+ROLE_CANONICAL_TAIL = "\n(Enchant creature. If a creature would be enchanted by two or more Role Auras you control, choose one and put the rest into their owners’ graveyards.)"
+
+# roles: 키 목록 대신 설명이 들어간 dict로 정규화
+roles = {}
+for k, v in role.items():
+	key = _norm_key(k)
+	text = (v or "").strip()
+	if "{{ROLE}}" in text:
+		text = text.replace("{{ROLE}}", ROLE_CANONICAL_TAIL)
+	if text == "":
+		not_found.append(k.strip())
+		continue
+	roles[key] = _mk_entry(text, "role")
 
 # ====== Arena 전용 중 설명 누락 검사 -> not_found에 추가 ======
 for key in sorted(ARENA_ONLY_SET):
 	if key not in arena_only:
-		# 설명이 원본문서에 없으면 not_found로
 		src = keywordTexts.get(key) or abilityWords.get(key) or keywordActions.get(key)
 		if src:
 			arena_only[key] = _mk_entry(src, "arenaOnly")
@@ -114,7 +125,6 @@ for key in sorted(ARENA_ONLY_SET):
 
 # ====== 메타 ======
 def _derive_version():
-	# history의 가장 최신 release_date 기반 간단 버전 문자열
 	try:
 		if history:
 			latest = max(history, key=lambda h: h.get("release_date","0000-00-00"))
@@ -138,9 +148,9 @@ final_output = {
 	"special_counters": special_counters,
 	"special_tokens": special_tokens,
 	"evergreen": evergreen,
-	"deckbuilding": deckbuilding,   # (신규) 덱빌딩 키워드
-	"roles": roles,                 # (신규) 롤 토큰 목록(정렬본)
-	"history": history,             # (신규) 세트 히스토리 원본 그대로
+	"deckbuilding": deckbuilding,
+	"roles": roles,                 # (변경) dict로 저장
+	"history": history,
 	"not_found": sorted(set(not_found))
 }
 
@@ -182,7 +192,17 @@ if previous_output:
 	print_diff("special_counters", previous_output.get("special_counters", {}), special_counters)
 	print_diff("special_tokens", previous_output.get("special_tokens", {}), special_tokens)
 	print_diff("evergreen", previous_output.get("evergreen", {}), evergreen)
+
+	# roles: 구버전이 list(키 목록)일 수도, dict(신규 구조)일 수도 있으니 안정 비교
+	prev_roles = previous_output.get("roles", {})
+	if isinstance(prev_roles, list):
+		prev_roles_dict = {k: True for k in prev_roles}
+	elif isinstance(prev_roles, dict):
+		prev_roles_dict = {k: True for k in prev_roles.keys()}
+	else:
+		prev_roles_dict = {}
+	print_diff("roles", prev_roles_dict, {k: True for k in roles.keys()})
+
 	print_diff("deckbuilding", previous_output.get("deckbuilding", {}), deckbuilding)
-	print_diff("roles", {k:True for k in previous_output.get("roles", [])}, {k:True for k in roles})
 
 input("ability_data 빌드 종료. press enter")

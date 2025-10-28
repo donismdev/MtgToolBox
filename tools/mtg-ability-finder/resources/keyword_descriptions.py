@@ -461,17 +461,18 @@ specialCounters = {
 
 # "charge": "Charge Counter — Used on spacecraft and stations to track progress until transformation."
 
-ROLE = {
-	"cursed",
-	"monster",
-	"royal",
-	"sorcerer",
-	"wicked",
-	"young hero",	
-	"virtuous",
-	"chef",
-	"huntsman",
-	"questing"
+role = {
+	# role tokens
+	"cursed": "Cursed — Enchanted creature has base power and toughness 1/1. {{ROLE}}",
+	"monster": "Monster — Enchanted creature gets +1/+1 and has trample. {{ROLE}}",
+	"royal": "Royal — Enchanted creature gets +1/+1 and has ward {1}. {{ROLE}}",
+	"sorcerer": "Sorcerer — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, scry 1.' {{ROLE}}",
+	"wicked": "Wicked — Enchanted creature gets +1/+1. When this Aura is put into a graveyard from the battlefield, each opponent loses 1 life. {{ROLE}}",
+	"young hero": "Young Hero — Enchanted creature has 'Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.' {{ROLE}}",
+	"virtuous": "Virtuous — Enchanted creature gets +1/+1 for each enchantment you control. {{ROLE}}",
+	"chef": "Chef — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, create a Food token.' {{ROLE}}",
+	"huntsman": "Huntsman — Enchanted creature gets +1/+1 and has '{T}: Add {G}.' {{ROLE}}",
+	"questing": "Questing — Enchanted creature has all abilities of Questing Beast. {{ROLE}}",
 } # role
 
 specialTokens = {
@@ -484,21 +485,11 @@ specialTokens = {
     "food": "Food Token — Artifact token with “{2}, {T}, Sacrifice this artifact: You gain 3 life.” First appeared in Throne of Eldraine (2019).",
     "incubator": "Incubator Token — Artifact token with “{2}: Transform this artifact.” It transforms into a 0/0 Phyrexian artifact creature with N +1/+1 counters on it.",
     "powerstone": "Powerstone Token — Artifact token with “{T}: Add {C}. This mana can’t be spent to cast a nonartifact spell.” Introduced in The Brothers' War (2022).",
-    "junk": "Junk Token — Artifact token with “{T}, Sacrifice this artifact: Exile the top card of your library. You may play that card this turn.”",
+
     "shard": "Shard Token — Enchantment token with “{2}, Sacrifice this enchantment: Scry 1, then draw a card.” Created by the Constellation mechanic (Kaldheim Commander decks).",
     "role": "Role Token — Enchantment Aura token with various keywords and abilities. Created by cards in Wilds of Eldraine (2023). Only one Role per creature per controller.",
-
-	# role tokens
-	"cursed": "Cursed — Enchanted creature has base power and toughness 1/1. {{ROLE}}",
-	"monster": "Monster — Enchanted creature gets +1/+1 and has trample. {{ROLE}}",
-	"royal": "Royal — Enchanted creature gets +1/+1 and has ward {1}. {{ROLE}}",
-	"sorcerer": "Sorcerer — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, scry 1.' {{ROLE}}",
-	"wicked": "Wicked — Enchanted creature gets +1/+1. When this Aura is put into a graveyard from the battlefield, each opponent loses 1 life. {{ROLE}}",
-	"young hero": "Young Hero — Enchanted creature has 'Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.' {{ROLE}}",
-	"virtuous": "Virtuous — Enchanted creature gets +1/+1 for each enchantment you control. {{ROLE}}",
-	"chef": "Chef — Enchanted creature gets +1/+1 and has 'Whenever this creature attacks, create a Food token.' {{ROLE}}",
-	"huntsman": "Huntsman — Enchanted creature gets +1/+1 and has '{T}: Add {G}.' {{ROLE}}",
-	"questing": "Questing — Enchanted creature has all abilities of Questing Beast. {{ROLE}}",
+	
+	"junk": "Junk Token — Artifact token with “{T}, Sacrifice this artifact: Exile the top card of your library. You may play that card this turn.”",
 
 	# OTJ - 2024-04-19
 	"meteorite": "Meteorite Token — Artifact token with “When Meteorite enters the battlefield, it deals 2 damage to any target.” and “{T}: Add one mana of any color.”",
