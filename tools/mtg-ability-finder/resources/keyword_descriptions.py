@@ -500,8 +500,12 @@ specialTokens = {
 	"huntsman": "Huntsman — Enchanted creature gets +1/+1 and has '{T}: Add {G}.' {{ROLE}}",
 	"questing": "Questing — Enchanted creature has all abilities of Questing Beast. {{ROLE}}",
 
+	# OTJ - 2024-04-19
+	"meteorite": "Meteorite Token — Artifact token with “When Meteorite enters the battlefield, it deals 2 damage to any target.” and “{T}: Add one mana of any color.”",
+
 	# EOE - 2025-08-01
 	"lander": "Lander Token — Artifact token with “{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.”",
+	"munitions": "Munitions Token — Artifact token with “When this token leaves the battlefield, it deals 2 damage to any target.”",
 } # specialTokens
 
 deckbuildingKeywords = {
