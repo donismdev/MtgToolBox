@@ -442,15 +442,26 @@ specialWords = {
 } # specialWords
 
 specialCounters = {
-	"finality": "Finality Counter — If a permanent with a finality counter would die, exile it instead.",
+
+	# LEG - 1994-06-10
+	"poison": "Poison Counter — A counter a player can have. A player with ten or more poison counters loses the game. (This is a state-based action.)",
+
+	# SNC - 2022-04-29
 	"shield": "Shield Counter — If this permanent would be destroyed or dealt damage, remove a shield counter instead.",
-	"stun": "Stun Counter — If a permanent with a stun counter would untap, remove one instead.",
+
+	# DMU - 2022-09-09
+	"stun": "Stun Counter — (Can be placed on untapped permanents.) If a tapped permanent with one or more stun counters would untap, it stays tapped and one stun counter is removed from it instead.",
+
+	# MKM - 2024-02-09
+	"finality": "Finality Counter — If a permanent with a finality counter would die, exile it instead.",
+
+	# PIP - 2024-03-08
+	"rad": "Rad Counter — At the beginning of your precombat main phase, if you have any rad counters, mill that many cards. For each nonland card milled this way, you lose 1 life and remove one rad counter."
 } # specialCounters
 
 # "charge": "Charge Counter — Used on spacecraft and stations to track progress until transformation."
 
-
-role = {
+ROLE = {
 	"cursed",
 	"monster",
 	"royal",
