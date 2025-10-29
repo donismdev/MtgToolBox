@@ -509,6 +509,28 @@ deckbuildingKeywords = {
 
 history = [
 
+	# PIP - Fallout
+	{
+		"code": "PIP",
+		"name": "Magic: The Gathering – Fallout",
+		"release_date": "2024-03-08",
+		"new_keywords": [
+			"junk",
+			"rad_counters",
+			"energy",
+			"squad"
+		],
+		"ability_debut": [
+			"Junk",
+			"Rad"
+		],
+		"history_notes": [],
+		"related_sets": [
+			"PIP",
+			"TPIP"
+		]
+	},
+
 	# MH3 - Modern Horizons 3
 	{
 		"code": "MH3",
@@ -518,10 +540,11 @@ history = [
 			"kindred",
 			"umbra armor"
 		],
+		"ability_debut": [],
 		"history_notes": [
-			"'Tribal' cards are retitled to the **kindred** card type. Existing cards are updated accordingly.",
-			"'Totem armor' is retitled **umbra armor**; functionality unchanged.",
-			"**Emerge** debuts an artifact-sacrifice variant in this set."
+			"kindred : 'Tribal' cards are retitled to the **kindred** card type. Existing cards are updated accordingly.",
+			"umbra armor : 'Totem armor' is retitled **umbra armor**; functionality unchanged.",
+			"emerge : debuts an artifact-sacrifice variant in this set."
 		],
 		"related_sets": [
 			"MH3",
@@ -543,9 +566,10 @@ history = [
 		"new_keywords": [
 			"freerunning"
 		],
-		"history_notes": [
-			"Freerunning debuts as an alternate cost unlocked if an Assassin or commander you controlled dealt combat damage to a player earlier in the turn."
+		"ability_debut": [
+			"Freerunning"
 		],
+		"history_notes": [],
 		"related_sets": [
 			"ACR",
 			"TACR",
@@ -566,13 +590,14 @@ history = [
 			"valiant",
 			"expend"
 		],
-		"history_notes": [
-			"Offspring debuts: optional extra cost to make a 1/1 token copy of the creature as it enters.",
-			"Gift debuts: additional cost to promise an opponent a benefit, which they receive on resolution or ETB.",
-			"Forage debuts: exile three cards from graveyard or sacrifice a Food as an additional cost. Only counts if specifically foraging.",
-			"Valiant debuts: ability word marking triggers when your spell/ability targets your own creature.",
-			"Expend debuts: new rules term tracking the total mana spent to cast spells each turn; abilities can trigger when you expend your Nth mana, counting all costs including additional or alternative costs."
+		"ability_debut": [
+			"Offspring",
+			"Gift",
+			"Forage",
+			"Valiant",
+			"Expend"
 		],
+		"history_notes": [],
 		"related_sets": [
 			"BLB",
 			"PBLB",
@@ -592,6 +617,10 @@ history = [
 		"new_keywords": [
 			"manifest dread",
 			"rooms"
+		],
+		"ability_debut": [
+			"Rooms",
+			"Manifest dread"
 		],
 		"history_notes": [
 			"Rooms debut as split-style permanents with unlockable halves (doors). Unlocking is a special action, not using the stack.",
@@ -613,9 +642,8 @@ history = [
 		"code": "FDN",
 		"name": "Foundations",
 		"release_date": "2024-10-25",
-		"new_keywords": [
-			# None — all mechanics are returning
-		],
+		"new_keywords": [],
+		"ability_debut": [],
 		"history_notes": [],
 		"related_sets": [
 			"FDN",
@@ -634,9 +662,8 @@ history = [
 		"code": "INR",
 		"name": "Innistrad Remastered",
 		"release_date": "2024-12-03",
-		"new_keywords": [
-			# None — all mechanics are returning 
-		],
+		"new_keywords": [],
+		"ability_debut": [],
 		"history_notes": [
 			"TDFCs highlighted again: mana value of back face comes from front face, and color is shown via a color indicator."
 		],
@@ -657,6 +684,11 @@ history = [
 			"max speed",
 			"exhaust"
 		],
+		"ability_debut": [
+			"Start your engines!",
+			"Max speed",
+			"Exhaust"
+		],
 		"history_notes": [
 			"Introduces speed as a tracked player designation (0–4).",
 			"Start your engines! is the entry mechanic for gaining speed.",
@@ -675,34 +707,41 @@ history = [
 	},
 
 	# TDS - Tarkir: Dragonstorm
-    {
-        "code": "TDS",
-        "name": "Tarkir: Dragonstorm",
-        "release_date": "2025-03-18",
-        "new_keywords": [
-            "endure",
-            "renew",
-            "mobilize",
-            "omen",
-            "behold",
-            "monocolor hybrid mana"
-        ],
-        "history_notes": [
-            "Surveil promoted to evergreen mechanic in this set.",
-            "Omen spells introduced: creature cards with a spell-half Omen; casting that half causes shuffle into library on resolution.",
-            "Behold a Dragon cost alias added: additional cost can be reveal or control a Dragon."
-        ],
-        "related_sets":
-		[
+	{
+		"code": "TDS",
+		"name": "Tarkir: Dragonstorm",
+		"release_date": "2025-03-18",
+		"new_keywords": [
+			"endure",
+			"renew",
+			"mobilize",
+			"omen",
+			"behold",
+			"monocolor hybrid mana"
+		],
+		"ability_debut": [
+			"Endure",
+			"Renew",
+			"Mobilize",
+			"Omen",
+			"Behold",
+			"Monocolor hybrid mana"
+		],
+		"history_notes": [
+			"Surveil promoted to evergreen mechanic in this set.",
+			"Omen spells introduced: creature cards with a spell-half Omen; casting that half causes shuffle into library on resolution.",
+			"Behold a Dragon cost alias added: additional cost can be reveal or control a Dragon."
+		],
+		"related_sets": [
 			"TDM",
 			"PTDM",
 			"TTDM",
 			"YTDM",
 			"ATDM",
 			"TDC",
-			"TTDC",
+			"TTDC"
 		]
-    },
+	},
 
 	# FIN - Final Fantasy
 	{
@@ -713,63 +752,72 @@ history = [
 			"job select",
 			"tiered"
 		],
+		"ability_debut": [
+			"Job select",
+			"Tiered"
+		],
 		"history_notes": [
 			"Saga creatures debut as a type implementation (not a keyword): Enchantment Creature — Saga following Saga chapter rules while functioning as creatures."
 		],
-		"related_sets":
-		[
+		"related_sets": [
 			"FIN",
 			"FCA",
 			"PFIN",
 			"RFIN",
 			"AFIN",
-			"FIC"
-			"FIC"
+			"FIC",
 			"PSS5"
-
 		]
 	},
 
 	# EOE - Edge of Eternities
 	{
-        "code": "EOE",
-        "name": "Edge of Eternities",
-        "release_date": "2025-08-01",
-        "new_keywords": [
-            "spacecraft",
-            "station",
-            "Planet",
-            "warp",
-            "void",
-            "lander"
-        ],
-        "history_notes": [
-            "Legendary Vehicles and legendary Spacecraft with printed power and toughness are eligible to be commanders starting with this set.",
-            "Lander tokens are new artifact tokens with 'Search your library for a basic land card, put it onto the battlefield tapped, then shuffle' as a sacrifice ability."
-        ],
-        "related_sets": [
-            "EOE",
-            "EOS",
-            "PEOE",
-            "TEOE",
-            "YEOE",
-            "AEOE",
-            "EOC",
+		"code": "EOE",
+		"name": "Edge of Eternities",
+		"release_date": "2025-08-01",
+		"new_keywords": [
+			"spacecraft",
+			"station",
+			"planet",
+			"warp",
+			"void",
+			"lander"
+		],
+		"ability_debut": [
+			"Spacecraft",
+			"Station",
+			"Planet",
+			"Warp",
+			"Void",
+			"Lander"
+		],
+		"history_notes": [
+			"Legendary Vehicles and legendary Spacecraft with printed power and toughness are eligible to be commanders starting with this set.",
+			"Lander tokens are new artifact tokens with 'Search your library for a basic land card, put it onto the battlefield tapped, then shuffle' as a sacrifice ability."
+		],
+		"related_sets": [
+			"EOE",
+			"EOS",
+			"PEOE",
+			"TEOE",
+			"YEOE",
+			"AEOE",
+			"EOC",
 			"TEOC"
-        ]
-    },
+		]
+	},
 
 	# SPM - Marvel's Spider-Man
 	{
-		"code": "SPM",  # set code
+		"code": "SPM",
 		"name": "Marvel's Spider-Man",
 		"release_date": "2025-09-26",
-		"new_keywords": [
-			"web-slinging",
-			"mayhem",
-			"infinity",
-			"harnessed",
-			"enweb"
+		"ability_debut": [
+			"Web-slinging",
+			"Mayhem",
+			"Infinity",
+			"Harnessed",
+			"Enweb"
 		],
 		"history_notes": [
 			"MDFCs in this set can transform, but only one-way (front to back). The back face has no transform ability.",
@@ -787,3 +835,4 @@ history = [
 	},
 
 ]
+
