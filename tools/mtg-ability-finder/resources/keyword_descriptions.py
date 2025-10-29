@@ -104,7 +104,7 @@ keywordTexts = {
 	"epic": "Epic (For the rest of the game, you can’t cast spells. At the beginning of each of your upkeeps, copy this spell except for its epic ability.)",
 	"hideaway": "Hideaway N (This enters the battlefield tapped. When it does, look at the top N cards of your library, exile one face down, then put the rest on the bottom. You may play the exiled card later under certain conditions.)",
 	"fabricate": "Fabricate N (When this creature enters the battlefield, put N +1/+1 counters on it or create N 1/1 Servo artifact creature tokens.)",
-	"craft": "Craft with [type] — [Cost] (You may exile this permanent and other permanents of the specified type to transform it. Activate only as a sorcery.)",
+
 	"training": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)",
 	"disturb": "Disturb [cost] (You may cast this card from your graveyard transformed for its disturb cost.)",
 	"decayed": "Decayed (This creature can’t block, and when it attacks, sacrifice it at end of combat.)",
@@ -187,7 +187,7 @@ keywordTexts = {
 	"spectacle": "Spectacle [Cost] (You may cast this card for its spectacle cost if an opponent lost life this turn.)",
 	"sunburst": "Sunburst (This permanent enters the battlefield with a +1/+1 or charge counter for each color of mana spent to cast it.)",
 	"surge": "Surge [Cost] (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)",
-	"suspect": "Suspect — To suspect a creature, it becomes suspected. A suspected creature has menace and can’t block. It remains suspected until it leaves the battlefield or an effect causes it to no longer be suspected.",
+
 	"sweep": "Sweep — Return any number of [type]s you control to their owner’s hand. [Effect per card returned.]",
 	"transform": "Transform (Turn a double-faced card to its other side. This action is often linked to triggers or conditions.)",
 
@@ -251,6 +251,14 @@ keywordTexts = {
 	#
 	###############################
 
+	# LCI - 2023-11-17
+	"craft": "Craft [cost] — Exile this permanent and the listed materials from among permanents you control and/or cards in your graveyard, then pay the craft cost. As the ability resolves, return this card to the battlefield transformed under its owner’s control.",
+	"descended": "Descended — You have descended this turn if one or more permanent cards were put into your graveyard from anywhere this turn.",
+
+	# MKM - 2024-02-09
+	"disguise": "Disguise [cost] — You may cast this card face down as a 2/2 colorless creature with ward {2} for {3}. It has no name, abilities, or creature types, and its mana value is 0. You may turn it face up any time for its disguise cost. Turning it face up is a special action that doesn’t use the stack.",
+	"cloak": "Cloak — To cloak a card, put it onto the battlefield face down as a 2/2 colorless creature with ward {2}. It has no name, abilities, or creature types, and its mana value is 0. If it’s a creature card, you may turn it face up any time by paying its mana cost. If it also has disguise or morph, you may use that cost instead.",
+
 	# OTJ - 2024-04-19
 	"spree": "Spree — As you cast this spell, choose one or more modes. You can’t choose any mode more than once. Each chosen mode has an additional cost that must be paid. If you cast this spell without paying its mana cost, you must still pay the additional costs. The spell’s mana value is based only on its mana cost.",
 	"plot": "Plot [cost] — As a sorcery, you may pay [cost] and exile this card from your hand plotted. On a later turn, you may cast it from exile without paying its mana cost, only as a sorcery. Cards that become plotted by any effect follow the same timing and can’t be cast the same turn they became plotted.",
@@ -285,11 +293,15 @@ keywordTexts = {
     "tiered": "Tiered [cost] — This keyword appears on modal spells with three different modes. You choose one mode and pay its additional cost. Mana value is based only on the card’s mana cost, not any additional cost.",
 
 	# EOE - 2025-08-01
-	"warp": "Warp [cost] (You may cast this spell for its warp cost. If you do, it enters the battlefield. At the beginning of the next end step, exile it. You may later cast it from exile for its mana cost.)",
+	"warp": "Warp [cost] — You may cast this spell for its warp cost. If you do, it enters the battlefield. At the beginning of the next end step, exile it. You may later cast it from exile for its mana cost.",
 	"void": "Void — If a nonland permanent left the battlefield this turn or a spell was warped this turn, [effect].",
-	"station": "Station — [Ability] Tap an untapped creature you control: Put charge counters equal to that creature’s power on this permanent. Activate only as a sorcery. When a threshold is reached, this permanent becomes a creature with abilities.",
-	"spacecraft": "Spacecraft — A new artifact subtype. Many spacecraft have station abilities that let them transform into artifact creatures once enough charge counters are placed.",
-	"planet": "Planet — A new land subtype. Planets often provide unique mana abilities or effects tied to their planetary type."
+	"station": "Station — [Ability] Tap an untapped creature you control: Put a number of charge counters on this permanent equal to that creature’s power. Activate only as a sorcery. When a specified threshold is reached, this permanent becomes a creature with additional abilities.",
+	"spacecraft": "Spacecraft — A new artifact subtype. Many spacecraft have station abilities that allow them to transform into artifact creatures once enough charge counters are placed.",
+	"planet": "Planet — A new land subtype. Planets often provide unique mana abilities or effects related to their planetary traits.",
+
+	# AVA - 2025-10-28
+	"firebend": "Firebend N — Whenever a creature you control with firebending attacks, add N {R}. You don’t lose this mana during that combat, but it empties at the end of combat.",
+	"waterbend": "Waterbend [cost] — You may tap an untapped artifact or creature you control to pay for each generic mana in this spell’s waterbend cost. Creatures with summoning sickness can be tapped this way. This serves as an alternate payment method.",
 } # keywordTexts
 
 keywordActions = {
@@ -330,7 +342,7 @@ keywordActions = {
 	"abandon": "Abandon (Move away from the current plane card without triggering a planeswalk effect.)",
 	"assemble": "Assemble (Put a Contraption card into one of your sprockets.)",
 	"bolster": "Bolster N (Choose a creature you control with the least toughness and put N +1/+1 counters on it.)",
-	"cloak": "Cloak (To cloak a card is to put it onto the battlefield face down as a 2/2 creature with ward {2}. It can be turned face up if it's a creature card.)",
+
 	"convert": "Convert (Transform this double-faced card.)",
 	"forage": "Forage (Choose up to X cards in graveyards, then shuffle them into their owners’ libraries.)",
 	"heist": "Heist (Exile the top card of your library. You may play that card this turn if you attacked this turn.)",
@@ -340,11 +352,17 @@ keywordActions = {
 	"attach": "Attach — The action of putting an Aura or Equipment onto a permanent.",
 	"exchange": "Exchange — Swap control or characteristics of two permanent or cards as instructed.",
 	"fight": "Fight — Two target creatures deal damage equal to their power to each other.",
-	"collect evidence": "Collect evidence — Arena-specific: Create a Clue token.",
-	"discover": "Discover — Arena-specific: Reveal cards until you find a nonland, then put it into your hand.",
+
 	"demonstrate": "Demonstrate — When you cast this spell, you may copy it. If you do, choose an opponent. That player also copies the spell. Players may choose new targets for their copies.",
 
 	"goad": "Goad — Until your next turn, this creature attacks each combat if able and attacks a player other than you if able.",
+
+	# LCI - 2023-11-17
+	"discover": "Discover N — Exile cards from the top of your library until you exile a nonland card with mana value N or less. You may cast that card without paying its mana cost or put it into your hand. Put the rest on the bottom of your library in a random order.",
+
+	# MKM - 2024-02-09
+	"suspect": "Suspect — To suspect a creature, it becomes suspected. A suspected creature has menace and can’t block. It remains suspected until it leaves the battlefield or an effect causes it to no longer be suspected.",
+	"collect evidence": "Collect evidence N — As an additional or activation cost, exile any number of cards from your graveyard with total mana value N or greater. If you can’t meet or exceed N, you can’t collect evidence.",
 
 	# BLB - 2024-08-02
 	"forage": "Forage — As an additional cost, either exile three cards from your graveyard or sacrifice a Food. Triggered abilities that care about 'whenever you forage' only look for this instruction, not generic exiling or sacrificing.",
@@ -357,7 +375,11 @@ keywordActions = {
 	"web-slinging": "Web-slinging [cost] (You may cast this spell for its web-slinging cost if you return a tapped creature you control to its owner's hand. Returning the tapped creature is part of the cost. This does not change when you can cast the spell.)",
 	"enweb": "Enweb [cost] (You may cast this spell for its enweb cost if you return a tapped creature you control to its owner's hand. Returning the tapped creature is part of the cost. This does not change when you can cast the spell.)",
 	"mayhem": "Mayhem [cost] (You may cast this card from your graveyard for its mayhem cost if you discarded it this turn. Normal timing rules apply.)",
-	"infinity": "Infinity (∞) — This permanent has the listed ability only while it is harnessed."
+	"infinity": "Infinity (∞) — This permanent has the listed ability only while it is harnessed.",
+
+	# AVA - 2025-10-28
+	"airbend": "Airbend (To airbend a permanent or spell, exile it. Its owner may cast it from exile by paying its alternate cost instead of its mana cost. Lands can’t be played this way, and tokens cease to exist. If the spell had X in its mana cost, X=0.)",
+	"earthbend": "Earthbend N (Choose target land you control. It becomes a 0/0 creature with haste that’s still a land. Put N +1/+1 counters on it. When that land dies or is exiled, return it to the battlefield tapped under its owner’s control.)",
 } # keywordActions
 
 abilityWords = {
@@ -382,8 +404,7 @@ abilityWords = {
 	"adamant": "Adamant — If at least three mana of the same color was spent to cast this spell, [effect].",
 	"alliance": "Alliance — Whenever another creature enters the battlefield under your control, [effect].",
 	"celebration": "Celebration — If two or more nonland permanents entered the battlefield under your control this turn, [effect].",
-	"descend": "Descend — If a permanent card was put into your graveyard this turn, [effect].",
-	"fathomless descent": "Fathomless Descent — Effects based on the number of permanent cards in your graveyard.",
+
 	"corrupted": "Corrupted — If an opponent has three or more poison counters, [effect].",
 
 	"survival": "Survival — If you control no other creatures, [effect].",
@@ -402,6 +423,10 @@ abilityWords = {
 
 	"council's dilemma": "Council's dilemma — When this enters, players vote for options; effects resolve based on votes.",
 	"grandeur": "Grandeur — Discard another card with the same name: [effect].",
+
+	# LCI - 2023-11-17
+	"descend N": "Descend N — This ability word highlights effects that apply if you have N or more permanent cards in your graveyard.",
+	"fathomless descent": "Fathomless descent — This ability word highlights effects that scale with the total number of permanent cards in your graveyard.",
 
 	# BLB - 2024-08-02
 	"valiant": "Valiant — Ability word marking abilities that trigger whenever a creature becomes the target of a spell or ability you control.",
@@ -509,20 +534,68 @@ deckbuildingKeywords = {
 
 history = [
 
+	# 
+	{
+		"code": "LCI",
+		"name": "The Lost Caverns of Ixalan",
+		"release_date": "2023-11-17",
+		"ability_debut": [
+			"craft",
+			"descend",
+			"descended",
+			"fathomless descent",
+			"discover"
+		],
+		"history_notes": [
+			"Introduces 'craft' as a transforming DFC upgrade that exiles specified materials to transform.",
+			"Finality counters debut as a counter form of 'if it would die, exile it instead' functionality."
+		],
+		"related_sets": [
+			"LCI",
+			"PLCI",
+			"TLCI",
+			"ALCI",
+			"LCC"
+		]
+	},
+
+
+	# MKM - Murders at Karlov Manor
+	{
+		"code": "MKM",
+		"name": "Murders at Karlov Manor",
+		"release_date": "2024-02-09",
+		"ability_debut": [
+			"disguise",
+			"cloak",
+			"suspect",
+			"collect evidence",
+			"case"
+		],
+		"history_notes": [],
+		"related_sets": [
+			"MKM",
+			"PMKM",
+			"TMKM",
+			"YMKM",
+			"CLU",
+			"FCLU",
+			"AMKM",
+			"MKC",
+			"TMKC",
+			"WMKM",
+			"PSS4"
+		]
+	},
+
 	# PIP - Fallout
 	{
 		"code": "PIP",
-		"name": "Magic: The Gathering – Fallout",
+		"name": "Fallout",
 		"release_date": "2024-03-08",
-		"new_keywords": [
-			"junk",
-			"rad_counters",
-			"energy",
-			"squad"
-		],
 		"ability_debut": [
-			"Junk",
-			"Rad"
+			"junk",
+			"rad"
 		],
 		"history_notes": [],
 		"related_sets": [
@@ -536,10 +609,6 @@ history = [
 		"code": "MH3",
 		"name": "Modern Horizons 3",
 		"release_date": "2024-06-14",
-		"new_keywords": [
-			"kindred",
-			"umbra armor"
-		],
 		"ability_debut": [],
 		"history_notes": [
 			"kindred : 'Tribal' cards are retitled to the **kindred** card type. Existing cards are updated accordingly.",
@@ -563,11 +632,8 @@ history = [
 		"code": "ACR",
 		"name": "Assassin’s Creed",
 		"release_date": "2024-07-05",
-		"new_keywords": [
-			"freerunning"
-		],
 		"ability_debut": [
-			"Freerunning"
+			"freerunning"
 		],
 		"history_notes": [],
 		"related_sets": [
@@ -583,19 +649,12 @@ history = [
 		"code": "BLB",
 		"name": "Bloomburrow",
 		"release_date": "2024-08-02",
-		"new_keywords": [
+		"ability_debut": [
 			"offspring",
 			"gift",
 			"forage",
 			"valiant",
 			"expend"
-		],
-		"ability_debut": [
-			"Offspring",
-			"Gift",
-			"Forage",
-			"Valiant",
-			"Expend"
 		],
 		"history_notes": [],
 		"related_sets": [
@@ -614,13 +673,9 @@ history = [
 		"code": "DSK",
 		"name": "Duskmourn: House of Horror",
 		"release_date": "2024-08-31",
-		"new_keywords": [
-			"manifest dread",
-			"rooms"
-		],
 		"ability_debut": [
-			"Rooms",
-			"Manifest dread"
+			"rooms",
+			"manifest dread"
 		],
 		"history_notes": [
 			"Rooms debut as split-style permanents with unlockable halves (doors). Unlocking is a special action, not using the stack.",
@@ -642,7 +697,6 @@ history = [
 		"code": "FDN",
 		"name": "Foundations",
 		"release_date": "2024-10-25",
-		"new_keywords": [],
 		"ability_debut": [],
 		"history_notes": [],
 		"related_sets": [
@@ -662,7 +716,6 @@ history = [
 		"code": "INR",
 		"name": "Innistrad Remastered",
 		"release_date": "2024-12-03",
-		"new_keywords": [],
 		"ability_debut": [],
 		"history_notes": [
 			"TDFCs highlighted again: mana value of back face comes from front face, and color is shown via a color indicator."
@@ -679,22 +732,12 @@ history = [
 		"code": "DFT",
 		"name": "Aetherdrift",
 		"release_date": "2025-02-14",
-		"new_keywords": [
+		"ability_debut": [
 			"start your engines!",
 			"max speed",
 			"exhaust"
 		],
-		"ability_debut": [
-			"Start your engines!",
-			"Max speed",
-			"Exhaust"
-		],
-		"history_notes": [
-			"Introduces speed as a tracked player designation (0–4).",
-			"Start your engines! is the entry mechanic for gaining speed.",
-			"Max speed defined at 4; abilities only function at this cap.",
-			"Exhaust introduced: an activated ability usable only once per object (resets if it leaves and re-enters)."
-		],
+		"history_notes": [],
 		"related_sets": [
 			"DFT",
 			"PDFT",
@@ -711,26 +754,15 @@ history = [
 		"code": "TDS",
 		"name": "Tarkir: Dragonstorm",
 		"release_date": "2025-03-18",
-		"new_keywords": [
+		"ability_debut": [
 			"endure",
 			"renew",
 			"mobilize",
 			"omen",
-			"behold",
-			"monocolor hybrid mana"
-		],
-		"ability_debut": [
-			"Endure",
-			"Renew",
-			"Mobilize",
-			"Omen",
-			"Behold",
-			"Monocolor hybrid mana"
+			"behold"
 		],
 		"history_notes": [
-			"Surveil promoted to evergreen mechanic in this set.",
 			"Omen spells introduced: creature cards with a spell-half Omen; casting that half causes shuffle into library on resolution.",
-			"Behold a Dragon cost alias added: additional cost can be reveal or control a Dragon."
 		],
 		"related_sets": [
 			"TDM",
@@ -748,13 +780,9 @@ history = [
 		"code": "FIN",
 		"name": "Final Fantasy",
 		"release_date": "2025-06-13",
-		"new_keywords": [
+		"ability_debut": [
 			"job select",
 			"tiered"
-		],
-		"ability_debut": [
-			"Job select",
-			"Tiered"
 		],
 		"history_notes": [
 			"Saga creatures debut as a type implementation (not a keyword): Enchantment Creature — Saga following Saga chapter rules while functioning as creatures."
@@ -775,7 +803,7 @@ history = [
 		"code": "EOE",
 		"name": "Edge of Eternities",
 		"release_date": "2025-08-01",
-		"new_keywords": [
+		"ability_debut": [
 			"spacecraft",
 			"station",
 			"planet",
@@ -783,17 +811,8 @@ history = [
 			"void",
 			"lander"
 		],
-		"ability_debut": [
-			"Spacecraft",
-			"Station",
-			"Planet",
-			"Warp",
-			"Void",
-			"Lander"
-		],
 		"history_notes": [
 			"Legendary Vehicles and legendary Spacecraft with printed power and toughness are eligible to be commanders starting with this set.",
-			"Lander tokens are new artifact tokens with 'Search your library for a basic land card, put it onto the battlefield tapped, then shuffle' as a sacrifice ability."
 		],
 		"related_sets": [
 			"EOE",
@@ -813,11 +832,11 @@ history = [
 		"name": "Marvel's Spider-Man",
 		"release_date": "2025-09-26",
 		"ability_debut": [
-			"Web-slinging",
-			"Mayhem",
-			"Infinity",
-			"Harnessed",
-			"Enweb"
+			"web-slinging",
+			"mayhem",
+			"infinity",
+			"harnessed",
+			"enweb"
 		],
 		"history_notes": [
 			"MDFCs in this set can transform, but only one-way (front to back). The back face has no transform ability.",
@@ -834,5 +853,22 @@ history = [
 		]
 	},
 
+	# TLA - Avatar: The Last Airbender
+	{
+		"code": "TLA",
+		"name": "Avatar: The Last Airbender",
+		"release_date": "2025-11-21",
+		"ability_debut": [
+			"firebend",
+			"airbend",
+			"waterbend",
+			"earthbend"
+		],
+		"history_notes": [],
+		"related_sets": [
+			"TLA",
+			"TLE",
+			"FTLA"
+		]
+	}
 ]
-
