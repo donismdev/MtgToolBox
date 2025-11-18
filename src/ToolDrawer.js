@@ -3,12 +3,16 @@ import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Collapse from '@mui/material/Collapse';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
+import Divider from '@mui/material/Divider';
+import SettingsIcon from '@mui/icons-material/Settings';
+import MailIcon from '@mui/icons-material/Mail';
 
 const ToolDrawer = ({ open, onClose, onSelectTool, isMobile, width }) => {
   const [tools, setTools] = useState({});
@@ -57,9 +61,9 @@ const ToolDrawer = ({ open, onClose, onSelectTool, isMobile, width }) => {
   const getDisplayName = (tool) => tool.displayName || tool.name;
 
   const drawerContent = (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
         <List>
           {Object.entries(tools).map(([category, toolList]) => (
             <React.Fragment key={category}>
@@ -82,7 +86,20 @@ const ToolDrawer = ({ open, onClose, onSelectTool, isMobile, width }) => {
           ))}
         </List>
       </Box>
-    </>
+      <Box>
+        <Divider />
+        <List>
+          <ListItemButton>
+            <ListItemIcon><SettingsIcon /></ListItemIcon>
+            <ListItemText primary="설정" />
+          </ListItemButton>
+          <ListItemButton>
+            <ListItemIcon><MailIcon /></ListItemIcon>
+            <ListItemText primary="mail 보내기" />
+          </ListItemButton>
+        </List>
+      </Box>
+    </Box>
   );
 
   return (
