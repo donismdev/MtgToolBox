@@ -8,8 +8,9 @@ import Collapse from '@mui/material/Collapse';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
 
-const ToolDrawer = ({ onSelectTool }) => {
+const ToolDrawer = ({ open, onClose, onSelectTool, isMobile, width }) => {
   const [tools, setTools] = useState({});
   const [openCategories, setOpenCategories] = useState({});
 
@@ -17,7 +18,7 @@ const ToolDrawer = ({ onSelectTool }) => {
     fetch('/tool_index.json')
       .then((res) => res.json())
       .then((data) => {
-        const enabledTools = data.tools.filter((tool) => tool.enable);
+        const enabledTools = data.tools.filter((tool) => tool.enable && (tool.type.includes('html') || tool.type.includes('html_modal')));
         const toolsByCategory = enabledTools.reduce((acc, tool) => {
           const category = tool.parent || 'ETC';
           if (!acc[category]) {
@@ -34,7 +35,6 @@ const ToolDrawer = ({ onSelectTool }) => {
             }
         });
 
-        // Add any remaining categories not in category_order
         Object.keys(toolsByCategory).forEach(category => {
             if (!sortedTools[category]) {
                 sortedTools[category] = toolsByCategory[category];
@@ -42,7 +42,6 @@ const ToolDrawer = ({ onSelectTool }) => {
         });
 
         setTools(sortedTools);
-        // Initially open all categories
         const initialOpenState = Object.keys(sortedTools).reduce((acc, category) => {
             acc[category] = true;
             return acc;
@@ -57,38 +56,47 @@ const ToolDrawer = ({ onSelectTool }) => {
 
   const getDisplayName = (tool) => tool.displayName || tool.name;
 
+  const drawerContent = (
+    <>
+      <Toolbar />
+      <Box sx={{ overflow: 'auto' }}>
+        <List>
+          {Object.entries(tools).map(([category, toolList]) => (
+            <React.Fragment key={category}>
+              <ListItemButton onClick={() => handleCategoryClick(category)}>
+                <ListItemText primary={category} />
+                {openCategories[category] ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+              <Collapse in={openCategories[category]} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {toolList.map((tool) => (
+                    <ListItem key={tool.name} disablePadding sx={{ pl: 4 }}>
+                      <ListItemButton onClick={() => onSelectTool(tool)}>
+                        <ListItemText primary={getDisplayName(tool)} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Collapse>
+            </React.Fragment>
+          ))}
+        </List>
+      </Box>
+    </>
+  );
+
   return (
     <Drawer
-      variant="permanent"
+      variant={isMobile ? 'temporary' : 'persistent'}
+      open={open}
+      onClose={onClose}
       sx={{
-        width: 240,
+        width: width,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: 240, boxSizing: 'border-box', position: 'relative' },
+        [`& .MuiDrawer-paper`]: { width: width, boxSizing: 'border-box' },
       }}
     >
-        <Box sx={{ overflow: 'auto' }}>
-            <List>
-                {Object.entries(tools).map(([category, toolList]) => (
-                <React.Fragment key={category}>
-                    <ListItemButton onClick={() => handleCategoryClick(category)}>
-                    <ListItemText primary={category} />
-                    {openCategories[category] ? <ExpandLess /> : <ExpandMore />}
-                    </ListItemButton>
-                    <Collapse in={openCategories[category]} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                        {toolList.map((tool) => (
-                        <ListItem key={tool.name} disablePadding sx={{ pl: 4 }}>
-                            <ListItemButton onClick={() => onSelectTool(tool)}>
-                            <ListItemText primary={getDisplayName(tool)} />
-                            </ListItemButton>
-                        </ListItem>
-                        ))}
-                    </List>
-                    </Collapse>
-                </React.Fragment>
-                ))}
-            </List>
-        </Box>
+      {drawerContent}
     </Drawer>
   );
 };
