@@ -19,7 +19,7 @@ const ToolDrawer = ({ open, onClose, onSelectTool, isMobile, width }) => {
   const [openCategories, setOpenCategories] = useState({});
 
   useEffect(() => {
-    fetch('/tool_index.json')
+    fetch('tool_index.json')
       .then((res) => res.json())
       .then((data) => {
         const enabledTools = data.tools.filter((tool) => tool.enable && (tool.type.includes('html') || tool.type.includes('html_modal')));
