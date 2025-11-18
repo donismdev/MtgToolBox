@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import CssBaseline from '@mui/material/CssBaseline';
-import AppBar from '@mui/material/AppBar';
+import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -17,6 +17,46 @@ const darkTheme = createTheme({
 });
 
 const drawerWidth = 240;
+
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open, isMobile }) => ({
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginLeft: `-${drawerWidth}px`,
+    ...((open && !isMobile) && {
+      transition: theme.transitions.create('margin', {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginLeft: 0,
+    }),
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100vh',
+  }),
+);
+
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme, open, isMobile }) => ({
+  transition: theme.transitions.create(['margin', 'width'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...((open && !isMobile) && {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: `${drawerWidth}px`,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+}));
+
 
 function App() {
   const [selectedTool, setSelectedTool] = useState(null);
@@ -38,14 +78,9 @@ function App() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Box sx={{ display: 'flex', height: '100vh' }}>
-        <AppBar 
-          position="fixed" 
-          sx={{ 
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-          }}
-        >
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppBar position="fixed" open={isDrawerOpen} isMobile={isMobile}>
           <Toolbar>
             <IconButton
               color="inherit"
@@ -68,28 +103,20 @@ function App() {
           onSelectTool={handleSelectTool}
           isMobile={isMobile}
         />
-        <Box 
-          component="main" 
-          sx={{ 
-            flexGrow: 1, 
-            p: 3, 
-            display: 'flex', 
-            flexDirection: 'column',
-          }}
-        >
+        <Main open={isDrawerOpen} isMobile={isMobile}>
           <Toolbar /> 
           {selectedTool ? (
             <iframe 
                 src={getToolUrl(selectedTool)}
                 title={selectedTool.name}
-                style={{ width: '100%', height: '100%', border: 'none' }}
+                style={{ width: '100%', height: '100%', border: 'none', flexGrow: 1 }}
             />
           ) : (
             <Typography paragraph>
               Select a tool from the left menu to get started.
             </Typography>
           )}
-        </Box>
+        </Main>
       </Box>
     </ThemeProvider>
   );
