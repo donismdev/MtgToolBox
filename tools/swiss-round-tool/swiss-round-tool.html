@@ -5,6 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTG Swiss Tool</title>
     <link rel="stylesheet" href="css/style.css">
+    <script>
+		window.i18n = {
+			lang: localStorage.getItem('selectedLanguage') || 'ko',
+			translations: {},
+			initPromise: null,
+			_resolveInit: null,
+
+			init() {
+				this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+				(async () => {
+					try {
+						const response = await fetch('../../assets/i18n/language.json');
+						if (!response.ok) throw new Error('Network response was not ok');
+						const data = await response.json();
+						this.translations = data.translations;
+						this.apply();
+					} catch (error) {
+						console.error('Failed to load translations:', error);
+					} finally {
+						this._resolveInit();
+					}
+				})();
+			},
+			
+			t(key, replacements = {}) {
+				const translation = this.translations['swiss-round-tool']?.[key]?.[this.lang];
+				if (!translation) return key;
+				let result = translation;
+				for (const placeholder in replacements) {
+					result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+				}
+				return result;
+			},
+			
+			apply() {
+			}
+		};
+		window.i18n.init();
+	</script>
     <script src="https://apis.google.com/js/api.js"></script>
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
     

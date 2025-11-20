@@ -8,6 +8,51 @@
 	<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
 	<title>MTG Life Counter</title>
 	<link rel="stylesheet" href="css/style.css">
+	<script>
+		window.i18n = {
+			lang: localStorage.getItem('selectedLanguage') || 'ko',
+			translations: {},
+			initPromise: null,
+			_resolveInit: null,
+
+			init() {
+				this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+				(async () => {
+					try {
+						const response = await fetch('../../assets/i18n/language.json');
+						if (!response.ok) throw new Error('Network response was not ok');
+						const data = await response.json();
+						this.translations = data.translations;
+						this.apply();
+					} catch (error) {
+						console.error('Failed to load translations:', error);
+					} finally {
+						this._resolveInit();
+					}
+				})();
+			},
+			
+			t(key, replacements = {}) {
+				const translation = this.translations['mtg-life-counter']?.[key]?.[this.lang];
+				if (!translation) return key;
+				let result = translation;
+				for (const placeholder in replacements) {
+					result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+				}
+				return result;
+			},
+			
+			apply() {
+				document.querySelectorAll('[data-i18n-key]').forEach(el => {
+					el.textContent = this.t(el.dataset.i18nKey);
+				});
+				document.querySelectorAll('[data-i18n-key-alt]').forEach(el => {
+					el.alt = this.t(el.dataset.i18nKeyAlt);
+				});
+			}
+		};
+		window.i18n.init();
+	</script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <style>
@@ -48,24 +93,24 @@
 <div id="fontSizeMenu" class="dice-menu"></div>
 <div id="diceSidesMenu" class="dice-menu"></div>
 <div id="three-player-layout-buttons" class="dice-menu">
-	<div class="dice-menu-label">3인 레이아웃 선택</div>
+	<div class="dice-menu-label" data-i18n-key="select3PlayerLayout">3인 레이아웃 선택</div>
 	<div class="dice-option-group">
-		<button id="layout-top-button" class="dice-option">위</button>
-		<button id="layout-bottom-button" class="dice-option">아래</button>
-		<button id="layout-left-button" class="dice-option">왼쪽</button>
-		<button id="layout-right-button" class="dice-option">오른쪽</button>
+		<button id="layout-top-button" class="dice-option" data-i18n-key="top">위</button>
+		<button id="layout-bottom-button" class="dice-option" data-i18n-key="bottom">아래</button>
+		<button id="layout-left-button" class="dice-option" data-i18n-key="left">왼쪽</button>
+		<button id="layout-right-button" class="dice-option" data-i18n-key="right">오른쪽</button>
 	</div>
 </div>
 <div id="game-container"></div>
 <div id="dungeon-overlay" class="dungeon-overlay"></div>
 <div id="center-buttons" style="display:none">
-	<button id="dice-button">무작위 선택</button>
-	<button id="reset-button">라이프 초기화</button>
-	<button id="settings-button">설정</button>
-	<button id="close-button">닫기</button>
+	<button id="dice-button" data-i18n-key="randomSelection">무작위 선택</button>
+	<button id="reset-button" data-i18n-key="resetLife">라이프 초기화</button>
+	<button id="settings-button" data-i18n-key="settings">설정</button>
+	<button id="close-button" data-i18n-key="close">닫기</button>
 </div>
 <div id="toggle-button-container">
-	<img src="assets/MTG.png" id="toggle-button" alt="Toggle Menu">
+	<img src="assets/MTG.png" id="toggle-button" alt="Toggle Menu" data-i18n-key-alt="toggleMenu">
 </div>
 <script type="module" src="js/themes.js"></script>
 <script type="module" src="js/main.js"></script>

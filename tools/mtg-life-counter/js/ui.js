@@ -37,7 +37,7 @@ export function hideAllOverlays() {
     window.centerButtons.style.display = 'flex';
 
     const resetBtn = document.getElementById('reset-button');
-    resetBtn.textContent = '라이프 초기화';
+    resetBtn.textContent = window.i18n.t('resetLife');
     resetBtn.classList.remove('confirm-animation');
     
     const customPicker = document.querySelector('.card-picker-container, .number-picker-container');
@@ -142,7 +142,7 @@ export function showNumberSelector() {
 
   const title = document.createElement('div');
   title.className = 'number-picker-title';
-  title.textContent = '최대 숫자 선택';
+  title.textContent = window.i18n.t('selectMaxNumber');
 
   const sliderWrapper = document.createElement('div');
   sliderWrapper.className = 'slider-wrapper';
@@ -159,7 +159,7 @@ export function showNumberSelector() {
   slider.oninput = () => { valueDisplay.textContent = slider.value; };
 
   valueDisplay.onclick = () => {
-    const newValue = prompt('최대값을 직접 입력하세요 (0~999):', slider.value);
+    const newValue = prompt(window.i18n.t('promptMaxNumber'), slider.value);
     if (newValue !== null && !isNaN(newValue) && newValue >= 0 && newValue < 1000) {
       slider.max = newValue;
       slider.value = newValue;
@@ -171,7 +171,7 @@ export function showNumberSelector() {
 
   const randomButton = document.createElement('button');
   randomButton.className = 'random-number-button';
-  randomButton.textContent = '뽑기';
+  randomButton.textContent = window.i18n.t('pick');
   randomButton.onclick = () => {
     const max = parseInt(slider.value, 10);
     const result = Math.floor(Math.random() * (max + 1));
@@ -186,10 +186,10 @@ export function showNumberSelector() {
 // 2. 카드 뽑기 UI 생성 및 로직 처리
 export function showCardSelector() {
     hideAllOverlays();
-    showMenu(window.settingsMenu, '전체 카드 수 선택', [2, 3, 4, 5, 6, 7], (totalCards) => {
+    showMenu(window.settingsMenu, window.i18n.t('totalCardSelect'), [2, 3, 4, 5, 6, 7], (totalCards) => {
         totalCards = parseInt(totalCards, 10);
         const pickOptions = Array.from({ length: totalCards }, (_, i) => i + 1);
-        showMenu(window.settingsMenu, '선택할 카드 수', pickOptions, (numToPick) => {
+        showMenu(window.settingsMenu, window.i18n.t('cardsToSelect'), pickOptions, (numToPick) => {
             numToPick = parseInt(numToPick, 10);
             // 이 부분이 새 함수를 호출하도록 변경됩니다.
             displayCardResult(totalCards, numToPick); 

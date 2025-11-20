@@ -8,104 +8,149 @@
 	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
 	<title>Random MTG Card</title>
 	<link rel="stylesheet" href="css/style.css">
+	<script>
+		window.i18n = {
+			lang: localStorage.getItem('selectedLanguage') || 'ko',
+			translations: {},
+			initPromise: null,
+			_resolveInit: null,
+
+			init() {
+				this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+				(async () => {
+					try {
+						const response = await fetch('../../assets/i18n/language.json');
+						if (!response.ok) throw new Error('Network response was not ok');
+						const data = await response.json();
+						this.translations = data.translations;
+						this.apply();
+					} catch (error) {
+						console.error('Failed to load translations:', error);
+					} finally {
+						this._resolveInit();
+					}
+				})();
+			},
+			
+			t(key, replacements = {}) {
+				const translation = this.translations['mtg-random-card']?.[key]?.[this.lang];
+				if (!translation) return key;
+				let result = translation;
+				for (const placeholder in replacements) {
+					result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+				}
+				return result;
+			},
+			
+			apply() {
+				document.querySelectorAll('[data-i18n-key]').forEach(el => {
+					el.textContent = this.t(el.dataset.i18nKey);
+				});
+				document.querySelectorAll('[data-i18n-key-placeholder]').forEach(el => {
+					el.placeholder = this.t(el.dataset.i18nKeyPlaceholder);
+				});
+			}
+		};
+		window.i18n.init();
+	</script>
 </head>
 <body>
 	<div class="container">
 		<form id="filterForm">
 			<fieldset>
-				<legend>Data Usage</legend>
+				<legend data-i18n-key="dataUsage">Data Usage</legend>
 				<label id="wifiConfirmLabel">
 					<input type="checkbox" id="wifiConfirm">
-					<span><strong>데이터 사용 동의</strong></span>
+					<span><strong data-i18n-key="dataUsageAgree">데이터 사용 동의</strong></span>
 				</label>
 			</fieldset>
 
 			<fieldset>
-				<legend>Card Types</legend>
+				<legend data-i18n-key="cardTypes">Card Types</legend>
 				<div class="filter-group">
-					<label><input type="checkbox" name="type" value="Land"><span>Land</span></label>
-					<label><input type="checkbox" name="type" value="Creature"><span>Creature</span></label>
-					<label><input type="checkbox" name="type" value="Artifact"><span>Artifact</span></label>
-					<label><input type="checkbox" name="type" value="Enchantment"><span>Enchantment</span></label>
-					<label><input type="checkbox" name="type" value="Planeswalker"><span>Planeswalker</span></label>
-					<label><input type="checkbox" name="type" value="Battle"><span>Battle</span></label>
-					<label><input type="checkbox" name="type" value="Instant"><span>Instant</span></label>
-					<label><input type="checkbox" name="type" value="Sorcery"><span>Sorcery</span></label>
+					<label><input type="checkbox" name="type" value="Land"><span data-i18n-key="land">Land</span></label>
+					<label><input type="checkbox" name="type" value="Creature"><span data-i18n-key="creature">Creature</span></label>
+					<label><input type="checkbox" name="type" value="Artifact"><span data-i18n-key="artifact">Artifact</span></label>
+					<label><input type="checkbox" name="type" value="Enchantment"><span data-i18n-key="enchantment">Enchantment</span></label>
+					<label><input type="checkbox" name="type" value="Planeswalker"><span data-i18n-key="planeswalker">Planeswalker</span></label>
+					<label><input type="checkbox" name="type" value="Battle"><span data-i18n-key="battle">Battle</span></label>
+					<label><input type="checkbox" name="type" value="Instant"><span data-i18n-key="instant">Instant</span></label>
+					<label><input type="checkbox" name="type" value="Sorcery"><span data-i18n-key="sorcery">Sorcery</span></label>
 				</div>
 			</fieldset>
 
 			<fieldset>
-				<legend>Colors</legend>
+				<legend data-i18n-key="colors">Colors</legend>
 				<div class="filter-group">
-					<label><input type="checkbox" name="color" value="W"><span>White</span></label>
-					<label><input type="checkbox" name="color" value="U"><span>Blue</span></label>
-					<label><input type="checkbox" name="color" value="B"><span>Black</span></label>
-					<label><input type="checkbox" name="color" value="R"><span>Red</span></label>
-					<label><input type="checkbox" name="color" value="G"><span>Green</span></label>
+					<label><input type="checkbox" name="color" value="W"><span data-i18n-key="white">White</span></label>
+					<label><input type="checkbox" name="color" value="U"><span data-i18n-key="blue">Blue</span></label>
+					<label><input type="checkbox" name="color" value="B"><span data-i18n-key="black">Black</span></label>
+					<label><input type="checkbox" name="color" value="R"><span data-i18n-key="red">Red</span></label>
+					<label><input type="checkbox" name="color" value="G"><span data-i18n-key="green">Green</span></label>
 				</div>
 			</fieldset>
 
 			<fieldset>
-				<legend>Rarity</legend>
+				<legend data-i18n-key="rarity">Rarity</legend>
 				<div class="filter-group">
-					<label><input type="checkbox" name="rarity" value="common"><span>Common</span></label>
-					<label><input type="checkbox" name="rarity" value="uncommon"><span>Uncommon</span></label>
-					<label><input type="checkbox" name="rarity" value="rare"><span>Rare</span></label>
-					<label><input type="checkbox" name="rarity" value="mythic"><span>Mythic</span></label>
+					<label><input type="checkbox" name="rarity" value="common"><span data-i18n-key="common">Common</span></label>
+					<label><input type="checkbox" name="rarity" value="uncommon"><span data-i18n-key="uncommon">Uncommon</span></label>
+					<label><input type="checkbox" name="rarity" value="rare"><span data-i18n-key="rare">Rare</span></label>
+					<label><input type="checkbox" name="rarity" value="mythic"><span data-i18n-key="mythic">Mythic</span></label>
 				</div>
 			</fieldset>
 
 			<fieldset>
-				<legend>Properties</legend>
+				<legend data-i18n-key="properties">Properties</legend>
 				<div class="filter-group">
-                    <label><input type="checkbox" id="excludeBasic"><span>No Basic Lands</span></label>
+                    <label><input type="checkbox" id="excludeBasic"><span data-i18n-key="noBasicLands">No Basic Lands</span></label>
 				</div>
 			</fieldset>
 
 			<fieldset>
-				<legend>Converted Mana Cost (CMC)</legend>
+				<legend data-i18n-key="cmc">Converted Mana Cost (CMC)</legend>
 				<div class="cmc-controls">
 					<select id="cmcOperator">
 						<option value="=">=</option>
 						<option value="<=">&le;</option>
 						<option value=">=">&ge;</option>
 					</select>
-					<input type="number" id="cmcValue" placeholder="Enter CMC" min="0" inputmode="numeric">
+					<input type="number" id="cmcValue" placeholder="Enter CMC" data-i18n-key-placeholder="enterCmc" min="0" inputmode="numeric">
 				</div>
 			</fieldset>
 
 			<!-- ✅ 분리: Power -->
 			<fieldset>
-				<legend>Power</legend>
+				<legend data-i18n-key="power">Power</legend>
 				<div class="cmc-controls">
 					<select id="powerOperator">
-						<option value="">(any)</option>
+						<option value="" data-i18n-key="any">(any)</option>
 						<option value="=">=</option>
 						<option value="<=">&le;</option>
 						<option value=">=">&ge;</option>
 					</select>
-					<input type="number" id="powerValue" placeholder="Enter Power" min="0" inputmode="numeric">
+					<input type="number" id="powerValue" placeholder="Enter Power" data-i18n-key-placeholder="enterPower" min="0" inputmode="numeric">
 				</div>
 			</fieldset>
 
 			<!-- ✅ 분리: Toughness -->
 			<fieldset>
-				<legend>Toughness</legend>
+				<legend data-i18n-key="toughness">Toughness</legend>
 				<div class="cmc-controls">
 					<select id="toughnessOperator">
-						<option value="">(any)</option>
+						<option value="" data-i18n-key="any">(any)</option>
 						<option value="=">=</option>
 						<option value="<=">&le;</option>
 						<option value=">=">&ge;</option>
 					</select>
-					<input type="number" id="toughnessValue" placeholder="Enter Toughness" min="0" inputmode="numeric">
+					<input type="number" id="toughnessValue" placeholder="Enter Toughness" data-i18n-key-placeholder="enterToughness" min="0" inputmode="numeric">
 				</div>
 				<div style="margin-top:0.5rem">
-					<label><input type="checkbox" id="numericPTOnly"> <span>숫자형 P/T만 (별/분수 제외)</span></label>
+					<label><input type="checkbox" id="numericPTOnly"> <span data-i18n-key="numericPTOnly">숫자형 P/T만 (별/분수 제외)</span></label>
 				</div>
 			</fieldset>
 
-			<button type="submit">Get Random Card</button>
+			<button type="submit" data-i18n-key="getRandomCard">Get Random Card</button>
 		</form>
 
 		<div id="cardResult"></div>

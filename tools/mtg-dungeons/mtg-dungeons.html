@@ -1,12 +1,52 @@
-<!DOCTYPE html>
-<html lang="ko">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="color-scheme" content="light" />
 	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)" />
-	<title>MTG 던전 뷰어</title>
+	<title data-i18n-key="title">MTG 던전 뷰어</title>
+	<script>
+		window.i18n = {
+			lang: localStorage.getItem('selectedLanguage') || 'ko',
+			translations: {},
+			initPromise: null,
+			_resolveInit: null,
+
+			init() {
+				this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+				(async () => {
+					try {
+						const response = await fetch('../../assets/i18n/language.json');
+						if (!response.ok) throw new Error('Network response was not ok');
+						const data = await response.json();
+						this.translations = data.translations;
+						this.apply();
+					} catch (error) {
+						console.error('Failed to load translations:', error);
+					} finally {
+						this._resolveInit();
+					}
+				})();
+			},
+			
+			t(key, replacements = {}) {
+				const translation = this.translations['mtg-dungeons']?.[key]?.[this.lang];
+				if (!translation) return key;
+				let result = translation;
+				for (const placeholder in replacements) {
+					result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+				}
+				return result;
+			},
+			
+			apply() {
+				document.querySelectorAll('[data-i18n-key]').forEach(el => {
+					el.textContent = this.t(el.dataset.i18nKey);
+				});
+			}
+		};
+		window.i18n.init();
+	</script>
 	<style>
 		:root { color-scheme: light; }
 		html, body { background:#fff !important; color:#000 !important; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -129,37 +169,38 @@
 </head>
 <body>
 	<div style="text-align:center">
-		<h1>MTG 기타카드 뷰어</h1>
-		<div class="subtitle">카드 이미지 다운로드에 데이터가 사용됩니다.</div>
+		<h1 data-i18n-key="title">MTG 기타카드 뷰어</h1>
+		<div class="subtitle" data-i18n-key="subtitle">카드 이미지 다운로드에 데이터가 사용됩니다.</div>
 	</div>
 
 	<!-- 1행 UI -->
 	<div class="toolbar" id="toolbar">
-		<label class="cb"><input type="checkbox" id="cb-enable" />데이터 사용 동의</label>
+		<label class="cb"><input type="checkbox" id="cb-enable" /><span data-i18n-key="dataUsageAgree">데이터 사용 동의</span></label>
 		<div class="title-left" id="titleLeft">MTG - Dungeon</div>
 		<div class="spacer"></div>
-		<select id="select-category" aria-label="카테고리 선택"></select>
-		<select id="select-item" aria-label="카드 선택"></select>
+		<select id="select-category" aria-label="카테고리 선택" data-i18n-key-aria-label="categorySelect"></select>
+		<select id="select-item" aria-label="카드 선택" data-i18n-key-aria-label="cardSelect"></select>
 	</div>
 
 	<!-- 프리뷰 -->
 	<div class="viewer">
 		<div class="viewer-header">
-			<div class="viewer-title" id="viewerTitle">카테고리: -</div>
-			<div class="viewer-sub" id="viewerSub">선택: -</div>
+			<div class="viewer-title" id="viewerTitle"><span data-i18n-key="categoryLabel">카테고리:</span> -</div>
+			<div class="viewer-sub" id="viewerSub"><span data-i18n-key="selectionLabel">선택:</span> -</div>
 		</div>
 		<div class="viewer-frame" id="viewerFrame">
-			<img id="previewImage" src="" alt="선택한 카드/시트 이미지가 여기에 표시됩니다.">
+			<img id="previewImage" src="" alt="선택한 카드/시트 이미지가 여기에 표시됩니다." data-i18n-key-alt="placeholderImageAlt">
 		</div>
 	</div>
 
-	<footer><p>이미지 출처: magiccards.info</p></footer>
+	<footer><p data-i18n-key="imageSource">이미지 출처: magiccards.info</p></footer>
 
-	<div id="fsOverlay" class="fullscreen-overlay" aria-hidden="true" role="dialog" aria-label="카드 전체보기">
+	<div id="fsOverlay" class="fullscreen-overlay" aria-hidden="true" role="dialog" aria-label="카드 전체보기" data-i18n-key-aria-label="fullscreenImageAlt">
 		<img id="fsImage" class="fullscreen-img" alt="">
 	</div>
 
 <script>
+window.i18n.initPromise.then(() => {
 	/* ===== 경로/라벨 유틸 ===== */
 	const BASE_PATHS = {
 		dungeon:    'assets/dungeon',
@@ -179,7 +220,7 @@
 		base = base.replace(/-s-/g, "'s-").replace(/-/g, ' ');
 		return base.replace(/\b\w/g, ch => ch.toUpperCase());
 	}
-	const prettyKey = k => k.replace(/_/g,' ').replace(/\b\w/g, ch => ch.toUpperCase());
+	const prettyKey = k => window.i18n.t(k) || k.replace(/_/g,' ').replace(/\b\w/g, ch => ch.toUpperCase());
 
 	/* ===== 데이터 소스 ===== */
 	const DATA_SOURCES = {
@@ -200,7 +241,7 @@
 			"Because I Have Willed It.jpg",
 			"Behold My Grandeur.jpg",
 			"Behold the Power of Destruction.jpg",
-			"Bow to My Command.jpg",
+			"Bow To My Command.jpg",
 			"Chaos Is My Plaything.jpg",
 			"Choose Your Champion.jpg",
 			"Choose Your Demise.jpg",
@@ -220,22 +261,22 @@
 			"I Am Never Alone.jpg",
 			"I Am Untouchable.jpg",
 			"I Bask in Your Silent Awe.jpg",
-			"I Call for Slaughter.jpg",
-			"I Call on the Ancient Magics.jpg",
-			"I Delight in Your Convulsions.jpg",
+			"I Call For Slaughter.jpg",
+			"I Call On The Ancient Magics.jpg",
+			"I Delight In Your Convulsions.jpg",
 			"I Know All, I See All.jpg",
 			"I Will Savor Your Agony.jpg",
-			"Ignite the Cloneforge!.jpg",
+			"Ignite The Cloneforge!.jpg",
 			"Imprison This Insolent Wretch.jpg",
-			"Into the Earthen Maw.jpg",
-			"Introductions Are in Order.jpg",
+			"Into The Earthen Maw.jpg",
+			"Introductions Are In Order.jpg",
 			"Kneel Before My Legions.jpg",
 			"Know Evil.jpg",
-			"Know Naught but Fire.jpg",
-			"Look Skyward and Despair.jpg",
+			"Know Naught But Fire.jpg",
+			"Look Skyward And Despair.jpg",
 			"Make Yourself Useful.jpg",
 			"May Civilization Collapse.jpg",
-			"Mine Is the Only Truth.jpg",
+			"Mine Is The Only Truth.jpg",
 			"Mortal Flesh Is Weak.jpg",
 			"My Champion Stands Supreme.jpg",
 			"My Crushing Masterstroke.jpg",
@@ -249,40 +290,40 @@
 			"My Will Is Irresistible.jpg",
 			"My Wings Enfold All.jpg",
 			"My Wish Is Your Command.jpg",
-			"Nature Demands an Offering.jpg",
+			"Nature Demands An Offering.jpg",
 			"Nature Shields Its Own.jpg",
 			"No One Will Hear Your Cries.jpg",
-			"No Secret Is Hidden from Me.jpg",
+			"No Secret Is Hidden From Me.jpg",
 			"Nothing Can Stop Me Now.jpg",
 			"Only Blood Ends Your Nightmares.jpg",
 			"Only I Know What Awaits.jpg",
-			"Pay Tribute to Me.jpg",
+			"Pay Tribute To Me.jpg",
 			"Perhaps You've Met My Cohort.jpg",
 			"Plots That Span Centuries.jpg",
 			"Power Without Equal.jpg",
-			"Reality Is Mine to Control.jpg",
+			"Reality Is Mine To Control.jpg",
 			"Realms Befitting My Majesty.jpg",
-			"Roots of All Evil.jpg",
-			"Rot Like the Scum You Are.jpg",
+			"Roots Of All Evil.jpg",
+			"Rot Like The Scum You Are.jpg",
 			"Rotted Ones, Lay Siege.jpg",
 			"Running Is Useless.jpg",
 			"Surrender Your Thoughts.jpg",
 			"The Dead Shall Serve.jpg",
-			"The Fate of the Flammable.jpg",
+			"The Fate Of The Flammable.jpg",
 			"The Iron Guardian Stirs.jpg",
 			"The Mighty Will Fall.jpg",
 			"The Pieces Are Coming Together.jpg",
 			"The Very Soil Shall Shake.jpg",
 			"There Is No Refuge.jpg",
-			"This World Belongs to Me.jpg",
-			"Time Bends to My Will.jpg",
-			"Tooth, Claw, and Tail.jpg",
+			"This World Belongs To Me.jpg",
+			"Time Bends To My Will.jpg",
+			"Tooth, Claw, And Tail.jpg",
 			"What's Yours Is Now Mine.jpg",
 			"When Will You Learn_.jpg",
-			"Which of You Burns Brightest_.jpg",
-			"You Are Unworthy of Mercy.jpg",
-			"You Cannot Hide from Me.jpg",
-			"You Exist Only to Amuse.jpg",
+			"Which Of You Burns Brightest_.jpg",
+			"You Are Unworthy Of Mercy.jpg",
+			"You Cannot Hide From Me.jpg",
+			"You Exist Only To Amuse.jpg",
 			"You Live Only Because I Will It.jpg",
 			"You Will Know True Suffering.jpg",
 			"Your Fate Is Thrice Sealed.jpg",

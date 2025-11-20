@@ -21,7 +21,7 @@ export default function GameView() {
 	const { currentEvent, currentRound } = getState();
 
 	if (!currentEvent) {
-		element.innerHTML = `<h2>오류: 진행 중인 토너먼트 정보가 없습니다.</h2><a href="#/">처음으로 돌아가기</a>`;
+		element.innerHTML = `<h2>${window.i18n.t('errorNoTournament')}</h2><a href="#/">${window.i18n.t('backToStart')}</a>`;
 		return element;
 	}
 
@@ -54,13 +54,13 @@ export default function GameView() {
 	const render = () => {
 		element.innerHTML = `
 			<div class="round-header">
-				<h2>Round ${currentRound} / ${rounds}</h2>
+				<h2>${window.i18n.t('roundHeader', { currentRound: currentRound, rounds: rounds })}</h2>
 				<div id="timer">${timerMinutes}:00</div>
 			</div>
 			<div class="matchups-grid"></div>
 			<div class="navigation-btns">
-				<button id="prev-round" class="secondary-btn" ${currentRound === 1 ? 'disabled' : ''}>이전 라운드</button>
-				<button id="next-round" class="primary-btn" ${isRoundFullyConfirmed() ? '' : 'disabled'}>다음 라운드</button>
+				<button id="prev-round" class="secondary-btn" ${currentRound === 1 ? 'disabled' : ''}>${window.i18n.t('prevRound')}</button>
+				<button id="next-round" class="primary-btn" ${isRoundFullyConfirmed() ? '' : 'disabled'}>${window.i18n.t('nextRound')}</button>
 			</div>
 		`;
 
@@ -85,7 +85,7 @@ export default function GameView() {
 			if (p2Name !== 'BYE') {
 			matchCard.innerHTML = `
 				<div class="match-title">
-				<span class="table-badge">Table ${index + 1}</span>
+				<span class="table-badge">${window.i18n.t('table', { index: index + 1 })}</span>
 				</div>
 
 				<!-- 두 줄 레이아웃: 1행=이름 좌/우, 2행= -+ | 중앙 스코어 | -+ -->
@@ -93,12 +93,12 @@ export default function GameView() {
 				<!-- 1행 -->
 				<div class="cell a-name">
 					${p1Name}
-					${dropA ? '<span class="drop-chip">드랍</span>' : ''}
+					${dropA ? `<span class="drop-chip">${window.i18n.t('drop')}</span>` : ''}
 				</div>
 				<div class="cell spacer"></div>
 				<div class="cell b-name">
 					${p2Name}
-					${dropB ? '<span class="drop-chip">드랍</span>' : ''}
+					${dropB ? `<span class="drop-chip">${window.i18n.t('drop')}</span>` : ''}
 				</div>
 
 				<!-- 2행 -->
@@ -121,31 +121,31 @@ export default function GameView() {
 
 				<!-- 하단: 결과 선택 + 확정/수정 -->
 				<div class="actions-bar">
-				<select class="result-type-select" aria-label="결과 유형 선택" ${isFinished ? 'disabled' : ''}>
-				<option value="OK" ${resultType === 'OK' ? 'selected' : ''}>정상 종료</option>
-				<option value="TIME_OUT" ${resultType === 'TIME_OUT' ? 'selected' : ''}>시간 종료</option>
-				<option value="ID" ${resultType === 'ID' ? 'selected' : ''}>의도적 무승부</option>
+				<select class="result-type-select" aria-label="${window.i18n.t('selectResultType')}" ${isFinished ? 'disabled' : ''}>
+				<option value="OK" ${resultType === 'OK' ? 'selected' : ''}>${window.i18n.t('normalEnd')}</option>
+				<option value="TIME_OUT" ${resultType === 'TIME_OUT' ? 'selected' : ''}>${window.i18n.t('timeOut')}</option>
+				<option value="ID" ${resultType === 'ID' ? 'selected' : ''}>${window.i18n.t('intentionalDraw')}</option>
 
 				<!-- A 쪽 드랍/해제 -->
-				<option value="DROP_A" ${resultType === 'DROP_A' ? 'selected' : ''}>${p1Name} 드랍</option>
-				${dropA ? `<option value="UNDO_DROP_A">${p1Name} 드랍해제</option>` : ''}
+				<option value="DROP_A" ${resultType === 'DROP_A' ? 'selected' : ''}>${window.i18n.t('playerDrop', { playerName: p1Name })}</option>
+				${dropA ? `<option value="UNDO_DROP_A">${window.i18n.t('playerUndrop', { playerName: p1Name })}</option>` : ''}
 
 				<!-- B 쪽 드랍/해제 -->
-				<option value="DROP_B" ${resultType === 'DROP_B' ? 'selected' : ''}>${p2Name} 드랍</option>
-				${dropB ? `<option value="UNDO_DROP_B">${p2Name} 드랍해제</option>` : ''}
+				<option value="DROP_B" ${resultType === 'DROP_B' ? 'selected' : ''}>${window.i18n.t('playerDrop', { playerName: p2Name })}</option>
+				${dropB ? `<option value="UNDO_DROP_B">${window.i18n.t('playerUndrop', { playerName: p2Name })}</option>` : ''}
 				</select>
 				${!isFinished
-					? `<button class="confirm-btn" title="결과 확정" data-action="confirm-result">✓</button>`
-					: `<button class="edit-btn" title="결과 수정" data-action="edit-result">✎</button>`
+					? `<button class="confirm-btn" title="${window.i18n.t('confirmResult')}" data-action="confirm-result">✓</button>`
+					: `<button class="edit-btn" title="${window.i18n.t('editResult')}" data-action="edit-result">✎</button>`
 				}
 				</div>
 			`;
 			} else {
 			matchCard.innerHTML = `
 				<div class="match-title">
-				<span class="table-badge">Table ${index + 1}</span>
+				<span class="table-badge">${window.i18n.t('table', { index: index + 1 })}</span>
 				</div>
-				<div class="bye-notice">${p1Name} 님의 부전승</div>
+				<div class="bye-notice">${window.i18n.t('bye', { playerName: p1Name })}</div>
 			`;
 			}
 
@@ -224,7 +224,7 @@ export default function GameView() {
 
 	const handleNextRound = () => {
 		if (!isRoundFullyConfirmed()) {
-			alert('모든 매치의 결과가 확정되지 않았습니다.');
+			alert(window.i18n.t('resultsNotConfirmed'));
 			return;
 		}
 		stopTimer();

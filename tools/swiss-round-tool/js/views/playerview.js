@@ -62,8 +62,8 @@ export default function PlayerView() {
 
         // ✨ [핵심 수정] 복잡한 <style> 블록을 완전히 제거했습니다.
         element.innerHTML = `
-            ${currentView !== 'initial' ? `<button class="back-btn secondary-btn small-btn" data-target="initial">← 처음으로</button>` : ''}
-            <h2>참가자 설정</h2>
+            ${currentView !== 'initial' ? `<button class="back-btn secondary-btn small-btn" data-target="initial">${window.i18n.t('backToStart')}</button>` : ''}
+            <h2>${window.i18n.t('participantSettings')}</h2>
             <div class="status-bar ${status.type}">${status.message}</div>
             <div class="view-content">
                 ${content}
@@ -75,8 +75,8 @@ export default function PlayerView() {
 
     const renderInitialView = () => `
         <div class="initial-buttons">
-            <button id="show-quick-match-btn" class="secondary-btn">빠른 경기 시작</button>
-            <button id="google-signin-btn" class="primary-btn">정규 경기 시작 (Google 로그인)</button>
+            <button id="show-quick-match-btn" class="secondary-btn">${window.i18n.t('startQuickMatch')}</button>
+            <button id="google-signin-btn" class="primary-btn">${window.i18n.t('startRegularMatch')}</button>
         </div>
     `;
 
@@ -95,22 +95,22 @@ export default function PlayerView() {
 		const ssId = (getState()?.spreadsheetId) || "";
 
 		return `
-			<h3>${isRegular ? '정규 경기' : '빠른 경기'}: 참가 명단 구성</h3>
-			<p>${isRegular ? '시트에 등록된 선수를 선택/추가해서 명단을 구성하세요.' : '참가할 선수의 이름을 직접 입력하여 명단에 추가하세요.'}</p>
+			<h3>${isRegular ? window.i18n.t('regularMatch') : window.i18n.t('quickMatch')}: ${window.i18n.t('participantSettings')}</h3>
+			<p>${isRegular ? window.i18n.t('regularMatchDesc') : window.i18n.t('quickMatchDesc')}</p>
 
 			${isRegular ? `
 				<!-- ✅ 항상 노출되는 "시트에 선수 추가" 폼 -->
 				<form id="add-sheet-players-form" class="inline-add">
-					<label for="sheet-player-names"><strong>선수 추가</strong> (쉼표 또는 줄바꿈으로 여러 명)</label>
-					<textarea id="sheet-player-names" rows="2" placeholder="예) 김철수, 홍길동&#10;이영희"></textarea>
+					<label for="sheet-player-names"><strong>${window.i18n.t('addPlayer')}</strong> ${window.i18n.t('addMultiplePlayers')}</label>
+					<textarea id="sheet-player-names" rows="2" placeholder="${window.i18n.t('playerAddExample')}"></textarea>
 					<div class="actions">
-						<button type="submit" class="primary-btn" ${isLoading ? 'disabled' : ''}>시트에 추가</button>
-						<button type="button" id="open-sheet-btn" class="secondary-btn" ${ssId ? "" : "disabled"}>스프레드시트 열기</button>
-						<button type="button" id="refresh-players-btn" class="secondary-btn" ${isLoading ? 'disabled' : ''}>목록 새로고침</button>
+						<button type="submit" class="primary-btn" ${isLoading ? 'disabled' : ''}>${window.i18n.t('addToSheet')}</button>
+						<button type="button" id="open-sheet-btn" class="secondary-btn" ${ssId ? "" : "disabled"}>${window.i18n.t('openSpreadsheet')}</button>
+						<button type="button" id="refresh-players-btn" class="secondary-btn" ${isLoading ? 'disabled' : ''}>${window.i18n.t('refreshList')}</button>
 					</div>
 				</form>
 
-				<p class="muted">${isLoading ? '선수 목록 로딩 중...' : `총 ${localPlayers.length}명의 선수가 있습니다.`}</p>
+				<p class="muted">${isLoading ? window.i18n.t('loadingPlayerList') : window.i18n.t('totalPlayers', { count: localPlayers.length })}</p>
 
 				<div class="player-pool-list">
 					${sortedPlayerPool.map(player => `
@@ -127,14 +127,14 @@ export default function PlayerView() {
 				</div>
 			` : `
 				<form id="add-temp-player-form">
-					<input type="text" id="temp-player-name" placeholder="이름 입력 후 추가" autocomplete="off">
-					<button type="submit">명단에 추가</button>
+					<input type="text" id="temp-player-name" placeholder="${window.i18n.t('enterNameAndAdd')}" autocomplete="off">
+					<button type="submit">${window.i18n.t('addToList')}</button>
 				</form>
 			`}
 
-			<h4 id="selected-count">참가 명단 (${selectedPlayers.length}명)</h4>
+			<h4 id="selected-count">${window.i18n.t('participantList', { count: selectedPlayers.length })}</h4>
 			<ul id="selected-players-list">
-				${selectedPlayers.length === 0 ? `<li>참가할 선수를 추가/선택해주세요. (최소 3명)</li>` : ''}
+				${selectedPlayers.length === 0 ? `<li>${window.i18n.t('addPlayersPrompt')}</li>` : ''}
 				${selectedPlayers.map((p, index) => `
 					<li>
 						<span>${p.name}</span>
@@ -144,7 +144,7 @@ export default function PlayerView() {
 			</ul>
 
 			<button id="start-match-btn" class="start-match-btn primary-btn" ${selectedPlayers.length < 3 ? 'disabled' : ''}>
-				${selectedPlayers.length}명으로 매치 설정 시작
+				${window.i18n.t('startMatchSetup', { count: selectedPlayers.length })}
 			</button>
 		`;
 	};
@@ -152,22 +152,22 @@ export default function PlayerView() {
     // --- 이하 나머지 함수들은 이전과 동일합니다 ---
 
     const renderSheetManager = () => `
-		<h3>스프레드시트 선택</h3>
-		<p>데이터를 저장할 스프레드시트를 선택하거나 생성하세요.</p>
+		<h3>${window.i18n.t('selectSpreadsheetTitle')}</h3>
+		<p>${window.i18n.t('selectSpreadsheetDesc')}</p>
 		<div class="actions">
 			<button id="ensure-sheet-btn" class="primary-btn" ${isLoading ? 'disabled' : ''}>
-				${isLoading ? '시트 생성 중...' : '새 시트 생성/연결'}
+				${isLoading ? window.i18n.t('creatingSheet') : window.i18n.t('createConnectSheet')}
 			</button>
 			<button id="pick-sheet-btn" class="secondary-btn" ${isLoading ? 'disabled' : ''}>
-				기존 시트 선택
+				${window.i18n.t('selectExistingSheet')}
 			</button>
-			${isLoading ? '<button id="cancel-loading-btn" class="secondary-btn danger-btn">취소</button>' : ''}
+			${isLoading ? `<button id="cancel-loading-btn" class="secondary-btn danger-btn">${window.i18n.t('cancel')}</button>` : ''}
 		</div>
 	`;
 
 	function withTimeout(promise, ms, label = '작업') {
 	return new Promise((resolve, reject) => {
-		const timer = setTimeout(() => reject(new Error(`${label} 타임아웃(${ms}ms)`)), ms);
+		const timer = setTimeout(() => reject(new Error(`${window.i18n.t(label)} ${window.i18n.t('timeout', { ms: ms })}`)), ms);
 		promise.then(v => { clearTimeout(timer); resolve(v); })
 		       .catch(e => { clearTimeout(timer); reject(e); });
 	});
@@ -190,12 +190,12 @@ export default function PlayerView() {
 		e.preventDefault();
 		const ta = element.querySelector('#sheet-player-names');
 		const raw = (ta?.value || "").trim();
-		if (raw.length === 0) { updateStatus('error', '이름을 입력하세요.'); render(); return; }
+		if (raw.length === 0) { updateStatus('error', window.i18n.t('enterName')); render(); return; }
 
 		const names = Array.from(new Set(raw.split(/[\n,]/g).map(s => s.trim()).filter(Boolean)));
 		const existingLower = new Set(localPlayers.map(p => (p.name || '').toLowerCase()));
 		const unique = names.filter(n => !existingLower.has(n.toLowerCase()));
-		if (unique.length === 0) { updateStatus('info', '새로 추가할 선수가 없습니다.'); render(); return; }
+		if (unique.length === 0) { updateStatus('info', window.i18n.t('noNewPlayers')); render(); return; }
 
 		try {
 			isLoading = true; render();
@@ -205,11 +205,11 @@ export default function PlayerView() {
 			// 중요: 여기서 isLoading을 내려야 loadPlayers 가드에 안 걸림
 			isLoading = false;
 			await loadPlayers(false); // 스피너 없이 즉시 목록 재빌드
-			updateStatus('success', `${unique.length}명 추가됨. 체크박스로 선택하세요.`);
+			updateStatus('success', window.i18n.t('playersAdded', { count: unique.length }));
 			ta.value = '';
 		} catch (err) {
 			isLoading = false;
-			updateStatus('error', `선수 추가 실패: ${err.message || err}`);
+			updateStatus('error', `${window.i18n.t('addPlayerFailed', { error: err.message || err })}`);
 			render();
 		}
 	};
@@ -228,7 +228,7 @@ export default function PlayerView() {
 		element.querySelector('#pick-sheet-btn')?.addEventListener('click', () => connectSheet(false));
 		element.querySelector('#cancel-loading-btn')?.addEventListener('click', () => {
 			isLoading = false;
-			updateStatus('info', '작업을 취소했습니다.');
+			updateStatus('info', window.i18n.t('operationCanceled'));
 			render();
 		});
 		
@@ -265,7 +265,7 @@ export default function PlayerView() {
 		if (isLoading === true) return;
 		isLoading = true; render();
 		try {
-			const label = allowCreateOrPick ? '시트 생성/보장' : '시트 선택';
+			const label = allowCreateOrPick ? 'createEnsureSheet' : 'selectSheet';
 			const actionPromise = allowCreateOrPick
 				? GoogleApi.ensureSpreadsheetId({ allowCreate: true })
 				: GoogleApi.openSpreadsheetPicker();
@@ -275,13 +275,13 @@ export default function PlayerView() {
 
 			// 구조 보장도 타임아웃으로 감싼다(드물게 지연되는 경우)
 			if (typeof GoogleApi.prepareCurrentSpreadsheet === 'function') {
-				await withTimeout(GoogleApi.prepareCurrentSpreadsheet(), 15000, '시트 구조 보장');
+				await withTimeout(GoogleApi.prepareCurrentSpreadsheet(), 15000, 'ensureSheetStructure');
 			}
 
 			// 통일된 진입
 			await enterRegularMode(id);
 		} catch (err) {
-			updateStatus('error', `시트 연결 실패: ${err.message || err}`);
+			updateStatus('error', window.i18n.t('sheetConnectFailed', { error: err.message || err }));
 			// 실패 시 시트 선택 화면 유지
 			currentView = 'sheet';
 		} finally {
@@ -315,9 +315,9 @@ export default function PlayerView() {
 		}
 		try {
 			await fetchPlayersCore();
-			updateStatus('success', `총 ${localPlayers.length}명의 선수를 불러왔습니다.`);
+			updateStatus('success', window.i18n.t('totalPlayersLoaded', { count: localPlayers.length }));
 		} catch (err) {
-			updateStatus('error', `선수 목록 로딩 실패: ${err.message}`);
+			updateStatus('error', window.i18n.t('loadPlayersFailed', { error: err.message }));
 			console.error("선수 데이터 로딩 에러:", err);
 		} finally {
 			if (showSpinner === true) { isLoading = false; render(); }
@@ -353,7 +353,7 @@ export default function PlayerView() {
 		const name = (input.value || '').trim();
 		if (!name) return;
 		if (selectedPlayers.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-		  updateStatus('error', '이미 명단에 추가된 이름입니다.');
+		  updateStatus('error', window.i18n.t('nameAlreadyExists'));
 		  return;
 		}
 		const player = { name, player_id: `temp_${Date.now()}` };
@@ -372,7 +372,7 @@ export default function PlayerView() {
 
     const startMatch = () => {
         if (selectedPlayers.length < 3) {
-            updateStatus('error', '매치를 시작하려면 최소 3명 이상의 선수가 필요합니다.'); render(); return;
+            updateStatus('error', window.i18n.t('min3Players')); render(); return;
         }
         setState({ players: selectedPlayers });
         window.location.hash = '/match';

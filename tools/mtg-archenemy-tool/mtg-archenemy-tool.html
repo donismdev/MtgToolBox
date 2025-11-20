@@ -4,7 +4,58 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="color-scheme" content="light">
-<title>Archenemy Scheme Deck Helper</title>
+<title data-i18n-key="title">Archenemy Scheme Deck Helper</title>
+<script>
+	window.i18n = {
+		lang: localStorage.getItem('selectedLanguage') || 'ko',
+		translations: {},
+		initPromise: null,
+		_resolveInit: null,
+
+		init() {
+			this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+			(async () => {
+				try {
+					const response = await fetch('../../assets/i18n/language.json');
+					if (!response.ok) throw new Error('Network response was not ok');
+					const data = await response.json();
+					this.translations = data.translations;
+					this.apply();
+				} catch (error) {
+					console.error('Failed to load translations:', error);
+				} finally {
+					this._resolveInit();
+				}
+			})();
+		},
+		
+		t(key, replacements = {}) {
+			const translation = this.translations['mtg-archenemy-tool']?.[key]?.[this.lang];
+			if (!translation) return key;
+			let result = translation;
+			for (const placeholder in replacements) {
+				result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+			}
+			return result;
+		},
+		
+		apply() {
+			document.querySelectorAll('[data-i18n-key]').forEach(el => {
+				el.textContent = this.t(el.dataset.i18nKey);
+			});
+			document.querySelectorAll('[data-i18n-key-placeholder]').forEach(el => {
+				el.placeholder = this.t(el.dataset.i18nKeyPlaceholder);
+			});
+			document.querySelectorAll('[data-i18n-key-title]').forEach(el => {
+				el.title = this.t(el.dataset.i18nKeyTitle);
+			});
+			document.querySelectorAll('[data-i18n-key-alt]').forEach(el => {
+				el.alt = this.t(el.dataset.i18nKeyAlt);
+			});
+		}
+	};
+	window.i18n.init();
+</script>
 <style>
 	:root{ --bg:#0f1115; --panel:#171a21; --panel2:#1d2430; --text:#e6e6e6; --muted:#a7b0c0; --accent:#6aa0ff; --border:#283241; --chip:#232c3a; --danger:#ff6a6a;}
 	html,body{height:100%}
@@ -63,14 +114,14 @@
 <body>
 <div class="container">
 	<div class="header">
-		<h1>Archenemy Scheme Deck Helper</h1>
+		<h1 data-i18n-key="title">Archenemy Scheme Deck Helper</h1>
 		<div class="sp"></div>
-		<button class="tab-btn active" id="tabBuilder">덱빌더</button>
-		<button class="tab-btn" id="tabSim">시뮬레이터</button>
+		<button class="tab-btn active" id="tabBuilder" data-i18n-key="tabBuilder">덱빌더</button>
+		<button class="tab-btn" id="tabSim" data-i18n-key="tabSim">시뮬레이터</button>
 		<select class="select" id="deckSlot">
-			<option value="1">슬롯 1</option>
-			<option value="2">슬롯 2</option>
-			<option value="3">슬롯 3</option>
+			<option value="1" data-i18n-key="slot1">슬롯 1</option>
+			<option value="2" data-i18n-key="slot2">슬롯 2</option>
+			<option value="3" data-i18n-key="slot3">슬롯 3</option>
 		</select>
 	</div>
 
@@ -78,40 +129,40 @@
 		<!-- Builder -->
 		<div class="card" id="builderCard">
 			<div class="title">
-				<h2>덱 빌더</h2>
-				<div class="chips"><span class="chip" id="deckStatus">0 / 0</span><span class="chip" id="slotInfo">슬롯 1</span></div>
+				<h2 data-i18n-key="deckBuilderTitle">덱 빌더</h2>
+				<div class="chips"><span class="chip" id="deckStatus" data-i18n-key="deckStatus">0 / 0</span><span class="chip" id="slotInfo" data-i18n-key="slotInfo">슬롯 1</span></div>
 			</div>
 			<div class="body">
 				<div class="controls" style="margin-bottom:10px">
-					<input class="input" id="deckName" placeholder="덱 이름" />
-					<label class="small">최대 장수</label>
+					<input class="input" id="deckName" data-i18n-key-placeholder="deckNamePlaceholder" placeholder="덱 이름" />
+					<label class="small" data-i18n-key="maxSizeLabel">최대 장수</label>
 					<input class="input" id="maxSize" type="number" min="1" max="99" value="10" style="width:96px" />
-					<label class="small">동일 카드 최대</label>
+					<label class="small" data-i18n-key="maxCopiesLabel">동일 카드 최대</label>
 					<select id="maxCopies">
 						<option value="1">1</option>
 						<option value="2">2</option>
 						<option value="3">3</option>
 						<option value="4">4</option>
 					</select>
-					<input class="input" id="search" placeholder="카드 검색" style="flex:1" />
+					<input class="input" id="search" data-i18n-key-placeholder="searchPlaceholder" placeholder="카드 검색" style="flex:1" />
 				</div>
 
 				<div class="builder-rows">
 					<div class="section">
 						<div class="head">
-							<div class="title">스킴 목록 (탭=미리보기 / + - = 추가·제거)</div>
-							<button class="btn" id="toggleList">접기</button>
+							<div class="title" data-i18n-key="schemeListTitle">스킴 목록 (탭=미리보기 / + - = 추가·제거)</div>
+							<button class="btn" id="toggleList" data-i18n-key="toggleListCollapse">접기</button>
 						</div>
 						<div class="content list" id="schemeList"></div>
 					</div>
 
 					<div class="section">
 						<div class="head">
-							<div class="title">현재 덱</div>
+							<div class="title" data-i18n-key="currentDeckTitle">현재 덱</div>
 							<div>
-								<button class="btn success" id="saveDeck">저장</button>
-								<button class="btn" id="loadDeck">불러오기</button>
-								<button class="btn danger" id="clearDeck">초기화</button>
+								<button class="btn success" id="saveDeck" data-i18n-key="saveButton">저장</button>
+								<button class="btn" id="loadDeck" data-i18n-key="loadButton">불러오기</button>
+								<button class="btn danger" id="clearDeck" data-i18n-key="clearButton">초기화</button>
 							</div>
 						</div>
 						<div class="content list" id="deckList"></div>
@@ -123,29 +174,29 @@
 		<!-- Simulator -->
 		<div class="card" id="simCard" style="display:none">
 			<div class="title">
-				<h2>시뮬레이션</h2>
-				<div class="chips"><span class="chip" id="simSummary">남은 0 / 전체 0 · 버린 0</span></div>
+				<h2 data-i18n-key="simulatorTitle">시뮬레이션</h2>
+				<div class="chips"><span class="chip" id="simSummary" data-i18n-key="simSummary">남은 0 / 전체 0 · 버린 0</span></div>
 			</div>
 			<div class="body">
 				<div class="controls" style="margin-bottom:10px">
-					<button class="btn primary" id="startSim">시작</button>
-					<button class="btn" id="nextScheme" disabled>다음 스킴</button>
-					<button class="btn" id="resetSim" disabled>초기화</button>
+					<button class="btn primary" id="startSim" data-i18n-key="startButton">시작</button>
+					<button class="btn" id="nextScheme" disabled data-i18n-key="nextSchemeButton">다음 스킴</button>
+					<button class="btn" id="resetSim" disabled data-i18n-key="resetSimButton">초기화</button>
 				</div>
 
 				<div class="sim-output">
 					<div class="revealed">
-						<h3>현재 공개된 스킴</h3>
-						<div id="revealedName" class="small" style="margin-bottom:6px">(없음)</div>
+						<h3 data-i18n-key="revealedSchemeTitle">현재 공개된 스킴</h3>
+						<div id="revealedName" class="small" style="margin-bottom:6px" data-i18n-key="noneRevealed">(없음)</div>
 						<img id="revealedThumb" class="thumb" style="display:none" alt="revealed">
 						<div class="controls" style="margin-top:8px">
-							<button class="btn" id="markOngoing" disabled>Ongoing으로 유지</button>
-							<button class="btn" id="discardNow" disabled>버리기</button>
+							<button class="btn" id="markOngoing" disabled data-i18n-key="markOngoingButton">Ongoing으로 유지</button>
+							<button class="btn" id="discardNow" disabled data-i18n-key="discardNowButton">버리기</button>
 						</div>
 					</div>
 					<div class="zone">
 						<div style="min-width:220px">
-							<div class="small">Ongoing</div>
+							<div class="small" data-i18n-key="ongoingZoneTitle">Ongoing</div>
 							<div id="ongoingZone"></div>
 						</div>
 						<!-- 버린 목록은 표시하지 않고 숫자만 칩에 표시 -->
@@ -158,13 +209,14 @@
 
 <!-- Fullscreen Image Viewer -->
 <div class="viewer" id="imgViewer" role="dialog" aria-modal="true">
-	<img id="viewerImg" alt="scheme full">
-	<button class="close" id="closeViewer">닫기</button>
+	<img id="viewerImg" data-i18n-key-alt="cardImageAlt" alt="scheme full">
+	<button class="close" id="closeViewer" data-i18n-key="closeViewerButton">닫기</button>
 </div>
 
 <script>
+window.i18n.initPromise.then(() => {
 function version(){ return "1.4.0"; }
-function printVersion(){ console.log("도구 모음 버전:", version()); }
+function printVersion(){ console.log(window.i18n.t("toolVersionPrefix"), version()); }
 
 /* ===== Data ===== */
 
@@ -294,21 +346,21 @@ function toast(msg, ms=1400){ const t=document.createElement("div"); t.className
 
 /* ===== Builder Render ===== */
 function updateDeckStatus(){
-	$("deckStatus").textContent = `${totalCards()} / ${state.builder.maxSize}`;
-	$("slotInfo").textContent = `슬롯 ${state.builder.slot}`;
+	$("deckStatus").textContent = window.i18n.t("deckStatus", {current: totalCards(), max: state.builder.maxSize});
+	$("slotInfo").textContent = window.i18n.t("slotInfo", {slot: state.builder.slot});
 }
 function renderSchemeList(){
 	const wrap = $("schemeList"); wrap.innerHTML = "";
 	if(state.ui.listCollapsed){
 		const mini=document.createElement("div"); mini.style.padding="10px"; mini.className="small";
-		mini.textContent="목록이 접혀 있습니다 (펴기 버튼으로 열기)"; wrap.append(mini); return;
+		mini.textContent=window.i18n.t("listCollapsedMessage"); wrap.append(mini); return;
 	}
 	const q = $("search").value.toLowerCase();
 	DATA_SOURCES.forEach((f, idx)=>{
 		const nm = nameOf(f);
 		if(q && !nm.toLowerCase().includes(q)) return;
 		const row = document.createElement("div"); row.className="row";
-		const left = document.createElement("div"); left.className="name"; left.textContent=nm; left.title="클릭: 이미지 미리보기";
+		const left = document.createElement("div"); left.className="name"; left.textContent=nm; left.title=window.i18n.t("imagePreviewClick");
 		left.onclick = ()=> openViewer(imgPath(f));
 		const right = document.createElement("div"); right.className="actions";
 		const minus = document.createElement("button"); minus.className="btn"; minus.textContent="-";
@@ -353,10 +405,10 @@ function adjustCard(idx, delta, cntEl){
 /* ===== Save / Load ===== */
 function saveDeck(){
 	const slot = state.builder.slot;
-	const payload={ name: state.builder.name||`Slot ${slot}`, maxSize: state.builder.maxSize, maxCopies: state.builder.maxCopies, cards: state.builder.cards };
+	const payload={ name: state.builder.name||window.i18n.t("slotInfo", {slot: slot}), maxSize: state.builder.maxSize, maxCopies: state.builder.maxCopies, cards: state.builder.cards };
 	localStorage.setItem(deckKey(slot), JSON.stringify(payload));
 	localStorage.setItem(lastSlotKey, String(slot)); // 마지막 슬롯 기억
-	toast(`슬롯 ${slot}에 저장됨`);
+	toast(window.i18n.t("savedToSlotToast", {slot: slot}));
 }
 function loadDeck(slot){
 	const raw = localStorage.getItem(deckKey(slot));
@@ -364,7 +416,7 @@ function loadDeck(slot){
 	state.builder.slot = slot;
 	if(!raw){
 		// 빈 덱으로 초기화
-		state.builder.name = `Slot ${slot}`;
+		state.builder.name = window.i18n.t("slotInfo", {slot: slot});
 		state.builder.maxSize = 10;
 		state.builder.maxCopies = 1;
 		state.builder.cards = {};
@@ -376,7 +428,7 @@ function loadDeck(slot){
 	}
 	try{
 		const data = JSON.parse(raw);
-		state.builder.name = data.name || `Slot ${slot}`;
+		state.builder.name = data.name || window.i18n.t("slotInfo", {slot: slot});
 		state.builder.maxSize = Number(data.maxSize)||10;
 		state.builder.maxCopies = Number(data.maxCopies)||1;
 		state.builder.cards = data.cards || {};
@@ -410,11 +462,11 @@ function effectiveTotal(){ // 전체 T = 빌더 덱 총장수 - ongoing 수
 function updateSimSummary(){
 	const left = state.sim ? state.sim.library.length : 0;
 	const disc = state.sim ? state.sim.discard.length : 0;
-	$("simSummary").textContent = `남은 ${left} / 전체 ${effectiveTotal()} · 버린 ${disc}`;
+	$("simSummary").textContent = window.i18n.t("simSummary", {left: left, total: effectiveTotal(), discarded: disc});
 }
 function startSim(){
 	const list = buildSimDeckArray();
-	if(list.length===0){ toast("덱이 비었습니다"); // 시작 불가, 완전 리셋 표기 방지
+	if(list.length===0){ toast(window.i18n.t("deckEmptyToast")); // 시작 불가, 완전 리셋 표기 방지
 		state.sim = null; setSimButtons(false); setRevealed(null); $("ongoingZone").innerHTML=""; updateSimSummary(); return;
 	}
 	state.sim = { slot: state.builder.slot, library: shuffle(list.slice()), discard: [], ongoing: [], current: null };
@@ -422,7 +474,7 @@ function startSim(){
 	setRevealed(null);
 	$("ongoingZone").innerHTML = "";
 	updateSimSummary();
-	toast("시뮬레이터 리셋 완료");
+	toast(window.i18n.t("simulatorResetToast"));
 }
 function resetSim(){
 	state.sim = null;
@@ -439,8 +491,8 @@ function reshuffleExcludingOngoingAndDrawOne(){
 	});
 	state.sim.discard = [];
 	state.sim.library = shuffle(base);
-	toast("덱 리셋 (Ongoing 제외)");
-	if(state.sim.library.length===0){ updateSimSummary(); toast("리셋했지만 남은 카드가 없습니다"); return null; }
+	toast(window.i18n.t("deckResetToast"));
+	if(state.sim.library.length===0){ updateSimSummary(); toast(window.i18n.t("noCardsLeftToast")); return null; }
 	return state.sim.library.pop();
 }
 function nextScheme(){
@@ -456,7 +508,7 @@ function nextScheme(){
 }
 function setRevealed(idx){
 	const nameEl=$("revealedName"), th=$("revealedThumb");
-	if(idx===null){ if(state.sim) state.sim.current=null; nameEl.textContent="(없음)"; th.style.display="none"; th.src=""; $("markOngoing").disabled=true; $("discardNow").disabled=true; return; }
+	if(idx===null){ if(state.sim) state.sim.current=null; nameEl.textContent=window.i18n.t("noneRevealed"); th.style.display="none"; th.src=""; $("markOngoing").disabled=true; $("discardNow").disabled=true; return; }
 	state.sim.current = idx;
 	const file = DATA_SOURCES[idx];
 	nameEl.textContent = nameOf(file);
@@ -468,8 +520,8 @@ function renderOngoing(){
 	(state.sim?.ongoing||[]).forEach((idx,k)=>{
 		const file=DATA_SOURCES[idx];
 		const item=document.createElement("div"); item.className="ongoing-item"; item.textContent=nameOf(file);
-		item.title="클릭: 이미지 미리보기"; item.onclick=(e)=>{ if(e.target.classList.contains("close")) return; openViewer(imgPath(file)); };
-		const x=document.createElement("button"); x.className="close"; x.textContent="×"; x.title="버리기";
+		item.title=window.i18n.t("imagePreviewClick"); item.onclick=(e)=>{ if(e.target.classList.contains("close")) return; openViewer(imgPath(file)); };
+		const x=document.createElement("button"); x.className="close"; x.textContent="×"; x.title=window.i18n.t("abandonOngoingTitle");
 		x.onclick=(e)=>{ e.stopPropagation(); abandonOngoingAt(k); };
 		item.append(x); oz.append(item);
 	});
@@ -503,7 +555,7 @@ function hardResetToSlot(slot){
 	localStorage.setItem(lastSlotKey, String(slot));
 	// 4) 헤더 드롭다운 동기
 	$("deckSlot").value = String(slot);
-	toast(`슬롯 ${slot}으로 전환 및 전체 리셋`);
+	toast(window.i18n.t("switchedSlotResetToast", {slot: slot}));
 }
 
 /* ===== Init & Events ===== */
@@ -541,12 +593,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 	$("toggleList").onclick = ()=>{
 		state.ui.listCollapsed = !state.ui.listCollapsed;
-		$("toggleList").textContent = state.ui.listCollapsed ? "펴기" : "접기";
+		$("toggleList").textContent = state.ui.listCollapsed ? window.i18n.t("toggleListExpand") : window.i18n.t("toggleListCollapse");
 		renderSchemeList();
 	};
 
 	$("saveDeck").onclick = saveDeck;
-	$("loadDeck").onclick = ()=>{ const ok=loadDeck(state.builder.slot); toast(ok?`슬롯 ${state.builder.slot} 불러오기 완료`:`슬롯 ${state.builder.slot}에 저장된 덱이 없습니다`); };
+	$("loadDeck").onclick = ()=>{ const ok=loadDeck(state.builder.slot); toast(ok?window.i18n.t("loadedFromSlotToast", {slot: state.builder.slot}):window.i18n.t("noDeckInSlotToast", {slot: state.builder.slot})); };
 	$("clearDeck").onclick = ()=>{ state.builder.cards={}; updateDeckStatus(); renderSchemeList(); renderDeckList(); updateSimSummary(); };
 
 	$("startSim").onclick = startSim;
@@ -563,6 +615,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 	$("deckSlot").value = String(last);
 	hardResetToSlot(last); // 전체 리셋 + 해당 슬롯 로드
 	setActiveTab("builder"); // 기본 진입은 빌더
+});
 });
 </script>
 </body>

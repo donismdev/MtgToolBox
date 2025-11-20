@@ -16,7 +16,7 @@ export default function ResultView() {
 	const { currentEvent } = getState();
 
 	if (!currentEvent) {
-		element.innerHTML = `<h2>오류: 표시할 토너먼트 결과가 없습니다.</h2><a href="#/">처음으로 돌아가기</a>`;
+		element.innerHTML = `<h2>${window.i18n.t('errorNoResults')}</h2><a href="#/">${window.i18n.t('backToStart')}</a>`;
 		return element;
 	}
 
@@ -123,10 +123,10 @@ export default function ResultView() {
 			document.body.removeChild(ta);
 			if (ok) {
 				status.className = 'status-bar success';
-				status.textContent = '✅ 클립보드에 복사되었습니다!';
+				status.textContent = `✅ ${window.i18n.t('copiedToClipboard')}`;
 			} else {
 				status.className = 'status-bar error';
-				status.textContent = '복사에 실패했습니다.';
+				status.textContent = window.i18n.t('copyFailed');
 			}
 		};
 
@@ -134,7 +134,7 @@ export default function ResultView() {
 			navigator.clipboard.writeText(text)
 				.then(() => {
 					status.className = 'status-bar success';
-					status.textContent = '✅ 클립보드에 복사되었습니다!';
+					status.textContent = `✅ ${window.i18n.t('copiedToClipboard')}`;
 				})
 				.catch(fallback);
 		} else {
@@ -148,17 +148,17 @@ export default function ResultView() {
 		const to = (input?.value || '').trim();
 		if (!to) {
 			status.className = 'status-bar error';
-			status.textContent = '받는 사람 이메일을 입력하세요.';
+			status.textContent = window.i18n.t('enterRecipientEmail');
 			return;
 		}
-		const subject = `Tournament Results - ${currentEvent.date || ''}`;
+		const subject = window.i18n.t('tournamentResultsEmailSubject', { date: currentEvent.date || '' });
 		const body = rvBuildTSV();
 
 		if (typeof GoogleApi?.sendEmail === 'function') {
 			try {
 				await GoogleApi.sendEmail({ to, subject, body });
 				status.className = 'status-bar success';
-				status.textContent = '✅ 이메일을 전송했습니다.';
+				status.textContent = `✅ ${window.i18n.t('emailSent')}`;
 				return;
 			} catch (_) {
 				// 실패 시 mailto 폴백
@@ -168,7 +168,7 @@ export default function ResultView() {
 		const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 		window.location.href = mailto;
 		status.className = 'status-bar info';
-		status.textContent = '메일 앱이 열리지 않으면 복사한 내용을 수동 전송하세요.';
+		status.textContent = window.i18n.t('manualEmailPrompt');
 	};
 
 	const rvHandleSave = async () => {
@@ -178,9 +178,9 @@ export default function ResultView() {
 		if (!saveBtn || !status) return;
 
 		saveBtn.disabled = true;
-		saveBtn.textContent = '저장 중...';
+		saveBtn.textContent = window.i18n.t('saving');
 		status.className = 'status-bar info';
-		status.textContent = '스프레드시트에 모든 결과를 기록하고 있습니다...';
+		status.textContent = window.i18n.t('savingResults');
 
 		try {
 			await GoogleApi.getConfigMap();
@@ -213,14 +213,14 @@ export default function ResultView() {
 			}
 
 			rvIsSaved = true;
-			saveBtn.textContent = '저장 완료';
+			saveBtn.textContent = window.i18n.t('saveComplete');
 			status.className = 'status-bar success';
-			status.textContent = '✅ 모든 결과가 성공적으로 저장되었습니다!';
+			status.textContent = `✅ ${window.i18n.t('allResultsSaved')}`;
 		} catch (err) {
 			status.className = 'status-bar error';
-			status.textContent = `저장 실패: ${err?.message || '알 수 없는 오류'}`;
+			status.textContent = `${window.i18n.t('saveFailed', { error: err?.message || window.i18n.t('unknownError') })}`;
 			saveBtn.disabled = false;
-			saveBtn.textContent = '토너먼트 결과 저장';
+			saveBtn.textContent = window.i18n.t('saveTournamentResults');
 		}
 	};
 
@@ -231,13 +231,13 @@ export default function ResultView() {
 			(currentEvent.players || []).some((p) => String(rvGetId(p) || '').startsWith('temp_'));
 
 		element.innerHTML = `
-			<h2>최종 순위</h2>
+			<h2>${window.i18n.t('finalStandings')}</h2>
 			<div class="table-container">
 				<table class="results-table">
 					<thead>
 						<tr>
-							<th>순위</th><th>플레이어</th><th>승점</th>
-							<th>승-패-무</th><th>GWP</th><th>OMW%</th>
+							<th>${window.i18n.t('rank')}</th><th>${window.i18n.t('player')}</th><th>${window.i18n.t('points')}</th>
+							<th>${window.i18n.t('wld')}</th><th>GWP</th><th>OMW%</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -246,7 +246,7 @@ export default function ResultView() {
 								.filter(([player]) => player !== 'BYE')
 								.map(([player, data], index) => {
 									const r = rvDropRoundByName[player];
-									const chip = r ? `<span class="drop-chip" title="R${r} 드랍">드랍 R${r}</span>` : '';
+									const chip = r ? `<span class="drop-chip" title="${window.i18n.t('roundDrop', { round: r })}">${window.i18n.t('drop')} R${r}</span>` : '';
 									return `
 										<tr>
 											<td>${index + 1}</td>
@@ -265,28 +265,28 @@ export default function ResultView() {
 			</div>
 
 			<div class="section">
-				<h3>결과 내보내기</h3>
+				<h3>${window.i18n.t('exportResults')}</h3>
 				<div class="export-row" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-					<input id="email-to" type="email" placeholder="받는 사람 이메일" style="padding:10px; border:1px solid #dddfe2; border-radius:6px; min-width:240px;">
-					<button id="copy-btn" class="primary-btn">클립보드에 복사</button>
-					<button id="email-btn" class="secondary-btn">이메일로 보내기</button>
+					<input id="email-to" type="email" placeholder="${window.i18n.t('recipientEmail')}" style="padding:10px; border:1px solid #dddfe2; border-radius:6px; min-width:240px;">
+					<button id="copy-btn" class="primary-btn">${window.i18n.t('copyToClipboard')}</button>
+					<button id="email-btn" class="secondary-btn">${window.i18n.t('sendByEmail')}</button>
 				</div>
 				<div id="save-status" class="status-bar" style="margin-top:10px;"></div>
 			</div>
 
 			<div class="section">
-				<h3>토너먼트 관리</h3>
+				<h3>${window.i18n.t('tournamentManagement')}</h3>
 				${
 					isTemp
-						? `<p>임시 경기입니다. 필요 시 복사 또는 이메일 전송을 사용하세요.</p>`
-						: `<p>결과를 확인하고, 이상이 없다면 스프레드시트에 영구적으로 저장하세요.</p>
-						   <button id="save-btn" class="primary-btn">토너먼트 결과 저장</button>`
+						? `<p>${window.i18n.t('tempMatchPrompt')}</p>`
+						: `<p>${window.i18n.t('permanentSavePrompt')}</p>
+						   <button id="save-btn" class="primary-btn">${window.i18n.t('saveTournamentResults')}</button>`
 				}
-				<button id="edit-btn" class="secondary">마지막 라운드 수정</button>
+				<button id="edit-btn" class="secondary">${window.i18n.t('editLastRound')}</button>
 			</div>
 
 			<hr>
-			<button id="restart-btn" class="secondary">새 토너먼트 시작</button>
+			<button id="restart-btn" class="secondary">${window.i18n.t('startNewTournament')}</button>
 		`;
 	};
 

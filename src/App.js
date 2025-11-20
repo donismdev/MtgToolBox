@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -63,11 +63,19 @@ function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isDrawerOpen, setDrawerOpen] = useState(!isMobile);
+  const iframeRef = useRef(null);
 
   const handleSelectTool = (tool) => {
     setSelectedTool(tool);
     if (isMobile) {
       setDrawerOpen(false);
+    }
+  };
+
+  const handleLanguageChange = () => {
+    if (iframeRef.current) {
+      // Reload the iframe to apply the new language from localStorage
+      iframeRef.current.src = iframeRef.current.src;
     }
   };
 
@@ -102,11 +110,13 @@ function App() {
           onClose={() => setDrawerOpen(false)}
           onSelectTool={handleSelectTool}
           isMobile={isMobile}
+          onLanguageChange={handleLanguageChange}
         />
         <Main open={isDrawerOpen} isMobile={isMobile}>
           <Toolbar /> 
           {selectedTool ? (
             <iframe 
+                ref={iframeRef}
                 src={getToolUrl(selectedTool)}
                 title={selectedTool.name}
                 style={{ width: '100%', height: '100%', border: 'none', flexGrow: 1 }}

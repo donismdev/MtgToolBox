@@ -3,8 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MTG Google Sheets Result Viewer</title>
+  <title data-i18n-key="title">MTG Google Sheets Result Viewer</title>
   <meta name="color-scheme" content="light" />
+  <script>
+    window.i18n = {
+      lang: localStorage.getItem('selectedLanguage') || 'ko',
+      translations: {},
+      initPromise: null,
+      _resolveInit: null,
+
+      init() {
+        this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+        (async () => {
+          try {
+            const response = await fetch('../../assets/i18n/language.json');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            this.translations = data.translations;
+            this.apply();
+          } catch (error) {
+            console.error('Failed to load translations:', error);
+          } finally {
+            this._resolveInit();
+          }
+        })();
+      },
+      
+      t(key, replacements = {}) {
+        const translation = this.translations['swiss-round-viewer']?.[key]?.[this.lang];
+        if (!translation) return key;
+        let result = translation;
+        for (const placeholder in replacements) {
+          result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+        }
+        return result;
+      },
+      
+      apply() {
+        document.querySelectorAll('[data-i18n-key]').forEach(el => {
+          el.textContent = this.t(el.dataset.i18nKey);
+        });
+      }
+    };
+    window.i18n.init();
+  </script>
   <style>
     :root{
       --bg:#0f1115; --panel:#171a21; --text:#e6e6e6; --muted:#a7a7a7; --accent:#4ea1ff; --danger:#ff5d5d;
@@ -68,60 +110,60 @@
 </head>
 <body>
   <!-- Loading Overlay -->
-  <div id="loading" class="loading"><div class="box"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span class="loading-text">불러오는 중…</span></div></div>
+  <div id="loading" class="loading"><div class="box"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span class="loading-text" data-i18n-key="loadingText">불러오는 중…</span></div></div>
 
   <!-- Event Detail Modal -->
   <div id="eventModal" class="modal" aria-hidden="true">
     <div class="panel">
       <div class="head">
-        <div class="title" id="eventModalTitle">이벤트 상세</div>
-        <button class="close" id="btnCloseEvent">닫기</button>
+        <div class="title" id="eventModalTitle" data-i18n-key="eventDetailTitle">이벤트 상세</div>
+        <button class="close" id="btnCloseEvent" data-i18n-key="closeButton">닫기</button>
       </div>
       <div id="eventDetailBody"></div>
     </div>
   </div>
 
   <div class="container">
-    <h1>MTG Google Sheets Result Viewer <span class="small">v<span id="ver">2.2.0</span></span></h1>
+    <h1 data-i18n-key="title">MTG Google Sheets Result Viewer <span class="small">v<span id="ver">2.2.0</span></span></h1>
     <div class="toolbar">
-      <button id="btnSignIn" class="btn">Google 로그인</button>
-      <button id="btnSignOut" class="btn" disabled>로그아웃</button>
-      <button id="btnPick" class="btn" disabled>스프레드시트 선택</button>
+      <button id="btnSignIn" class="btn" data-i18n-key="googleSignIn">Google 로그인</button>
+      <button id="btnSignOut" class="btn" disabled data-i18n-key="signOut">로그아웃</button>
+      <button id="btnPick" class="btn" disabled data-i18n-key="selectSpreadsheet">스프레드시트 선택</button>
       <span id="sheetBadge" class="badge"></span>
     </div>
 
     <div class="grid">
       <div class="card">
-        <h2>모임 정보</h2>
+        <h2 data-i18n-key="gatheringInfo">모임 정보</h2>
         <div class="kv" id="kvMeta"></div>
       </div>
       <div class="card">
-        <h2>빠른 안내</h2>
+        <h2 data-i18n-key="quickGuide">빠른 안내</h2>
         <div class="kv">
-          <div>좌측 탭에서 스탠딩/상대전적을 조회하세요.</div>
+          <div data-i18n-key="quickGuideText">좌측 탭에서 스탠딩/상대전적을 조회하세요.</div>
         </div>
       </div>
     </div>
 
     <div class="tabs">
-      <div class="tab active" data-tab="standings">Standings</div>
-      <div class="tab" data-tab="h2h">상대전적</div>
-      <div class="tab" data-tab="players">Players</div>
-      <div class="tab" data-tab="events">Events</div>
-      <div class="tab" data-tab="rounds">Rounds</div>
+      <div class="tab active" data-tab="standings" data-i18n-key="standingsTab">Standings</div>
+      <div class="tab" data-tab="h2h" data-i18n-key="h2hTab">상대전적</div>
+      <div class="tab" data-tab="players" data-i18n-key="playersTab">Players</div>
+      <div class="tab" data-tab="events" data-i18n-key="eventsTab">Events</div>
+      <div class="tab" data-tab="rounds" data-i18n-key="roundsTab">Rounds</div>
     </div>
 
     <div class="tabpanes">
       <!-- Standings -->
       <div id="pane-standings" class="active">
         <div class="filterrow">
-          <label>포맷</label>
+          <label data-i18n-key="formatFilter">포맷</label>
           <select id="formatFilter"></select>
-          <span class="badge-pill" id="badgeScope">전체 데이터 기준</span>
+          <span class="badge-pill" id="badgeScope" data-i18n-key="allDataStandard">전체 데이터 기준</span>
         </div>
         <div class="table-wrap"><table>
           <thead>
-            <tr><th>#</th><th>Player</th><th>Pts</th><th>W-L-D</th><th>MWP%</th><th>OMW%</th><th>GWP%</th><th>ELO</th></tr>
+            <tr><th data-i18n-key="tableHeaderHash">#</th><th data-i18n-key="tableHeaderPlayer">Player</th><th data-i18n-key="tableHeaderPts">Pts</th><th data-i18n-key="tableHeaderWLD">W-L-D</th><th data-i18n-key="tableHeaderMWP">MWP%</th><th data-i18n-key="tableHeaderOMW">OMW%</th><th data-i18n-key="tableHeaderGWP">GWP%</th><th data-i18n-key="tableHeaderELO">ELO</th></tr>
           </thead>
           <tbody id="rowsStandings"></tbody>
         </table></div>
@@ -133,20 +175,20 @@
           <select id="selA"></select>
           <select id="selB"></select>
           <select id="selFmtH2H"></select>
-          <button id="btnH2H" class="btn">조회</button>
+          <button id="btnH2H" class="btn" data-i18n-key="queryButton">조회</button>
           <span id="h2hSummary" class="badge-pill"></span>
         </div>
         <div class="table-wrap"><table>
-          <thead><tr><th>event</th><th>round</th><th>format</th><th>A</th><th>a_w-d-l</th><th>B</th><th>b_w-d-l</th><th>type</th></tr></thead>
+          <thead><tr><th data-i18n-key="tableHeaderEvent">event</th><th data-i18n-key="tableHeaderRound">round</th><th data-i18n-key="tableHeaderFormat">format</th><th data-i18n-key="tableHeaderA">A</th><th data-i18n-key="tableHeaderAWLD">a_w-d-l</th><th data-i18n-key="tableHeaderB">B</th><th data-i18n-key="tableHeaderBWLD">b_w-d-l</th><th data-i18n-key="tableHeaderType">type</th></tr></thead>
           <tbody id="rowsH2H"></tbody>
         </table></div>
-        <div style="margin-top:8px" class="small">* 최근 10경기 기준</div>
+        <div style="margin-top:8px" class="small" data-i18n-key="last10GamesStandard">* 최근 10경기 기준</div>
       </div>
 
       <!-- Players -->
       <div id="pane-players">
         <div class="table-wrap"><table>
-          <thead><tr><th>ID</th><th>Name</th><th>참여횟수(이벤트)</th><th>최초 참여</th><th>최근 참여</th></tr></thead>
+          <thead><tr><th data-i18n-key="tableHeaderID">ID</th><th data-i18n-key="tableHeaderName">Name</th><th data-i18n-key="tableHeaderParticipationCount">참여횟수(이벤트)</th><th data-i18n-key="tableHeaderFirstParticipation">최초 참여</th><th data-i18n-key="tableHeaderLastParticipation">최근 참여</th></tr></thead>
           <tbody id="rowsPlayers"></tbody>
         </table></div>
       </div>
@@ -154,7 +196,7 @@
       <!-- Events -->
       <div id="pane-events">
         <div class="table-wrap"><table>
-          <thead><tr><th>ID</th><th>Date</th><th>참여인원</th><th>Bo</th><th>Format</th><th>상세</th></tr></thead>
+          <thead><tr><th data-i18n-key="tableHeaderID">ID</th><th data-i18n-key="tableHeaderDate">Date</th><th data-i18n-key="tableHeaderParticipants">참여인원</th><th data-i18n-key="tableHeaderBo">Bo</th><th data-i18n-key="tableHeaderFormat">Format</th><th data-i18n-key="tableHeaderDetail">상세</th></tr></thead>
           <tbody id="rowsEvents"></tbody>
         </table></div>
       </div>
@@ -163,14 +205,14 @@
       <div id="pane-rounds">
         <div class="table-wrap"><table>
           <thead>
-            <tr><th>event</th><th>round</th><th>table</th><th>A</th><th>a_w</th><th>a_d</th><th>a_l</th><th>B</th><th>b_w</th><th>b_d</th><th>b_l</th><th>type</th></tr>
+            <tr><th data-i18n-key="tableHeaderEvent">event</th><th data-i18n-key="tableHeaderRound">round</th><th data-i18n-key="tableHeaderTable">table</th><th data-i18n-key="tableHeaderA">A</th><th data-i18n-key="tableHeaderAWins">a_w</th><th data-i18n-key="tableHeaderADraws">a_d</th><th data-i18n-key="tableHeaderALosses">a_l</th><th data-i18n-key="tableHeaderB">B</th><th data-i18n-key="tableHeaderBWins">b_w</th><th data-i18n-key="tableHeaderBDraws">b_d</th><th data-i18n-key="tableHeaderBLosses">b_l</th><th data-i18n-key="tableHeaderType">type</th></tr>
           </thead>
           <tbody id="rowsRounds"></tbody>
         </table></div>
       </div>
     </div>
 
-    <div class="footer">Google 로그인 → 스프레드시트 선택 → 자동 새로고침. 오류는 브라우저 콘솔 참고.</div>
+    <div class="footer" data-i18n-key="footerText">Google 로그인 → 스프레드시트 선택 → 자동 새로고침. 오류는 브라우저 콘솔 참고.</div>
   </div>
 
   <!-- Google APIs -->
@@ -179,6 +221,7 @@
   <script src="https://www.gstatic.com/picker/1/picker.js"></script>
 
   <script type="module">
+window.i18n.initPromise.then(() => {
     import {
       initGoogleClient, signIn, signOut,
       openSpreadsheetPicker, ensureSignedIn,
@@ -207,7 +250,7 @@
 			const t0 = Date.now();
 			(function tick(){
 			if (window.gapi && window.google && window.google.accounts && window.google.picker) return resolve();
-			if (Date.now() - t0 > timeout) return reject(new Error('Google API 스크립트 로드 지연'));
+			if (Date.now() - t0 > timeout) return reject(new Error(window.i18n.t("googleApiLoadDelay")));
 			setTimeout(tick, 50);
 			})();
 		});
@@ -247,7 +290,7 @@
 
     const KNOWN_FORMATS = ['all','cube draft','standard','modern','pioneer','legacy','vintage','pauper','commander','custom'];
 
-    function setLoading(on,msg='불러오는 중…'){
+    function setLoading(on,msg=window.i18n.t("loadingText")){
       els.loading.querySelector('.loading-text').textContent = msg;
       els.loading.style.display = on ? 'flex' : 'none';
     }
@@ -258,27 +301,27 @@
 		els.btnPick.disabled    = false;
     }
     function setSheetBadge(){
-      // const signedIn = !els.btnSignIn.disabled;
-      // const id=getCurrentSpreadsheetId();
-      // if(!signedIn){
-      //   els.sheetBadge.textContent='로그인 필요';
-      //   els.sheetBadge.style.color='#f88';
-      // } else if(!id){
-      //   els.sheetBadge.textContent='시트 선택 안됨';
-      //   els.sheetBadge.style.color='#f0c674';
-      // } else {
-      //   els.sheetBadge.textContent='연결됨';
-      //   els.sheetBadge.style.color='#9fe7a4';
-      // }
+      const signedIn = !els.btnSignIn.disabled;
+      const id=getCurrentSpreadsheetId();
+      if(!signedIn){
+        els.sheetBadge.textContent=window.i18n.t("loginRequired");
+        els.sheetBadge.style.color='#f88';
+      } else if(!id){
+        els.sheetBadge.textContent=window.i18n.t("sheetNotSelected");
+        els.sheetBadge.style.color='#f0c674';
+      } else {
+        els.sheetBadge.textContent=window.i18n.t("connected");
+        els.sheetBadge.style.color='#9fe7a4';
+      }
     }
     function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
     function RESULT_BADGE(t){
       const up=String(t||'').toUpperCase();
-      if(up==='OK') return `<span class="badge-pill status-ok">OK</span>`;
-      if(up==='TIME_OUT') return `<span class="badge-pill status-warn">TIME_OUT</span>`;
-      if(up==='DROP' || up==='DROPPED') return `<span class="badge-pill status-bad">DROP</span>`;
-      if(up==='ID' || up==='INTENTIONAL_DRAW') return `<span class="badge-pill status-id">ID</span>`;
-      if(up==='BYE') return `<span class="badge-pill">BYE</span>`;
+      if(up==='OK') return `<span class="badge-pill status-ok">${window.i18n.t("badgeOK")}</span>`;
+      if(up==='TIME_OUT') return `<span class="badge-pill status-warn">${window.i18n.t("badgeTimeOut")}</span>`;
+      if(up==='DROP' || up==='DROPPED') return `<span class="badge-pill status-bad">${window.i18n.t("badgeDrop")}</span>`;
+      if(up==='ID' || up==='INTENTIONAL_DRAW') return `<span class="badge-pill status-id">${window.i18n.t("badgeID")}</span>`;
+      if(up==='BYE') return `<span class="badge-pill">${window.i18n.t("badgeBye")}</span>`;
       return `<span class="badge-pill">${up}</span>`;
     }
 
@@ -293,7 +336,7 @@
     // ========== Renderers ==========
     function renderMeta(meta){
       els.kvMeta.innerHTML='';
-      const map = { first_game_date:'최초 모임', last_game_date:'최근 모임', event_count:'이벤트 수' };
+      const map = { first_game_date:window.i18n.t("firstGathering"), last_game_date:window.i18n.t("recentGathering"), event_count:window.i18n.t("eventCount") };
       for(const k of Object.keys(map)){
         const v=meta?.[k]??'';
         const div=document.createElement('div');
@@ -319,8 +362,8 @@
       els.rowsEvents.innerHTML = events.map(e=>{
         const n = (eventIdToParticipants.get(String(e.event_id))||new Set()).size;
         return `<tr>
-          <td>${e.event_id}</td><td>${e.date||''}</td><td>${n}명</td><td>${e.best_of||''}</td><td>${escapeHtml(e.event_format||'')}</td>
-          <td><button class="btn btnDetail" data-eid="${e.event_id}">보기</button></td>
+          <td>${e.event_id}</td><td>${e.date||''}</td><td>${n}${window.i18n.t("personUnit")}</td><td>${e.best_of||''}</td><td>${escapeHtml(e.event_format||'')}</td>
+          <td><button class="btn btnDetail" data-eid="${e.event_id}">${window.i18n.t("tableHeaderDetail")}</button></td>
         </tr>`;
       }).join('');
       // wire detail buttons
@@ -356,8 +399,8 @@
 
     function fillPlayerSelects(){
       const opts = players.map(p=>`<option value="${p.player_id}">${escapeHtml(p.name)} (#${p.player_id})</option>`).join('');
-      els.selA.innerHTML = `<option value="">Player A</option>`+opts;
-      els.selB.innerHTML = `<option value="">Player B</option>`+opts;
+      els.selA.innerHTML = `<option value="">${window.i18n.t("playerA")}</option>`+opts;
+      els.selB.innerHTML = `<option value="">${window.i18n.t("playerB")}</option>`+opts;
     }
 
     function calcStandings({format='all'}={}){
@@ -399,7 +442,7 @@
     function renderStandings(){
       const fmt=els.formatFilter.value||'all';
       const list=calcStandings({format:fmt});
-      els.badgeScope.textContent = fmt==='all' ? '전체 데이터 기준' : `${fmt} 기준`;
+      els.badgeScope.textContent = fmt==='all' ? window.i18n.t("allDataStandard") : `${fmt} ${window.i18n.t("standard")}`;
       els.rowsStandings.innerHTML = list.map(s=>`<tr class="rank-${s.rank}">
         <td>${s.rank}</td><td>${escapeHtml(s.name)}</td><td>${s.pts}</td>
         <td>${s.mw}-${s.ml}-${s.md}</td>
@@ -424,7 +467,7 @@
         return `<tr><td>${row.event_id}</td><td>${row.round_no}</td><td>${ev?.event_format||''}</td><td>${escapeHtml(nameById.get(a)||a)}</td><td>${row.a_wins}-${row.a_draws}-${row.a_losses}</td><td>${escapeHtml(nameById.get(b)||b)}</td><td>${row.b_wins}-${row.b_draws}-${row.b_losses}</td><td>${RESULT_BADGE(row.result_type)}</td></tr>`;
       }).join('');
       const total=aW+aD+aL; const winRate = total ? (((aW + 0.5*aD) / total) * 100).toFixed(1) : '0.0';
-      els.h2hSummary.textContent = `최근10경기 합계: ${escapeHtml(nameById.get(a)||a)} ${aW}-${aD}-${aL} (${winRate}%)`;
+      els.h2hSummary.textContent = `${window.i18n.t("last10GamesTotal")} ${escapeHtml(nameById.get(a)||a)} ${aW}-${aD}-${aL} (${winRate}%)`;
     }
 
     // ========== Index builders ==========
@@ -469,17 +512,17 @@
       const vs = rounds.filter(r=> String(r.event_id)===String(eid));
       const pls = new Set(); vs.forEach(r=>{ if(r.playerA_id) pls.add(String(r.playerA_id)); if(r.playerB_id) pls.add(String(r.playerB_id)); });
       const plist = [...pls].map(pid=> escapeHtml(nameById.get(pid)||pid)).sort((a,b)=> a.localeCompare(b));
-      els.eventModalTitle.textContent = `이벤트 #${e.event_id} • ${e.date} • ${e.event_format}`;
-      const participantsHtml = `<div class="chips">${plist.map(n=>`<span class="chip">${n}</span>`).join('')||'<span class="chip">(참여자 없음)</span>'}</div>`;
+      els.eventModalTitle.textContent = `${window.i18n.t("eventHash")}${e.event_id} • ${e.date} • ${e.event_format}`;
+      const participantsHtml = `<div class="chips">${plist.map(n=>`<span class="chip">${n}</span>`).join('')||`<span class="chip">${window.i18n.t("noParticipants")}</span>`}</div>`;
       const roundsHtml = `<div class="table-wrap" style="margin-top:10px"><table>
-        <thead><tr><th>round</th><th>table</th><th>A</th><th>a_w-d-l</th><th>B</th><th>b_w-d-l</th><th>type</th></tr></thead>
+        <thead><tr><th>${window.i18n.t("tableHeaderRound")}</th><th>${window.i18n.t("tableHeaderTable")}</th><th>${window.i18n.t("tableHeaderA")}</th><th>${window.i18n.t("tableHeaderAWLD")}</th><th>${window.i18n.t("tableHeaderB")}</th><th>${window.i18n.t("tableHeaderBWLD")}</th><th>${window.i18n.t("tableHeaderType")}</th></tr></thead>
         <tbody>
           ${vs.map(r=>{
             const A=nameById.get(String(r.playerA_id))||r.playerA_id; const B=nameById.get(String(r.playerB_id))||r.playerB_id||'';
             return `<tr><td>${r.round_no}</td><td>${r.table_no}</td><td>${escapeHtml(A)}</td><td>${r.a_wins}-${r.a_draws}-${r.a_losses}</td><td>${escapeHtml(B)}</td><td>${r.b_wins}-${r.b_draws}-${r.b_losses}</td><td>${RESULT_BADGE(r.result_type)}</td></tr>`;
           }).join('')}
         </tbody></table></div>`;
-      els.eventDetailBody.innerHTML = `<div class="kv"><div>참여자 수: ${plist.length}명</div><div>Best of: ${e.best_of||''}</div><div>Format: ${escapeHtml(e.event_format||'')}</div></div>${participantsHtml}${roundsHtml}`;
+      els.eventDetailBody.innerHTML = `<div class="kv"><div>${window.i18n.t("participantsCount")} ${plist.length}${window.i18n.t("personUnit")}</div><div>Best of: ${e.best_of||''}</div><div>Format: ${escapeHtml(e.event_format||'')}</div></div>${participantsHtml}${roundsHtml}`;
       els.eventModal.style.display='flex';
       els.eventModal.setAttribute('aria-hidden','false');
     }
@@ -488,12 +531,12 @@
 
     // ========== Load/Init ==========
     async function refreshAll(){
-		setSheetBadge(); setLoading(true,'시트에서 데이터 불러오는 중…');
+		setSheetBadge(); setLoading(true,window.i18n.t("loadingDataFromSheet"));
 		try{
 			const { meta, players: p, events: e, rounds: r } = await getAllData();
 			players=p; events=e; rounds=r;
 			renderMeta(meta); renderPlayers(); renderEvents(); renderRounds(); fillFormatFilter(); renderStandings();
-		}catch(err){ console.error(err); alert('데이터 로딩 실패: '+(err?.message||err)); }
+		}catch(err){ console.error(err); alert(window.i18n.t("dataLoadingFailed") + (err?.message||err)); }
 		finally{ setLoading(false); }
     }
 
@@ -506,12 +549,12 @@
 			// 시트가 이미 있으면 바로 로딩, 없으면 피커 자동 오픈
 			const has = getCurrentSpreadsheetId();
 			if (!has) {
-			await openSpreadsheetPicker({ title: '스프레드시트 선택' });
+			await openSpreadsheetPicker({ title: window.i18n.t("selectSpreadsheet") });
 			}
 			await refreshAll();
 		}catch(err){
 			console.error(err);
-			alert('로그인/선택 실패: ' + (err?.message || err));
+			alert(window.i18n.t("loginSelectionFailed") + (err?.message || err));
 		}
 	});
 
@@ -522,13 +565,13 @@
 		const ok = await ensureSignedIn({ interactive: true });
 		if (!ok) return;
 
-		await openSpreadsheetPicker({ title: '스프레드시트 선택' });
-		setLoading(true, '시트에서 데이터 불러오는 중…');
+		await openSpreadsheetPicker({ title: window.i18n.t("selectSpreadsheet") });
+		setLoading(true, window.i18n.t("loadingDataFromSheet"));
 		setSheetBadge();
 		await refreshAll();
 	}catch(e){
 		console.error(e);
-		alert('선택 취소/실패: ' + (e?.message || e));
+		alert(window.i18n.t("selectionCancelledFailed") + (e?.message || e));
 	}finally{
 		setLoading(false);
 	}
@@ -537,7 +580,7 @@
     // interactions
     document.getElementById('formatFilter').addEventListener('change', renderStandings);
     document.getElementById('btnH2H').addEventListener('click', renderH2H);
-
+});
   </script>
 </body>
 </html>

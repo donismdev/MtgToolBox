@@ -127,13 +127,13 @@ export function setupEventListeners() {
 				p.resetLife(window.localSettings.lifeMax, true);
 			});
 			
-			btn.textContent = '라이프 초기화';
+			btn.textContent = window.i18n.t('resetLife');
 			btn.classList.remove('confirm-animation');
 			hideAllOverlays();
 		} else {
 			hideAllOverlays();
 			window.activeUI = 'reset';
-			btn.textContent = '확인';
+			btn.textContent = window.i18n.t('confirm');
 			btn.classList.add('confirm-animation');
 			window.overlay.style.display = 'block';
 		}
@@ -141,14 +141,13 @@ export function setupEventListeners() {
 
     document.getElementById('dice-button').addEventListener('click', () => {
 
-		showMenu(window.randomMenu, '무작위 선택', ['카드', '숫자', '주사위'], (selection) => {
-			if (selection === '카드') {
-				showCardSelector(); // 2단계에서 만들 카드 선택 함수
-			} else if (selection === '숫자') {
-				showNumberSelector(); // 3단계에서 만들 숫자 선택 함수
-			} else if (selection === '주사위') {
-				// 기존 주사위 굴리기 로직
-				showMenu(window.diceCountMenu, '굴릴 주사위 개수', [1, 2, 3, 4, 5, 6], (count) => {
+		showMenu(window.randomMenu, window.i18n.t('randomSelection'), [window.i18n.t('card'), window.i18n.t('number'), window.i18n.t('dice')], (selection) => {
+			if (selection === window.i18n.t('card')) {
+				showCardSelector();
+			} else if (selection === window.i18n.t('number')) {
+				showNumberSelector();
+			} else if (selection === window.i18n.t('dice')) {
+				showMenu(window.diceCountMenu, window.i18n.t('diceCountToRoll'), [1, 2, 3, 4, 5, 6], (count) => {
 					rollDiceVisual(count, window.localSettings.diceSides);
 				});
 			}
@@ -157,15 +156,15 @@ export function setupEventListeners() {
 
     document.getElementById('settings-button').addEventListener('click', () => {
         
-		const showPlayerCountMenu = () => showMenu(window.playerCountMenu, `플레이어 수 선택 (현재 ${window.localSettings.playerCount})`, [2, 3, 4], (count) => {
+		const showPlayerCountMenu = () => showMenu(window.playerCountMenu, window.i18n.t('playerCountSelect', { count: window.localSettings.playerCount }), [2, 3, 4], (count) => {
 			window.localSettings.playerCount = count;
 			initializePlayers(count);
 			hideAllOverlays();
 
 			if (count === 3) {
 				hideAllOverlays();
-				showMenu(window.threePlayerLayoutButtonsContainer, '3인 레이아웃 선택', ['위', '아래', '왼쪽', '오른쪽'], (layout) => {
-					const layoutMap = { '위': 'top', '아래': 'bottom', '왼쪽': 'left', '오른쪽': 'right' };
+				showMenu(window.threePlayerLayoutButtonsContainer, window.i18n.t('select3PlayerLayout'), [window.i18n.t('top'), window.i18n.t('bottom'), window.i18n.t('left'), window.i18n.t('right')], (layout) => {
+					const layoutMap = { [window.i18n.t('top')]: 'top', [window.i18n.t('bottom')]: 'bottom', [window.i18n.t('left')]: 'left', [window.i18n.t('right')]: 'right' };
 					window.localSettings.threePlayerLayout = layoutMap[layout];
 					initializePlayers(3);
 					hideAllOverlays();
@@ -173,7 +172,7 @@ export function setupEventListeners() {
 			}
 		});
 		
-		const showLifeMenu = () => showMenu(window.lifeMaxMenu, `시작 라이프 (현재 ${window.localSettings.lifeMax})`, [20, 30, 40], (life) => {
+		const showLifeMenu = () => showMenu(window.lifeMaxMenu, window.i18n.t('startingLifeSelect', { life: window.localSettings.lifeMax }), [20, 30, 40], (life) => {
             window.localSettings.lifeMax = life;
             window.players.forEach(p => p.resetLife(life));
             hideAllOverlays();
@@ -181,37 +180,29 @@ export function setupEventListeners() {
 
 		const showAdjustDirectionMenu = () => showMenu(
 			window.settingsMenu,
-			'라이프 조절 방향',
-			['좌우', '상하'],
+			window.i18n.t('lifeAdjustDirection'),
+			[window.i18n.t('leftRight'), window.i18n.t('upDown')],
 			(selection) => {
-				window.localSettings.lifeAdjustDirection = (selection === '좌우') ? 'horizontal' : 'vertical';
+				window.localSettings.lifeAdjustDirection = (selection === window.i18n.t('leftRight')) ? 'horizontal' : 'vertical';
 				hideAllOverlays();
 			}
 		);
 
-        const showFontMenu = () => showMenu(window.fontSizeMenu, '폰트 크기 선택', ['작음', '보통', '크게', '아주 크게'], (selection) => {
-            const sizeMap = {'작음': 'small', '보통': 'medium', '크게': 'large', '아주 크게': 'xlarge'};
+        const showFontMenu = () => showMenu(window.fontSizeMenu, window.i18n.t('fontSizeSelect'), [window.i18n.t('small'), window.i18n.t('medium'), window.i18n.t('large'), window.i18n.t('xLarge')], (selection) => {
+            const sizeMap = {[window.i18n.t('small')]: 'small', [window.i18n.t('medium')]: 'medium', [window.i18n.t('large')]: 'large', [window.i18n.t('xLarge')]: 'xlarge'};
             applyLifeFontSize(sizeMap[selection]);
             hideAllOverlays();
         });
 
-        const showDiceSidesMenu = () => showMenu(window.diceSidesMenu, `주사위 면 수 (현재 D${window.localSettings.diceSides})`, [6, 20, 4, 8, 10, 12], (sides) => {
+        const showDiceSidesMenu = () => showMenu(window.diceSidesMenu, window.i18n.t('diceSidesSelect', { sides: window.localSettings.diceSides }), [6, 20, 4, 8, 10, 12], (sides) => {
             window.localSettings.diceSides = sides;
             hideAllOverlays();
         });
 
-        // showMenu(window.settingsMenu, '설정', ['플레이어 수', '시작 라이프', '폰트 크기', '주사위 면 수', '라이프 조절 방향'], (selection) => {
-        //     if (selection === '플레이어 수') { hideAllOverlays(); showPlayerCountMenu(); }
-        //     else if (selection === '시작 라이프') showLifeMenu();
-        //     else if (selection === '폰트 크기') showFontMenu();
-        //     else if (selection === '주사위 면 수') showDiceSidesMenu();
-        //     else if (selection === '라이프 조절 방향') showAdjustDirectionMenu();
-        // });
-
-		showMenu(window.settingsMenu, '설정', ['시작 라이프', '폰트 크기', '주사위 면 수'], (selection) => {
-            if (selection === '시작 라이프') showLifeMenu();
-            else if (selection === '폰트 크기') showFontMenu();
-            else if (selection === '주사위 면 수') showDiceSidesMenu();
+		showMenu(window.settingsMenu, window.i18n.t('settings'), [window.i18n.t('startingLife'), window.i18n.t('fontSize'), window.i18n.t('diceSides')], (selection) => {
+            if (selection === window.i18n.t('startingLife')) showLifeMenu();
+            else if (selection === window.i18n.t('fontSize')) showFontMenu();
+            else if (selection === window.i18n.t('diceSides')) showDiceSidesMenu();
         });
     });
 }

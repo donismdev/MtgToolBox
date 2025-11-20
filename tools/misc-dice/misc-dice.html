@@ -1,4 +1,53 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title></title><link rel="stylesheet" href="css/style.css"></head><body><div class="main-container"><div id="viewport"><div id="dice-container"></div></div><div class="result-area" id="resultArea"></div><div class="controls"><div class="control-section"><div class="control-label">Type</div><div class="control-group type-selector"><button class="dice-btn" data-sides="4">D4</button> <button class="dice-btn active" data-sides="6">D6</button> <button class="dice-btn" data-sides="8">D8</button> <button class="dice-btn" data-sides="10">D10</button> <button class="dice-btn" data-sides="12">D12</button> <button class="dice-btn" data-sides="20">D20</button> <button id="coinBtn">Coin</button></div></div><div class="control-section" id="count-selector-section"><div class="control-label">Count</div><div class="control-group count-selector"><button class="count-btn active" data-count="1">1</button> <button class="count-btn" data-count="2">2</button> <button class="count-btn" data-count="3">3</button> <button class="count-btn" data-count="4">4</button> <button class="count-btn" data-count="5">5</button></div></div><button id="rollButton">Roll</button></div></div><script src="js/main.js"></script></body></html>
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title></title><link rel="stylesheet" href="css/style.css">
+<script>
+  window.i18n = {
+    lang: localStorage.getItem('selectedLanguage') || 'ko',
+    translations: {},
+    initPromise: null,
+    _resolveInit: null,
+
+    init() {
+      this.initPromise = new Promise(resolve => {
+        this._resolveInit = resolve;
+      });
+
+      (async () => {
+        try {
+          const response = await fetch('../../assets/i18n/language.json');
+          if (!response.ok) throw new Error('Network response was not ok');
+          const data = await response.json();
+          this.translations = data.translations;
+          this.apply();
+        } catch (error) {
+          console.error('Failed to load translations:', error);
+        } finally {
+          this._resolveInit();
+        }
+      })();
+    },
+    
+    t(key, replacements = {}) {
+      const translation = this.translations['misc-dice']?.[key]?.[this.lang];
+      if (!translation) {
+        return key; // Fallback to key
+      }
+      let result = translation;
+      for (const placeholder in replacements) {
+        result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+      }
+      return result;
+    },
+    
+    apply() {
+      document.querySelectorAll('[data-i18n-key]').forEach(el => {
+        const key = el.dataset.i18nKey;
+        el.textContent = this.t(key);
+      });
+    }
+  };
+  window.i18n.init();
+</script>
+</head><body><div class="main-container"><div id="viewport"><div id="dice-container"></div></div><div class="result-area" id="resultArea"></div><div class="controls"><div class="control-section"><div class="control-label" data-i18n-key="type">Type</div><div class="control-group type-selector"><button class="dice-btn" data-sides="4">D4</button> <button class="dice-btn active" data-sides="6">D6</button> <button class="dice-btn" data-sides="8">D8</button> <button class="dice-btn" data-sides="10">D10</button> <button class="dice-btn" data-sides="12">D12</button> <button class="dice-btn" data-sides="20">D20</button> <button id="coinBtn" data-i18n-key="coin">Coin</button></div></div><div class="control-section" id="count-selector-section"><div class="control-label" data-i18n-key="count">Count</div><div class="control-group count-selector"><button class="count-btn active" data-count="1">1</button> <button class="count-btn" data-count="2">2</button> <button class="count-btn" data-count="3">3</button> <button class="count-btn" data-count="4">4</button> <button class="count-btn" data-count="5">5</button></div></div><button id="rollButton" data-i18n-key="roll">Roll</button></div></div><script src="js/main.js"></script></body></html>

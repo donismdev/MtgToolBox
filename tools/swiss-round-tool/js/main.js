@@ -47,21 +47,23 @@ function onAuthChange(isSignedIn) {
 
 // --- 앱 시작 ---
 async function main() {
-    window.addEventListener('hashchange', router);
-    window.addEventListener('load', router);
+    window.i18n.initPromise.then(async () => {
+        window.addEventListener('hashchange', router);
+        window.addEventListener('load', router);
 
-    await GoogleApi.initGoogleClient(onAuthChange);
+        await GoogleApi.initGoogleClient(onAuthChange);
 
-    // 로그인이 감지되면(토큰이 있으면), meta 데이터를 미리 로드
-    if (GoogleApi.getCurrentToken()) {
-        try {
-            const meta = await GoogleApi.getConfigMap();
-            setState({ meta });
-            console.log("Meta data pre-loaded:", meta);
-        } catch (err) {
-            console.error("Failed to pre-load meta data:", err.message);
+        // 로그인이 감지되면(토큰이 있으면), meta 데이터를 미리 로드
+        if (GoogleApi.getCurrentToken()) {
+            try {
+                const meta = await GoogleApi.getConfigMap();
+                setState({ meta });
+                console.log("Meta data pre-loaded:", meta);
+            } catch (err) {
+                console.error("Failed to pre-load meta data:", err.message);
+            }
         }
-    }
+    });
 }
 
 main();

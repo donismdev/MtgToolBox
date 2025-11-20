@@ -6,7 +6,49 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
-    <title>랜덤 포커 패 생성기</title>
+    <title data-i18n-key="title">랜덤 포커 패 생성기</title>
+    <script>
+        window.i18n = {
+            lang: localStorage.getItem('selectedLanguage') || 'ko',
+            translations: {},
+            initPromise: null,
+            _resolveInit: null,
+
+            init() {
+                this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+                (async () => {
+                    try {
+                        const response = await fetch('../../assets/i18n/language.json');
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        const data = await response.json();
+                        this.translations = data.translations;
+                        this.apply();
+                    } catch (error) {
+                        console.error('Failed to load translations:', error);
+                    } finally {
+                        this._resolveInit();
+                    }
+                })();
+            },
+            
+            t(key, replacements = {}) {
+                const translation = this.translations['etc-poker']?.[key]?.[this.lang];
+                if (!translation) return key;
+                let result = translation;
+                for (const placeholder in replacements) {
+                    result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+                }
+                return result;
+            },
+            
+            apply() {
+                document.querySelectorAll('[data-i18n-key]').forEach(el => {
+                    el.textContent = this.t(el.dataset.i18nKey);
+                });
+            }
+        };
+        window.i18n.init();
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
 
@@ -200,13 +242,14 @@ a, [class*="bi-"] { color: #0d6efd !important; }
 </head>
 <body>
     <div class="game-container">
-        <h1>랜덤 포커 패 생성기</h1>
+        <h1 data-i18n-key="title">랜덤 포커 패 생성기</h1>
         <div id="cards"></div>
         <div id="result"></div>
-        <button id="dealBtn">카드 받기</button>
+        <button id="dealBtn" data-i18n-key="dealCards">카드 받기</button>
     </div>
 
     <script>
+window.i18n.initPromise.then(() => {
         const dealBtn = document.getElementById('dealBtn');
         const cardsEl = document.getElementById('cards');
         const resultEl = document.getElementById('result');
@@ -244,31 +287,31 @@ a, [class*="bi-"] { color: #0d6efd !important; }
 
             const isRoyal = isFlush && isStraight && sortedRankIndices[4] === 12;
 
-            if (isRoyal) return "로얄 스트레이트 플러시";
-            if (isFlush && isStraight) return "스트레이트 플러시";
-            if (counts[0] === 4) return "포카드";
-            if (counts[0] === 3 && counts[1] === 2) return "풀하우스";
-            if (isFlush) return "플러시";
-            if (isStraight) return "스트레이트";
-            if (counts[0] === 3) return "트리플";
-            if (counts[0] === 2 && counts[1] === 2) return "투 페어";
-            if (counts[0] === 2) return "원 페어";
+            if (isRoyal) return window.i18n.t("royalStraightFlush");
+            if (isFlush && isStraight) return window.i18n.t("straightFlush");
+            if (counts[0] === 4) return window.i18n.t("fourOfAKind");
+            if (counts[0] === 3 && counts[1] === 2) return window.i18n.t("fullHouse");
+            if (isFlush) return window.i18n.t("flush");
+            if (isStraight) return window.i18n.t("straight");
+            if (counts[0] === 3) return window.i18n.t("threeOfAKind");
+            if (counts[0] === 2 && counts[1] === 2) return window.i18n.t("twoPair");
+            if (counts[0] === 2) return window.i18n.t("onePair");
             
-            return "하이 카드";
+            return window.i18n.t("highCard");
         }
 
         function getResultMessage(handResult) {
             const messages = {
-                "로얄 스트레이트 플러시": "🌟 완벽 그 자체! 나올 확률은 0.000154%!",
-                "스트레이트 플러시": "🎉 엄청난 행운! 오늘 좋은 일이 생길 거예요.",
-                "포카드": "💥 강력한 한 방! 짜릿한 역전을 기대해 보세요.",
-                "풀하우스": "🏠 안정과 조화! 모든 것이 가득 찬 하루.",
-                "플러시": "🎨 같은 마음, 같은 뜻! 팀워크가 빛을 발합니다.",
-                "스트레이트": "🏃‍♂️ 거침없이 직진! 계획한 일이 순조롭게 진행됩니다.",
-                "트리플": "💡 좋은 아이디어가 반짝! 당신의 능력을 보여줄 기회.",
-                "투 페어": "🤝 두 마리 토끼를 잡는 날! 즐거운 일이 연달아 생겨요.",
-                "원 페어": "😊 소소하지만 확실한 행복! 작은 기쁨으로 시작하세요.",
-                "하이 카드": "🌱 잠재력을 믿으세요! 지금부터 시작입니다."
+                [window.i18n.t("royalStraightFlush")]: window.i18n.t("royalStraightFlushMsg"),
+                [window.i18n.t("straightFlush")]: window.i18n.t("straightFlushMsg"),
+                [window.i18n.t("fourOfAKind")]: window.i18n.t("fourOfAKindMsg"),
+                [window.i18n.t("fullHouse")]: window.i18n.t("fullHouseMsg"),
+                [window.i18n.t("flush")]: window.i18n.t("flushMsg"),
+                [window.i18n.t("straight")]: window.i18n.t("straightMsg"),
+                [window.i18n.t("threeOfAKind")]: window.i18n.t("threeOfAKindMsg"),
+                [window.i18n.t("twoPair")]: window.i18n.t("twoPairMsg"),
+                [window.i18n.t("onePair")]: window.i18n.t("onePairMsg"),
+                [window.i18n.t("highCard")]: window.i18n.t("highCardMsg")
             };
             return messages[handResult];
         }
@@ -317,6 +360,7 @@ a, [class*="bi-"] { color: #0d6efd !important; }
                 dealBtn.disabled = false;
             }, 1500);
         });
+});
     </script>
 </body>
 </html>

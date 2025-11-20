@@ -5,7 +5,7 @@ export default function MatchSettingsView() {
     element.id = 'match-settings-view-container';
 
     const { players } = getState();
-    let status = { type: 'info', message: '경기의 세부 설정을 진행해주세요.' };
+    let status = { type: 'info', message: window.i18n.t('matchSettingsPrompt') };
     
     let suggestedRounds;
     const playerCount = players?.length || 0;
@@ -19,46 +19,46 @@ export default function MatchSettingsView() {
     // --- 렌더링 함수 ---
     const render = () => {
         if (!players || !players.length) {
-            element.innerHTML = `<div class="status-bar error">오류: 설정할 플레이어 정보가 없습니다. <a href="#/">처음으로 돌아가기</a></div>`;
+            element.innerHTML = `<div class="status-bar error">${window.i18n.t('errorNoPlayers')} <a href="#/">${window.i18n.t('backToStart')}</a></div>`;
             return;
         }
         
-        const formats = ['cube draft', 'standard', 'modern', 'pioneer', 'legacy', 'vintage', 'pauper', 'commander', 'custom'];
+        const formats = ['cubeDraft', 'standard', 'modern', 'pioneer', 'legacy', 'vintage', 'pauper', 'commander', 'custom'];
 
         element.innerHTML = `
-            <h2>매치 설정</h2>
+            <h2>${window.i18n.t('matchSettings')}</h2>
             <div class="status-bar ${status.type}">${status.message}</div>
             <div class="section">
-                <h3>참가자 (${players.length}명)</h3>
+                <h3>${window.i18n.t('participantList', { count: players.length })}</h3>
                 <p>${players.map(p => p.name).join(', ')}</p>
             </div>
             <div class="section">
                 <form id="match-settings-form">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="format-select">이벤트 형식</label>
-                            <select id="format-select">${formats.map(f => `<option value="${f}" ${uiState.format === f ? 'selected' : ''}>${f}</option>`).join('')}</select>
-                            ${uiState.format === 'custom' ? `<input type="text" id="custom-format-input" placeholder="커스텀 형식 입력..." required>` : ''}
+                            <label for="format-select">${window.i18n.t('eventFormat')}</label>
+                            <select id="format-select">${formats.map(f => `<option value="${f}" ${uiState.format === f ? 'selected' : ''}>${window.i18n.t(f)}</option>`).join('')}</select>
+                            ${uiState.format === 'custom' ? `<input type="text" id="custom-format-input" placeholder="${window.i18n.t('enterCustomFormat')}" required>` : ''}
                         </div>
                         <div class="form-group">
-                            <label for="rounds-input">라운드 수 (추천: ${suggestedRounds})</label>
+                            <label for="rounds-input">${window.i18n.t('rounds', { rounds: suggestedRounds })}</label>
                             <input type="number" id="rounds-input" min="1" value="${uiState.rounds}" required>
                         </div>
                         <div class="form-group">
-                            <label for="best-of-select">Best Of</label>
+                            <label for="best-of-select">${window.i18n.t('bestOf')}</label>
                             <select id="best-of-select">
-                                <option value="1">1 (단판)</option>
-                                <option value="3" selected>3 (3판 2선)</option>
-                                <option value="5">5 (5판 3선)</option>
+                                <option value="1">${window.i18n.t('bo1')}</option>
+                                <option value="3" selected>${window.i18n.t('bo3')}</option>
+                                <option value="5">${window.i18n.t('bo5')}</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="timer-input">타이머 (분)</label>
+                            <label for="timer-input">${window.i18n.t('timerMinutes')}</label>
                             <input type="number" id="timer-input" min="10" step="5" value="50" required>
                         </div>
                     </div>
                     <hr>
-                    <button type="submit" class="primary-btn">설정 완료하고 경기 시작</button>
+                    <button type="submit" class="primary-btn">${window.i18n.t('completeSettingsAndStart')}</button>
                 </form>
             </div>
             <style>.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; } .form-group { display: flex; flex-direction: column; } .form-group label { margin-bottom: 0.5rem; font-weight: bold; } .form-group input, .form-group select { padding: 0.5rem; }</style>
@@ -85,7 +85,7 @@ export default function MatchSettingsView() {
         if (selectedFormat === 'custom') {
             const customFormatValue = customFormatInput?.value.trim();
             if (!customFormatValue) {
-                status = { type: 'error', message: '커스텀 형식을 입력해주세요.' };
+                status = { type: 'error', message: window.i18n.t('enterCustomFormatPrompt') };
                 render();
                 return;
             }
