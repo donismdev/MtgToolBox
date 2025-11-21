@@ -37,7 +37,16 @@ function App() {
   const [isAppBarVisible, setAppBarVisible] = useState(true);
   const [isImageVisible, setImageVisible] = useState(false);
   const [isDarkMode, setDarkMode] = useDarkMode();
+  const [mainCss, setMainCss] = useState('');
   const iframeRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch the main CSS file content to inject into iframes
+    fetch('./main.css')
+      .then(response => response.text())
+      .then(text => setMainCss(text))
+      .catch(err => console.error("Failed to fetch main.css", err));
+  }, []);
   
   // Propagate theme changes to iframe
   useEffect(() => {
@@ -76,16 +85,14 @@ function App() {
   };
   
   const handleIframeLoad = () => {
-      if (iframeRef.current && iframeRef.current.contentWindow) {
+      if (iframeRef.current && iframeRef.current.contentWindow && mainCss) {
         const iframeDoc = iframeRef.current.contentDocument;
-        const link = iframeDoc.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = '/main.css'; // Path from the server root
-        link.onload = () => {
-            // Re-apply theme after stylesheet loads to ensure styles are ready
-            iframeRef.current.contentWindow.postMessage({ theme: isDarkMode ? 'dark' : 'light' }, '*');
-        };
-        iframeDoc.head.appendChild(link);
+        const style = iframeDoc.createElement('style');
+        style.textContent = mainCss;
+        iframeDoc.head.appendChild(style);
+
+        // Re-apply theme after styles are injected
+        iframeRef.current.contentWindow.postMessage({ theme: isDarkMode ? 'dark' : 'light' }, '*');
       }
   }
 
@@ -124,7 +131,7 @@ function App() {
             </button>
             <h1 className="text-xl font-bold truncate flex-grow">
               {selectedTool ? (selectedTool.displayName || selectedTool.name) : 'MtgToolBox'}
-              <span className="text-sm font-normal ml-2 text-gray-400">[v9]</span>
+              <span className="text-sm font-normal ml-2 text-gray-400">[v10]</span>
             </h1>
             <button
               aria-label="toggle image"
