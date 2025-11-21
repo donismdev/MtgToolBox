@@ -1,117 +1,149 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title data-i18n-key="title">마이티 보조 툴</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script>
-    window.i18n = {
-        lang: localStorage.getItem('selectedLanguage') || 'ko',
-        translations: {},
-        initPromise: null,
-        _resolveInit: null,
-
-        init() {
-            this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
-            (async () => {
-                try {
-                    const response = await fetch('../../assets/i18n/language.json');
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
-                    this.translations = data.translations;
-                    this.apply();
-                } catch (error) {
-                    console.error('Failed to load translations:', error);
-                } finally {
-                    this._resolveInit();
-                }
-            })();
-        },
-        
-        t(key, replacements = {}) {
-            const translation = this.translations['etc-mighty-helper']?.[key]?.[this.lang];
-            if (!translation) return key;
-            let result = translation;
-            for (const placeholder in replacements) {
-                result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-key="title">마이티 보조 툴</title>
+    <script>
+        // This script needs to run before Tailwind to prevent FOUC (Flash of Unstyled Content)
+        const applyTheme = (theme) => {
+            const indicator = document.getElementById('theme-indicator');
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if(indicator) indicator.textContent = '(다크)';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if(indicator) indicator.textContent = '(라이트)';
             }
-            return result;
-        },
-        
-        apply() {
-            document.querySelectorAll('[data-i18n-key]').forEach(el => {
-                el.textContent = this.t(el.dataset.i18nKey);
-            });
+        };
+        try {
+            const savedMode = localStorage.getItem('darkMode');
+            applyTheme(savedMode && JSON.parse(savedMode) ? 'dark' : 'light');
+        } catch (e) {
+            applyTheme('light'); // Default to light on error
         }
-    };
-    window.i18n.init();
-</script>
-<style>body{background-color:#121212;color:#fff;font-family:'Segoe UI',sans-serif;padding:1.5rem}button,input,label,select{margin-bottom:1rem}.result-box{background-color:#1e1e1e;padding:1rem;border-radius:.5rem;border:1px solid #333}.card-symbol{font-size:1.2rem;font-weight:700}.red{color:#ff4d4d}.black{color:#fff}details summary{cursor:pointer;color:#bbb;margin-bottom:.5rem}
-:root {
-    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
-}
+    </script>
+    <script>
+        window.i18n = {
+            lang: localStorage.getItem('selectedLanguage') || 'ko',
+            translations: {},
+            initPromise: null,
+            _resolveInit: null,
+            init() {
+                this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
+                (async () => {
+                    try {
+                        const response = await fetch('../../assets/i18n/language.json');
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        const data = await response.json();
+                        this.translations = data.translations;
+                        this.apply();
+                    } catch (error) {
+                        console.error('Failed to load translations:', error);
+                    } finally {
+                        this._resolveInit();
+                    }
+                })();
+            },
+            t(key, replacements = {}) {
+                const translation = this.translations['etc-mighty-helper']?.[key]?.[this.lang];
+                if (!translation) return key;
+                let result = translation;
+                for (const placeholder in replacements) {
+                    result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+                }
+                return result;
+            },
+            apply() {
+                document.querySelectorAll('[data-i18n-key]').forEach(el => {
+                    el.textContent = this.t(el.dataset.i18nKey);
+                });
+                // Re-apply theme here to make sure indicator is updated after i18n
+                 try {
+                    const savedMode = localStorage.getItem('darkMode');
+                    applyTheme(savedMode && JSON.parse(savedMode) ? 'dark' : 'light');
+                } catch (e) {
+                    applyTheme('light'); // Default to light on error
+                }
+            }
+        };
+        window.i18n.init();
 
-/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
-html, body {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
-
-/* 다크 선호 환경에서도 라이트로 고정 */
- @media (prefers-color-scheme: dark) {
-    :root { color-scheme: light; }
-    html, body {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-}
-
-/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
-img, video, canvas, svg, iframe {
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    background-color: transparent;
-}
-
-/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
-.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
-#modal-tool-iframe {
-    color-scheme: light;
-    background: #ffffff;
-}
-
-/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
-* { forced-color-adjust: none; }
-
-/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
-a, [class*="bi-"] { color: #0d6efd !important; }
-</style></head><body><h2 class="mb-4" data-i18n-key="title">🃏 마이티 보조 툴</h2><details><summary data-i18n-key="rulesSummary">마이티 규칙 요약 보기</summary><ul><li data-i18n-key="rule1">마이티: 보통 스페이드 A (단, 스페이드 기루 시 다이아 A)</li><li data-i18n-key="rule2">조커콜: 보통 클로버 3 (단, 클로버 기루 시 스페이드 3)</li><li data-i18n-key="rule3">20 공약 시: 풀 (x1.5)</li><li data-i18n-key="rule4">문양 없음 선택 시: 노기루 (x2)</li></ul></details><div class="mb-3"><label for="bidNumber" data-i18n-key="bidLabel">공약 (숫자):</label> <select id="bidNumber" class="form-select"><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option></select></div><div class="mb-3"><label for="suitSelect" data-i18n-key="suitLabel">기루 문양 선택:</label> <select id="suitSelect" class="form-select"><option value="none" data-i18n-key="noSuit">🚫 문양 없음 (노기루)</option><option value="spade" data-i18n-key="spade">♠ 스페이드</option><option value="heart" data-i18n-key="heart">♥ 하트</option><option value="diamond" data-i18n-key="diamond">♦ 다이아</option><option value="club" data-i18n-key="club">♣ 클로버</option></select></div><button class="btn btn-primary mb-4" onclick="calculateMighty()" data-i18n-key="viewResults">결과 보기</button><div id="result" class="result-box"></div><script>
-window.i18n.initPromise.then(() => {
-    function calculateMighty(){
-        var e=parseInt(document.getElementById("bidNumber").value),t=document.getElementById("suitSelect").value;
-        let s=window.i18n.t('aceOfSpades'),n=window.i18n.t('geomma'),a=window.i18n.t('threeOfClubs'),r=window.i18n.t('threeKkul'),o=window.i18n.t('noTrump');
-        var p=[];
-        switch(t){
-            case"spade":s=window.i18n.t('aceOfDiamonds'),n=window.i18n.t('noma'),a=window.i18n.t('threeOfClubs'),r=window.i18n.t('threeKkul'),o=`${window.i18n.t('spade')}`;break;
-            case"club":s=window.i18n.t('aceOfSpades'),n=window.i18n.t('geomma'),a=window.i18n.t('threeOfSpades'),r=window.i18n.t('threeKkul'),o=`${window.i18n.t('club')}`;break;
-            case"heart":n=window.i18n.t('geomma'),o=`${window.i18n.t('heart')}`;break;
-            case"diamond":n=window.i18n.t('geomma'),o=`${window.i18n.t('diamond')}`;break;
-            case"none":o=`${window.i18n.t('noSuit')}`,p.push(window.i18n.t('noTrumpBonus'));
+        // Theme listener for dynamic changes from parent window
+        window.addEventListener('message', (event) => {
+            if (event.data.theme) {
+                applyTheme(event.data.theme);
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans p-6">
+    <div class="max-w-2xl mx-auto">
+            <div class="flex items-center gap-2 mb-4">
+        <h2 class="text-2xl font-bold" data-i18n-key="title">🃏 마이티 보조 툴</h2>
+        <span id="theme-indicator" class="text-base"></span>
+    </div>
+        <details class="mb-4">
+            <summary class="cursor-pointer text-gray-600 dark:text-gray-400" data-i18n-key="rulesSummary">마이티 규칙 요약 보기</summary>
+            <ul class="list-disc list-inside mt-2 text-sm text-gray-700 dark:text-gray-300">
+                <li data-i18n-key="rule1">마이티: 보통 스페이드 A (단, 스페이드 기루 시 다이아 A)</li>
+                <li data-i18n-key="rule2">조커콜: 보통 클로버 3 (단, 클로버 기루 시 스페이드 3)</li>
+                <li data-i18n-key="rule3">20 공약 시: 풀 (x1.5)</li>
+                <li data-i18n-key="rule4">문양 없음 선택 시: 노기루 (x2)</li>
+            </ul>
+        </details>
+        <div class="mb-4">
+            <label for="bidNumber" class="block mb-2 font-medium" data-i18n-key="bidLabel">공약 (숫자):</label>
+            <select id="bidNumber" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="suitSelect" class="block mb-2 font-medium" data-i18n-key="suitLabel">기루 문양 선택:</label>
+            <select id="suitSelect" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                <option value="none" data-i18n-key="noSuit">🚫 문양 없음 (노기루)</option>
+                <option value="spade" data-i18n-key="spade">♠ 스페이드</option>
+                <option value="heart" data-i18n-key="heart">♥ 하트</option>
+                <option value="diamond" data-i18n-key="diamond">♦ 다이아</option>
+                <option value="club" data-i18n-key="club">♣ 클로버</option>
+            </select>
+        </div>
+        <button class="w-full bg-blue-500 hover:bg-blue-700 dark:bg-indigo-500 dark:hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mb-4" onclick="calculateMighty()" data-i18n-key="viewResults">결과 보기</button>
+        <div id="result" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow"></div>
+    </div>
+    <script>
+    window.i18n.initPromise.then(() => {
+        function calculateMighty(){
+            var e=parseInt(document.getElementById("bidNumber").value),t=document.getElementById("suitSelect").value;
+            let s=window.i18n.t('aceOfSpades'),n=window.i18n.t('geomma'),a=window.i18n.t('threeOfClubs'),r=window.i18n.t('threeKkul'),o=window.i18n.t('noTrump');
+            var p=[];
+            switch(t){
+                case"spade":s=window.i18n.t('aceOfDiamonds'),n=window.i18n.t('noma'),a=window.i18n.t('threeOfClubs'),r=window.i18n.t('threeKkul'),o=`${window.i18n.t('spade')}`;break;
+                case"club":s=window.i18n.t('aceOfSpades'),n=window.i18n.t('geomma'),a=window.i18n.t('threeOfSpades'),r=window.i18n.t('threeKkul'),o=`${window.i18n.t('club')}`;break;
+                case"heart":n=window.i18n.t('geomma'),o=`${window.i18n.t('heart')}`;break;
+                case"diamond":n=window.i18n.t('geomma'),o=`${window.i18n.t('diamond')}`;break;
+                case"none":o=`${window.i18n.t('noSuit')}`,p.push(window.i18n.t('noTrumpBonus'));
+            }
+            20===e&&"none"!==t&&p.push(window.i18n.t('fullBonus'));
+            document.getElementById("result").innerHTML=`
+                <div class="space-y-2">
+                    <p><strong>${window.i18n.t('resultTrump')}</strong> ${o}</p>
+                    <p><strong>${window.i18n.t('resultBid')}</strong> ${e}</p>
+                    <p><strong>${window.i18n.t('resultMighty')}</strong> ${s} <span class="text-gray-500 dark:text-gray-400">(${n})</span></p>
+                    <p><strong>${window.i18n.t('resultJokerCall')}</strong> ${a} <span class="text-gray-500 dark:text-gray-400">(${r})</span></p>
+                    ${p.map(e=>`<p class="text-green-600 font-semibold">${e}</p>`).join("")}
+                </div>
+            `
         }
-        20===e&&""!==t&&p.push(window.i18n.t('fullBonus')),document.getElementById("result").innerHTML=`
-                        <p><strong>${window.i18n.t('resultTrump')}</strong> ${o}</p>
-                        <p><strong>${window.i18n.t('resultBid')}</strong> ${e}</p>
-                        <p><strong>${window.i18n.t('resultMighty')}</strong> ${s} <span class="text-muted">(${n})</span></p>
-                        <p><strong>${window.i18n.t('resultJokerCall')}</strong> ${a} <span class="text-muted">(${r})</span></p>
-                        ${p.map(e=>`<p>${e}</p>`).join("")}
-                    `
-    }
-    // Make the function globally available after i18n is ready
-    window.calculateMighty = calculateMighty;
-});
-</script></body></html>
+        window.calculateMighty = calculateMighty;
+    });
+    </script>
+</body>
+</html>

@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   entry: './src/index.js',
@@ -24,11 +25,14 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
       },
     ],
   },
   plugins: [
+    new MiniCssExtractPlugin({
+        filename: '[name].css'
+    }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
       filename: 'index.html',
@@ -48,6 +52,7 @@ module.exports = {
     static: {
       directory: path.join(__dirname, 'dist'),
     },
+    watchFiles: [path.resolve(__dirname, 'tools', '**/*')],
     compress: true,
     port: 3000,
     historyApiFallback: true,

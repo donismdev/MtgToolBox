@@ -1,34 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Collapse from '@mui/material/Collapse';
+import React, { useEffect, useState, useRef } from 'react';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Divider from '@mui/material/Divider';
 import SettingsIcon from '@mui/icons-material/Settings';
 import MailIcon from '@mui/icons-material/Mail';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListSubheader from '@mui/material/ListSubheader';
 import i18n from './i18n';
+import clsx from 'clsx';
 
 const ToolDrawer = ({ open, onClose, onSelectTool, isMobile, width, onLanguageChange }) => {
   const [tools, setTools] = useState({});
   const [openCategories, setOpenCategories] = useState({});
   const [languages, setLanguages] = useState([]);
-  const [languageMenuAnchor, setLanguageMenuAnchor] = useState(null);
+  const [isLangMenuOpen, setLangMenuOpen] = useState(false);
   const [lang, setLang] = useState(i18n.lang);
+  const langMenuRef = useRef(null);
 
   useEffect(() => {
     i18n.init().then(() => {
       setLang(i18n.lang);
-      // After i18n is ready, fetch the languages to display in the menu
       setLanguages(i18n.languages || []);
     });
 
@@ -59,95 +47,126 @@ const ToolDrawer = ({ open, onClose, onSelectTool, isMobile, width, onLanguageCh
         setOpenCategories(initialOpenState);
       });
   }, []);
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+        setLangMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [langMenuRef]);
 
   const handleCategoryClick = (category) => {
     setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
   };
 
-  const handleLanguageMenuClick = (event) => {
-    setLanguageMenuAnchor(event.currentTarget);
-  };
-
-  const handleLanguageMenuClose = () => {
-    setLanguageMenuAnchor(null);
+  const handleLanguageMenuClick = () => {
+    setLangMenuOpen(!isLangMenuOpen);
   };
 
   const handleLanguageSelect = (langCode) => {
     i18n.setLang(langCode);
     setLang(langCode);
-    handleLanguageMenuClose();
+    setLangMenuOpen(false);
     onLanguageChange();
   };
 
   const getDisplayName = (tool) => i18n.t('toolNames', tool.name) || tool.displayName || tool.name;
 
   const drawerContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Toolbar />
-      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-        <List>
+    <div className="flex flex-col h-full bg-gray-800 text-white">
+      <div className="h-16" /> {/* Toolbar Spacer */}
+      <div className="flex-grow overflow-y-auto">
+        <nav>
           {Object.entries(tools).map(([category, toolList]) => (
-            <React.Fragment key={category}>
-              <ListItemButton onClick={() => handleCategoryClick(category)}>
-                <ListItemText primary={category} />
+            <div key={category}>
+              <button
+                onClick={() => handleCategoryClick(category)}
+                className="w-full flex justify-between items-center p-4 hover:bg-gray-700"
+              >
+                <span>{category}</span>
                 {openCategories[category] ? <ExpandLess /> : <ExpandMore />}
-              </ListItemButton>
-              <Collapse in={openCategories[category]} timeout="auto" unmountOnExit>
-                <List component="div" disablePadding>
+              </button>
+              <div
+                className={clsx('transition-all duration-300 overflow-hidden', {
+                  'max-h-0': !openCategories[category],
+                  'max-h-screen': openCategories[category],
+                })}
+              >
+                <ul className="pl-4">
                   {toolList.map((tool) => (
-                    <ListItem key={tool.name} disablePadding sx={{ pl: 4 }}>
-                      <ListItemButton onClick={() => onSelectTool(tool)}>
-                        <ListItemText primary={getDisplayName(tool)} />
-                      </ListItemButton>
-                    </ListItem>
+                    <li key={tool.name}>
+                      <button
+                        onClick={() => onSelectTool(tool)}
+                        className="w-full text-left p-4 pl-8 hover:bg-gray-700"
+                      >
+                        {getDisplayName(tool)}
+                      </button>
+                    </li>
                   ))}
-                </List>
-              </Collapse>
-            </React.Fragment>
+                </ul>
+              </div>
+            </div>
           ))}
-        </List>
-      </Box>
-      <Box>
-        <Divider />
-        <List>
-          <ListItemButton onClick={handleLanguageMenuClick}>
-            <ListItemIcon><SettingsIcon /></ListItemIcon>
-            <ListItemText primary={i18n.t('drawer', 'settings')} />
-          </ListItemButton>
-          <Menu
-            anchorEl={languageMenuAnchor}
-            open={Boolean(languageMenuAnchor)}
-            onClose={handleLanguageMenuClose}
-          >
-            <ListSubheader>{i18n.t('drawer', 'languageSettings')}</ListSubheader>
-            {languages.map((lang) => (
-              <MenuItem key={lang.code} onClick={() => handleLanguageSelect(lang.code)}>
-                {lang.name}
-              </MenuItem>
-            ))}
-          </Menu>
-          <ListItemButton>
-            <ListItemIcon><MailIcon /></ListItemIcon>
-            <ListItemText primary={i18n.t('drawer', 'sendMail')} />
-          </ListItemButton>
-        </List>
-      </Box>
-    </Box>
+        </nav>
+      </div>
+      <div className="relative" ref={langMenuRef}>
+        <hr className="border-gray-600"/>
+        {isLangMenuOpen && (
+            <div className="absolute bottom-full mb-2 w-full bg-gray-700 rounded-md shadow-lg">
+                <div className="p-2 font-bold text-sm text-gray-400">{i18n.t('drawer', 'languageSettings')}</div>
+                <ul>
+                    {languages.map((lang) => (
+                        <li key={lang.code}>
+                            <button onClick={() => handleLanguageSelect(lang.code)} className="w-full text-left px-4 py-2 hover:bg-gray-600">
+                                {lang.name}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
+        <ul>
+          <li>
+            <button onClick={handleLanguageMenuClick} className="w-full flex items-center p-4 hover:bg-gray-700">
+              <SettingsIcon className="mr-4" />
+              <span>{i18n.t('drawer', 'settings')}</span>
+            </button>
+          </li>
+          <li>
+            <a href="mailto:arjson@gmail.com" className="w-full flex items-center p-4 hover:bg-gray-700">
+              <MailIcon className="mr-4" />
+              <span>{i18n.t('drawer', 'sendMail')}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
   );
 
   return (
-    <Drawer
-      variant={isMobile ? 'temporary' : 'persistent'}
-      open={open}
-      onClose={onClose}
-      sx={{
-        width: width,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: width, boxSizing: 'border-box' },
-      }}
-    >
-      {drawerContent}
-    </Drawer>
+    <>
+      {/* Mobile overlay */}
+      {isMobile && open && <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={onClose}></div>}
+      
+      <aside
+        className={clsx(
+          'fixed top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out',
+          'bg-gray-800',
+          {
+            'translate-x-0': open,
+            '-translate-x-full': !open,
+          }
+        )}
+        style={{ width: width }}
+      >
+        {drawerContent}
+      </aside>
+    </>
   );
 };
 

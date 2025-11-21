@@ -1,69 +1,65 @@
-import React, { useState, useRef } from 'react';
-import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiAppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import React, { useState, useRef, useEffect } from 'react';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ImageIcon from '@mui/icons-material/Image';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import ToolDrawer from './ToolDrawer';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
+import clsx from 'clsx';
 
 const drawerWidth = 240;
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
-  ({ theme, open, isMobile }) => ({
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    marginLeft: `-${drawerWidth}px`,
-    ...((open && !isMobile) && {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginLeft: 0,
-    }),
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh',
-  }),
-);
+// Custom hook for managing dark mode
+const useDarkMode = () => {
+    const [isDarkMode, setDarkMode] = useState(() => {
+        const savedMode = localStorage.getItem('darkMode');
+        return savedMode ? JSON.parse(savedMode) : true;
+    });
 
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open, isMobile }) => ({
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...((open && !isMobile) && {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: `${drawerWidth}px`,
-    transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+    }, [isDarkMode]);
+
+    return [isDarkMode, setDarkMode];
+};
 
 
 function App() {
   const [selectedTool, setSelectedTool] = useState(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   const [isDrawerOpen, setDrawerOpen] = useState(!isMobile);
+  const [isAppBarVisible, setAppBarVisible] = useState(true);
+  const [isImageVisible, setImageVisible] = useState(false);
+  const [isDarkMode, setDarkMode] = useDarkMode();
   const iframeRef = useRef(null);
+  
+  // Propagate theme changes to iframe
+  useEffect(() => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+        iframeRef.current.contentWindow.postMessage({ theme: isDarkMode ? 'dark' : 'light' }, '*');
+    }
+  }, [isDarkMode, selectedTool]); // re-send on tool change
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 640;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setDrawerOpen(true);
+      } else {
+        setDrawerOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSelectTool = (tool) => {
     setSelectedTool(tool);
@@ -78,6 +74,20 @@ function App() {
       iframeRef.current.src = iframeRef.current.src;
     }
   };
+  
+  const handleIframeLoad = () => {
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        const iframeDoc = iframeRef.current.contentDocument;
+        const link = iframeDoc.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/main.css'; // Path from the server root
+        link.onload = () => {
+            // Re-apply theme after stylesheet loads to ensure styles are ready
+            iframeRef.current.contentWindow.postMessage({ theme: isDarkMode ? 'dark' : 'light' }, '*');
+        };
+        iframeDoc.head.appendChild(link);
+      }
+  }
 
   const getToolUrl = (tool) => {
       if (!tool) return null;
@@ -85,50 +95,97 @@ function App() {
   }
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <AppBar position="fixed" open={isDrawerOpen} isMobile={isMobile}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
+    <div className={clsx("flex text-gray-900", isDarkMode ? "dark bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900")}>
+      {!isAppBarVisible && (
+        <button
+          onClick={() => setAppBarVisible(true)}
+          className={clsx(
+            'fixed top-2 left-2 z-50 p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700',
+            isDrawerOpen && !isMobile && 'md:ml-[240px]'
+            )}
+        >
+          <VisibilityIcon />
+        </button>
+      )}
+      {isAppBarVisible && (
+        <header
+          className={clsx(
+            'fixed top-0 left-0 right-0 z-30 transition-all duration-300 ease-in-out',
+            isDrawerOpen && !isMobile && `md:ml-[${drawerWidth}px] md:w-[calc(100%-${drawerWidth}px)]`
+          )}
+        >
+          <div className="bg-gray-800 text-white flex items-center px-4 h-16">
+            <button
               aria-label="toggle drawer"
-              edge="start"
               onClick={() => setDrawerOpen(!isDrawerOpen)}
-              sx={{ mr: 2 }}
+              className="mr-2 p-2 rounded-full hover:bg-gray-700"
             >
               <CompareArrowsIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div">
+            </button>
+            <h1 className="text-xl font-bold truncate flex-grow">
               {selectedTool ? (selectedTool.displayName || selectedTool.name) : 'MtgToolBox'}
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <ToolDrawer 
-          width={drawerWidth}
-          open={isDrawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          onSelectTool={handleSelectTool}
-          isMobile={isMobile}
-          onLanguageChange={handleLanguageChange}
-        />
-        <Main open={isDrawerOpen} isMobile={isMobile}>
-          <Toolbar /> 
-          {selectedTool ? (
-            <iframe 
-                ref={iframeRef}
-                src={getToolUrl(selectedTool)}
-                title={selectedTool.name}
-                style={{ width: '100%', height: '100%', border: 'none', flexGrow: 1 }}
-            />
-          ) : (
-            <Typography paragraph>
-              Select a tool from the left menu to get started.
-            </Typography>
-          )}
-        </Main>
-      </Box>
-    </ThemeProvider>
+              <span className="text-sm font-normal ml-2 text-gray-400">[v9]</span>
+            </h1>
+            <button
+              aria-label="toggle image"
+              onClick={() => setImageVisible(!isImageVisible)}
+              className="ml-2 p-2 rounded-full hover:bg-gray-700"
+            >
+              <ImageIcon />
+            </button>
+            <button
+              aria-label="toggle theme"
+              onClick={() => setDarkMode(!isDarkMode)}
+              className="ml-2 p-2 rounded-full hover:bg-gray-700"
+            >
+              {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </button>
+            <button
+              aria-label="toggle app bar"
+              onClick={() => setAppBarVisible(false)}
+              className="ml-2 p-2 rounded-full hover:bg-gray-700"
+            >
+              <VisibilityOffIcon />
+            </button>
+          </div>
+        </header>
+      )}
+      <ToolDrawer 
+        width={drawerWidth}
+        open={isDrawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onSelectTool={handleSelectTool}
+        isMobile={isMobile}
+        onLanguageChange={handleLanguageChange}
+      />
+      <main
+        className={clsx(
+          'flex-grow p-3 transition-all duration-300 ease-in-out flex flex-col h-screen',
+          'ml-0',
+          isDrawerOpen && !isMobile && `md:ml-[${drawerWidth}px]`
+        )}
+      >
+        {isAppBarVisible && <div className="h-16" />} {/* Spacer for toolbar */}
+        {isImageVisible && (
+            <div className="p-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-4">
+                <img src="https://cards.scryfall.io/large/front/a/3/a3fb759e-e8b5-4f36-a51c-42de60d4e30b.jpg?1562917294" alt="Black Lotus" className="mx-auto max-h-64"/>
+            </div>
+        )}
+        {selectedTool ? (
+          <iframe 
+              ref={iframeRef}
+              src={getToolUrl(selectedTool)}
+              title={selectedTool.name}
+              onLoad={handleIframeLoad}
+              className="w-full h-full border-none flex-grow"
+          />
+        ) : (
+          <p>
+            Select a tool from the left menu to get started.
+          </p>
+        )}
+      </main>
+    </div>
   );
 }
 
