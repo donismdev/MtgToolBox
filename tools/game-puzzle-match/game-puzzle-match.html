@@ -4,180 +4,61 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>9x9 Block Puzzle</title>
+    <script>
+        // Apply theme on initial load BEFORE tailwind script runs
+        try {
+            const savedMode = localStorage.getItem('darkMode');
+            if (savedMode && JSON.parse(savedMode)) {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) { /* ignore */ }
+    </script>
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+        // Theme listener for dynamic changes from parent window
+        window.addEventListener('message', (event) => {
+            if (event.data.theme) {
+                if (event.data.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        });
+  </script>
   <style>
-    :root{
-      --bg:#0f172a; --panel:#111827; --board:#1f2937; --text:#e5e7eb;
-      --cellA:#0ea5e9; --cellB:#0284c7; --accent:#f59e0b; --good:#22c55e; --bad:#ef4444; --grid:rgba(255,255,255,0.08);
-      --u:24px; /* 트레이 블록 한 칸(고정) */
+    :root {
+        --u: 24px;
     }
-    *{box-sizing:border-box}
-    html, body{height:100%}
-    body{margin:0; background:linear-gradient(180deg, var(--bg), #0b1226 40%, #020617); color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; display:flex; align-items:center; justify-content:center; padding:10px; touch-action: manipulation}
-    .app{width: 720px; max-width: 96vw; background:var(--panel); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); padding:12px; display:grid; gap:12px; grid-template-rows:auto 1fr auto}
-
-    /* 상단바: 제목 제거, 점수/콤보/새 게임만 */
-    .header{display:flex; align-items:center; justify-content:flex-end; gap:8px}
-    .badge{background:#0b1220; border:1px solid #18233d; border-radius:999px; padding:6px 10px; font-weight:700; letter-spacing:.2px; display:flex; gap:6px; align-items:center}
-    .badge .val{min-width:42px; text-align:right}
-    .reset{background:var(--accent); color:#111; border:none; border-radius:8px; width:30px; height:30px; padding:0; font-weight:800; cursor:pointer; display:inline-grid; place-items:center}
-
-    /* 보드: 완전 고정 사이즈 */
-    .board-wrap{display:grid; place-items:center}
-    .board{width:340px; height:340px; background:var(--board); border-radius:12px; padding:6px; position:relative; display:grid; grid-template-columns:repeat(9,1fr); grid-template-rows:repeat(9,1fr); gap:3px; border:2px solid #0c1428}
-    .cell{background:linear-gradient(180deg,#0b1222,#0d1a30); border-radius:6px; box-shadow: inset 0 0 0 1px #18233d; position:relative; transition:background .12s ease}
-    .cell.filled{ background:linear-gradient(180deg,var(--cellA),var(--cellB)); box-shadow: inset 0 0 0 1px rgba(0,0,0,.4), inset 0 -10px 18px rgba(0,0,0,.25)}
-    .cell.hint-ok{ outline:2px solid var(--good); outline-offset:-2px }
-    .cell.hint-bad{ outline:2px solid var(--bad); outline-offset:-2px }
-    .board::before{content:""; position:absolute; inset:6px; pointer-events:none; border-radius:8px; background: linear-gradient(var(--grid), var(--grid)) 0 33.33%/100% 2px no-repeat, linear-gradient(var(--grid), var(--grid)) 0 66.66%/100% 2px no-repeat, linear-gradient(90deg, var(--grid), var(--grid)) 33.33% 0/2px 100% no-repeat, linear-gradient(90deg, var(--grid), var(--grid)) 66.66% 0/2px 100% no-repeat}
-
-    /* 트레이: 높이 고정해 레이아웃 출렁임 방지 */
-    .tray{display:flex; gap:8px; justify-content:center; padding:6px; flex-wrap:wrap; min-height:90px}
-    .piece{ --u: var(--u); padding:8px; background:#0b1220; border:1px solid #17233f; border-radius:12px; position:relative; touch-action:none; box-shadow:0 10px 24px rgba(0,0,0,.4) }
-    .piece.hidden{opacity:.2; filter:grayscale(1)}
-    .grid{ display:grid; grid-auto-rows:var(--u); grid-auto-columns:var(--u); gap:4px }
-    .block{ width:var(--u); height:var(--u); border-radius:6px; background:linear-gradient(180deg,#22d3ee,#0891b2); box-shadow: inset 0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.35); touch-action:none; -webkit-user-select:none; user-select:none }
-
-    .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; opacity:.95; transform:translate(-50%,-50%) scale(1.06)}
-
-    .toast{ position:fixed; left:50%; bottom:16px; transform:translateX(-50%); background:#0b1220; border:1px solid #1a2a4a; padding:8px 12px; border-radius:10px; font-weight:700; display:none }
-    .toast.show{ display:block; animation:pop .3s ease }
+    .board::before{content:""; position:absolute; inset:6px; pointer-events:none; border-radius:8px; background: linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)) 0 33.33%/100% 2px no-repeat, linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)) 0 66.66%/100% 2px no-repeat, linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.08)) 33.33% 0/2px 100% no-repeat, linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.08)) 66.66% 0/2px 100% no-repeat}
+    .drag-ghost{ position:fixed; z-index:50; pointer-events:none; opacity:.95; transform:translate(-50%,-50%) scale(1.06)}
     @keyframes pop{ from{ transform:translateX(-50%) scale(.9); opacity:0 } to{ transform:translateX(-50%) scale(1); opacity:1 } }
+    .toast.show{ display:block; animation:pop .3s ease }
   </style>
 </head>
-<body>
-  <div class="app" id="app">
-    <div class="header">
+<body class="bg-gradient-to-b from-gray-900 via-gray-900 to-black text-gray-200 flex items-center justify-center min-h-screen p-2 touch-manipulation">
+  <div class="app w-[720px] max-w-[96vw] bg-gray-800 rounded-2xl shadow-2xl p-3 grid gap-3 grid-rows-[auto_1fr_auto]">
+    <div class="header flex items-center justify-end gap-2">
       <div class="badge" title="점수">⭐ 점수 <span class="val" id="score">0</span></div>
       <div class="badge" title="콤보">🔥 콤보 <span class="val" id="combo">x1</span></div>
       <button class="reset" id="btnReset" title="새 게임">↻</button>
     </div>
 
-    <div class="board-wrap"><div class="board" id="board" aria-label="9x9 보드"></div></div>
-    <div class="tray" id="tray" aria-label="현재 피스 3개"></div>
+    <div class="board-wrap grid place-items-center"><div class="board w-[340px] h-[340px] bg-gray-700 rounded-xl p-1.5 relative grid grid-cols-9 grid-rows-9 gap-1 border-2 border-gray-900" id="board" aria-label="9x9 보드"></div></div>
+    <div class="tray flex gap-2 justify-center p-1.5 flex-wrap min-h-[90px]" id="tray" aria-label="현재 피스 3개"></div>
   </div>
-  <div class="toast" id="toast">+0</div>
-
-  <script>
-    function version(){ return "1.0.3"; }
-    function printVersion(){ console.log("도구 모음 버전: " + version()); }
-    printVersion();
-
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
-
-    const state = { board: Array.from({length:9},()=>Array(9).fill(0)), score: 0, combo: 1, activePieces: [], placing: null };
-    const PIECES = [ [[0,0]], [[0,0],[1,0]], [[0,0],[1,0],[2,0]], [[0,0],[0,1]], [[0,0],[0,1],[0,2]], [[0,0],[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[2,1]], [[0,0],[1,0],[1,1]], [[0,0],[1,0],[0,1],[0,2]], [[0,0],[1,0],[2,0],[3,0]], [[0,0],[0,1],[0,2],[0,3]], [[0,0],[1,0],[2,0],[3,0],[4,0]] ];
-
-    const boardEl = $('#board');
-    const trayEl = $('#tray');
-    const scoreEl = $('#score');
-    const comboEl = $('#combo');
-    const toastEl = $('#toast');
-
-    function buildBoard(){
-      boardEl.innerHTML = '';
-      for(let r=0;r<9;r++) for(let c=0;c<9;c++){
-        const cell=document.createElement('div'); cell.className='cell'; cell.dataset.r=r; cell.dataset.c=c; boardEl.appendChild(cell);
-      }
-    }
-
-    function reset(){
-      state.board = Array.from({length:9},()=>Array(9).fill(0));
-      state.score = 0; state.combo = 1; state.activePieces = []; state.placing = null;
-      updateScore(0,true); comboEl.textContent='x1';
-      $$('.cell',boardEl).forEach(c=>c.classList.remove('filled','hint-ok','hint-bad'));
-      dealPieces();
-    }
-    $('#btnReset').addEventListener('click', reset);
-
-    function updateScore(delta, force){ if(!force){ state.score += delta; } scoreEl.textContent = state.score.toString(); if(delta>0){ toastEl.textContent = `+${delta}`; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'), 650);} }
-
-    function randomPiece(){ return PIECES[Math.floor(Math.random()*PIECES.length)]; }
-    function dealPieces(){ while(state.activePieces.length<3){ state.activePieces.push(randomPiece()); } renderTray(); }
-
-    function bounds(shape){ let w=0,h=0; shape.forEach(([x,y])=>{ w=Math.max(w,x+1); h=Math.max(h,y+1); }); return {w,h}; }
-    function pickUnit(){ return getComputedStyle(document.documentElement).getPropertyValue('--u').trim() || '24px'; }
-
-    function renderTray(){
-      trayEl.innerHTML='';
-      state.activePieces.forEach((shape, idx)=>{
-        const p=document.createElement('div'); p.className='piece'; p.dataset.idx=idx; p.style.setProperty('--u', pickUnit());
-        const g=document.createElement('div'); g.className='grid'; const {w,h}=bounds(shape); g.style.gridTemplateColumns=`repeat(${w}, var(--u))`;
-        for(let y=0;y<h;y++) for(let x=0;x<w;x++){
-          const has=shape.some(([sx,sy])=>sx===x && sy===y); if(has){ const b=document.createElement('div'); b.className='block'; b.dataset.sx=x; b.dataset.sy=y; g.appendChild(b);} }
-        p.appendChild(g);
-        p.addEventListener('pointerdown', onPiecePointerDown, {passive:false});
-        trayEl.appendChild(p);
-      });
-    }
-
-    function makeGhost(shape, src){ const ghost = src.cloneNode(true); ghost.classList.add('drag-ghost'); ghost.classList.remove('hidden'); ghost.style.setProperty('--u', pickUnit()); return ghost; }
-
-    function onPiecePointerDown(e){
-      e.preventDefault();
-      const pieceIdx=Number(e.currentTarget.dataset.idx); const shape=state.activePieces[pieceIdx]; if(!shape) return;
-      const t=e.target.closest('.block'); const ax=t?Number(t.dataset.sx||0):0; const ay=t?Number(t.dataset.sy||0):0;
-      const ghost=makeGhost(shape, e.currentTarget); document.body.appendChild(ghost);
-      // 선택 블록이 커서 아래: 유령 오프셋
-      const u=parseFloat(getComputedStyle(ghost).getPropertyValue('--u'))||24; const gap=4, pad=8; const offX=-(ax*(u+gap)+pad), offY=-(ay*(u+gap)+pad);
-      ghost.style.transform = `translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) scale(1.06)`;
-      state.placing={ pieceIdx, shape, ghost, anchor:{ax,ay}, lastX:e.clientX, lastY:e.clientY };
-      e.currentTarget.setPointerCapture(e.pointerId);
-      document.addEventListener('pointermove', onMove, {passive:false});
-      document.addEventListener('pointerup', onUp, { once:true });
-      onMove(e);
-    }
-
-    function onMove(e){
-      if(!state.placing) return; e.preventDefault();
-      const { ghost, shape, anchor } = state.placing;
-      // 속도 기반 리드: 시각/판정 모두 리드좌표 사용
-      const dx = e.clientX - (state.placing.lastX||e.clientX);
-      const dy = e.clientY - (state.placing.lastY||e.clientY);
-      const lead = 0.25; // 빠르게 느끼도록 25% 앞서가기
-      const Lx = e.clientX + dx*lead; const Ly = e.clientY + dy*lead;
-      ghost.style.left = Lx + 'px'; ghost.style.top = Ly + 'px';
-      state.placing.lastX = Lx; state.placing.lastY = Ly;
-      // 힌트 갱신
-      $$('.cell',boardEl).forEach(c=>c.classList.remove('hint-ok','hint-bad'));
-      const tgt=document.elementFromPoint(Lx, Ly);
-      if(tgt && tgt.classList.contains('cell')){
-        const r=Number(tgt.dataset.r), c=Number(tgt.dataset.c);
-        const r0=r-(anchor?.ay||0), c0=c-(anchor?.ax||0);
-        const ok=canPlace(r0,c0,shape); markHint(r0,c0,shape, ok);
-      }
-    }
-
-    function onUp(e){
-      if(!state.placing) return;
-      const { pieceIdx, shape, ghost, anchor, lastX, lastY } = state.placing;
-      ghost.remove();
-      $$('.cell',boardEl).forEach(c=>c.classList.remove('hint-ok','hint-bad'));
-      const dropX = lastX ?? e.clientX, dropY = lastY ?? e.clientY;
-      const tgt=document.elementFromPoint(dropX, dropY);
-      if(tgt && tgt.classList.contains('cell')){
-        const r=Number(tgt.dataset.r), c=Number(tgt.dataset.c);
-        const r0=r-(anchor?.ay||0), c0=c-(anchor?.ax||0);
-        if(canPlace(r0,c0,shape)){
-          place(r0,c0,shape);
-          state.activePieces.splice(pieceIdx,1); renderTray(); if(state.activePieces.length===0) dealPieces();
-          state.placing=null; return;
-        }
-      }
-      flashBad(); state.placing=null;
-    }
-
-    function cellAt(r,c){ return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`); }
-    function canPlace(r,c,shape){ for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; if(rr<0||rr>=9||cc<0||cc>=9) return false; if(state.board[rr][cc]===1) return false; } return true; }
-    function markHint(r,c,shape, ok){ for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; const cell=cellAt(rr,cc); if(!cell) continue; cell.classList.add(ok?'hint-ok':'hint-bad'); } }
-    function place(r,c,shape){ let base=0; for(const [dx,dy] of shape){ const rr=r+dy, cc=c+dx; state.board[rr][cc]=1; cellAt(rr,cc).classList.add('filled'); base+=10; } const cleared=clearLinesAndBoxes(); let bonus=0; if(cleared.total>0){ bonus+=cleared.total*50; } if(cleared.total>1){ state.combo=Math.min(8,state.combo+1);} else if(cleared.total===0){ state.combo=1;} comboEl.textContent='x'+state.combo; const gained=Math.floor((base+bonus)*state.combo); updateScore(gained); }
-
-    function clearLinesAndBoxes(){ const toClear=new Set(); for(let r=0;r<9;r++){ let full=true; for(let c=0;c<9;c++){ if(state.board[r][c]!==1){ full=false; break; } } if(full){ for(let c=0;c<9;c++) toClear.add(r*9+c); } } for(let c=0;c<9;c++){ let full=true; for(let r=0;r<9;r++){ if(state.board[r][c]!==1){ full=false; break; } } if(full){ for(let r=0;r<9;r++) toClear.add(r*9+c); } } for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ let full=true; for(let y=0;y<3;y++) for(let x=0;x<3;x++){ if(state.board[br*3+y][bc*3+x]!==1){ full=false; } } if(full){ for(let y=0;y<3;y++) for(let x=0;x<3;x++){ toClear.add((br*3+y)*9+(bc*3+x)); } } } toClear.forEach(key=>{ const r=Math.floor(key/9), c=key%9; state.board[r][c]=0; const cell=cellAt(r,c); if(cell){ cell.classList.remove('filled'); cell.animate([{transform:'scale(1)'},{transform:'scale(.7)'},{transform:'scale(1)'}],{duration:180}); } }); return { total: countRegions(toClear) }; }
-    function countRegions(set){ let cnt=0; for(let r=0;r<9;r++){ let all=true; for(let c=0;c<9;c++){ if(!set.has(r*9+c)){ all=false; break; } } if(all) cnt++; } for(let c=0;c<9;c++){ let all=true; for(let r=0;r<9;r++){ if(!set.has(r*9+c)){ all=false; break; } } if(all) cnt++; } for(let br=0;br<3;br++) for(let bc=0;bc<3;bc++){ let all=true; for(let y=0;y<3;y++) for(let x=0;x<3;x++){ if(!set.has((br*3+y)*9+(bc*3+x))){ all=false; } } if(all) cnt++; } return cnt; }
-
-    function flashBad(){ boardEl.classList.add('shake'); setTimeout(()=>boardEl.classList.remove('shake'), 250); }
-
-    buildBoard(); reset();
-  </script>
+  <div class="toast fixed left-1/2 bottom-4 -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 px-3 rounded-lg font-bold hidden" id="toast">+0</div>
+    <style>
+        .badge { @apply bg-gray-900 border border-gray-700 rounded-full px-3 py-1.5 font-bold flex gap-2 items-center; }
+        .badge .val { @apply min-w-[42px] text-right; }
+        .reset { @apply bg-amber-500 text-gray-900 w-8 h-8 rounded-lg font-extrabold cursor-pointer grid place-items-center; }
+    </style>
+  <script src="js/main.js"></script>
 </body>
 </html>

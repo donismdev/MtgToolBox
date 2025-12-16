@@ -2,18 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="color-scheme" content="light">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n-key="title">MTG Ability Finder</title>
+    <script>
+        // Apply theme on initial load BEFORE tailwind script runs
+        try {
+            const savedMode = localStorage.getItem('darkMode');
+            if (savedMode && JSON.parse(savedMode)) {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) { /* ignore */ }
+    </script>
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         window.i18n = {
             lang: localStorage.getItem('selectedLanguage') || 'ko',
             translations: {},
             initPromise: null,
             _resolveInit: null,
-
             init() {
                 this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
                 (async () => {
@@ -30,7 +42,6 @@
                     }
                 })();
             },
-            
             t(key, replacements = {}) {
                 const translation = this.translations['mtg-ability-finder']?.[key]?.[this.lang];
                 if (!translation) return key;
@@ -40,7 +51,6 @@
                 }
                 return result;
             },
-            
             apply() {
                 document.querySelectorAll('[data-i18n-key]').forEach(el => {
                     el.textContent = this.t(el.dataset.i18nKey);
@@ -57,439 +67,35 @@
             }
         };
         window.i18n.init();
-    </script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body,html{height:100%;margin:0;padding:0;display:flex;flex-direction:column;background-color:#f4f4f4;font-family:system-ui,sans-serif}
-        #searchSection{max-width:none;margin:0 auto;position:relative;padding:0.5rem;flex-shrink:0;flex-grow:0}
-        #abilityInput{
-            font-size:1.5rem;
-            padding:1rem;
-            height:4rem;
-            width:clamp(200px, 92vw, 600px); /* 화면 넓으면 1600px까지, 좁으면 600px~뷰포트 92% */
-            margin:0 auto; /* 중앙 정렬 */
-            display:block;
-        }
-        #suggestionBox{background:#fff;border:1px solid #ccc;border-radius:.5rem;margin-top:4px;max-height:320px;overflow-y:auto;padding-left:0;position:absolute;width:100%;z-index:1000;list-style:none;box-shadow:0 4px 12px rgba(0,0,0,.15);display:none;top:calc(100% + 6px);left:0;right:0}
-        #customSuggestions{background-color:#fff;border:1px solid #ccc;border-radius:.5rem;box-shadow:0 4px 12px rgba(0,0,0,.15);padding:.25rem;z-index:9999;position:absolute;width:100%;list-style:none;margin-top:6px;max-height:320px;overflow-y:auto}
-        .suggestion-item{display:block;background-color:#f3f3f3;border-radius:.5rem;padding:.7rem 1rem;margin:.25rem 0;cursor:pointer;font-weight:500;white-space:nowrap;text-align:left;box-shadow:0 1px 2px rgba(0,0,0,.06);border:1px solid #ddd;transition:background-color .15s ease,font-size .15s ease;font-size:1rem}
-        .suggestion-item.active,.suggestion-item:hover{background-color:#007bff;color:#fff}
-        #scrollableContent{flex-grow:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 1rem 1rem 1rem}
-        #abilityList{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;padding:1rem}
-        .ability-badge{all:unset;display:inline-block;padding:.6rem 1rem;background-color:#e0e0e0;border-radius:1rem;cursor:pointer;font-weight:600;white-space:nowrap;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.1);border:1px solid #ccc;min-width:120px;text-transform:capitalize;flex:0 0 auto;box-sizing:border-box}
-        .ability-badge:hover{background-color:silver;transform:scale(1.03)}
-        #divider{margin:1rem 0 1rem 0;border-bottom:1px solid #ccc}
-        #abilityDetails{display:none;margin-top:2rem;text-align:center;padding-bottom:20px}
-        #resetBtn{margin-top:1.5rem}
-        /* 마지막 업데이트 표시줄 */
-        #lastUpdateBar{margin-top:.5rem;font-size:.95rem;color:#6c757d}
-        
-        /* ⬇ [추가된 CSS] ⬇ */
-        .category-header {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #333;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            width: 100%; /* 전체 너비 차지 */
-            text-align: left; /* 왼쪽 정렬 */
-            padding-left: 1rem; /* 콘텐츠 패딩과 맞춤 */
-            border-bottom: 2px solid #eee; /* 구분선 추가 */
-            padding-bottom: 0.25rem;
-        }
-        
-        .badge-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .5rem;
-            justify-content: center; /* 배지들은 중앙 정렬 유지 */
-            padding: 0; 
-            width: 100%;
-        }
-        /* ⬆ [추가된 CSS] ⬆ */
 
-        :root{color-scheme:light}
-        html,body{background-color:#ffffff !important;color:#000000 !important;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-        @media (prefers-color-scheme: dark){
-            :root{color-scheme:light}
-            html,body{background-color:#ffffff !important;color:#000000 !important}
-        }
-        img,video,canvas,svg,iframe{filter:none !important;mix-blend-mode:normal !important;background-color:transparent}
-        .btn,.card,.modal,.dropdown-menu,.list-group,.form-control{background-color:#ffffff !important;color:#000000 !important}
-        #modal-tool-iframe{color-scheme:light;background:#ffffff}
-        *{forced-color-adjust:none}
-        a,[class*="bi-"]{color:#0d6efd !important}
-    </style>
-</head>
-<body>
-    <div id="searchSection">
-        <input type="text" id="abilityInput" class="form-control mb-1" data-i18n-key-placeholder="abilityInputPlaceholder" placeholder="Enter MTG ability keyword" oninput="filterAbilities()" autocomplete="off">
-        <div id="lastUpdateBar" data-i18n-key="lastUpdatedPrefix">last updated : <span id="lastUpdateText" data-i18n-key="lastUpdatedDefault">SPM-2025-09-26</span></div>
-    </div>
-
-    <div id="scrollableContent">
-        <div id="divider"></div>
-        <div id="abilityList"></div>
-
-        <div id="abilityDetails">
-            <h2 id="selectedAbility"></h2>
-            <p id="abilityText" class="mt-3"></p>
-            <button class="btn btn-secondary" id="resetBtn" onclick="resetView()" data-i18n-key="backToListButton">🔁 Back to List</button>
-        </div>
-    </div>
-
-    <script>
-        // 페이지 기본 유틸
-        function version(){ return "1.0.0"; }
-        function printVersion(){ console.log(window.i18n.t("toolVersionPrefix") + version()); }
-        printVersion();
-    </script>
-
-    <script>
-        let abilityList = document.getElementById("abilityList"),
-            abilityInput = document.getElementById("abilityInput"),
-            abilityDetails = document.getElementById("abilityDetails"),
-            selectedAbility = document.getElementById("selectedAbility"),
-            abilityText = document.getElementById("abilityText"),
-            scrollableContent = document.getElementById("scrollableContent"),
-            lastUpdateText = document.getElementById("lastUpdateText"),
-            suggestionBox = document.createElement("ul");
-
-        suggestionBox.id = "customSuggestions";
-        suggestionBox.style.position = "absolute";
-        suggestionBox.style.display = "none";
-        abilityInput.parentNode.style.position = "relative";
-        abilityInput.parentNode.appendChild(suggestionBox);
-
-        let abilities = {}; // 병합 데이터(History 제외) - 검색 및 상세보기를 위해 여전히 필요
-
-        // --- ⬇ [신규] 헬퍼 함수 ⬇ ---
-
-        /**
-         * 개별 능력 배지(뱃지) 엘리먼트를 생성합니다.
-         * @param {string} name - 능력의 이름.
-         * @returns {HTMLElement} 배지 엘리먼트.
-         */
-        function createBadge(name) {
-            const chip = document.createElement("div");
-            chip.className = "ability-badge";
-            chip.innerText = name;
-            chip.onclick = () => showAbility(name);
-            return chip;
-        }
-
-        /**
-         * 카테고리 섹션 전체(헤더 + 배지 컨테이너)를 생성합니다.
-         * @param {string} title - 카테고리 제목.
-         * @param {object|Array} items - 배지로 만들 아이템 (객체 키 또는 배열 요소).
-         * @param {boolean} [isArray=false] - items가 배열인지 여부.
-         * @returns {HTMLElement|null} 완성된 섹션 엘리먼트 또는 아이템이 없으면 null.
-         */
-        function createCategorySection(title, items, isArray = false) {
-            const hasItems = items && (isArray ? items.length > 0 : Object.keys(items).length > 0);
-            if (!hasItems) {
-                return null; // 빈 섹션은 생성하지 않음
-            }
-
-            const section = document.createElement("div");
-            section.style.width = "100%"; // 섹션이 전체 너비를 차지하도록 설정
-            
-            const header = document.createElement("h3");
-            header.className = "category-header";
-            header.innerText = title;
-            section.appendChild(header);
-
-            const container = document.createElement("div");
-            container.className = "badge-container";
-            
-            // 아이템 키(이름)를 가져와 정렬한 후 배지 생성
-            const keys = isArray ? items.map(item => item.toLowerCase()) : Object.keys(items);
-            keys.sort().forEach(name => {
-                container.appendChild(createBadge(name));
-            });
-            
-            section.appendChild(container);
-            return section;
-        }
-
-        // --- ⬆ [신규] 헬퍼 함수 ⬆ ---
-
-        // --- ⬇ [수정] 카테고리별 렌더링 함수 ⬇ ---
-
-        function renderAbilityList(){
-            abilityList.innerHTML = ""; // 목록 비우기
-            
-            // mtgData가 로드되었는지 확인
-            if (!window.mtgData || !window.mtgData.abilities) {
-                console.warn(window.i18n.t("mtgDataNotLoadedWarning"));
-                return; 
-            }
-
-            const data = window.mtgData;
-
-            // 기본 카테고리 정의
-            const categories = [
-                { title: window.i18n.t("categoryEvergreen"), data: data.evergreen },
-                { title: window.i18n.t("categoryArenaOnly"), data: data.arena },
-                { title: window.i18n.t("categoryDeckbuilding"), data: data.deckbuilding },
-                { title: window.i18n.t("categorySpecialTokens"), data: data.special_tokens },
-                { title: window.i18n.t("categorySpecialCounters"), data: data.special_counters },
-				{ title: window.i18n.t("categoryRoles"), data: data.roles },
-                { title: window.i18n.t("categorySpecial"), data: data.special }
-            ];
-
-            // 메인 'abilities' 객체를 타입별로 분리
-            const keywordAbilities = {};
-            const keywordActions = {};
-            const abilityWords = {};
-
-            if (data.abilities) {
-                for (const key in data.abilities) {
-                    const item = data.abilities[key];
-                    if (item.type === "keywordAbility") {
-                        keywordAbilities[key] = item;
-                    } else if (item.type === "keywordAction") {
-                        keywordActions[key] = item;
-                    } else if (item.type === "abilityWord") {
-                        abilityWords[key] = item;
-                    }
-                }
-            }
-            
-            // 분리된 카테고리를 목록의 두 번째 위치에 삽입
-            categories.splice(1, 0, 
-                { title: window.i18n.t("categoryKeywordAbilities"), data: keywordAbilities },
-                { title: window.i18n.t("categoryKeywordActions"), data: keywordActions },
-                { title: window.i18n.t("categoryAbilityWords"), data: abilityWords }
-            );
-
-            // 모든 카테고리 섹션을 생성하고 추가
-            categories.forEach(cat => {
-                const section = createCategorySection(cat.title, cat.data, cat.isArray || false);
-                if (section) { // null이 아닌(비어있지 않은) 섹션만 추가
-                    abilityList.appendChild(section);
-                }
-            });
-        }
-
-        // --- ⬇ [이하 함수는 변경 없음] ⬇ ---
-
-        function formatText(text){
-            return text.replace(/\{\{([^}]+)\}\}/g, (m, p1) => {
-                const key = p1.toLowerCase();
-                // 툴팁 조회는 병합된 'abilities' 객체를 사용 (정상)
-                const ref = abilities[key] || (mtgData.abilities && mtgData.abilities[key]); 
-                return (ref && ref.text)
-                    ? `<span title="${ref.text}" style="text-decoration: underline dotted; cursor: help;">${p1}</span>`
-                    : p1;
-            });
-        }
-
-        function showAbility(name){
-            // 상세 보기는 병합된 'abilities' 객체를 사용 (정상)
-            let entry = abilities[name]; 
-            if(entry === undefined){
-                console.warn(window.i18n.t("noInfoFoundWarningPrefix") + name + window.i18n.t("noInfoFoundWarningSuffix"));
-                return;
-            }
-            if(typeof entry === "string") entry = { text: entry };
-
-            selectedAbility.innerText = name;
-
-            let badge = "";
-            // 배지 타입 분류는 원본 'mtgData'를 사용 (정상)
-            if(mtgData.evergreen?.[name]){
-                badge = `<span class='badge bg-success ms-2'>${window.i18n.t("badgeEvergreen")}</span>`;
-            } else if(mtgData.arena?.[name]){
-                badge = `<span class='badge bg-warning text-dark ms-2'>${window.i18n.t("badgeArenaOnly")}</span>`;
-            } else if(entry.type === "abilityWord"){
-                badge = `<span class='badge bg-info ms-2'>${window.i18n.t("badgeAbilityWord")}</span>`;
-            } else if(entry.type === "keywordAction"){
-                badge = `<span class='badge bg-primary ms-2'>${window.i18n.t("badgeKeywordAction")}</span>`;
-            } else if(entry.type === "keywordAbility"){
-                badge = `<span class='badge bg-secondary ms-2'>${window.i18n.t("badgeKeywordAbility")}</span>`;
-            } else if(entry.type === "deckbuilding"){
-                badge = `<span class='badge bg-dark text-white ms-2'>${window.i18n.t("badgeDeckbuilding")}</span>`;
-            } else if(entry.type === "role"){
-                badge = `<span class='badge bg-dark text-white ms-2'>${window.i18n.t("badgeRole")}</span>`;
-            } else if(mtgData.special?.[name]){
-                badge = `<span class='badge bg-dark text-white ms-2'>${window.i18n.t("badgeSpecial")}</span>`;
-            } else if(mtgData.special_counters?.[name]){
-                badge = `<span class='badge bg-danger ms-2'>${window.i18n.t("badgeSpecialCounter")}</span>`;
-            } else if(mtgData.special_tokens?.[name]){
-                badge = `<span class='badge bg-info ms-2'>${window.i18n.t("badgeSpecialToken")}</span>`;
-            }
-
-            const img = entry.image ? `<br><img src="${entry.image}" style="max-width: 200px; margin-top: 1rem;" />` : "";
-            abilityText.innerHTML = formatText(`<p>${entry.text}</p>` + badge + img);
-
-            abilityList.style.display = "none";
-            abilityDetails.style.display = "block";
-            suggestionBox.style.display = "none";
-            scrollableContent.scrollTop = 0;
-        }
-
-        function resetView(){
-            abilityInput.value = "";
-            abilityDetails.style.display = "none";
-            abilityList.style.display = "flex";
-            suggestionBox.style.display = "none";
-            scrollableContent.scrollTop = 0;
-        }
-
-        function adjustContentHeight(){
-            if(window.visualViewport){
-                const headerH = document.getElementById("searchSection").offsetHeight;
-                const h = window.visualViewport.height - headerH;
-                scrollableContent.style.height = Math.max(0, h) + "px";
-                if(document.activeElement === abilityInput){
-                    setTimeout(() => {
-                        abilityInput.scrollIntoView({behavior:"smooth", block:"start", inline:"nearest"});
-                    }, 50);
-                }
-            }else{
-                console.warn("Visual Viewport API not supported. Dynamic height adjustment may not work.");
-            }
-        }
-
-        function positionSuggestionBox(){
-            const a = abilityInput.getBoundingClientRect();
-            const p = abilityInput.parentElement.getBoundingClientRect();
-            const top = a.bottom - p.top;
-            suggestionBox.style.top = top + "px";
-            suggestionBox.style.left = "0px";
-            suggestionBox.style.right = "0px"; 
-            suggestionBox.style.width = "100%";
-        }
-
-        function filterAbilities(){
-            const q = abilityInput.value.toLowerCase();
-            suggestionBox.innerHTML = "";
-
-            if(q === ""){
-                suggestionBox.style.display = "none";
-                return;
-            }
-
-            // 검색은 병합된 'abilities' 객체를 사용 (정상)
-            const matches = Object.keys(abilities).filter(n => n.toLowerCase().startsWith(q));
-            const exact = matches.find(n => n.toLowerCase() === q);
-
-            if(exact && matches.length === 1){
-                showAbility(exact);
-                suggestionBox.style.display = "none";
-                return;
-            }
-
-            matches.forEach(n => {
-                const li = document.createElement("li");
-                li.className = "suggestion-item";
-                li.innerText = n;
-                li.onclick = () => {
-                    abilityInput.value = n;
-                    showAbility(n);
-                    suggestionBox.style.display = "none";
-                };
-                suggestionBox.appendChild(li);
-            });
-            positionSuggestionBox();
-            suggestionBox.style.display = "block";
-        }
-
-        window.mtgData = {};
-        fetch("./assets/ability_data.json")
-            .then(r => r.json())
-            .then(data => {
-                window.mtgData = data; // 원본 데이터 저장 (카테고리 렌더링용)
-
-                lastUpdateText.textContent = (data.meta && data.meta.version) ? data.meta.version : window.i18n.t("lastUpdatedDefault");
-
-                // (중요) 검색과 상세보기를 위한 데이터 병합 로직은 그대로 유지
-                const merged = {
-                    ...data.abilities,
-                    ...data.evergreen,
-                    ...data.arena,
-                    ...data.special,
-                    ...data.special_counters,
-                    ...data.special_tokens
-                };
-
-                if(data.deckbuilding){
-                    for(const k of Object.keys(data.deckbuilding)){
-                        const key = k.toLowerCase();
-                        merged[key] = {
-                            text: data.deckbuilding[k],
-                            type: "deckbuilding",
-                            image: null
-                        };
-                    }
-                }
-
-                if (data.roles && typeof data.roles === "object" && !Array.isArray(data.roles)) {
-					for (const [k, v] of Object.entries(data.roles)) {
-						const key = k.toLowerCase();
-						const text = (typeof v === "string") ? v : (v?.text || "");
-						const image = (typeof v === "object" && v) ? (v.image ?? null) : null;
-
-						merged[key] = {
-							text: text,
-							type: "role",
-							image: image
-						};
-					}
-				}
-
-                abilities = merged; // 검색/조회용 병합 데이터 설정
-                
-                // [수정] 카테고리 목록 렌더링 함수 호출
-                renderAbilityList(); 
-                
-                adjustContentHeight();
-            });
-
-        if(window.visualViewport){
-            window.visualViewport.addEventListener("resize", adjustContentHeight);
-            window.visualViewport.addEventListener("scroll", adjustContentHeight);
-        }else{
-            window.addEventListener("resize", adjustContentHeight);
-        }
-        document.addEventListener("DOMContentLoaded", adjustContentHeight);
-
-        abilityInput.addEventListener("keydown", function(e){
-            const items = suggestionBox.querySelectorAll("li");
-            let idx = Array.from(items).findIndex(el => el.classList.contains("selected"));
-
-            if(e.key === "ArrowDown"){
-                if(items.length > 0){
-                    e.preventDefault();
-                    if(idx >= 0) items[idx].classList.remove("selected");
-                    idx = (idx + 1) % items.length;
-                    items[idx].classList.add("selected");
-                    items[idx].scrollIntoView({behavior:"smooth", block:"nearest"});
-                }
-            }else if(e.key === "ArrowUp"){
-                if(items.length > 0){
-                    e.preventDefault();
-                    if(idx >= 0) items[idx].classList.remove("selected");
-                    idx = (idx - 1 + items.length) % items.length;
-                    items[idx].classList.add("selected");
-                    items[idx].scrollIntoView({behavior:"smooth", block:"nearest"});
-                }
-            }else if(e.key === "Enter"){
-                if(idx >= 0){
-                    e.preventDefault();
-                    items[idx].click();
-                }else{
-                    const q = abilityInput.value.toLowerCase();
-                    // Enter키 조회는 병합된 'abilities' 객체 사용 (정상)
-                    const exact = Object.keys(abilities).filter(n => n.toLowerCase() === q);
-                    if(exact.length === 1){
-                        showAbility(exact[0]);
-                        suggestionBox.style.display = "none";
-                    }
+        // Theme listener for dynamic changes from parent window
+        window.addEventListener('message', (event) => {
+            if (event.data.theme) {
+                if (event.data.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
                 }
             }
         });
     </script>
+</head>
+<body class="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans">
+    <div id="searchSection" class="relative p-2 flex-shrink-0">
+        <input type="text" id="abilityInput" class="w-full max-w-lg mx-auto block text-2xl p-4 h-16 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500" data-i18n-key-placeholder="abilityInputPlaceholder" placeholder="Enter MTG ability keyword" oninput="filterAbilities()" autocomplete="off">
+        <div id="lastUpdateBar" class="text-center mt-2 text-sm text-gray-500 dark:text-gray-400" data-i18n-key="lastUpdatedPrefix">last updated : <span id="lastUpdateText" data-i18n-key="lastUpdatedDefault">SPM-2025-09-26</span></div>
+    </div>
+
+    <div id="scrollableContent" class="flex-grow overflow-y-auto px-4 pb-4">
+        <div id="divider" class="my-4 border-b border-gray-300 dark:border-gray-700"></div>
+        <div id="abilityList" class="flex flex-wrap gap-2 justify-center"></div>
+
+        <div id="abilityDetails" class="hidden mt-8 text-center pb-5">
+            <h2 id="selectedAbility" class="text-3xl font-bold"></h2>
+            <p id="abilityText" class="mt-3 text-lg"></p>
+            <button class="mt-6 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700" id="resetBtn" onclick="resetView()" data-i18n-key="backToListButton">🔁 Back to List</button>
+        </div>
+    </div>
+    <script src="js/main.js"></script>
 </body>
 </html>

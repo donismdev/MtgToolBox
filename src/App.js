@@ -131,7 +131,7 @@ function App() {
             </button>
             <h1 className="text-xl font-bold truncate flex-grow">
               {selectedTool ? (selectedTool.displayName || selectedTool.name) : 'MtgToolBox'}
-              <span className="text-sm font-normal ml-2 text-gray-400">[v10]</span>
+              <span className="text-sm font-normal ml-2 text-gray-400">[v11]</span>
             </h1>
             <button
               aria-label="toggle image"

@@ -3,18 +3,30 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<meta name="color-scheme" content="light">
-	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
 	<title>Random MTG Card</title>
-	<link rel="stylesheet" href="css/style.css">
+    <script>
+        // Apply theme on initial load BEFORE tailwind script runs
+        try {
+            const savedMode = localStorage.getItem('darkMode');
+            if (savedMode && JSON.parse(savedMode)) {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) { /* ignore */ }
+    </script>
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
 	<script>
 		window.i18n = {
 			lang: localStorage.getItem('selectedLanguage') || 'ko',
 			translations: {},
 			initPromise: null,
 			_resolveInit: null,
-
 			init() {
 				this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
 				(async () => {
@@ -31,7 +43,6 @@
 					}
 				})();
 			},
-			
 			t(key, replacements = {}) {
 				const translation = this.translations['mtg-random-card']?.[key]?.[this.lang];
 				if (!translation) return key;
@@ -41,7 +52,6 @@
 				}
 				return result;
 			},
-			
 			apply() {
 				document.querySelectorAll('[data-i18n-key]').forEach(el => {
 					el.textContent = this.t(el.dataset.i18nKey);
@@ -52,111 +62,112 @@
 			}
 		};
 		window.i18n.init();
+        // Theme listener for dynamic changes from parent window
+        window.addEventListener('message', (event) => {
+            if (event.data.theme) {
+                if (event.data.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        });
 	</script>
 </head>
-<body>
-	<div class="container">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 font-sans">
+	<div class="container mx-auto p-4 max-w-3xl">
 		<form id="filterForm">
-			<fieldset>
-				<legend data-i18n-key="dataUsage">Data Usage</legend>
-				<label id="wifiConfirmLabel">
-					<input type="checkbox" id="wifiConfirm">
-					<span><strong data-i18n-key="dataUsageAgree">데이터 사용 동의</strong></span>
+			<fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg mb-6 p-5">
+				<legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="dataUsage">Data Usage</legend>
+				<label id="wifiConfirmLabel" class="w-full bg-gray-200 dark:bg-gray-800 p-4 rounded-lg mb-4 border border-gray-300 dark:border-gray-700 flex items-center">
+					<input type="checkbox" id="wifiConfirm" class="form-checkbox h-5 w-5 rounded text-purple-600 bg-gray-300 dark:bg-gray-600 border-gray-400 dark:border-gray-500 focus:ring-purple-500">
+					<span class="ml-3"><strong class="text-purple-600 dark:text-purple-400" data-i18n-key="dataUsageAgree">데이터 사용 동의</strong></span>
 				</label>
 			</fieldset>
 
-			<fieldset>
-				<legend data-i18n-key="cardTypes">Card Types</legend>
-				<div class="filter-group">
-					<label><input type="checkbox" name="type" value="Land"><span data-i18n-key="land">Land</span></label>
-					<label><input type="checkbox" name="type" value="Creature"><span data-i18n-key="creature">Creature</span></label>
-					<label><input type="checkbox" name="type" value="Artifact"><span data-i18n-key="artifact">Artifact</span></label>
-					<label><input type="checkbox" name="type" value="Enchantment"><span data-i18n-key="enchantment">Enchantment</span></label>
-					<label><input type="checkbox" name="type" value="Planeswalker"><span data-i18n-key="planeswalker">Planeswalker</span></label>
-					<label><input type="checkbox" name="type" value="Battle"><span data-i18n-key="battle">Battle</span></label>
-					<label><input type="checkbox" name="type" value="Instant"><span data-i18n-key="instant">Instant</span></label>
-					<label><input type="checkbox" name="type" value="Sorcery"><span data-i18n-key="sorcery">Sorcery</span></label>
-				</div>
-			</fieldset>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="cardTypes">Card Types</legend>
+                    <div class="filter-group grid grid-cols-2 gap-3">
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Land"><span data-i18n-key="land">Land</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Creature"><span data-i18n-key="creature">Creature</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Artifact"><span data-i18n-key="artifact">Artifact</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Enchantment"><span data-i18n-key="enchantment">Enchantment</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Planeswalker"><span data-i18n-key="planeswalker">Planeswalker</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Battle"><span data-i18n-key="battle">Battle</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Instant"><span data-i18n-key="instant">Instant</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="type" value="Sorcery"><span data-i18n-key="sorcery">Sorcery</span></label>
+                    </div>
+                </fieldset>
 
-			<fieldset>
-				<legend data-i18n-key="colors">Colors</legend>
-				<div class="filter-group">
-					<label><input type="checkbox" name="color" value="W"><span data-i18n-key="white">White</span></label>
-					<label><input type="checkbox" name="color" value="U"><span data-i18n-key="blue">Blue</span></label>
-					<label><input type="checkbox" name="color" value="B"><span data-i18n-key="black">Black</span></label>
-					<label><input type="checkbox" name="color" value="R"><span data-i18n-key="red">Red</span></label>
-					<label><input type="checkbox" name="color" value="G"><span data-i18n-key="green">Green</span></label>
-				</div>
-			</fieldset>
+                <fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="colors">Colors</legend>
+                    <div class="filter-group grid grid-cols-2 gap-3">
+                        <label class="flex items-center"><input type="checkbox" name="color" value="W"><span data-i18n-key="white">White</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="color" value="U"><span data-i18n-key="blue">Blue</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="color" value="B"><span data-i18n-key="black">Black</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="color" value="R"><span data-i18n-key="red">Red</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="color" value="G"><span data-i18n-key="green">Green</span></label>
+                    </div>
+                </fieldset>
 
-			<fieldset>
-				<legend data-i18n-key="rarity">Rarity</legend>
-				<div class="filter-group">
-					<label><input type="checkbox" name="rarity" value="common"><span data-i18n-key="common">Common</span></label>
-					<label><input type="checkbox" name="rarity" value="uncommon"><span data-i18n-key="uncommon">Uncommon</span></label>
-					<label><input type="checkbox" name="rarity" value="rare"><span data-i18n-key="rare">Rare</span></label>
-					<label><input type="checkbox" name="rarity" value="mythic"><span data-i18n-key="mythic">Mythic</span></label>
-				</div>
-			</fieldset>
+                <fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="rarity">Rarity</legend>
+                    <div class="filter-group grid grid-cols-2 gap-3">
+                        <label class="flex items-center"><input type="checkbox" name="rarity" value="common"><span data-i18n-key="common">Common</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="rarity" value="uncommon"><span data-i18n-key="uncommon">Uncommon</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="rarity" value="rare"><span data-i18n-key="rare">Rare</span></label>
+                        <label class="flex items-center"><input type="checkbox" name="rarity" value="mythic"><span data-i18n-key="mythic">Mythic</span></label>
+                    </div>
+                </fieldset>
 
-			<fieldset>
-				<legend data-i18n-key="properties">Properties</legend>
-				<div class="filter-group">
-                    <label><input type="checkbox" id="excludeBasic"><span data-i18n-key="noBasicLands">No Basic Lands</span></label>
-				</div>
-			</fieldset>
+                <fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="properties">Properties</legend>
+                    <div class="filter-group">
+                        <label class="flex items-center"><input type="checkbox" id="excludeBasic"><span data-i18n-key="noBasicLands">No Basic Lands</span></label>
+                        <label class="flex items-center mt-2"><input type="checkbox" id="numericPTOnly"> <span data-i18n-key="numericPTOnly">숫자형 P/T만 (별/분수 제외)</span></label>
+                    </div>
+                </fieldset>
 
-			<fieldset>
-				<legend data-i18n-key="cmc">Converted Mana Cost (CMC)</legend>
-				<div class="cmc-controls">
-					<select id="cmcOperator">
-						<option value="=">=</option>
-						<option value="<=">&le;</option>
-						<option value=">=">&ge;</option>
-					</select>
-					<input type="number" id="cmcValue" placeholder="Enter CMC" data-i18n-key-placeholder="enterCmc" min="0" inputmode="numeric">
-				</div>
-			</fieldset>
+                <fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="cmc">Converted Mana Cost (CMC)</legend>
+                    <div class="cmc-controls flex gap-2 items-center">
+                        <select id="cmcOperator" class="input-base"></select>
+                        <input type="number" id="cmcValue" placeholder="Enter CMC" data-i18n-key-placeholder="enterCmc" min="0" inputmode="numeric" class="input-base w-full">
+                    </div>
+                </fieldset>
 
-			<!-- ✅ 분리: Power -->
-			<fieldset>
-				<legend data-i18n-key="power">Power</legend>
-				<div class="cmc-controls">
-					<select id="powerOperator">
-						<option value="" data-i18n-key="any">(any)</option>
-						<option value="=">=</option>
-						<option value="<=">&le;</option>
-						<option value=">=">&ge;</option>
-					</select>
-					<input type="number" id="powerValue" placeholder="Enter Power" data-i18n-key-placeholder="enterPower" min="0" inputmode="numeric">
-				</div>
-			</fieldset>
+                <fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="power">Power</legend>
+                    <div class="cmc-controls flex gap-2 items-center">
+                        <select id="powerOperator" class="input-base"></select>
+                        <input type="number" id="powerValue" placeholder="Enter Power" data-i18n-key-placeholder="enterPower" min="0" inputmode="numeric" class="input-base w-full">
+                    </div>
+                </fieldset>
+                
+                <fieldset class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <legend class="font-semibold text-purple-600 dark:text-purple-400 px-2 text-lg" data-i18n-key="toughness">Toughness</legend>
+                    <div class="cmc-controls flex gap-2 items-center">
+                        <select id="toughnessOperator" class="input-base"></select>
+                        <input type="number" id="toughnessValue" placeholder="Enter Toughness" data-i18n-key-placeholder="enterToughness" min="0" inputmode="numeric" class="input-base w-full">
+                    </div>
+                </fieldset>
+            </div>
 
-			<!-- ✅ 분리: Toughness -->
-			<fieldset>
-				<legend data-i18n-key="toughness">Toughness</legend>
-				<div class="cmc-controls">
-					<select id="toughnessOperator">
-						<option value="" data-i18n-key="any">(any)</option>
-						<option value="=">=</option>
-						<option value="<=">&le;</option>
-						<option value=">=">&ge;</option>
-					</select>
-					<input type="number" id="toughnessValue" placeholder="Enter Toughness" data-i18n-key-placeholder="enterToughness" min="0" inputmode="numeric">
-				</div>
-				<div style="margin-top:0.5rem">
-					<label><input type="checkbox" id="numericPTOnly"> <span data-i18n-key="numericPTOnly">숫자형 P/T만 (별/분수 제외)</span></label>
-				</div>
-			</fieldset>
 
-			<button type="submit" data-i18n-key="getRandomCard">Get Random Card</button>
+			<button type="submit" data-i18n-key="getRandomCard" class="w-full p-4 mt-6 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg cursor-pointer transition transform hover:scale-105 hover:shadow-2xl">Get Random Card</button>
 		</form>
 
-		<div id="cardResult"></div>
+		<div id="cardResult" class="my-4 text-center"></div>
 	</div>
 
-	<div class="toast" id="toastBox"></div>
+	<div class="toast fixed left-1/2 -translate-x-1/2 bottom-5 bg-red-500 text-white px-6 py-4 rounded-lg transition-transform translate-y-20" id="toastBox"></div>
+    <style>
+        .filter-group input[type="checkbox"] { @apply form-checkbox h-5 w-5 rounded text-purple-600 bg-gray-300 dark:bg-gray-600 border-gray-400 dark:border-gray-500 focus:ring-purple-500; }
+        .filter-group span { @apply ml-2; }
+        .input-base { @apply bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-base; }
+        .toast.show { @apply translate-y-0; }
+    </style>
 	<script src="js/main.js"></script>
 </body>
 </html>

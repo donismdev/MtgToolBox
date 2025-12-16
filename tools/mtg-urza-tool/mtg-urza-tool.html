@@ -1,50 +1,71 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)"><title>Urza's Ability Tool</title><script src="https://cdn.tailwindcss.com"></script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Noto Sans KR',sans-serif}.card-button{transition:all .2s ease-in-out;box-shadow:0 2px 10px rgba(0,0,0,.5);text-shadow:0 1px 3px rgba(0,0,0,.7)}.card-button:hover{transform:scale(1.05);box-shadow:0 4px 15px rgba(0,0,0,.6)}#modal-backdrop.hidden{display:none}#modal-panel.hidden{display:none}#modal-panel{animation:fadeIn .3s ease-out}@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-:root {
-    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
-}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="title">Urza's Ability Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .card-button {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+        }
+        .card-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        }
+        #modal-panel {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body data-tool="mtg-urza-tool" class="bg-gray-800 text-white p-4 sm:p-8">
 
-/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
-html, body {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-cyan-300" data-i18n="pageTitle">Urza's Ability Tool</h1>
+            <p class="text-gray-400 mt-2" data-i18n="subtitle">Click the buttons on the cards to see random abilities.</p>
+        </header>
 
-/* 다크 선호 환경에서도 라이트로 고정 */
- @media (prefers-color-scheme: dark) {
-    :root { color-scheme: light; }
-    html, body {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-}
+        <main class="flex flex-wrap justify-center gap-8">
+            <div class="relative w-full max-w-xs group">
+                <img src="https://placehold.co/370x517/2c3e50/ffffff?text=Urza,%0AAcademy%0AHeadmaster" alt="Urza, Academy Headmaster" class="w-full rounded-2xl shadow-lg border-4 border-gray-600">
+                <div class="absolute inset-0 bg-black bg-opacity-20 rounded-2xl"></div>
+                <div class="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4 px-4">
+                    <button id="plus-one-btn" class="card-button bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-5 rounded-full border-2 border-green-400">+1</button>
+                    <button id="minus-one-btn" class="card-button bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-5 rounded-full border-2 border-yellow-400">-1</button>
+                    <button id="minus-six-btn" class="card-button bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-5 rounded-full border-2 border-red-500">-6</button>
+                </div>
+            </div>
+            <div class="relative w-full max-w-xs group">
+                <img src="https://placehold.co/370x517/4a148c/ffffff?text=Urza's%0AFun%0AHouse" alt="Urza's Fun House" class="w-full rounded-2xl shadow-lg border-4 border-gray-600">
+                <div class="absolute inset-0 bg-black bg-opacity-20 rounded-2xl"></div>
+                <div class="absolute bottom-8 left-0 right-0 flex justify-center items-center px-4">
+                    <button id="fun-house-btn" class="card-button bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-full border-2 border-purple-400" data-i18n="activateFunHouse">Activate Fun House</button>
+                </div>
+            </div>
+        </main>
+    </div>
 
-/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
-img, video, canvas, svg, iframe {
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    background-color: transparent;
-}
+    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div id="modal-panel" class="bg-gray-900 border-2 border-cyan-400 rounded-2xl shadow-2xl w-full max-w-lg p-6 relative hidden">
+            <h2 id="modal-title" class="text-2xl font-bold text-cyan-200 mb-4"></h2>
+            <p id="modal-text" class="text-gray-300"></p>
+            <button id="modal-close-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+    </div>
 
-/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
-.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
-#modal-tool-iframe {
-    color-scheme: light;
-    background: #ffffff;
-}
-
-/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
-* { forced-color-adjust: none; }
-
-/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
-a, [class*="bi-"] { color: #0d6efd !important; }
-</style></head><body class="bg-gray-800 text-white p-4 sm:p-8"><div class="max-w-5xl mx-auto"><header class="text-center mb-8"><h1 class="text-4xl font-bold text-cyan-300">Urza's Ability Tool</h1><p class="text-gray-400 mt-2">카드의 버튼을 클릭하여 무작위 능력을 확인하세요.</p></header><main class="flex flex-wrap justify-center gap-8"><div class="relative w-full max-w-xs group"><img src="https://placehold.co/370x517/2c3e50/ffffff?text=Urza,%0AAcademy%0AHeadmaster" alt="Urza, Academy Headmaster" class="w-full rounded-2xl shadow-lg border-4 border-gray-600"><div class="absolute inset-0 bg-black bg-opacity-20 rounded-2xl"></div><div class="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4 px-4"><button id="plus-one-btn" class="card-button bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-5 rounded-full border-2 border-green-400">+1</button> <button id="minus-one-btn" class="card-button bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-5 rounded-full border-2 border-yellow-400">-1</button> <button id="minus-six-btn" class="card-button bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-5 rounded-full border-2 border-red-500">-6</button></div></div><div class="relative w-full max-w-xs group"><img src="https://placehold.co/370x517/4a148c/ffffff?text=Urza's%0AFun%0AHouse" alt="Urza's Fun House" class="w-full rounded-2xl shadow-lg border-4 border-gray-600"><div class="absolute inset-0 bg-black bg-opacity-20 rounded-2xl"></div><div class="absolute bottom-8 left-0 right-0 flex justify-center items-center px-4"><button id="fun-house-btn" class="card-button bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-full border-2 border-purple-400">Activate Fun House</button></div></div></main></div><div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50"><div id="modal-panel" class="bg-gray-900 border-2 border-cyan-400 rounded-2xl shadow-2xl w-full max-w-lg p-6 relative hidden"><h2 id="modal-title" class="text-2xl font-bold text-cyan-300 mb-4"></h2><div id="modal-content" class="text-gray-200 space-y-4"><p id="modal-effect" class="text-lg"></p><p class="text-sm text-gray-500"><span class="font-semibold">Original Card:</span> <span id="modal-original"></span></p></div><button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><script>let abilities={plusOne:[{no:1,effect:"Until end of turn, up to one target creature gets +1/+1 and gains first strike, vigilance, and lifelink.",original:"Ajani Steadfast"},{no:2,effect:"Distribute three +1/+1 counters among one, two, or three target creatures you control.",original:"Ajani, Mentor of Heroes"},{no:3,effect:"Destroy target noncreature permanent.",original:"Nicol Bolas, Planeswalker"},{no:4,effect:"Create two 3/1 red Elemental creature tokens with haste. Exile them at the beginning of the next end step.",original:"Chandra, Flamecaller"},{no:5,effect:"Create three 1/1 white Soldier creature tokens.",original:"Elspeth, Sun's Champion"},{no:6,effect:"Create a 3/3 black Beast creature token with deathtouch.",original:"Garruk, Apex Predator"},{no:7,effect:"Reveal the top five cards of your library. Put all creature cards revealed this way into your hand and the rest on the bottom of your library in any order.",original:"Garruk, Caller of Beasts"},{no:8,effect:"During target opponent's next turn, creatures that player controls attack Urza if able.",original:"Gideon Jura"},{no:9,effect:"Put a loyalty counter on Urza for each creature target opponent controls.",original:"Gideon, Champion of Justice"},{no:10,effect:"Until your next turn, whenever a creature an opponent controls attacks, it gets -1/-0 until end of turn.",original:"Jace, Architect of Thought"},{no:11,effect:"Target player exiles a card from their hand.",original:"Karn Liberated"},{no:12,effect:"Reveal the top card of your library. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand.",original:"Nissa, Sage Animist"},{no:13,effect:"Target land you control becomes a 4/4 Elemental creature with trample. It's still a land.",original:"Nissa, Worldwaker"},{no:14,effect:"Draw a card, then add one mana of any color to your mana pool.",original:"Sarkhan Unbroken"},{no:15,effect:"Until end of turn, Urza becomes a legendary 4/4 red Dragon creature with flying, indestructible, and haste. (He doesn't lose loyalty while he's not a planeswalker.)",original:"Sarkhan, the Dragonspeaker"},{no:16,effect:"Until your next turn, creatures you control get +1/+0 and gain lifelink.",original:"Sorin, Solemn Visitor"},{no:17,effect:"Look at the top five cards of your library. You may reveal an artifact card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",original:"Tezzeret, Agent of Bolas"},{no:18,effect:"Urza deals 3 damage to target creature or player.",original:"Ugin, the Spirit Dragon"},{no:19,effect:"Until your next turn, whenever a creature deals combat damage to Urza, destroy that creature.",original:"Vraska the Unseen"},{no:20,effect:"Add X mana in any combination of colors to your mana pool, where X is the number of creatures you control.",original:"Xenagos, the Reveler"}],minusOne:[{no:1,effect:"Urza deals 3 damage to each creature.",original:"Chandra, Awakened Inferno"},{no:2,effect:"Gain control of target creature.",original:"Nicol Bolas, Planeswalker"},{no:3,effect:"Urza deals 4 damage to target creature or player and you gain 4 life.",original:"Sorin, Vampire Lord"},{no:4,effect:"Destroy target creature. You gain life equal to its toughness.",original:"Garruk, Apex Predator"},{no:5,effect:"You get an emblem with “Creatures you control get +1/+1.”",original:"Gideon, Ally of Zendikar"},{no:6,effect:"You may put a creature card from your hand onto the battlefield.",original:"Sorin, Imperious Bloodlord"},{no:7,effect:"Draw three cards, then put a card from your hand on top of your library.",original:"Jace, the Mind Sculptor"},{no:8,effect:"Target player puts the top ten cards of his or her library into his or her graveyard.",original:"Jace, Memory Adept"},{no:9,effect:"Reveal the top five cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other on the bottom of your library in any order.",original:"Jace, Architect of Thought"},{no:10,effect:"Exile target permanent.",original:"Karn Liberated"},{no:11,effect:"Reveal the top five cards of your library. You may put all creature cards and/or land cards from among them into your hand. Put the rest into your graveyard.",original:"Garruk, Caller of Beasts"},{no:12,effect:"Search your library for a card and put that card into your hand. Then shuffle your library.",original:"Liliana Vess"},{no:13,effect:"Target player sacrifices two creatures.",original:"Liliana, Dreadhorde General"},{no:14,effect:"Create a 5/5 black Demon creature token with flying. You lose 2 life.",original:"Ob Nixilis of the Black Oath"},{no:15,effect:"Create a 4/4 gold Dragon creature token with flying.",original:"Sarkhan Unbroken"},{no:16,effect:"Target player's life total becomes 10.",original:"Sorin Markov"},{no:17,effect:"Destroy target nonland permanent.",original:"Vraska the Unseen"},{no:18,effect:"Return target permanent from a graveyard to the battlefield under your control.",original:"Nicol Bolas, the Arisen"},{no:19,effect:"Create two 3/3 green Beast creature tokens.",original:"Garruk, Primal Hunter"},{no:20,effect:"Draw four cards and discard two cards.",original:"Jace, the Mind Sculptor"}],minusSix:[{no:1,effect:"Urza deals 7 damage to target player. That player discards seven cards, then sacrifices seven permanents.",original:"Nicol Bolas, Planeswalker"},{no:2,effect:"You get an emblem with “If a source would deal damage to you or a planeswalker you control, prevent all but 1 of that damage.”",original:"Ajani Steadfast"},{no:3,effect:"Destroy all lands target player controls.",original:"Ajani Vengeant"},{no:4,effect:"Create X 2/2 white Cat creature tokens, where X is your life total.",original:"Ajani, Caller of the Pride"},{no:5,effect:"You gain 100 life.",original:"Ajani, Mentor of Heroes"},{no:6,effect:"Urza deals 10 damage to target player and each creature he or she controls.",original:"Chandra Nalaar or Chandra, Flame's Fury"},{no:7,effect:"You get an emblem with “Creatures you control have double strike, trample, hexproof, and haste.”",original:"Domri Rade"},{no:8,effect:"You get an emblem with “Artifacts, creatures, enchantments, and lands you control have indestructible.”",original:"Elspeth, Knight Errant"},{no:9,effect:"Create a 6/6 green Wurm creature token for each land you control.",original:"Garruk, Primal Hunter"},{no:10,effect:"Each player shuffles his or her hand and graveyard into his or her library. You draw seven cards.",original:"Jace, the Living Guildpact"},{no:11,effect:"Destroy up to three target creatures and/or other planeswalkers. Return each card put into a graveyard this way to the battlefield under your control.",original:"Sorin, Lord of Innistrad"},{no:12,effect:"You get an emblem with “Whenever you cast a spell, exile target permanent.”",original:"Venser, the Sojourner"},{no:13,effect:"You get an emblem with “Whenever a creature enters the battlefield under your control, you may have it fight target creature.” Then create three 8/8 blue Octopus creature tokens.",original:"Kiora, Master of the Depths"},{no:14,effect:"You control target player during that player's next turn.",original:"Sorin Markov"},{no:15,effect:"Exile all cards from target player's library, then that player shuffles his or her hand into his or her library.",original:"Jace, the Mind Sculptor"},{no:16,effect:"Create three 1/1 black Assassin creature tokens with “Whenever this creature deals combat damage to a player, that player loses the game.”",original:"Vraska the Unseen"},{no:17,effect:"Put all creature cards from all graveyards onto the battlefield under your control.",original:"Liliana Vess"},{no:18,effect:"You gain X life and draw X cards, where X is the number of lands you control.",original:"Nissa, Voice of Zendikar"},{no:19,effect:"Flip five coins. Take an extra turn after this one for each coin that comes up heads.",original:"Ral Zarek"},{no:20,effect:"You gain 7 life, draw seven cards, then put up to seven permanent cards from your hand onto the battlefield.",original:"Ugin, the Spirit Dragon"}]},plusOneBtn=document.getElementById("plus-one-btn"),minusOneBtn=document.getElementById("minus-one-btn"),minusSixBtn=document.getElementById("minus-six-btn"),funHouseBtn=document.getElementById("fun-house-btn"),modalBackdrop=document.getElementById("modal-backdrop"),modalPanel=document.getElementById("modal-panel"),closeModalBtn=document.getElementById("close-modal-btn"),modalTitle=document.getElementById("modal-title"),modalEffect=document.getElementById("modal-effect"),modalOriginal=document.getElementById("modal-original");function getRandomItem(e){return e[Math.floor(Math.random()*e.length)]}function showModal(e,a){modalTitle.textContent=e,modalEffect.textContent=`(d20: ${a.no}) `+a.effect,modalOriginal.textContent=a.original,modalBackdrop.classList.remove("hidden"),modalPanel.classList.remove("hidden")}function hideModal(){modalBackdrop.classList.add("hidden"),modalPanel.classList.add("hidden")}function getFunHouseAbilities(){var e=JSON.parse(JSON.stringify(abilities));let a={8:"During target opponent's next turn, creatures that player controls can't attack you.",9:"Gain 1 life for each creature target opponent controls.",15:"Until end of turn, target creature you control becomes a legendary 4/4 red Dragon creature with flying and haste.",19:"Until your next turn, whenever a creature deals combat damage to you, destroy that creature."};return e.plusOne.forEach(e=>{a[e.no]&&(e.effect=a[e.no]),e.effect=e.effect.replace(/Urza deals/g,"This card deals")}),e.minusOne.forEach(e=>{e.effect=e.effect.replace(/Urza deals/g,"This card deals")}),e.minusSix.forEach(e=>{e.effect=e.effect.replace(/Urza deals/g,"This card deals")}),e}plusOneBtn.addEventListener("click",()=>{showModal("Urza, Academy Headmaster [+1]",getRandomItem(abilities.plusOne))}),minusOneBtn.addEventListener("click",()=>{showModal("Urza, Academy Headmaster [-1]",getRandomItem(abilities.minusOne))}),minusSixBtn.addEventListener("click",()=>{showModal("Urza, Academy Headmaster [-6]",getRandomItem(abilities.minusSix))}),funHouseBtn.addEventListener("click",()=>{var e=getFunHouseAbilities(),a=Math.random();let t,r;showModal(r=a<.75?(t=getRandomItem(e.plusOne),"Urza's Fun House [+1]"):a<.9?(t=getRandomItem(e.minusOne),"Urza's Fun House [-1]"):(t=getRandomItem(e.minusSix),"Urza's Fun House [-6]"),t)}),closeModalBtn.addEventListener("click",hideModal),modalBackdrop.addEventListener("click",e=>{e.target===modalBackdrop&&hideModal()})</script></body></html>
+    <script src="/assets/main.js" defer></script>
+    <script src="js/main.js" defer></script>
+</body>
+</html>

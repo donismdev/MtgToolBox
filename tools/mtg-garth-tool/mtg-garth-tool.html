@@ -275,146 +275,32 @@
 	}
 </style>
 </head>
-<body>
-	<div class="app">
-		<header class="header">
-			<div class="header-left">
-				<img src="./assets/garth-one-eye.jpg" alt="Garth One-Eye">
-				<div class="meta">
-					<div class="title" data-i18n-key="abilityHelper">Garth One-Eye — Ability Helper</div>
-					<div class="sub" data-i18n-key="abilityDescription">Choose a card name that hasn’t been chosen among the six. Create a copy. You may cast it. (Pay its costs.)</div>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex justify-center items-start p-5 font-sans">
+	<div class="app w-full max-w-4xl flex flex-col gap-4">
+		<header class="header flex items-center gap-4 justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-lg">
+			<div class="header-left flex items-center gap-4 min-w-0">
+				<img src="./assets/garth-one-eye.jpg" alt="Garth One-Eye" class="w-24 h-auto rounded-lg border border-gray-200 dark:border-gray-700 flex-shrink-0">
+				<div class="meta flex flex-col gap-1 min-w-0">
+					<div class="title text-xl font-bold truncate" data-i18n-key="abilityHelper">Garth One-Eye — Ability Helper</div>
+					<div class="sub text-gray-500 dark:text-gray-400 text-sm" data-i18n-key="abilityDescription">Choose a card name that hasn’t been chosen among the six. Create a copy. You may cast it. (Pay its costs.)</div>
 				</div>
 			</div>
-			<button class="view-btn" id="viewGarthBtn" data-i18n-key="viewButton">View</button>
+			<button class="view-btn flex-shrink-0 px-3 py-2 rounded-xl bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-700 text-blue-700 dark:text-blue-300 cursor-pointer hover:brightness-110 active:translate-y-px" id="viewGarthBtn" data-i18n-key="viewButton">View</button>
 		</header>
 
-		<section class="grid" id="cardGrid"></section>
+		<section class="grid grid-cols-1 gap-4" id="cardGrid"></section>
 
-		<footer class="footer">
-			<button class="reset-btn" id="resetBtn" data-i18n-key="resetButton">Reset (선택 초기화)</button>
+		<footer class="footer flex justify-end items-center gap-2">
+			<button class="reset-btn px-4 py-2 rounded-xl bg-pink-100 dark:bg-gray-800 text-pink-800 dark:text-pink-200 border border-pink-200 dark:border-gray-700 cursor-pointer hover:brightness-105 active:translate-y-px" id="resetBtn" data-i18n-key="resetButton">Reset (선택 초기화)</button>
 		</footer>
 	</div>
 
 	<!-- 라이트박스 -->
-	<div class="lightbox-overlay" id="lightbox" aria-hidden="true">
-		<button class="close-btn" title="닫기" aria-label="닫기" data-i18n-key="closeButton">&times;</button>
-		<img src="" alt="Card Image" data-i18n-key-alt="cardImageAlt">
+	<div class="lightbox-overlay fixed inset-0 bg-black/90 hidden items-center justify-center z-50" id="lightbox" aria-hidden="true">
+		<button class="close-btn absolute top-5 right-5 bg-transparent border-none text-4xl text-white cursor-pointer" title="닫기" aria-label="닫기" data-i18n-key="closeButton">&times;</button>
+		<img src="" alt="Card Image" data-i18n-key-alt="cardImageAlt" class="max-w-[96vw] max-h-[96vh] rounded-lg shadow-2xl">
 	</div>
 
-	<script>
-window.i18n.initPromise.then(() => {
-		/* 필수: 버전 로깅 */
-		function version(){ return "1.0.0"; }
-		function printVersion(){ console.log(window.i18n.t("toolVersionPrefix") + version()); }
-		printVersion();
-
-		/* 이미지 매핑 (경로는 필요한 대로 수정) */
-		const CARD_IMAGES = {
-			"Disenchant": "assets/disenchant.jpg",
-			"Braingeyser": "assets/braingeyser.jpg",
-			"Terror": "assets/terror.jpg",
-			"Shivan Dragon": "assets/shivan-dragon.jpg",
-			"Regrowth": "assets/regrowth.jpg",
-			"Black Lotus": "assets/black-lotus.jpg"
-		};
-
-		const CARD_NAMES = [
-			"Disenchant",
-			"Braingeyser",
-			"Terror",
-			"Shivan Dragon",
-			"Regrowth",
-			"Black Lotus"
-		];
-
-		const chosen = new Set();
-		const grid = document.getElementById("cardGrid");
-		const resetBtn = document.getElementById("resetBtn");
-
-		/* 라이트박스 */
-		const lightbox = document.getElementById('lightbox');
-		const lbImg = lightbox.querySelector('img');
-		const lbClose = lightbox.querySelector('.close-btn');
-
-		function openLightbox(src){
-			lbImg.src = src || "";
-			lightbox.classList.add('show');
-			lightbox.setAttribute('aria-hidden', 'false');
-		}
-		function closeLightbox(){
-			lightbox.classList.remove('show');
-			lightbox.setAttribute('aria-hidden', 'true');
-			lbImg.src = "";
-		}
-		lightbox.addEventListener('click', e=>{
-			if(e.target === lightbox || e.target === lbClose){ closeLightbox(); }
-		}, { passive:true });
-		document.addEventListener('keydown', e=>{
-			if(e.key === 'Escape'){ closeLightbox(); }
-		});
-
-		/* 헤더의 View 버튼: Garth 원본 이미지 전체화면 */
-		document.getElementById('viewGarthBtn').addEventListener('click', ()=>{
-			openLightbox('./assets/garth-one-eye.jpg');
-		});
-
-		/* 유틸 */
-		function el(tag, cls, text){
-			const e = document.createElement(tag);
-			if(cls) e.className = cls;
-			if(text != null) e.textContent = text;
-			return e;
-		}
-		function showCardImage(cardName){
-			const src = CARD_IMAGES[cardName];
-			if(!src){ alert(window.i18n.t("noImageMapping") + cardName); return; }
-			openLightbox(src);
-		}
-
-		/* 카드 행 만들기 */
-		function makeRow(cardName){
-			const row = el("div", "card-row");
-
-			const mainBtn = el("button", "card-name-btn");
-			mainBtn.dataset.state = chosen.has(cardName) ? "chosen" : "idle";
-			mainBtn.title = window.i18n.t("selectCardTitle");
-			mainBtn.addEventListener("click", () => {
-				if(chosen.has(cardName)){ return; }
-				chosen.add(cardName);
-				mainBtn.dataset.state = "chosen";
-			});
-
-			const nameSpan = el("span", "card-name", cardName);
-			const dot = el("span", "dot");
-			mainBtn.appendChild(nameSpan);
-			mainBtn.appendChild(dot);
-
-			const viewBtn = el("button", "view-btn", window.i18n.t("viewButton"));
-			viewBtn.title = window.i18n.t("fullscreenImageTitle");
-			viewBtn.addEventListener("click", () => showCardImage(cardName));
-
-			row.appendChild(mainBtn);
-			row.appendChild(viewBtn);
-			return row;
-		}
-
-		function render(){
-			grid.innerHTML = "";
-			CARD_NAMES.forEach((name) => grid.appendChild(makeRow(name)));
-		}
-
-		/* Reset: 선택 상태만 초기화 (View 상태는 유지할 필요 없음) */
-		resetBtn.addEventListener("click", () => {
-			chosen.clear();
-			grid.querySelectorAll(".card-name-btn").forEach(btn => btn.dataset.state = "idle");
-		});
-
-		render();
-
-		/* 임베디드/모달 훅 */
-		window.onModalOpen = () => {};
-		window.onEmbeddedOpen = () => {};
-});
-	</script>
+	<script src="js/main.js"></script>
 </body>
 </html>

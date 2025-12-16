@@ -1,0 +1,558 @@
+window.i18n.initPromise.then(() => {
+	/* ===== 경로/라벨 유틸 ===== */
+	const BASE_PATHS = {
+		dungeon:    'assets/dungeon',
+		scheme:     'assets/scheme',
+		hero:       'assets/hero',
+		vanguard:   'assets/vanguard',
+		plane:      'assets/plane',
+		phenomenon: 'assets/phenomenon'
+	};
+	function labelToFileName(label) {
+		return (label || '').replace(/'/g, '-').toLowerCase()
+			.replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-') + '.jpg';
+	}
+	function fileToLabelName(file) {
+		if (!file) return '';
+		let base = String(file).replace(/\.[^.]+$/, '');
+		base = base.replace(/-s-/g, "'s-").replace(/-/g, ' ');
+		return base.replace(/\b\w/g, ch => ch.toUpperCase());
+	}
+	const prettyKey = k => window.i18n.t(k) || k.replace(/_/g,' ').replace(/\b\w/g, ch => ch.toUpperCase());
+
+	/* ===== 데이터 소스 ===== */
+	const DATA_SOURCES = {
+		dungeon: [
+			'Dungeon of the Mad Mage',
+			'Lost Mine of Phandelver',
+			'Tomb of Annihilation',
+			"Baldur's Gate Wilderness",
+			'Undercity'
+		],
+		scheme: [
+			"A Display of My Dark Power.jpg",
+			"A Premonition of Your Demise.jpg",
+			"A Reckoning Approaches.jpg",
+			"All Shall Smolder in My Wake.jpg",
+			"All in Good Time.jpg",
+			"Approach My Molten Realm.jpg",
+			"Because I Have Willed It.jpg",
+			"Behold My Grandeur.jpg",
+			"Behold the Power of Destruction.jpg",
+			"Bow To My Command.jpg",
+			"Chaos Is My Plaything.jpg",
+			"Choose Your Champion.jpg",
+			"Choose Your Demise.jpg",
+			"Dance, Pathetic Marionette.jpg",
+			"Dark Wings Bring Your Downfall.jpg",
+			"Delight in the Hunt.jpg",
+			"Drench the Soil in Their Blood.jpg",
+			"Embrace My Diabolical Vision.jpg",
+			"Every Dream a Nightmare.jpg",
+			"Every Hope Shall Vanish.jpg",
+			"Every Last Vestige Shall Rot.jpg",
+			"Evil Comes to Fruition.jpg",
+			"Fear My Authority.jpg",
+			"Feed the Machine.jpg",
+			"For Each of You, a Gift.jpg",
+			"I Am Duskmourn.jpg",
+			"I Am Never Alone.jpg",
+			"I Am Untouchable.jpg",
+			"I Bask in Your Silent Awe.jpg",
+			"I Call For Slaughter.jpg",
+			"I Call On The Ancient Magics.jpg",
+			"I Delight In Your Convulsions.jpg",
+			"I Know All, I See All.jpg",
+			"I Will Savor Your Agony.jpg",
+			"Ignite The Cloneforge!.jpg",
+			"Imprison This Insolent Wretch.jpg",
+			"Into The Earthen Maw.jpg",
+			"Introductions Are In Order.jpg",
+			"Kneel Before My Legions.jpg",
+			"Know Evil.jpg",
+			"Know Naught But Fire.jpg",
+			"Look Skyward And Despair.jpg",
+			"Make Yourself Useful.jpg",
+			"May Civilization Collapse.jpg",
+			"Mine Is The Only Truth.jpg",
+			"Mortal Flesh Is Weak.jpg",
+			"My Champion Stands Supreme.jpg",
+			"My Crushing Masterstroke.jpg",
+			"My Followers Ascend.jpg",
+			"My Forces Are Innumerable.jpg",
+			"My Genius Knows No Bounds.jpg",
+			"My Laughter Echoes.jpg",
+			"My Tendrils Run Deep.jpg",
+			"My Undead Horde Awakens.jpg",
+			"My Wealth Will Bury You.jpg",
+			"My Will Is Irresistible.jpg",
+			"My Wings Enfold All.jpg",
+			"My Wish Is Your Command.jpg",
+			"Nature Demands An Offering.jpg",
+			"Nature Shields Its Own.jpg",
+			"No One Will Hear Your Cries.jpg",
+			"No Secret Is Hidden From Me.jpg",
+			"Nothing Can Stop Me Now.jpg",
+			"Only Blood Ends Your Nightmares.jpg",
+			"Only I Know What Awaits.jpg",
+			"Pay Tribute To Me.jpg",
+			"Perhaps You've Met My Cohort.jpg",
+			"Plots That Span Centuries.jpg",
+			"Power Without Equal.jpg",
+			"Reality Is Mine To Control.jpg",
+			"Realms Befitting My Majesty.jpg",
+			"Roots Of All Evil.jpg",
+			"Rot Like The Scum You Are.jpg",
+			"Rotted Ones, Lay Siege.jpg",
+			"Running Is Useless.jpg",
+			"Surrender Your Thoughts.jpg",
+			"The Dead Shall Serve.jpg",
+			"The Fate Of The Flammable.jpg",
+			"The Iron Guardian Stirs.jpg",
+			"The Mighty Will Fall.jpg",
+			"The Pieces Are Coming Together.jpg",
+			"The Very Soil Shall Shake.jpg",
+			"There Is No Refuge.jpg",
+			"This World Belongs To Me.jpg",
+			"Time Bends To My Will.jpg",
+			"Tooth, Claw, And Tail.jpg",
+			"What's Yours Is Now Mine.jpg",
+			"When Will You Learn_.jpg",
+			"Which Of You Burns Brightest_.jpg",
+			"You Are Unworthy Of Mercy.jpg",
+			"You Cannot Hide From Me.jpg",
+			"You Exist Only To Amuse.jpg",
+			"You Live Only Because I Will It.jpg",
+			"You Will Know True Suffering.jpg",
+			"Your Fate Is Thrice Sealed.jpg",
+			"Your Inescapable Doom.jpg",
+			"Your Mistake Is My Triumph.jpg",
+			"Your Nightmares Are Delicious.jpg",
+			"Your Own Face Mocks You.jpg",
+			"Your Plans Mean Nothing.jpg",
+			"Your Puny Minds Cannot Fathom.jpg",
+			"Your Will Is Not Your Own.jpg"
+		],
+		hero: [
+			"axe-of-the-warmonger.jpg","bow-of-the-hunter.jpg","cloak-of-the-philosopher.jpg",
+			"enhancement-stickers.jpg","lash-of-the-tyrant.jpg","spear-of-the-general.jpg",
+			"the-avenger.jpg","the-champion.jpg","the-destined.jpg","the-explorer.jpg","the-general.jpg",
+			"the-harvester.jpg","the-hunter.jpg","the-philosopher.jpg","the-protector.jpg","the-provider.jpg",
+			"the-savant.jpg","the-slayer.jpg","the-tyrant.jpg","the-vanquisher.jpg","the-warmonger.jpg","the-warrior.jpg"
+		],
+		vanguard: [
+			"ashnod.jpg","barrin.jpg","crovax.jpg","eladamri.jpg","ertai.jpg","gerrard.jpg","gix.jpg",
+			"greven-il-vec.jpg","hanna.jpg","karn.jpg","lyna.jpg","maraxus.jpg","mirri.jpg","mishra.jpg",
+			"multani.jpg","oracle.jpg","orim.jpg","ral-s-vanguard.jpg","rofellos.jpg","selenia.jpg","serra.jpg",
+			"sidar-kondo.jpg","sisay.jpg","sliver-queen-brood-mother.jpg","squee.jpg","starke.jpg","tahngarth.jpg",
+			"takara.jpg","tawnos.jpg","titania.jpg","urza.jpg","volrath.jpg","xantcha.jpg"
+		],
+		plane: [
+			"Academy at Tolaria West.jpg",
+			"Agyrem.jpg",
+			"Akoum.jpg",
+			"Amy's Home.jpg",
+			"Antarctic Research Base.jpg",
+			"Aplan Mortarium.jpg",
+			"Aretopolis.jpg",
+			"Artist Alley.jpg",
+			"Asmoranomardicadaistinaculdacar's Kitchen.jpg",
+			"Astral Arena.jpg",
+			"Bad Wolf Bay.jpg",
+			"Bant.jpg",
+			"Besieged Viking Village.jpg",
+			"Bicycle Rack.jpg",
+			"Black Lotus Lounge.jpg",
+			"Bloodhill Bastion.jpg",
+			"Bowie Base One.jpg",
+			"Celestine Reef.jpg",
+			"Circus of the Sun.jpg",
+			"City Hall.jpg",
+			"City of the Daleks.jpg",
+			"Clamilton Estate.jpg",
+			"Cliffside Market.jpg",
+			"Coal Hill School.jpg",
+			"Dalek Intensive Care.jpg",
+			"Deceptive Divination.jpg",
+			"Edge of Malacol.jpg",
+			"Eloren Wilds.jpg",
+			"Elvish Impersonation Contest.jpg",
+			"Enigma Ridges.jpg",
+			"Esper.jpg",
+			"Event Horizon.jpg",
+			"Fblthp_ Completely, Utterly, Totally Lost.jpg",
+			"Feeding Grounds.jpg",
+			"Fields of Summer.jpg",
+			"Finally! Left-Handed Magic Cards.jpg",
+			"Furnace Layer.jpg",
+			"Game Knights Live.jpg",
+			"Gardens of Tranquil Repose.jpg",
+			"Gavony.jpg",
+			"Ghirapur Grand Prix.jpg",
+			"Ghirapur.jpg",
+			"Glen Elendra.jpg",
+			"Glimmervoid Basin.jpg",
+			"Goldmeadow.jpg",
+			"Grand Ossuary.jpg",
+			"Grixis.jpg",
+			"Grove of the Dreampods.jpg",
+			"Happy Yargle Day!.jpg",
+			"Hedron Fields of Agadeem.jpg",
+			"High Noon At Thunder Junction.jpg",
+			"Horizon Boughs.jpg",
+			"Hotel of Fears.jpg",
+			"Imaginary Friends (Plane).jpg",
+			"Immersturm.jpg",
+			"Inys Haen.jpg",
+			"Isle of Vesuva.jpg",
+			"Izzet Steam Maze.jpg",
+			"Jalira's Show.jpg",
+			"Jund.jpg",
+			"Kerblam! Warehouse.jpg",
+			"Kessig.jpg",
+			"Ketria.jpg",
+			"Kharasha Foothills.jpg",
+			"Kilnspire District.jpg",
+			"Krosa.jpg",
+			"Lair of the Ashen Idol.jpg",
+			"Lake Silencio.jpg",
+			"Lethe Lake.jpg",
+			"Li'l Giri Saves the Day.jpg",
+			"Littjara.jpg",
+			"Llanowar.jpg",
+			"Math is for Blockers (Plane).jpg",
+			"Megaflora Jungle.jpg",
+			"Minamo.jpg",
+			"Mirrored Depths.jpg",
+			"Mojave Desert.jpg",
+			"Mondassian Colony Ship.jpg",
+			"Mount Keralia.jpg",
+			"Multiversal High Council.jpg",
+			"Murasa.jpg",
+			"Mycosynthwave.jpg",
+			"Naar Isle.jpg",
+			"Naktamun.jpg",
+			"Naya.jpg",
+			"Nephalia.jpg",
+			"New Argive.jpg",
+			"New New York.jpg",
+			"New Player's Journey.jpg",
+			"No Way Out (Playtest).jpg",
+			"Norn's Dominion.jpg",
+			"Norn's Seedcore.jpg",
+			"North Pole Research Base.jpg",
+			"Nyx.jpg",
+			"Onakke Catacomb.jpg",
+			"Ood Sphere.jpg",
+			"Orochi Colony.jpg",
+			"Orzhova.jpg",
+			"Otaria.jpg",
+			"Oteclán.jpg",
+			"Paliano.jpg",
+			"Panopticon.jpg",
+			"Pin Collector's Booth.jpg",
+			"Pompeii.jpg",
+			"Pools of Becoming.jpg",
+			"Prahv.jpg",
+			"Preston's Stage.jpg",
+			"Prime Minister's Cabinet Room.jpg",
+			"Pursued by Something.jpg",
+			"Quicksilver Sea.jpg",
+			"Raiders' Allegiance.jpg",
+			"Raven's Run.jpg",
+			"Riptide Island.jpg",
+			"Sanctum of Serra.jpg",
+			"Sea of Sand.jpg",
+			"Selesnya Loft Gardens.jpg",
+			"Shiv.jpg",
+			"Shrinking Plane.jpg",
+			"Shy Town.jpg",
+			"Singing Towers of Darillium.jpg",
+			"Sky Deck.jpg",
+			"Skybreen.jpg",
+			"Sokenzan.jpg",
+			"Sorin's Remastered Manor.jpg",
+			"Spectrox Mines.jpg",
+			"Stairs to Infinity.jpg",
+			"Stensia.jpg",
+			"Stormcage Containment Facility.jpg",
+			"Strixhaven.jpg",
+			"Stronghold Furnace.jpg",
+			"Stroopwafel Cafe.jpg",
+			"TARDIS Bay.jpg",
+			"Takenuma.jpg",
+			"Talon Gates.jpg",
+			"Tarnation.jpg",
+			"Tazeem.jpg",
+			"Tember City.jpg",
+			"Temple of Atropos.jpg",
+			"Ten Wizards Mountain.jpg",
+			"The Aether Flues.jpg",
+			"The Bean.jpg",
+			"The Caldaia.jpg",
+			"The Cave of Skulls.jpg",
+			"The Cheetah Planet.jpg",
+			"The Command Zone.jpg",
+			"The Dark Barony.jpg",
+			"The Dining Car.jpg",
+			"The Doctor's Childhood Barn.jpg",
+			"The Doctor's Tomb.jpg",
+			"The Drum, Mining Facility.jpg",
+			"The Eon Fog.jpg",
+			"The Fertile Lands of Saulvinia.jpg",
+			"The Food Court.jpg",
+			"The Fourth Sphere.jpg",
+			"The Golden City of Orazca.jpg",
+			"The Great Aerie.jpg",
+			"The Great Forest.jpg",
+			"The Hippodrome.jpg",
+			"The Lux Foundation Library.jpg",
+			"The Maelstrom.jpg",
+			"The Matrix of Time.jpg",
+			"The Moonbase.jpg",
+			"The Pit.jpg",
+			"The Pro Tour.jpg",
+			"The Pyramid of Mars.jpg",
+			"The Sphere.jpg",
+			"The Western Cloud.jpg",
+			"The Wilds.jpg",
+			"The Windy City.jpg",
+			"The Zephyr Maze.jpg",
+			"Towashi.jpg",
+			"Trail of the Mage-Rings.jpg",
+			"Truga Jungle.jpg",
+			"Turri Island.jpg",
+			"Two Streams Facility.jpg",
+			"UNIT Headquarters.jpg",
+			"Undercity Reaches.jpg",
+			"Unyaro.jpg",
+			"Valor's Reach.jpg",
+			"Velis Vel.jpg",
+			"We Hope You Like Squirrels.jpg",
+			"Welcome to Valley.jpg",
+			"Windmill Farm.jpg",
+			"Windriddle Palaces.jpg",
+			"sAnS mERcY.jpg",
+		],
+		phenomenon: [
+			"Parallel Universe.jpg",
+			"Chaotic Aether.jpg",
+			"Fixed Point in Time.jpg",
+			"High and Dry Black Market.jpg",
+			"Human-Time Lord Meta-Crisis.jpg",
+			"Interplanar Tunnel.jpg",
+			"Mad Labs.jpg",
+			"Morphic Tide.jpg",
+			"Mutual Epiphany.jpg",
+			"Omenpath Instability.jpg",
+			"Pin Trading.jpg",
+			"Planewide Disaster.jpg",
+			"Probability Flux.jpg",
+			"Reality Shaping.jpg",
+			"Royal Booster.jpg",
+			"Spatial Merging.jpg",
+			"Team-Up!.jpg",
+			"Time Distortion.jpg",
+			"Unknown Event.jpg",
+			"Unleash the Flux.jpg",
+			"Year-End Review.jpg"
+		]
+	};
+
+	/* ===== DOM ===== */
+	const cbEnable      = document.getElementById('cb-enable');
+	const titleLeft     = document.getElementById('titleLeft');
+	const selCategory   = document.getElementById('select-category');
+	const selItem       = document.getElementById('select-item');
+	const previewImage  = document.getElementById('previewImage');
+	const viewerTitle   = document.getElementById('viewerTitle');
+	const viewerSub     = document.getElementById('viewerSub');
+	const viewerFrame   = document.getElementById('viewerFrame');
+
+	const fsOverlay = document.getElementById('fsOverlay');
+	const fsImage   = document.getElementById('fsImage');
+
+	function openFullscreen(src, alt='') {
+		if (!src) return;
+		fsImage.src = src;
+		fsImage.alt = alt || '카드 이미지 전체보기';
+		fsOverlay.classList.add('open');
+		fsOverlay.setAttribute('aria-hidden', 'false');
+
+		// 배경 스크롤 잠금 (모바일 포함)
+		document.documentElement.style.overflow = 'hidden';
+		document.body.style.overflow = 'hidden';
+	}
+	function closeFullscreen() {
+		fsOverlay.classList.remove('open');
+		fsOverlay.setAttribute('aria-hidden', 'true');
+
+		document.documentElement.style.overflow = '';
+		document.body.style.overflow = '';
+		// 메모리 절약 원하면 ↓ 주석 해제
+		// fsImage.src = '';
+	}
+
+	// 이미지 클릭 → 전체보기
+	previewImage.addEventListener('click', () => {
+		if (previewImage.src && selItem.value) {
+			openFullscreen(previewImage.src, previewImage.alt);
+		}
+	});
+
+	// 오버레이 아무 곳이나 클릭 → 닫기
+	fsOverlay.addEventListener('click', closeFullscreen);
+
+	// ESC로 닫기
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') { closeFullscreen(); }
+	});
+
+	const _origResize = resizeFrame;
+	window.resizeFrame = function() {
+		if (!fsOverlay.classList.contains('open')) { _origResize(); }
+	};
+
+	/* ===== 디바이스 판별: PC면 true ===== */
+	function isDesktop() {
+		const ua = navigator.userAgent || '';
+		const isMobileUA = /Android|iPhone|iPad|iPod|Mobile|IEMobile|BlackBerry|Opera Mini/i.test(ua);
+		const hasTouch = navigator.maxTouchPoints && navigator.maxTouchPoints > 1;
+		return !(isMobileUA || hasTouch);
+	}
+
+	/* ===== 프레임 높이 동적 계산 ===== */
+	function resizeFrame() {
+		// 상단 제목/툴바/여백을 제외한 가용 높이
+		const topBlocks = [
+			document.querySelector('h1')?.offsetHeight || 0,
+			document.querySelector('.subtitle')?.offsetHeight || 0,
+			document.getElementById('toolbar')?.offsetHeight || 0,
+			64 // 여유 패딩/마진 버퍼
+		].reduce((a,b)=>a+b,0);
+
+		const available = Math.max(240, window.innerHeight - topBlocks);
+		// 너무 커지지 않도록 가드 (가로가 좁을 때는 폭 기준으로도 제한)
+		const width = viewerFrame.clientWidth || viewerFrame.offsetWidth || 800;
+		const widthBasedMax = Math.round(width * 1.6); // 세로형 카드 대비 약간 여유
+		const finalH = Math.min(available, widthBasedMax);
+
+		viewerFrame.style.height = finalH + 'px';
+	}
+	window.addEventListener('resize', resizeFrame);
+	window.addEventListener('orientationchange', resizeFrame);
+
+	/* ===== 옵션 빌더 ===== */
+	function buildCategoryOptions() {
+		selCategory.innerHTML = '';
+		for (const key of Object.keys(BASE_PATHS)) {
+			const opt = document.createElement('option');
+			opt.value = key;
+			opt.textContent = prettyKey(key);
+			selCategory.appendChild(opt);
+		}
+	}
+	function buildItemOptions(categoryKey) {
+		selItem.innerHTML = '';
+		// 플레이스홀더(자동 다운로드 방지)
+		const ph = document.createElement('option');
+		ph.value = '';
+		ph.textContent = `=== ${prettyKey(categoryKey)} ===`;
+		selItem.appendChild(ph);
+
+		const items = DATA_SOURCES[categoryKey] || [];
+		items.forEach(entry => {
+			let fileName, label;
+			if (typeof entry === 'string') {
+				if (entry.toLowerCase().endsWith('.jpg')) {
+					fileName = entry;
+					label = fileToLabelName(entry);
+				} else {
+					label = entry;
+					fileName = labelToFileName(entry);
+				}
+			} else {
+				label = entry.label;
+				fileName = entry.file || labelToFileName(entry.label);
+			}
+			const opt = document.createElement('option');
+			opt.value = fileName;
+			opt.dataset.file = fileName;
+			opt.textContent = label;
+			selItem.appendChild(opt);
+		});
+		selItem.selectedIndex = 0;
+	}
+
+	/* ===== 렌더/유틸 ===== */
+	function resolveUrl(category, optionEl) {
+		if (!optionEl) return '';
+		const file = optionEl.dataset.file || optionEl.value;
+		const base = BASE_PATHS[category] || '';
+		return file ? `${base}/${file}` : '';
+	}
+	function clearPreview() {
+		previewImage.src = '';
+		previewImage.alt = '선택한 카드/시트 이미지가 여기에 표시됩니다.';
+		viewerTitle.textContent = '카테고리: -';
+		viewerSub.textContent   = '선택: -';
+	}
+	function renderPreview(categoryKey, optionEl) {
+		if (!categoryKey || !optionEl || !optionEl.value) { clearPreview(); return; }
+		const url   = resolveUrl(categoryKey, optionEl);
+		const label = optionEl.textContent || optionEl.value;
+		previewImage.src = url;
+		previewImage.alt = label;
+		viewerTitle.textContent = `카테고리: ${prettyKey(categoryKey)}`;
+		viewerSub.textContent   = `선택: ${label}`;
+		titleLeft.textContent   = `MTG - ${prettyKey(categoryKey)}`;
+	}
+
+	/* ===== 이벤트 ===== */
+	cbEnable.addEventListener('change', () => {
+		const enabled = cbEnable.checked;
+		selCategory.disabled = !enabled;
+		selItem.disabled     = !enabled;
+		if (!enabled) clearPreview();
+		resizeFrame(); // 활성화 상태에서도 프레임 높이 갱신
+	});
+
+	selCategory.addEventListener('change', () => {
+		const cat = selCategory.value;
+		titleLeft.textContent = `MTG - ${prettyKey(cat)}`;
+		buildItemOptions(cat); // 플레이스홀더로 초기화
+		clearPreview();
+	});
+
+	selItem.addEventListener('change', () => {
+		const cat = selCategory.value;
+		const opt = selItem.options[selItem.selectedIndex];
+		if (opt && opt.value) renderPreview(cat, opt);
+		else clearPreview();
+	});
+
+	/* ===== 초기화 ===== */
+	function init() {
+		buildCategoryOptions();
+		const firstCat = 'dungeon';
+		selCategory.value = firstCat;
+		titleLeft.textContent = `MTG - ${prettyKey(firstCat)}`;
+
+		buildItemOptions(firstCat);
+		clearPreview();
+
+		// PC는 체크 ON, 그 외 OFF
+		const defaultEnabled = isDesktop();
+		cbEnable.checked = defaultEnabled;
+		selCategory.disabled = !defaultEnabled;
+		selItem.disabled     = !defaultEnabled;
+
+		// 최초 프레임 사이징
+		resizeFrame();
+	}
+	init();
+
+	function version() { return "1.0.0"; }
+	function printVersion() { console.log("도구 모음 버전: " + version()); }
+	printVersion();
+});

@@ -3,17 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
     <title data-i18n-key="title">오늘의 운세 - 블랙잭</title>
+    <script>
+        // Apply theme on initial load BEFORE tailwind script runs
+        try {
+            const savedMode = localStorage.getItem('darkMode');
+            if (savedMode && JSON.parse(savedMode)) {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) { /* ignore */ }
+    </script>
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                fontFamily: {
+                    'gowun': ['Gowun Dodum', 'sans-serif'],
+                },
+            },
+        },
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
     <script>
         window.i18n = {
             lang: localStorage.getItem('selectedLanguage') || 'ko',
             translations: {},
             initPromise: null,
             _resolveInit: null,
-
             init() {
                 this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
                 (async () => {
@@ -30,7 +51,6 @@
                     }
                 })();
             },
-            
             t(key, replacements = {}) {
                 const translation = this.translations['etc-blackjack']?.[key]?.[this.lang];
                 if (!translation) return key;
@@ -40,7 +60,6 @@
                 }
                 return result;
             },
-            
             apply() {
                 document.querySelectorAll('[data-i18n-key]').forEach(el => {
                     el.textContent = this.t(el.dataset.i18nKey);
@@ -48,415 +67,49 @@
             }
         };
         window.i18n.init();
+        // Theme listener for dynamic changes from parent window
+        window.addEventListener('message', (event) => {
+            if (event.data.theme) {
+                if (event.data.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        });
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
-
-        body {
-            font-family: 'Gowun Dodum', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #1a1a1a;
-            margin: 0;
-            color: white;
-            perspective: 1000px;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        .game-table {
-            background-color: #006400;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 10px 10px;
-            padding: 30px;
-            border-radius: 150px;
-            border: 15px solid #5a3a22;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.4);
-            width: 100%;
-            max-width: 800px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-            font-size: 2.5rem;
-            color: #ffd700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        }
-
-        .hand-area {
-            min-height: 140px;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .hand-area h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.5rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .cards {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            min-height: 120px;
-        }
-
-        .card {
-            width: 80px;
-            height: 120px;
-            margin: 5px;
-            border-radius: 8px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s, opacity 0.5s, width 0.3s, height 0.3s;
-            opacity: 0;
-            transform: scale(0) rotateY(180deg);
-        }
-        
-        .card.facedown {
-            opacity: 1;
-            transform: scale(1) rotateY(180deg);
-        }
-
-        .card.deal {
-            opacity: 1;
-            transform: scale(1) rotateY(180deg);
-        }
-        
-        .card.is-flipped {
-            transform: scale(1) rotateY(0deg);
-            opacity: 1;
-        }
-
-        .card .front, .card .back {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            backface-visibility: hidden;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2em;
-            font-weight: bold;
-        }
-
-        .card .front {
-            background-color: #fff;
-        }
-
-        .card .back {
-            background-color: #e74c3c;
-            background-image: linear-gradient(45deg, #c0392b 25%, transparent 25%, transparent 75%, #c0392b 75%),
-                              linear-gradient(45deg, #c0392b 25%, transparent 25%, transparent 75%, #c0392b 75%);
-            background-size: 16px 16px;
-            background-position: 0 0, 8px 8px;
-            transform: rotateY(180deg);
-        }
-
-        .card.suit-♠ .front, .card.suit-♣ .front { color: #2C3E50; }
-        .card.suit-♥ .front, .card.suit-♦ .front { color: #E74C3C; }
-
-        .score {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #fff;
-            background-color: rgba(0,0,0,0.3);
-            padding: 5px 10px;
-            border-radius: 5px;
-            display: inline-block;
-            min-width: 120px;
-        }
-
-        .message-area {
-            margin-top: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            min-height: 50px;
-            color: #ffd700;
-        }
-
-        .btn-container {
-            margin-top: 20px;
-        }
-
-        .btn-container button {
-            padding: 12px 25px;
-            font-size: 1.1em;
-            font-family: 'Gowun Dodum', sans-serif;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        #startBtn { background-color: #27ae60; color: white; }
-        #startBtn:hover { background-color: #2ecc71; }
-        #hitBtn { background-color: #3498db; color: white; }
-        #hitBtn:hover { background-color: #5dade2; }
-        #standBtn { background-color: #e74c3c; color: white; }
-        #standBtn:hover { background-color: #f1948a; }
-
-        .btn-container button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        @media (max-width: 768px) {
-            .game-table {
-                padding: 20px;
-                border-radius: 100px;
-                border-width: 10px;
-            }
-            h1 { font-size: 2rem; }
-            .hand-area h2 { font-size: 1.3rem; }
-            .message-area { font-size: 1.3rem; }
-            .card {
-                width: 65px;
-                height: 100px;
-            }
-            .card .front {
-                font-size: 1.8em;
-            }
-        }
-
-        /* --- 여기가 최종 수정된 부분 --- */
-        @media (max-width: 480px) {
-            .game-table {
-                padding: 15px 10px;
-                border-radius: 60px;
-                border-width: 8px;
-            }
-            h1 { font-size: 1.6rem; }
-            .hand-area { min-height: 110px; margin: 10px 0;}
-            .hand-area h2 { font-size: 1.1rem; }
-            .score { font-size: 1rem; min-width: 100px; }
-            .message-area { font-size: 1.1rem; margin-top: 15px; }
-            
-            .card {
-                width: 50px;
-                height: 75px;
-                margin: 3px;
-            }
-            .cards { min-height: 85px; }
-
-            /* 카드의 앞면(글자) 크기를 카드 크기에 맞게 직접 조절 */
-            .card .front {
-                font-size: 1.6em;
-            }
-
-            .btn-container button {
-                padding: 10px 15px;
-                font-size: 1em;
-            }
-        }
-
-:root {
-    color-scheme: light; /* 이 문서의 UI 컨트롤들을 라이트로 렌더 */
-}
-
-/* 강제 반전 회피용: 배경/텍스트를 명시하고, 폰트 자동확대 방지 */
-html, body {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
-
-/* 다크 선호 환경에서도 라이트로 고정 */
- @media (prefers-color-scheme: dark) {
-    :root { color-scheme: light; }
-    html, body {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-}
-
-/* 이미지/아이콘 반전 방지 (일부 브라우저의 자동 반전 대응) */
-img, video, canvas, svg, iframe {
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    background-color: transparent;
-}
-
-/* 버튼/카드 같은 컴포넌트들도 색을 명시적으로(예: 부트스트랩 위에 오버라이드) */
-.btn, .card, .modal, .dropdown-menu, .list-group, .form-control {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-/* 아이프레임으로 띄우는 툴도 자체적으로 라이트를 선언해야 함 */
-#modal-tool-iframe {
-    color-scheme: light;
-    background: #ffffff;
-}
-
-/* 강제 색상 조정 기능 끄기(일부 엔진에서만 동작) */
-* { forced-color-adjust: none; }
-
-/* 링크, 아이콘 같이 반전 오탐이 잦은 요소 색을 명시 */
-a, [class*="bi-"] { color: #0d6efd !important; }
+        .card { transform-style: preserve-3d; }
+        .card.is-flipped { transform: rotateY(0deg); }
+        .card .back { transform: rotateY(180deg); }
     </style>
 </head>
-<body>
-    <div class="game-table">
-        <h1 data-i18n-key="blackjackTitle">🃏 블랙잭 🃏</h1>
-        <div class="hand-area" id="dealer-area">
-            <h2 data-i18n-key="dealer">딜러 (<span id="dealer-score" class="score"><span data-i18n-key="score">점수:</span> 0</span>)</h2>
-            <div class="cards" id="dealer-cards"></div>
+<body class="bg-gray-50 dark:bg-gray-900 flex justify-center items-center min-h-screen p-2 box-border font-gowun">
+    <div class="game-table w-full max-w-3xl text-white text-center bg-green-800 p-8 rounded-[150px] border-[15px] border-yellow-800 shadow-2xl">
+        <h1 class="text-4xl font-bold text-yellow-400 mb-5" data-i18n-key="blackjackTitle">🃏 블랙잭 🃏</h1>
+        
+        <div class="hand-area min-h-[140px] my-5" id="dealer-area">
+            <h2 class="text-2xl font-bold text-gray-300 mb-3" data-i18n-key="dealer">딜러 (<span id="dealer-score" class="score"><span data-i18n-key="score">점수:</span> 0</span>)</h2>
+            <div class="cards flex justify-center items-center flex-wrap min-h-[120px]" id="dealer-cards"></div>
         </div>
-        <div class="message-area" id="message"></div>
-        <div class="hand-area" id="player-area">
-            <h2 data-i18n-key="player">플레이어 (<span id="player-score" class="score"><span data-i18n-key="score">점수:</span> 0</span>)</h2>
-            <div class="cards" id="player-cards"></div>
+        
+        <div class="message-area text-2xl font-bold min-h-[50px] my-5 text-yellow-400" id="message"></div>
+
+        <div class="hand-area min-h-[140px] my-5" id="player-area">
+            <h2 class="text-2xl font-bold text-gray-300 mb-3" data-i18n-key="player">플레이어 (<span id="player-score" class="score"><span data-i18n-key="score">점수:</span> 0</span>)</h2>
+            <div class="cards flex justify-center items-center flex-wrap min-h-[120px]" id="player-cards"></div>
         </div>
-        <div class="btn-container">
-            <button id="startBtn" data-i18n-key="newGame">새 게임</button>
-            <button id="hitBtn" disabled data-i18n-key="hit">Hit</button>
-            <button id="standBtn" disabled data-i18n-key="stand">Stand</button>
+
+        <div class="btn-container mt-5">
+            <button id="startBtn" class="btn bg-green-600 hover:bg-green-500" data-i18n-key="newGame">새 게임</button>
+            <button id="hitBtn" class="btn bg-blue-600 hover:bg-blue-500" disabled data-i18n-key="hit">Hit</button>
+            <button id="standBtn" class="btn bg-red-600 hover:bg-red-500" disabled data-i18n-key="stand">Stand</button>
         </div>
     </div>
-    <script>
-window.i18n.initPromise.then(() => {
-        const suits = ['♠', '♥', '♦', '♣'];
-        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-        let deck = [], playerHand = [], dealerHand = [], isPlayerTurn = false;
-        const startBtn = document.getElementById('startBtn'), hitBtn = document.getElementById('hitBtn'), standBtn = document.getElementById('standBtn');
-        const messageEl = document.getElementById('message'), playerCardsEl = document.getElementById('player-cards'), dealerCardsEl = document.getElementById('dealer-cards');
-        const playerScoreEl = document.getElementById('player-score'), dealerScoreEl = document.getElementById('dealer-score');
-
-        function createDeck() { deck = suits.flatMap(suit => values.map(value => ({ suit, value }))).sort(() => Math.random() - 0.5); }
-        function getCardValue(card) { if (['J', 'Q', 'K'].includes(card.value)) return 10; if (card.value === 'A') return 11; return parseInt(card.value); }
-        function calculateScore(hand) { let score = hand.reduce((sum, card) => sum + getCardValue(card), 0); let aceCount = hand.filter(card => card.value === 'A').length; while (score > 21 && aceCount > 0) { score -= 10; aceCount--; } return score; }
-        
-        function dealCard(hand, element, reveal = true) {
-            const card = deck.pop();
-            hand.push(card);
-            const cardEl = document.createElement('div');
-            cardEl.classList.add('card', `suit-${card.suit}`);
-            const front = document.createElement('div');
-            front.classList.add('front');
-            front.textContent = `${card.value}${card.suit}`;
-            const back = document.createElement('div');
-            back.classList.add('back');
-            back.style.transform = 'rotateY(180deg)';
-            cardEl.appendChild(front);
-            cardEl.appendChild(back);
-            element.appendChild(cardEl);
-            if (reveal) {
-                setTimeout(() => {
-                    cardEl.classList.add('deal');
-                    setTimeout(() => cardEl.classList.add('is-flipped'), 250);
-                }, 100);
-            } else {
-                cardEl.classList.add('facedown');
-            }
-            return cardEl;
-        }
-
-        function updateScores() {
-            playerScoreEl.textContent = `${window.i18n.t("score")} ${calculateScore(playerHand)}`;
-            const dealerFirstCard = dealerCardsEl.children[0];
-            if (dealerFirstCard && !dealerFirstCard.classList.contains('is-flipped')) {
-                if (dealerHand.length > 1) {
-                    dealerScoreEl.textContent = `${window.i18n.t("score")} ${getCardValue(dealerHand[1])}`;
-                } else {
-                     dealerScoreEl.textContent = `${window.i18n.t("score")} 0`;
-                }
-            } else {
-                dealerScoreEl.textContent = `${window.i18n.t("score")} ${calculateScore(dealerHand)}`;
-            }
-        }
-        
-        async function startGame() {
-            startBtn.disabled = true;
-            hitBtn.disabled = false;
-            standBtn.disabled = false;
-            createDeck();
-            playerHand = [];
-            dealerHand = [];
-            playerCardsEl.innerHTML = '';
-            dealerCardsEl.innerHTML = '';
-            messageEl.textContent = window.i18n.t("dealingCards");
-            updateScores();
-            dealCard(dealerHand, dealerCardsEl, false);
-            await new Promise(res => setTimeout(res, 500));
-            dealCard(playerHand, playerCardsEl, true);
-            await new Promise(res => setTimeout(res, 500));
-            dealCard(dealerHand, dealerCardsEl, true);
-            await new Promise(res => setTimeout(res, 500));
-            dealCard(playerHand, playerCardsEl, true);
-            await new Promise(res => setTimeout(res, 500));
-            updateScores();
-            isPlayerTurn = true;
-            messageEl.textContent = window.i18n.t("yourTurn");
-            if (calculateScore(playerHand) === 21) {
-                messageEl.textContent = window.i18n.t("blackjackDealerTurn");
-                stand();
-            }
-        }
-
-        async function stand() {
-            if (!isPlayerTurn) return;
-            isPlayerTurn = false;
-            hitBtn.disabled = true;
-            standBtn.disabled = true;
-            const hiddenCard = dealerCardsEl.children[0];
-            if (hiddenCard) {
-                hiddenCard.classList.add('is-flipped');
-                hiddenCard.classList.remove('facedown');
-            }
-            await new Promise(res => setTimeout(res, 500));
-            updateScores();
-            await new Promise(res => setTimeout(res, 800));
-            while (calculateScore(dealerHand) < 17) {
-                messageEl.textContent = window.i18n.t("dealerDraws");
-                await new Promise(res => setTimeout(res, 800));
-                dealCard(dealerHand, dealerCardsEl);
-                updateScores();
-            }
-            const playerScore = calculateScore(playerHand);
-            const dealerScore = calculateScore(dealerHand);
-            let resultMessage = '';
-            if (playerScore > 21) resultMessage = window.i18n.t("playerBust");
-            else if (dealerScore > 21) resultMessage = window.i18n.t("dealerBustPlayerWin");
-            else if (playerScore > dealerScore) resultMessage = window.i18n.t("playerWin");
-            else if (playerScore < dealerScore) resultMessage = window.i18n.t("playerLose");
-            else resultMessage = window.i18n.t("tie");
-            endGame(resultMessage);
-        }
-        
-        function endGame(message) {
-            messageEl.textContent = message;
-            isPlayerTurn = false;
-            hitBtn.disabled = true;
-            standBtn.disabled = true;
-            startBtn.disabled = false;
-        }
-
-        startBtn.addEventListener('click', startGame);
-        hitBtn.addEventListener('click', () => {
-            if (!isPlayerTurn) return;
-            dealCard(playerHand, playerCardsEl);
-            setTimeout(updateScores, 300);
-            setTimeout(() => {
-                if (calculateScore(playerHand) > 21) {
-                    endGame(window.i18n.t("playerBust"));
-                }
-            }, 500);
-        });
-        standBtn.addEventListener('click', stand);
-});
-    </script>
+    <style>
+        .score { @apply font-bold text-white bg-black/30 px-3 py-1 rounded-md inline-block min-w-[120px]; }
+        .btn { @apply text-white font-bold py-3 px-6 rounded-md text-lg shadow-md transition transform hover:-translate-y-1 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:transform-none; }
+    </style>
+    <script src="js/main.js"></script>
 </body>
 </html>

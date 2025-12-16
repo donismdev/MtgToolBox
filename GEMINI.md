@@ -2,32 +2,37 @@
 
 ## About This Project: MtgToolBox
 
-MtgToolBox is a web-based collection of utilities for Magic: The Gathering (MTG) players. The main application is a single-page interface that acts as a launcher for various tools. These tools help with different aspects of the game, such as tracking life totals, managing card collections, and assisting with specific in-game mechanics like Archenemy or Dungeons.
+MtgToolBox is a web-based collection of utilities for Magic: The Gathering (MTG) players. The main application is a single-page interface, built with **React**, that acts as a launcher for various tools. These tools are standalone HTML/JS applications loaded into iframes.
 
-The project is primarily built with vanilla HTML, CSS, and JavaScript, using Bootstrap for styling. It also includes a local development server and some build scripts written in Python.
+The project has recently undergone a major refactoring to adopt a more mdodern tech stack and a modular architecture.
 
 ## Technologies Used
 
--   **Frontend:** HTML5, CSS3, JavaScript (ES6+)
--   **Styling:** Bootstrap 5
--   **Development Server:** Python (`http.server`)
+-   **Main Application:** React (v18), JavaScript (ES6+)
+-   **Styling:** Tailwind CSS (via CDN for tools, integrated into build for the main app)
+-   **Build Tool:** Webpack
+-   **Development Server:** Webpack Dev Server
 -   **Tooling/Scripting:** Python
--   **Specific Tools:** Most tools are standalone HTML/JS applications. One tool, `gui-card-manager`, is a desktop application written in Python.
 
 ## Project Structure
 
+The project is divided into a main React application shell and a collection of individual tools.
+
 ```
 .
-├── index.html              # Main application shell and launcher
-├── assets/
-│   ├── main.js             # Core application logic (tool loading, UI)
-│   └── style.css           # Global styles
+├── src/                    # Main React application source
+│   ├── App.js              # The main app component (layout, toolbar, etc.)
+│   └── index.js            # React entry point
+├── public/
+│   └── index.html          # HTML template for the React app
 ├── tools/
 │   ├── [tool-name]/        # Each subdirectory is a self-contained tool
-│   │   └── [tool-name].html  # The entry point for the tool
+│   │   ├── [tool-name].html  # The entry point for the tool
+│   │   └── js/
+│   │       └── main.js       # (New Standard) Logic for the tool
 │   └── ...
-├── server_on.py            # Starts a local development server
-├── build_project.py        # Script to package the `gui-card-manager` tool
+├── webpack.config.js       # Webpack configuration
+├── package.json            # Project dependencies and scripts
 └── ...
 ```
 
@@ -35,79 +40,101 @@ The project is primarily built with vanilla HTML, CSS, and JavaScript, using Boo
 
 ### Running the Project
 
-To run the project locally for development and testing, use the provided Python server:
+The project now uses a Webpack development server. To run the project locally, use the `npm start` command, or the provided Python wrapper script:
 
 ```bash
-python server_on.py
+# Recommended
+npm start
+
+# Or using the Python wrapper
+python server_npm.py
 ```
 
-This will start a web server on `http://localhost:8000` (or the next available port) and automatically open the application in your default web browser.
+This will start the dev server on `http://localhost:3000` and automatically handle rebuilding the application and reloading the browser when changes are made to the `src` or `tools` directories.
 
-### Adding a New Web Tool
+## Tool Architecture and Modularization
 
-1.  Create a new directory for your tool under the `tools/` directory (e.g., `tools/my-new-tool/`).
-2.  Inside the new directory, create the main HTML file for your tool (e.g., `my-new-tool.html`).
-3.  The main application (`assets/main.js`) dynamically finds tools by scanning the `tools` directory and populates the tool selection menu. Ensure your tool's HTML file is correctly placed.
-4.  Add any necessary assets (CSS, JS, images) for your tool within its own directory.
+To improve maintainability and address issues with large file sizes, the tools are being refactored into a modular structure.
 
-### Building the Python GUI Tool
+**Standard Tool Structure:**
 
-The `gui-card-manager` is a Python application. A build script is provided to package it.
+-   **`[tool-name].html`**: A minimal HTML file containing only the structural elements of the tool.
+-   **`js/main.js`**: A JavaScript file containing all the logic, DOM manipulation, and event handling for the tool.
+-   **Styling**: Styling is handled exclusively by **Tailwind CSS**. The necessary scripts to enable Tailwind via CDN and to listen for the global dark/light theme are included in the `<head>` of the HTML file.
 
-```bash
-python build_project.py
-```
+### Modularization & Localization Status
 
-This command creates a zip archive of the tool in its directory.
+-   ✅ **game-puzzle-match**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-## Code Style and Conventions
+-   ✅ **etc-poker**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
--   **Language:** The user interface, comments, and documentation are primarily in **Korean**. Please adhere to this convention.
--   **Modularity:** Each tool in the `tools/` directory should be as self-contained as possible.
--   **Dependencies:** For web tools, prefer CDN links for common libraries (like Bootstrap) where possible, or include them as local assets if necessary. The Python tool has its dependencies listed in `requirements.txt`.
--   **Naming:** Tool directories and their corresponding HTML files should share the same name (e.g., `misc-dice/misc-dice.html`).
+-   ✅ **etc-blackjack**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-## Tool Loading and Structure
+-   ✅ **mtg-ability-finder**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-The application loads tools dynamically based on the configuration in `tool_index.json`. The `assets/main.js` script fetches this file on startup, filters for enabled tools, and builds the UI launchers.
+-   ✅ **etc-mighty-helper**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-### Tool Types
+-   ✅ **mtg-random-card**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
+        
+-   ✅ **mtg-dungeons**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
--   `html`: An "Embedded" tool that loads directly into the main content area of the page within an `<iframe>`.
--   `html_modal`: A "Modal" tool that opens in a full-screen overlay. It can be launched from the top-right dropdown menu or the main tool launcher.
--   A tool can have both types (e.g., `["html", "html_modal"]`) and be launched in either context.
+-   ✅ **mtg-garth-tool**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-### Enabled Tools
+-   ✅ **etc-lotto**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-Here is a list of the currently enabled tools, categorized as they appear in the UI:
+-   ✅ **game-sudoku**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-#### MTG
--   **mtg-ability-finder** (Type: html, html_modal): A quick search utility to look up the official text and description for any MTG keyword ability, ability word, or keyword action.
--   **mtg-life-counter** (Type: html, html_modal)
--   **mtg-random-card** (Type: html, html_modal)
--   **mtg-urza-tool** (Type: html)
--   **mtg-dungeons** (Type: html, html_modal)
--   **🎡 Garth-One-Eye** (Type: html)
--   **mtg-archenemy-tool** (Type: html)
+-   ✅ **etc-thegang-helper**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-#### TOURNAMENT
--   **swiss-round-tool** (Type: html, html_modal)
--   **swiss-round-viewer** (Type: html, html_modal)
+-   ✅ **mtg-urza-tool**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-#### MTG ORDER
--   **CK Order Sorter** (Type: html)
+-   ✅ **swiss-round-tool**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-#### GAME
--   **🎮 Sudoku** (Type: html_modal)
+-   ✅ **misc-dice**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-#### BOARD GAME
--   **etc-mighty-helper** (Type: html, html_modal)
--   **etc-thegang-helper** (Type: html, html_modal)
+-   ✅ **swiss-round-viewer**:
+    -   **Status:** Modularized & Converted to Tailwind.
+    -   **Localization:** ✅ Implemented.
 
-#### MISC
--   **misc-dice** (Type: html, html_modal)
+-   ❌ **mtg-archenemy-tool**:
+    -   **Status:** Pending.
+    -   **Localization:** ✅ Implemented.
+    -   **Notes:** Skipped for now due to high complexity.
 
-#### ETC
--   **etc-poker** (Type: html)
--   **etc-blackjack** (Type: html)
--   **etc-lotto** (Type: html, html_modal)
+-   ❌ **mtg-life-counter**:
+    -   **Status:** Pending.
+    -   **Localization:** ✅ Implemented.
+    -   **Notes:** Skipped for now due to high complexity.
+
+-   ❌ **cardkingdom-order-sorter**:
+    -   **Status:** Pending.
+    -   **Localization:** ❌ Pending.
+    -   **Notes:** Skipped for now due to file read errors.

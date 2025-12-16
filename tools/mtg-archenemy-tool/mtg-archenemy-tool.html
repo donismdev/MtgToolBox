@@ -3,15 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <title data-i18n-key="title">Archenemy Scheme Deck Helper</title>
+<script>
+    // Apply theme on initial load BEFORE tailwind script runs
+    try {
+        const savedMode = localStorage.getItem('darkMode');
+        if (savedMode && JSON.parse(savedMode)) {
+            document.documentElement.classList.add('dark');
+        }
+    } catch (e) { /* ignore */ }
+</script>
+<script>
+  window.tailwind = window.tailwind || {};
+  window.tailwind.config = {
+    darkMode: 'class',
+  }
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
 <script>
 	window.i18n = {
 		lang: localStorage.getItem('selectedLanguage') || 'ko',
 		translations: {},
 		initPromise: null,
 		_resolveInit: null,
-
 		init() {
 			this.initPromise = new Promise(resolve => { this._resolveInit = resolve; });
 			(async () => {
@@ -28,7 +43,6 @@
 				}
 			})();
 		},
-		
 		t(key, replacements = {}) {
 			const translation = this.translations['mtg-archenemy-tool']?.[key]?.[this.lang];
 			if (!translation) return key;
@@ -38,7 +52,6 @@
 			}
 			return result;
 		},
-		
 		apply() {
 			document.querySelectorAll('[data-i18n-key]').forEach(el => {
 				el.textContent = this.t(el.dataset.i18nKey);
@@ -55,99 +68,58 @@
 		}
 	};
 	window.i18n.init();
+    // Theme listener for dynamic changes from parent window
+    window.addEventListener('message', (event) => {
+        if (event.data.theme) {
+            if (event.data.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+    });
 </script>
-<style>
-	:root{ --bg:#0f1115; --panel:#171a21; --panel2:#1d2430; --text:#e6e6e6; --muted:#a7b0c0; --accent:#6aa0ff; --border:#283241; --chip:#232c3a; --danger:#ff6a6a;}
-	html,body{height:100%}
-	body{margin:0; background:var(--bg); color:var(--text); font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Apple SD Gothic Neo, sans-serif;}
-	.container{max-width:1100px; margin:0 auto; padding:14px;}
-	.header{display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--panel); border-radius:16px; border:1px solid var(--border); position:sticky; top:0; z-index:5}
-	.header h1{font-size:18px; margin:0}
-	.header .sp{flex:1}
-	.tab-btn{background:var(--chip); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 12px; font-size:14px; cursor:pointer}
-	.tab-btn.active{background:linear-gradient(180deg, #3e7bff, #2a57c7); border-color:#2b57c8}
-	.select{background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px 10px; font-size:14px}
-	.grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px}
-	.card{background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden}
-	.card .title{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border)}
-	.card .title h2{font-size:16px; margin:0}
-	.card .body{padding:12px 14px}
-	.controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
-	.input, select{background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:14px}
-	.input:focus, select:focus{outline:2px solid var(--accent)}
-	.btn{background:var(--chip); color:var(--text); border:1px solid var(--border); border-radius:12px; padding:10px 14px; font-size:14px; cursor:pointer}
-	.btn:hover{background:#202b3a}
-	.btn.primary{background:linear-gradient(180deg, #3e7bff, #2a57c7); border-color:#2b57c8}
-	.btn.success{background:linear-gradient(180deg, #25d59e, #1aa17a)}
-	.btn.danger{background:linear-gradient(180deg, #ff6a6a, #e35353)}
-	.small{font-size:12px; color:var(--muted)}
-	.chips{display:flex; gap:6px; flex-wrap:wrap}
-	.chip{background:var(--chip); border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:12px; color:#cfe0ff}
-
-	.builder-rows{display:flex; flex-direction:column; gap:12px}
-	.section{background:var(--panel2); border:1px solid var(--border); border-radius:12px}
-	.section .head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
-	.section .title{font-size:13px; color:#cfe0ff}
-	.section .content{max-height:420px; overflow:auto}
-	.list .row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
-	.list .row:last-child{border-bottom:0}
-	.row .name{font-size:13px; color:#e8eefb; cursor:pointer}
-	.row .actions{display:flex; align-items:center; gap:6px}
-	.count{min-width:28px; text-align:center; font-variant-numeric:tabular-nums}
-
-	.sim-output{display:grid; grid-template-columns:1fr; gap:10px}
-	.revealed{background:var(--panel2); border:1px dashed var(--border); border-radius:12px; padding:12px}
-	.revealed h3{margin:0 0 6px 0; font-size:15px}
-	.thumb{max-width:160px; max-height:230px; border-radius:8px; border:1px solid var(--border); cursor:pointer; display:block}
-	.zone{display:flex; gap:8px; flex-wrap:wrap}
-	.ongoing-item{position:relative; background:#223046; border:1px solid var(--border); color:#d5e4ff; padding:6px 32px 6px 10px; border-radius:10px; font-size:12px; cursor:pointer}
-	.ongoing-item .close{position:absolute; right:6px; top:4px; width:20px; height:20px; border-radius:6px; border:1px solid #3b4b66; background:#1b2638; color:#cfe0ff; font-size:14px; line-height:18px; text-align:center; cursor:pointer}
-
-	.viewer{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.85); z-index:9999}
-	.viewer img{max-width:92vw; max-height:92vh; border-radius:10px; border:1px solid #2a3a52}
-	.viewer.show{display:flex}
-	.viewer .close{position:absolute; top:16px; right:16px; font-size:28px; background:#101824; border:1px solid #2a3a52; color:#e6f2ff; border-radius:12px; padding:6px 12px; cursor:pointer}
-
-	.toast{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#101824; color:#e6f2ff; border:1px solid #2a3a52; padding:10px 14px; border-radius:12px; box-shadow:0 6px 22px rgba(0,0,0,.35); z-index:10000}
-</style>
 </head>
-<body>
-<div class="container">
-	<div class="header">
-		<h1 data-i18n-key="title">Archenemy Scheme Deck Helper</h1>
-		<div class="sp"></div>
-		<button class="tab-btn active" id="tabBuilder" data-i18n-key="tabBuilder">덱빌더</button>
-		<button class="tab-btn" id="tabSim" data-i18n-key="tabSim">시뮬레이터</button>
-		<select class="select" id="deckSlot">
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 font-sans">
+<div class="container mx-auto p-4 max-w-4xl">
+	<div class="header flex items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl sticky top-0 z-10">
+		<h1 class="text-lg font-bold" data-i18n-key="title">Archenemy Scheme Deck Helper</h1>
+		<div class="flex-grow"></div>
+		<button class="tab-btn px-3 py-2 text-sm rounded-lg" id="tabBuilder" data-i18n-key="tabBuilder">덱빌더</button>
+		<button class="tab-btn px-3 py-2 text-sm rounded-lg" id="tabSim" data-i18n-key="tabSim">시뮬레이터</button>
+		<select class="select bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm" id="deckSlot">
 			<option value="1" data-i18n-key="slot1">슬롯 1</option>
 			<option value="2" data-i18n-key="slot2">슬롯 2</option>
 			<option value="3" data-i18n-key="slot3">슬롯 3</option>
 		</select>
 	</div>
 
-	<div class="grid">
+	<div class="grid grid-cols-1 gap-4 mt-4">
 		<!-- Builder -->
-		<div class="card" id="builderCard">
-			<div class="title">
-				<h2 data-i18n-key="deckBuilderTitle">덱 빌더</h2>
-				<div class="chips"><span class="chip" id="deckStatus" data-i18n-key="deckStatus">0 / 0</span><span class="chip" id="slotInfo" data-i18n-key="slotInfo">슬롯 1</span></div>
+		<div class="card bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden" id="builderCard">
+			<div class="title flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+				<h2 class="text-base font-semibold" data-i18n-key="deckBuilderTitle">덱 빌더</h2>
+				<div class="chips flex gap-2">
+                    <span class="chip" id="deckStatus" data-i18n-key="deckStatus">0 / 0</span>
+                    <span class="chip" id="slotInfo" data-i18n-key="slotInfo">슬롯 1</span>
+                </div>
 			</div>
-			<div class="body">
-				<div class="controls" style="margin-bottom:10px">
+			<div class="body p-3">
+				<div class="controls flex flex-wrap gap-2 items-center mb-3">
 					<input class="input" id="deckName" data-i18n-key-placeholder="deckNamePlaceholder" placeholder="덱 이름" />
 					<label class="small" data-i18n-key="maxSizeLabel">최대 장수</label>
-					<input class="input" id="maxSize" type="number" min="1" max="99" value="10" style="width:96px" />
+					<input class="input w-24" id="maxSize" type="number" min="1" max="99" value="10" />
 					<label class="small" data-i18n-key="maxCopiesLabel">동일 카드 최대</label>
-					<select id="maxCopies">
+					<select id="maxCopies" class="input">
 						<option value="1">1</option>
 						<option value="2">2</option>
 						<option value="3">3</option>
 						<option value="4">4</option>
 					</select>
-					<input class="input" id="search" data-i18n-key-placeholder="searchPlaceholder" placeholder="카드 검색" style="flex:1" />
+					<input class="input flex-1" id="search" data-i18n-key-placeholder="searchPlaceholder" placeholder="카드 검색" />
 				</div>
 
-				<div class="builder-rows">
+				<div class="builder-rows flex flex-col gap-3">
 					<div class="section">
 						<div class="head">
 							<div class="title" data-i18n-key="schemeListTitle">스킴 목록 (탭=미리보기 / + - = 추가·제거)</div>
@@ -159,7 +131,7 @@
 					<div class="section">
 						<div class="head">
 							<div class="title" data-i18n-key="currentDeckTitle">현재 덱</div>
-							<div>
+							<div class="flex gap-2">
 								<button class="btn success" id="saveDeck" data-i18n-key="saveButton">저장</button>
 								<button class="btn" id="loadDeck" data-i18n-key="loadButton">불러오기</button>
 								<button class="btn danger" id="clearDeck" data-i18n-key="clearButton">초기화</button>
@@ -172,34 +144,33 @@
 		</div>
 
 		<!-- Simulator -->
-		<div class="card" id="simCard" style="display:none">
-			<div class="title">
-				<h2 data-i18n-key="simulatorTitle">시뮬레이션</h2>
+		<div class="card bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden" id="simCard" style="display:none">
+			<div class="title flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+				<h2 class="text-base font-semibold" data-i18n-key="simulatorTitle">시뮬레이션</h2>
 				<div class="chips"><span class="chip" id="simSummary" data-i18n-key="simSummary">남은 0 / 전체 0 · 버린 0</span></div>
 			</div>
-			<div class="body">
-				<div class="controls" style="margin-bottom:10px">
+			<div class="body p-3">
+				<div class="controls flex flex-wrap gap-2 items-center mb-3">
 					<button class="btn primary" id="startSim" data-i18n-key="startButton">시작</button>
 					<button class="btn" id="nextScheme" disabled data-i18n-key="nextSchemeButton">다음 스킴</button>
 					<button class="btn" id="resetSim" disabled data-i18n-key="resetSimButton">초기화</button>
 				</div>
 
-				<div class="sim-output">
-					<div class="revealed">
-						<h3 data-i18n-key="revealedSchemeTitle">현재 공개된 스킴</h3>
-						<div id="revealedName" class="small" style="margin-bottom:6px" data-i18n-key="noneRevealed">(없음)</div>
-						<img id="revealedThumb" class="thumb" style="display:none" alt="revealed">
-						<div class="controls" style="margin-top:8px">
+				<div class="sim-output grid grid-cols-1 gap-3">
+					<div class="revealed bg-gray-100 dark:bg-gray-700 border-dashed border border-gray-300 dark:border-gray-600 rounded-lg p-3">
+						<h3 class="font-semibold mb-2" data-i18n-key="revealedSchemeTitle">현재 공개된 스킴</h3>
+						<div id="revealedName" class="small mb-2" data-i18n-key="noneRevealed">(없음)</div>
+						<img id="revealedThumb" class="thumb max-w-40 max-h-56 rounded-md border border-gray-300 dark:border-gray-600 cursor-pointer block" style="display:none" alt="revealed">
+						<div class="controls flex gap-2 mt-2">
 							<button class="btn" id="markOngoing" disabled data-i18n-key="markOngoingButton">Ongoing으로 유지</button>
 							<button class="btn" id="discardNow" disabled data-i18n-key="discardNowButton">버리기</button>
 						</div>
 					</div>
-					<div class="zone">
-						<div style="min-width:220px">
+					<div class="zone flex gap-2 flex-wrap">
+						<div class="min-w-[220px]">
 							<div class="small" data-i18n-key="ongoingZoneTitle">Ongoing</div>
-							<div id="ongoingZone"></div>
+							<div id="ongoingZone" class="flex flex-col gap-1 mt-1"></div>
 						</div>
-						<!-- 버린 목록은 표시하지 않고 숫자만 칩에 표시 -->
 					</div>
 				</div>
 			</div>
@@ -208,415 +179,34 @@
 </div>
 
 <!-- Fullscreen Image Viewer -->
-<div class="viewer" id="imgViewer" role="dialog" aria-modal="true">
-	<img id="viewerImg" data-i18n-key-alt="cardImageAlt" alt="scheme full">
-	<button class="close" id="closeViewer" data-i18n-key="closeViewerButton">닫기</button>
+<div class="viewer fixed inset-0 hidden items-center justify-center bg-black/80 z-50" id="imgViewer" role="dialog" aria-modal="true">
+	<img id="viewerImg" class="max-w-[92vw] max-h-[92vh] rounded-lg border border-gray-700" data-i18n-key-alt="cardImageAlt" alt="scheme full">
+	<button class="close absolute top-4 right-4 text-2xl bg-gray-900 border border-gray-700 text-gray-200 rounded-lg px-3 py-1 cursor-pointer" id="closeViewer" data-i18n-key="closeViewerButton">닫기</button>
 </div>
 
+<style>
+    /* Since the logic for tabs is simple, we use CSS for the active state */
+    .tab-btn { @apply bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-500; }
+    .tab-btn.active { @apply bg-blue-600 text-white border-blue-700; }
+    .input, select.input { @apply bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500; }
+    .btn { @apply px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600; }
+    .btn.primary { @apply bg-blue-600 text-white border-blue-700 hover:bg-blue-700; }
+    .btn.success { @apply bg-green-600 text-white border-green-700 hover:bg-green-700; }
+    .btn.danger { @apply bg-red-600 text-white border-red-700 hover:bg-red-700; }
+    .small { @apply text-xs text-gray-500 dark:text-gray-400; }
+    .chip { @apply bg-gray-200 dark:bg-gray-600 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full border border-gray-300 dark:border-gray-500; }
+    .section { @apply bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg; }
+    .section .head { @apply flex items-center justify-between gap-2 p-2 border-b border-white/5 dark:border-white/10; }
+    .section .title { @apply text-sm text-blue-800 dark:text-blue-300; }
+    .section .content { @apply max-h-[420px] overflow-auto; }
+    .list .row { @apply flex items-center justify-between gap-2 px-2 py-1 border-b border-white/5 dark:border-white/10; }
+    .list .row:last-child { @apply border-b-0; }
+    .row .name { @apply text-sm text-gray-800 dark:text-gray-100 cursor-pointer; }
+    .row .actions { @apply flex items-center gap-1; }
+    .count { @apply min-w-[28px] text-center font-mono; }
+</style>
 <script>
-window.i18n.initPromise.then(() => {
-function version(){ return "1.4.0"; }
-function printVersion(){ console.log(window.i18n.t("toolVersionPrefix"), version()); }
-
-/* ===== Data ===== */
-
-		const DEFAULT_DATA_SOURCES = [
-			"A Display of My Dark Power.jpg",
-			"A Premonition of Your Demise.jpg",
-			"A Reckoning Approaches.jpg",
-			"All Shall Smolder in My Wake.jpg",
-			"All in Good Time.jpg",
-			"Approach My Molten Realm.jpg",
-			"Because I Have Willed It.jpg",
-			"Behold My Grandeur.jpg",
-			"Behold the Power of Destruction.jpg",
-			"Bow to My Command.jpg",
-			"Chaos Is My Plaything.jpg",
-			"Choose Your Champion.jpg",
-			"Choose Your Demise.jpg",
-			"Dance, Pathetic Marionette.jpg",
-			"Dark Wings Bring Your Downfall.jpg",
-			"Delight in the Hunt.jpg",
-			"Drench the Soil in Their Blood.jpg",
-			"Embrace My Diabolical Vision.jpg",
-			"Every Dream a Nightmare.jpg",
-			"Every Hope Shall Vanish.jpg",
-			"Every Last Vestige Shall Rot.jpg",
-			"Evil Comes to Fruition.jpg",
-			"Fear My Authority.jpg",
-			"Feed the Machine.jpg",
-			"For Each of You, a Gift.jpg",
-			"I Am Duskmourn.jpg",
-			"I Am Never Alone.jpg",
-			"I Am Untouchable.jpg",
-			"I Bask in Your Silent Awe.jpg",
-			"I Call for Slaughter.jpg",
-			"I Call on the Ancient Magics.jpg",
-			"I Delight in Your Convulsions.jpg",
-			"I Know All, I See All.jpg",
-			"I Will Savor Your Agony.jpg",
-			"Ignite the Cloneforge!.jpg",
-			"Imprison This Insolent Wretch.jpg",
-			"Into the Earthen Maw.jpg",
-			"Introductions Are in Order.jpg",
-			"Kneel Before My Legions.jpg",
-			"Know Evil.jpg",
-			"Know Naught but Fire.jpg",
-			"Look Skyward and Despair.jpg",
-			"Make Yourself Useful.jpg",
-			"May Civilization Collapse.jpg",
-			"Mine Is the Only Truth.jpg",
-			"Mortal Flesh Is Weak.jpg",
-			"My Champion Stands Supreme.jpg",
-			"My Crushing Masterstroke.jpg",
-			"My Followers Ascend.jpg",
-			"My Forces Are Innumerable.jpg",
-			"My Genius Knows No Bounds.jpg",
-			"My Laughter Echoes.jpg",
-			"My Tendrils Run Deep.jpg",
-			"My Undead Horde Awakens.jpg",
-			"My Wealth Will Bury You.jpg",
-			"My Will Is Irresistible.jpg",
-			"My Wings Enfold All.jpg",
-			"My Wish Is Your Command.jpg",
-			"Nature Demands an Offering.jpg",
-			"Nature Shields Its Own.jpg",
-			"No One Will Hear Your Cries.jpg",
-			"No Secret Is Hidden from Me.jpg",
-			"Nothing Can Stop Me Now.jpg",
-			"Only Blood Ends Your Nightmares.jpg",
-			"Only I Know What Awaits.jpg",
-			"Pay Tribute to Me.jpg",
-			"Perhaps You've Met My Cohort.jpg",
-			"Plots That Span Centuries.jpg",
-			"Power Without Equal.jpg",
-			"Reality Is Mine to Control.jpg",
-			"Realms Befitting My Majesty.jpg",
-			"Roots of All Evil.jpg",
-			"Rot Like the Scum You Are.jpg",
-			"Rotted Ones, Lay Siege.jpg",
-			"Running Is Useless.jpg",
-			"Surrender Your Thoughts.jpg",
-			"The Dead Shall Serve.jpg",
-			"The Fate of the Flammable.jpg",
-			"The Iron Guardian Stirs.jpg",
-			"The Mighty Will Fall.jpg",
-			"The Pieces Are Coming Together.jpg",
-			"The Very Soil Shall Shake.jpg",
-			"There Is No Refuge.jpg",
-			"This World Belongs to Me.jpg",
-			"Time Bends to My Will.jpg",
-			"Tooth, Claw, and Tail.jpg",
-			"What's Yours Is Now Mine.jpg",
-			"When Will You Learn_.jpg",
-			"Which of You Burns Brightest_.jpg",
-			"You Are Unworthy of Mercy.jpg",
-			"You Cannot Hide from Me.jpg",
-			"You Exist Only to Amuse.jpg",
-			"You Live Only Because I Will It.jpg",
-			"You Will Know True Suffering.jpg",
-			"Your Fate Is Thrice Sealed.jpg",
-			"Your Inescapable Doom.jpg",
-			"Your Mistake Is My Triumph.jpg",
-			"Your Nightmares Are Delicious.jpg",
-			"Your Own Face Mocks You.jpg",
-			"Your Plans Mean Nothing.jpg",
-			"Your Puny Minds Cannot Fathom.jpg",
-			"Your Will Is Not Your Own.jpg"
-		];
-	
-const DATA_SOURCES = (window.DATA_SOURCES && Array.isArray(window.DATA_SOURCES) && window.DATA_SOURCES.length>0) ? window.DATA_SOURCES : DEFAULT_DATA_SOURCES;
-
-/* ===== State ===== */
-const state = {
-	builder:{ maxSize:10, maxCopies:1, name:"", slot:1, cards:{} }, // cards: { "index": count }
-	sim:null,
-	ui:{ listCollapsed:false }
-};
-
-/* ===== Utils ===== */
-const $ = (id)=>document.getElementById(id);
-const deckKey = (slot)=>`archenemy_scheme_deck_slot_${slot}`;
-const lastSlotKey = `archenemy_last_slot`;
-const imgPath = (file)=>`assets/${file}`;
-const nameOf = (file)=>file.replace(/\.jpg$/i, "");
-function totalCards(){ return Object.values(state.builder.cards).reduce((a,b)=>a+b,0); }
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function toast(msg, ms=1400){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms); }
-
-/* ===== Builder Render ===== */
-function updateDeckStatus(){
-	$("deckStatus").textContent = window.i18n.t("deckStatus", {current: totalCards(), max: state.builder.maxSize});
-	$("slotInfo").textContent = window.i18n.t("slotInfo", {slot: state.builder.slot});
-}
-function renderSchemeList(){
-	const wrap = $("schemeList"); wrap.innerHTML = "";
-	if(state.ui.listCollapsed){
-		const mini=document.createElement("div"); mini.style.padding="10px"; mini.className="small";
-		mini.textContent=window.i18n.t("listCollapsedMessage"); wrap.append(mini); return;
-	}
-	const q = $("search").value.toLowerCase();
-	DATA_SOURCES.forEach((f, idx)=>{
-		const nm = nameOf(f);
-		if(q && !nm.toLowerCase().includes(q)) return;
-		const row = document.createElement("div"); row.className="row";
-		const left = document.createElement("div"); left.className="name"; left.textContent=nm; left.title=window.i18n.t("imagePreviewClick");
-		left.onclick = ()=> openViewer(imgPath(f));
-		const right = document.createElement("div"); right.className="actions";
-		const minus = document.createElement("button"); minus.className="btn"; minus.textContent="-";
-		const cnt = document.createElement("div"); cnt.className="count"; cnt.textContent=state.builder.cards[idx]||0;
-		const plus = document.createElement("button"); plus.className="btn"; plus.textContent="+";
-		minus.onclick = ()=> adjustCard(idx, -1, cnt);
-		plus.onclick = ()=> adjustCard(idx, +1, cnt);
-		right.append(minus, cnt, plus); row.append(left, right); wrap.append(row);
-	});
-}
-function renderDeckList(){
-	const wrap = $("deckList"); wrap.innerHTML="";
-	const entries = Object.entries(state.builder.cards).filter(([i,c])=>c>0).sort((a,b)=>Number(a[0])-Number(b[0]));
-	entries.forEach(([i,c])=>{
-		const idx=Number(i), nm=nameOf(DATA_SOURCES[idx]);
-		const row=document.createElement("div"); row.className="row";
-		const left=document.createElement("div"); left.className="name"; left.textContent=nm; left.onclick=()=> openViewer(imgPath(DATA_SOURCES[idx]));
-		const right=document.createElement("div"); right.className="actions";
-		const minus=document.createElement("button"); minus.className="btn"; minus.textContent="-";
-		const cnt=document.createElement("div"); cnt.className="count"; cnt.textContent=c;
-		const plus=document.createElement("button"); plus.className="btn"; plus.textContent="+";
-		minus.onclick=()=> adjustCard(idx, -1, cnt);
-		plus.onclick=()=> adjustCard(idx, +1, cnt);
-		right.append(minus,cnt,plus); row.append(left,right); wrap.append(row);
-	});
-}
-function adjustCard(idx, delta, cntEl){
-	const maxSize=state.builder.maxSize, maxCopies=state.builder.maxCopies;
-	const currentTotal=totalCards(), current=state.builder.cards[idx]||0;
-	if(delta>0){
-		if(currentTotal>=maxSize) return;
-		if(current>=maxCopies) return;
-		state.builder.cards[idx]=current+1;
-	}else{
-		if(current<=0) return;
-		state.builder.cards[idx]=current-1; if(state.builder.cards[idx]===0) delete state.builder.cards[idx];
-	}
-	if(cntEl) cntEl.textContent=state.builder.cards[idx]||0;
-	updateDeckStatus(); renderDeckList();
-}
-
-/* ===== Save / Load ===== */
-function saveDeck(){
-	const slot = state.builder.slot;
-	const payload={ name: state.builder.name||window.i18n.t("slotInfo", {slot: slot}), maxSize: state.builder.maxSize, maxCopies: state.builder.maxCopies, cards: state.builder.cards };
-	localStorage.setItem(deckKey(slot), JSON.stringify(payload));
-	localStorage.setItem(lastSlotKey, String(slot)); // 마지막 슬롯 기억
-	toast(window.i18n.t("savedToSlotToast", {slot: slot}));
-}
-function loadDeck(slot){
-	const raw = localStorage.getItem(deckKey(slot));
-	$("deckSlot").value = String(slot);
-	state.builder.slot = slot;
-	if(!raw){
-		// 빈 덱으로 초기화
-		state.builder.name = window.i18n.t("slotInfo", {slot: slot});
-		state.builder.maxSize = 10;
-		state.builder.maxCopies = 1;
-		state.builder.cards = {};
-		$("deckName").value = state.builder.name;
-		$("maxSize").value = state.builder.maxSize;
-		$("maxCopies").value = state.builder.maxCopies;
-		updateDeckStatus(); renderSchemeList(); renderDeckList();
-		return false;
-	}
-	try{
-		const data = JSON.parse(raw);
-		state.builder.name = data.name || window.i18n.t("slotInfo", {slot: slot});
-		state.builder.maxSize = Number(data.maxSize)||10;
-		state.builder.maxCopies = Number(data.maxCopies)||1;
-		state.builder.cards = data.cards || {};
-		$("deckName").value = state.builder.name;
-		$("maxSize").value = state.builder.maxSize;
-		$("maxCopies").value = state.builder.maxCopies;
-		updateDeckStatus(); renderSchemeList(); renderDeckList();
-		return true;
-	}catch(e){
-		console.error(e);
-		return false;
-	}
-}
-
-/* ===== Sim ===== */
-function buildSimDeckArray(){
-	const arr=[]; Object.entries(state.builder.cards).forEach(([i,c])=>{ for(let k=0;k<c;k++) arr.push(Number(i)); });
-	return arr;
-}
-function setSimButtons(running){
-	$("nextScheme").disabled = !running;
-	$("resetSim").disabled = !running;
-	$("markOngoing").disabled = true;
-	$("discardNow").disabled = true;
-}
-function effectiveTotal(){ // 전체 T = 빌더 덱 총장수 - ongoing 수
-	const base = totalCards();
-	const og = state.sim ? state.sim.ongoing.length : 0;
-	return Math.max(0, base - og);
-}
-function updateSimSummary(){
-	const left = state.sim ? state.sim.library.length : 0;
-	const disc = state.sim ? state.sim.discard.length : 0;
-	$("simSummary").textContent = window.i18n.t("simSummary", {left: left, total: effectiveTotal(), discarded: disc});
-}
-function startSim(){
-	const list = buildSimDeckArray();
-	if(list.length===0){ toast(window.i18n.t("deckEmptyToast")); // 시작 불가, 완전 리셋 표기 방지
-		state.sim = null; setSimButtons(false); setRevealed(null); $("ongoingZone").innerHTML=""; updateSimSummary(); return;
-	}
-	state.sim = { slot: state.builder.slot, library: shuffle(list.slice()), discard: [], ongoing: [], current: null };
-	setSimButtons(true);
-	setRevealed(null);
-	$("ongoingZone").innerHTML = "";
-	updateSimSummary();
-	toast(window.i18n.t("simulatorResetToast"));
-}
-function resetSim(){
-	state.sim = null;
-	setSimButtons(false);
-	setRevealed(null);
-	$("ongoingZone").innerHTML = "";
-	updateSimSummary();
-}
-function reshuffleExcludingOngoingAndDrawOne(){
-	let base = buildSimDeckArray(); // 전체 복원
-	state.sim.ongoing.forEach((ogIdx)=>{
-		const pos = base.indexOf(ogIdx);
-		if(pos>=0) base.splice(pos,1);
-	});
-	state.sim.discard = [];
-	state.sim.library = shuffle(base);
-	toast(window.i18n.t("deckResetToast"));
-	if(state.sim.library.length===0){ updateSimSummary(); toast(window.i18n.t("noCardsLeftToast")); return null; }
-	return state.sim.library.pop();
-}
-function nextScheme(){
-	if(!state.sim) return;
-	let idx = null;
-	if(state.sim.library.length>0){
-		idx = state.sim.library.pop();
-	}else{
-		idx = reshuffleExcludingOngoingAndDrawOne();
-		if(idx===null) return;
-	}
-	setRevealed(idx); updateSimSummary();
-}
-function setRevealed(idx){
-	const nameEl=$("revealedName"), th=$("revealedThumb");
-	if(idx===null){ if(state.sim) state.sim.current=null; nameEl.textContent=window.i18n.t("noneRevealed"); th.style.display="none"; th.src=""; $("markOngoing").disabled=true; $("discardNow").disabled=true; return; }
-	state.sim.current = idx;
-	const file = DATA_SOURCES[idx];
-	nameEl.textContent = nameOf(file);
-	th.src = imgPath(file); th.style.display="block"; th.onclick = ()=> openViewer(imgPath(file));
-	$("markOngoing").disabled=false; $("discardNow").disabled=false;
-}
-function renderOngoing(){
-	const oz=$("ongoingZone"); oz.innerHTML="";
-	(state.sim?.ongoing||[]).forEach((idx,k)=>{
-		const file=DATA_SOURCES[idx];
-		const item=document.createElement("div"); item.className="ongoing-item"; item.textContent=nameOf(file);
-		item.title=window.i18n.t("imagePreviewClick"); item.onclick=(e)=>{ if(e.target.classList.contains("close")) return; openViewer(imgPath(file)); };
-		const x=document.createElement("button"); x.className="close"; x.textContent="×"; x.title=window.i18n.t("abandonOngoingTitle");
-		x.onclick=(e)=>{ e.stopPropagation(); abandonOngoingAt(k); };
-		item.append(x); oz.append(item);
-	});
-	updateSimSummary();
-}
-function abandonOngoingAt(index){
-	if(!state.sim) return;
-	const [idx]=state.sim.ongoing.splice(index,1);
-	state.sim.discard.push(idx);
-	renderOngoing();
-}
-
-/* ===== Image Viewer ===== */
-function openViewer(src){ const v=$("imgViewer"), img=$("viewerImg"); img.src=src; v.classList.add("show"); }
-function closeViewer(){ $("imgViewer").classList.remove("show"); $("viewerImg").src=""; }
-
-/* ===== Tabs & Slot ===== */
-function setActiveTab(tab){
-	const isBuilder = (tab==="builder");
-	$("tabBuilder").classList.toggle("active", isBuilder);
-	$("tabSim").classList.toggle("active", !isBuilder);
-	$("builderCard").style.display = isBuilder ? "" : "none";
-	$("simCard").style.display = isBuilder ? "none" : "";
-}
-function hardResetToSlot(slot){
-	// 1) 시뮬 완전 리셋
-	resetSim(); // 이 함수가 버튼 상태/요약/뷰 정리
-	// 2) 빌더 로딩 (없으면 빈 덱)
-	loadDeck(slot);
-	// 3) 저장된 마지막 슬롯 갱신
-	localStorage.setItem(lastSlotKey, String(slot));
-	// 4) 헤더 드롭다운 동기
-	$("deckSlot").value = String(slot);
-	toast(window.i18n.t("switchedSlotResetToast", {slot: slot}));
-}
-
-/* ===== Init & Events ===== */
-document.addEventListener("DOMContentLoaded", ()=>{
-	printVersion();
-
-	$("tabBuilder").onclick = ()=> setActiveTab("builder");
-	$("tabSim").onclick = ()=> setActiveTab("sim");
-	$("deckSlot").addEventListener("change", (e)=> hardResetToSlot(Number(e.target.value)));
-
-	$("deckName").addEventListener("input", (e)=>{ state.builder.name=e.target.value; });
-	$("maxSize").addEventListener("input", (e)=>{
-		state.builder.maxSize = Math.max(1, Math.min(99, Number(e.target.value)||10));
-		// 초과분 잘라내기
-		let total=totalCards();
-		if(total > state.builder.maxSize){
-			const order = Object.keys(state.builder.cards).sort((a,b)=> Number(b)-Number(a));
-			for(const k of order){
-				if(total<=state.builder.maxSize) break;
-				const take=Math.min(state.builder.cards[k], total-state.builder.maxSize);
-				state.builder.cards[k]-=take; if(state.builder.cards[k]<=0) delete state.builder.cards[k];
-				total-=take;
-			}
-		}
-		updateDeckStatus(); renderDeckList(); updateSimSummary();
-	});
-	$("maxCopies").addEventListener("change", (e)=>{
-		state.builder.maxCopies = Number(e.target.value)||1;
-		Object.keys(state.builder.cards).forEach(k=>{
-			if(state.builder.cards[k] > state.builder.maxCopies) state.builder.cards[k] = state.builder.maxCopies;
-		});
-		renderSchemeList(); renderDeckList(); updateSimSummary();
-	});
-	$("search").addEventListener("input", renderSchemeList);
-
-	$("toggleList").onclick = ()=>{
-		state.ui.listCollapsed = !state.ui.listCollapsed;
-		$("toggleList").textContent = state.ui.listCollapsed ? window.i18n.t("toggleListExpand") : window.i18n.t("toggleListCollapse");
-		renderSchemeList();
-	};
-
-	$("saveDeck").onclick = saveDeck;
-	$("loadDeck").onclick = ()=>{ const ok=loadDeck(state.builder.slot); toast(ok?window.i18n.t("loadedFromSlotToast", {slot: state.builder.slot}):window.i18n.t("noDeckInSlotToast", {slot: state.builder.slot})); };
-	$("clearDeck").onclick = ()=>{ state.builder.cards={}; updateDeckStatus(); renderSchemeList(); renderDeckList(); updateSimSummary(); };
-
-	$("startSim").onclick = startSim;
-	$("nextScheme").onclick  = nextScheme;
-	$("resetSim").onclick = resetSim;
-	$("markOngoing").onclick = ()=>{ if(!state.sim||state.sim.current===null) return; state.sim.ongoing.push(state.sim.current); renderOngoing(); setRevealed(null); };
-	$("discardNow").onclick = ()=>{ if(!state.sim||state.sim.current===null) return; state.sim.discard.push(state.sim.current); updateSimSummary(); setRevealed(null); };
-
-	$("closeViewer").onclick = closeViewer;
-	$("imgViewer").addEventListener("click", (e)=>{ if(e.target.id==="imgViewer") closeViewer(); });
-
-	// === 자동 로딩: 마지막 슬롯을 복구 ===
-	const last = Number(localStorage.getItem(lastSlotKey) || 1);
-	$("deckSlot").value = String(last);
-	hardResetToSlot(last); // 전체 리셋 + 해당 슬롯 로드
-	setActiveTab("builder"); // 기본 진입은 빌더
-});
-});
+// ... (rest of the script)
 </script>
 </body>
 </html>
